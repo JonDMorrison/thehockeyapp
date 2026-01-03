@@ -1,0 +1,298 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { AppShell, PageContainer } from "@/components/app/AppShell";
+import { AppCard } from "@/components/app/AppCard";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/app/Toast";
+import {
+  ChevronLeft,
+  Smartphone,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield,
+} from "lucide-react";
+
+interface PrivacySettings {
+  user_id: string;
+  lock_screen_show_player_name: boolean;
+  lock_screen_show_team_name: boolean;
+  allow_lock_screen_actions: boolean;
+}
+
+const WidgetSettings: React.FC = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  React.useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // Fetch privacy settings
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["user-privacy-settings", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_privacy_settings")
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      // Return defaults if no settings exist
+      if (!data) {
+        return {
+          user_id: user!.id,
+          lock_screen_show_player_name: false,
+          lock_screen_show_team_name: false,
+          allow_lock_screen_actions: false,
+        } as PrivacySettings;
+      }
+      
+      return data as PrivacySettings;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Update settings mutation
+  const updateMutation = useMutation({
+    mutationFn: async (updates: Partial<PrivacySettings>) => {
+      const { error } = await supabase
+        .from("user_privacy_settings")
+        .upsert({
+          user_id: user!.id,
+          ...settings,
+          ...updates,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-privacy-settings"] });
+      toast.success("Settings saved");
+    },
+    onError: () => {
+      toast.error("Failed to save settings");
+    },
+  });
+
+  const handleToggle = (key: keyof PrivacySettings, value: boolean) => {
+    updateMutation.mutate({ [key]: value });
+  };
+
+  if (authLoading || isLoading) {
+    return (
+      <AppShell>
+        <PageContainer>
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/3" />
+            <div className="h-32 bg-muted rounded" />
+            <div className="h-32 bg-muted rounded" />
+          </div>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell>
+      <PageContainer>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">Widgets & Lock Screen</h1>
+              <p className="text-sm text-muted-foreground">
+                Control what appears on your device
+              </p>
+            </div>
+          </div>
+
+          {/* Privacy warning */}
+          <AppCard className="border-amber-500/20 bg-amber-500/5">
+            <div className="flex gap-3">
+              <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Privacy Notice</p>
+                <p className="text-sm text-muted-foreground">
+                  Lock screens can be seen by others. Keep player names off for privacy.
+                </p>
+              </div>
+            </div>
+          </AppCard>
+
+          {/* Lock Screen Settings */}
+          <AppCard>
+            <div className="space-y-1 mb-4">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                <h2 className="font-semibold">Lock Screen Display</h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Choose what information appears on widgets
+              </p>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-6">
+              {/* Show player name */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="show-player-name" className="font-medium">
+                    Show player name
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display the player's name on widgets
+                  </p>
+                </div>
+                <Switch
+                  id="show-player-name"
+                  checked={settings?.lock_screen_show_player_name ?? false}
+                  onCheckedChange={(checked) => handleToggle("lock_screen_show_player_name", checked)}
+                />
+              </div>
+
+              {/* Show team name */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="show-team-name" className="font-medium">
+                    Show team name
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display the team name on widgets
+                  </p>
+                </div>
+                <Switch
+                  id="show-team-name"
+                  checked={settings?.lock_screen_show_team_name ?? false}
+                  onCheckedChange={(checked) => handleToggle("lock_screen_show_team_name", checked)}
+                />
+              </div>
+
+              {/* Allow quick actions */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="allow-actions" className="font-medium">
+                    Allow lock screen actions
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mark tasks complete from lock screen
+                  </p>
+                </div>
+                <Switch
+                  id="allow-actions"
+                  checked={settings?.allow_lock_screen_actions ?? false}
+                  onCheckedChange={(checked) => handleToggle("allow_lock_screen_actions", checked)}
+                />
+              </div>
+            </div>
+          </AppCard>
+
+          {/* Widget Setup Guide */}
+          <AppCard>
+            <div className="space-y-1 mb-4">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-muted-foreground" />
+                <h2 className="font-semibold">Adding Widgets</h2>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-4 text-sm">
+              <div className="space-y-2">
+                <p className="font-medium">iOS</p>
+                <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                  <li>Long press on your home screen</li>
+                  <li>Tap the + button in the top left</li>
+                  <li>Search for "Hockey Training"</li>
+                  <li>Choose your widget size and tap "Add Widget"</li>
+                </ol>
+              </div>
+
+              <div className="space-y-2">
+                <p className="font-medium">Android</p>
+                <ol className="list-decimal list-inside text-muted-foreground space-y-1">
+                  <li>Long press on your home screen</li>
+                  <li>Select "Widgets"</li>
+                  <li>Find "Hockey Training" and hold to place</li>
+                </ol>
+              </div>
+
+              <p className="text-muted-foreground italic pt-2">
+                Widget availability depends on your device and browser support.
+              </p>
+            </div>
+          </AppCard>
+
+          {/* Preview */}
+          <AppCard>
+            <div className="space-y-1 mb-4">
+              <div className="flex items-center gap-2">
+                {settings?.lock_screen_show_player_name || settings?.lock_screen_show_team_name ? (
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <EyeOff className="w-4 h-4 text-muted-foreground" />
+                )}
+                <h2 className="font-semibold">Widget Preview</h2>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Mock widget preview */}
+            <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                  Today
+                </span>
+                {settings?.lock_screen_show_team_name && (
+                  <span className="text-xs text-muted-foreground">Team Name</span>
+                )}
+              </div>
+              
+              {settings?.lock_screen_show_player_name && (
+                <p className="font-medium">Player Name</p>
+              )}
+              
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-2 bg-primary/20 rounded-full overflow-hidden">
+                  <div className="h-full w-1/3 bg-primary rounded-full" />
+                </div>
+                <span className="text-sm font-medium">2/6</span>
+              </div>
+
+              {settings?.allow_lock_screen_actions && (
+                <Button size="sm" variant="secondary" className="w-full mt-2">
+                  Mark Next Done
+                </Button>
+              )}
+            </div>
+          </AppCard>
+        </div>
+      </PageContainer>
+    </AppShell>
+  );
+};
+
+export default WidgetSettings;
