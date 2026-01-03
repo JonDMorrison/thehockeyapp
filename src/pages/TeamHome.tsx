@@ -21,6 +21,7 @@ import {
   Shield,
   Users,
   ChevronRight,
+  ClipboardList,
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 
@@ -217,11 +218,11 @@ const TeamHome: React.FC = () => {
             </Button>
             <Button
               variant="action"
-              className="flex-col h-auto py-4 gap-2 opacity-50"
-              disabled
+              className="flex-col h-auto py-4 gap-2"
+              onClick={() => navigate(`/teams/${id}/practice`)}
             >
-              <Send className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Publish</span>
+              <ClipboardList className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Practice</span>
             </Button>
             <Button
               variant="action"

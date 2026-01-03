@@ -165,6 +165,112 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_cards: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          date: string
+          id: string
+          locked: boolean | null
+          mode: string | null
+          notes: string | null
+          published_at: string | null
+          team_id: string
+          tier: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          date: string
+          id?: string
+          locked?: boolean | null
+          mode?: string | null
+          notes?: string | null
+          published_at?: string | null
+          team_id: string
+          tier?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          date?: string
+          id?: string
+          locked?: boolean | null
+          mode?: string | null
+          notes?: string | null
+          published_at?: string | null
+          team_id?: string
+          tier?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_cards_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          label: string
+          practice_card_id: string
+          shot_type: string | null
+          shots_expected: number | null
+          sort_order: number
+          target_type: string | null
+          target_value: number | null
+          task_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label: string
+          practice_card_id: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          practice_card_id?: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order?: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_tasks_practice_card_id_fkey"
+            columns: ["practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -185,6 +291,99 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      session_completions: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          player_id: string
+          practice_card_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          player_id: string
+          practice_card_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          player_id?: string
+          practice_card_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_completions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_completions_practice_card_id_fkey"
+            columns: ["practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_completions: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          player_id: string
+          practice_task_id: string
+          shots_logged: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          player_id: string
+          practice_task_id: string
+          shots_logged?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          player_id?: string
+          practice_task_id?: string
+          shots_logged?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_completions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completions_practice_task_id_fkey"
+            columns: ["practice_task_id"]
+            isOneToOne: false
+            referencedRelation: "practice_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_adult_invites: {
         Row: {
@@ -380,12 +579,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_guardian_of_team_player: {
+        Args: { p_team_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_player_guardian: {
         Args: { player_uuid: string; user_uuid: string }
         Returns: boolean
       }
       is_player_owner: {
         Args: { player_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
+      is_player_team_member: {
+        Args: { p_player_id: string; p_team_id: string }
         Returns: boolean
       }
       is_team_adult: {
