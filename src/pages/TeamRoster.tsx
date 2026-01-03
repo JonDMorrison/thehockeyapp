@@ -127,7 +127,11 @@ const TeamRoster: React.FC = () => {
               if (!player) return null;
 
               return (
-                <AppCard key={membership.id}>
+                <AppCard 
+                  key={membership.id}
+                  className="cursor-pointer hover:bg-surface-muted/50 transition-colors"
+                  onClick={() => navigate(`/teams/${id}/roster/${player.id}`)}
+                >
                   <div className="flex items-center gap-3">
                     <Avatar
                       src={player.profile_photo_url}
@@ -154,6 +158,7 @@ const TeamRoster: React.FC = () => {
                         )}
                       </div>
                     </div>
+                    <ChevronLeft className="w-4 h-4 text-text-muted rotate-180" />
                   </div>
                 </AppCard>
               );

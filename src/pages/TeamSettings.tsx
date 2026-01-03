@@ -44,6 +44,7 @@ import {
   Camera,
 } from "lucide-react";
 import { InviteAdultModal } from "@/components/team/InviteAdultModal";
+import { TeamBioSection, TeamChallengesToggle } from "@/components/team/TeamBioSection";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -487,6 +488,16 @@ const TeamSettings: React.FC = () => {
             </div>
           </div>
         </AppCard>
+
+        {/* Team Bio Section */}
+        <TeamBioSection
+          teamId={id!}
+          description={team?.description}
+          valuesText={team?.values_text}
+        />
+
+        {/* National Challenges Toggle */}
+        <TeamChallengesToggle teamId={id!} />
 
         {/* Adults */}
         <AppCard>

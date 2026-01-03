@@ -30,6 +30,7 @@ import Templates from "./pages/Templates";
 import Today from "./pages/Today";
 import PlayerToday from "./pages/PlayerToday";
 import PlayerHistory from "./pages/PlayerHistory";
+import RosterPlayerDetail from "./pages/RosterPlayerDetail";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => {
             <Route path="/teams/:id" element={<TeamHome />} />
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
             <Route path="/teams/:id/roster" element={<TeamRoster />} />
+            <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
             <Route path="/teams/:id/practice" element={<TeamPractice />} />
             <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />

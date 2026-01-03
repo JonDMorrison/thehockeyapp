@@ -47,7 +47,10 @@ import {
   Calendar,
   WifiOff,
   Zap,
+  Settings,
 } from "lucide-react";
+import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
+import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 
 interface PracticeTask {
   id: string;
@@ -121,6 +124,7 @@ const PlayerToday: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [shotsInput, setShotsInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   
   // Local state for offline optimistic updates
   const [localCompletions, setLocalCompletions] = useState<Record<string, LocalCompletion>>({});
@@ -765,13 +769,22 @@ const PlayerToday: React.FC = () => {
               )}
             </div>
           </div>
-          {player && (
-            <Avatar
-              src={player.profile_photo_url}
-              fallback={`${player.first_name} ${player.last_initial || ""}`}
-              size="sm"
-            />
-          )}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setShowSettingsSheet(true)}
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+            {player && (
+              <Avatar
+                src={player.profile_photo_url}
+                fallback={`${player.first_name} ${player.last_initial || ""}`}
+                size="sm"
+              />
+            )}
+          </div>
         </div>
       }
     >
@@ -833,6 +846,16 @@ const PlayerToday: React.FC = () => {
             })}
           </div>
         </div>
+
+        {/* Photo Proof Section */}
+        {practiceCard && player && (
+          <SessionPhotoUpload
+            practiceCardId={practiceCard.id}
+            playerId={playerId!}
+            playerName={player.first_name}
+            disabled={false}
+          />
+        )}
 
         {/* Footer */}
         <div className="space-y-3 pt-4">
@@ -918,6 +941,16 @@ const PlayerToday: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Player Settings Sheet */}
+      {player && (
+        <PlayerSettingsSheet
+          open={showSettingsSheet}
+          onOpenChange={setShowSettingsSheet}
+          playerId={playerId!}
+          playerName={player.first_name}
+        />
+      )}
     </AppShell>
   );
 };
