@@ -4,6 +4,7 @@ export { AppShell, PageContainer, PageHeader } from './AppShell';
 export { Avatar } from './Avatar';
 export { ChecklistItem } from './ChecklistItem';
 export { EmptyState } from './EmptyState';
+export { OfflineIndicator, OfflineDot } from './OfflineIndicator';
 export { ProgressBar, ProgressRing } from './ProgressBar';
 export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonAvatar } from './Skeleton';
 export { Tag } from './Tag';

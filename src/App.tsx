@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
+import { initOfflineDB } from "@/lib/offlineStorage";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -30,9 +31,10 @@ import PlayerHistory from "./pages/PlayerHistory";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Apply stored team theme on mount
+  // Apply stored team theme and initialize offline DB on mount
   useEffect(() => {
     applyTeamTheme(getStoredTeamTheme());
+    initOfflineDB().catch(console.error);
   }, []);
 
   return (
