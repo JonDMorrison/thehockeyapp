@@ -33,6 +33,8 @@ import PlayerHistory from "./pages/PlayerHistory";
 import PlayerBadges from "./pages/PlayerBadges";
 import RosterPlayerDetail from "./pages/RosterPlayerDetail";
 import TeamProgress from "./pages/TeamProgress";
+import QuickCheckoff from "./pages/QuickCheckoff";
+import WidgetSettings from "./pages/WidgetSettings";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +85,9 @@ const App = () => {
             <Route path="/players/:id/history" element={<PlayerHistory />} />
             <Route path="/players/:id/badges" element={<PlayerBadges />} />
             <Route path="/teams/:id/progress" element={<TeamProgress />} />
+            {/* Quick checkoff and widget settings */}
+            <Route path="/quick-checkoff" element={<QuickCheckoff />} />
+            <Route path="/settings/widgets" element={<WidgetSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

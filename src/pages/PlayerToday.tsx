@@ -775,7 +775,15 @@ const PlayerToday: React.FC = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate(`/quick-checkoff?player_id=${playerId}`)}
+              title="Quick Mode"
+            >
+              <Zap className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon-sm"

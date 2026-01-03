@@ -1133,6 +1133,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_privacy_settings: {
+        Row: {
+          allow_lock_screen_actions: boolean | null
+          lock_screen_show_player_name: boolean | null
+          lock_screen_show_team_name: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          allow_lock_screen_actions?: boolean | null
+          lock_screen_show_player_name?: boolean | null
+          lock_screen_show_team_name?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          allow_lock_screen_actions?: boolean | null
+          lock_screen_show_player_name?: boolean | null
+          lock_screen_show_team_name?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       workout_template_days: {
         Row: {
           created_at: string | null
@@ -1261,10 +1285,19 @@ export type Database = {
         }
         Returns: Json
       }
+      apply_quick_action: {
+        Args: {
+          p_action_type: string
+          p_local_event_id: string
+          p_player_id: string
+        }
+        Returns: Json
+      }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
         Returns: Json
       }
+      get_today_snapshot: { Args: { p_player_id: string }; Returns: Json }
       is_guardian_of_team_player: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
