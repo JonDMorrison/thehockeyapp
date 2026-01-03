@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,6 +76,7 @@ const tierOptions = [
 const WeekPlanEditor: React.FC = () => {
   const { id: teamId, planId } = useParams<{ id: string; planId?: string }>();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -83,6 +84,7 @@ const WeekPlanEditor: React.FC = () => {
 
   const isEditing = !!planId && planId !== "new";
   const templateId = searchParams.get("template");
+  const aiDraft = (location.state as any)?.aiDraft;
 
   // Form state
   const [name, setName] = useState("");
@@ -276,6 +278,34 @@ const WeekPlanEditor: React.FC = () => {
       setDays(newDays);
     }
   }, [template, startDate, isEditing]);
+
+  // Populate from AI draft
+  useEffect(() => {
+    if (aiDraft && !isEditing) {
+      if (aiDraft.name) setName(aiDraft.name);
+      if (aiDraft.tier) setTier(aiDraft.tier);
+      if (aiDraft.start_date) setStartDate(aiDraft.start_date);
+      
+      if (aiDraft.days && Array.isArray(aiDraft.days)) {
+        const newDays: PlanDay[] = aiDraft.days.map((d: any) => ({
+          date: d.date,
+          title: d.title || "",
+          notes: d.notes || "",
+          tasks: (d.tasks || []).map((t: any, idx: number) => ({
+            sort_order: idx,
+            task_type: t.task_type || "other",
+            label: t.label || "",
+            target_type: t.target_type || "none",
+            target_value: t.target_value,
+            shot_type: t.shot_type || "none",
+            shots_expected: t.shots_expected,
+            is_required: t.is_required !== false,
+          })),
+        }));
+        setDays(newDays);
+      }
+    }
+  }, [aiDraft, isEditing]);
 
   useEffect(() => {
     if (team?.palette_id) {

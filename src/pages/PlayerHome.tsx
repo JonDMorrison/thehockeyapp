@@ -28,6 +28,7 @@ import {
   Check,
   Star,
 } from "lucide-react";
+import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 
 interface TeamMembership {
   id: string;
@@ -261,6 +262,14 @@ const PlayerHome: React.FC = () => {
               <ChevronRight className="w-5 h-5 text-text-muted" />
             </div>
           </AppCard>
+        )}
+
+        {/* Weekly Summary */}
+        {preferences?.active_team_id && (
+          <WeeklySummaryCard 
+            playerId={id!} 
+            teamId={preferences.active_team_id} 
+          />
         )}
 
         {/* Teams Section */}

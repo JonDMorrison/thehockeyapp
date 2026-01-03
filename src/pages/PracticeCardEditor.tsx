@@ -41,6 +41,7 @@ import {
   Zap,
   AlertTriangle,
 } from "lucide-react";
+import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
 
 interface PracticeTask {
   id?: string;
@@ -96,6 +97,7 @@ const PracticeCardEditor: React.FC = () => {
   const [tasks, setTasks] = useState<PracticeTask[]>([]);
   const [isPublished, setIsPublished] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [showAIAssist, setShowAIAssist] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -322,6 +324,28 @@ const PracticeCardEditor: React.FC = () => {
 
   const cardDate = parseISO(isEditing && existingCard ? existingCard.date : dateParam);
 
+  const handleAIDraftApply = (data: any) => {
+    // Apply AI-generated data to the form
+    if (data.title) setTitle(data.title);
+    if (data.notes) setNotes(data.notes);
+    if (data.tier) setTier(data.tier);
+    if (data.tasks && Array.isArray(data.tasks)) {
+      setTasks(
+        data.tasks.map((t: any, idx: number) => ({
+          sort_order: idx,
+          task_type: t.task_type || "other",
+          label: t.label || "",
+          target_type: t.target_type || "none",
+          target_value: t.target_value,
+          shot_type: t.shot_type || "none",
+          shots_expected: t.shots_expected,
+          is_required: t.is_required !== false,
+        }))
+      );
+    }
+    toast.success("Draft applied", "Review and edit before publishing.");
+  };
+
   if (cardLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -370,6 +394,14 @@ const PracticeCardEditor: React.FC = () => {
                 )}
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setShowAIAssist(true)}
+              disabled={isLocked}
+            >
+              <Sparkles className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       }
@@ -635,6 +667,16 @@ const PracticeCardEditor: React.FC = () => {
           </Button>
         </div>
       </PageContainer>
+      
+      {/* AI Assist Sheet */}
+      <AIAssistSheet
+        open={showAIAssist}
+        onOpenChange={setShowAIAssist}
+        teamId={id!}
+        mode="day_card"
+        date={dateParam}
+        onApply={handleAIDraftApply}
+      />
     </AppShell>
   );
 };
