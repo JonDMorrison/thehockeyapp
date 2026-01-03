@@ -173,6 +173,28 @@ serve(async (req) => {
       });
     }
 
+    // Fetch team training preferences
+    const { data: preferences } = await supabase
+      .from("team_training_preferences")
+      .select("training_mode, allowed_task_types, default_tier, use_ai_assist")
+      .eq("team_id", team_id)
+      .maybeSingle();
+
+    // Use preferences if available, otherwise use request values
+    const effectiveTier = tier || preferences?.default_tier || "rep";
+    const allowedTaskTypes = preferences?.allowed_task_types || ["shooting", "mobility", "conditioning", "recovery", "prep"];
+    const trainingMode = preferences?.training_mode || "balanced";
+
+    // Build constraint hints based on training mode
+    let modeHint = "";
+    if (trainingMode === "shooting_only") {
+      modeHint = "FOCUS ONLY ON SHOOTING TASKS. Do not include conditioning, mobility, or recovery. Keep it very simple: just shooting drills and shot counts.";
+    } else if (trainingMode === "balanced") {
+      modeHint = "Include a balanced mix of shooting, mobility, and prep tasks. Light conditioning optional.";
+    } else if (trainingMode === "performance") {
+      modeHint = "Include comprehensive training: shooting, conditioning, mobility, and recovery. Higher volume and intensity.";
+    }
+
     // Build the user prompt based on type
     let userPrompt: string;
     let schema: any;
@@ -181,10 +203,12 @@ serve(async (req) => {
       schema = DAY_CARD_SCHEMA;
       userPrompt = `Generate a single day practice card with the following constraints:
 - Date: ${date}
-- Tier: ${tier}
+- Tier: ${effectiveTier}
 - Time budget: ${time_budget} minutes
-- Focus areas: ${focus_areas?.join(", ") || "balanced training"}
-${keep_simple ? "- Keep it simple with 3-5 tasks" : "- Include 5-8 varied tasks"}
+- Allowed task types: ${allowedTaskTypes.join(", ")}
+- Focus areas: ${focus_areas?.join(", ") || "based on allowed types"}
+${modeHint}
+${keep_simple ? "- Keep it simple with 2-4 tasks" : "- Include 4-6 varied tasks"}
 
 Output the JSON matching this exact schema:
 ${JSON.stringify(schema, null, 2)}`;
@@ -192,11 +216,13 @@ ${JSON.stringify(schema, null, 2)}`;
       schema = WEEK_PLAN_SCHEMA;
       userPrompt = `Generate a weekly training plan with the following constraints:
 - Start date: ${start_date}
-- Tier: ${tier}
+- Tier: ${effectiveTier}
 - Time budget per day: ${time_budget} minutes
 - Days per week: ${days_per_week || 5}
-- Focus areas: ${focus_areas?.join(", ") || "balanced training"}
-${keep_simple ? "- Keep each day simple with 3-5 tasks" : "- Include 5-8 varied tasks per day"}
+- Allowed task types: ${allowedTaskTypes.join(", ")}
+- Focus areas: ${focus_areas?.join(", ") || "based on allowed types"}
+${modeHint}
+${keep_simple ? "- Keep each day simple with 2-4 tasks" : "- Include 4-6 varied tasks per day"}
 
 Output the JSON matching this exact schema:
 ${JSON.stringify(schema, null, 2)}`;

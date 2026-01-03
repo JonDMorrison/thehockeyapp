@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
+import { useTeamOnboarding } from "@/hooks/useTeamOnboarding";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
+import { CoachOnboardingWizard } from "@/components/onboarding/CoachOnboardingWizard";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -46,11 +48,17 @@ interface TeamRole {
 
 const TeamHome: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showGameDayModal, setShowGameDayModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if coming from team creation
+  const isNewTeam = searchParams.get("onboarding") === "true";
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -95,6 +103,15 @@ const TeamHome: React.FC = () => {
     enabled: !!user && !!id,
   });
 
+  // Fetch onboarding state
+  const { data: onboardingState, isLoading: onboardingLoading } = useTeamOnboarding(id);
+
+  const currentUserRole = team?.team_roles?.find(
+    (r: TeamRole) => r.user_id === user?.id
+  )?.role;
+
+  const palette = teamPalettes.find((p) => p.id === team?.palette_id);
+
   // Apply team theme when team data loads
   useEffect(() => {
     if (team?.palette_id) {
@@ -102,11 +119,27 @@ const TeamHome: React.FC = () => {
     }
   }, [team?.palette_id, setTeamTheme]);
 
-  const currentUserRole = team?.team_roles?.find(
-    (r: TeamRole) => r.user_id === user?.id
-  )?.role;
+  // Show onboarding if new team or not completed
+  useEffect(() => {
+    if (!onboardingLoading && !isLoading && team) {
+      const shouldShowOnboarding = isNewTeam || (!onboardingState?.completed && currentUserRole === "head_coach");
+      setShowOnboarding(shouldShowOnboarding);
+    }
+  }, [onboardingLoading, isLoading, team, onboardingState, isNewTeam, currentUserRole]);
 
-  const palette = teamPalettes.find((p) => p.id === team?.palette_id);
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Remove onboarding param from URL
+    searchParams.delete("onboarding");
+    setSearchParams(searchParams, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["team-onboarding", id] });
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    searchParams.delete("onboarding");
+    setSearchParams(searchParams, { replace: true });
+  };
 
   if (isLoading || authLoading) {
     return (
@@ -336,6 +369,16 @@ const TeamHome: React.FC = () => {
         teamId={id!}
         teamName={team?.name || ""}
       />
+
+      {/* Onboarding Wizard */}
+      {showOnboarding && team && (
+        <CoachOnboardingWizard
+          teamId={id!}
+          teamName={team.name}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
     </AppShell>
   );
 };

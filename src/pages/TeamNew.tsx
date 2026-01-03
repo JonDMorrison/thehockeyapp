@@ -78,7 +78,8 @@ const TeamNew: React.FC = () => {
     onSuccess: (team) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       toast.success("Team created", `${team.name} is ready!`);
-      navigate(`/teams/${team.id}`);
+      // Redirect to team home with onboarding flag
+      navigate(`/teams/${team.id}?onboarding=true`);
     },
     onError: (error: Error) => {
       toast.error("Failed to create team", error.message);

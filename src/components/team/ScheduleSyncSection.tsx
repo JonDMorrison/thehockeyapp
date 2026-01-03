@@ -48,6 +48,7 @@ import { cn } from "@/lib/utils";
 
 interface ScheduleSyncSectionProps {
   teamId: string;
+  onConnected?: () => void;
 }
 
 interface ScheduleSource {
@@ -105,7 +106,7 @@ const TIMEZONES = [
   { value: "America/Winnipeg", label: "Winnipeg (CT)" },
 ];
 
-export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId }) => {
+export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId, onConnected }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
@@ -205,6 +206,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       setPreview(null);
       setIcalUrl("");
       toast.success("Schedule connected!", "Events will sync automatically");
+      onConnected?.();
     },
     onError: (error) => {
       toast.error("Failed to connect schedule");
