@@ -30,7 +30,9 @@ import Templates from "./pages/Templates";
 import Today from "./pages/Today";
 import PlayerToday from "./pages/PlayerToday";
 import PlayerHistory from "./pages/PlayerHistory";
+import PlayerBadges from "./pages/PlayerBadges";
 import RosterPlayerDetail from "./pages/RosterPlayerDetail";
+import TeamProgress from "./pages/TeamProgress";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,8 @@ const App = () => {
             <Route path="/today" element={<Today />} />
             <Route path="/players/:id/today" element={<PlayerToday />} />
             <Route path="/players/:id/history" element={<PlayerHistory />} />
+            <Route path="/players/:id/badges" element={<PlayerBadges />} />
+            <Route path="/teams/:id/progress" element={<TeamProgress />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

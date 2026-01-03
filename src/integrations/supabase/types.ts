@@ -58,6 +58,42 @@ export type Database = {
           },
         ]
       }
+      challenges: {
+        Row: {
+          badge_icon: string
+          created_at: string | null
+          description: string
+          id: string
+          is_active: boolean | null
+          metric_type: string
+          name: string
+          scope: string | null
+          target_value: number
+        }
+        Insert: {
+          badge_icon: string
+          created_at?: string | null
+          description: string
+          id?: string
+          is_active?: boolean | null
+          metric_type: string
+          name: string
+          scope?: string | null
+          target_value: number
+        }
+        Update: {
+          badge_icon?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          metric_type?: string
+          name?: string
+          scope?: string | null
+          target_value?: number
+        }
+        Relationships: []
+      }
       offline_events: {
         Row: {
           created_at: string | null
@@ -84,6 +120,87 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      player_badges: {
+        Row: {
+          awarded_at: string | null
+          challenge_id: string
+          id: string
+          player_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          challenge_id: string
+          id?: string
+          player_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          challenge_id?: string
+          id?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_badges_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_badges_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed: boolean | null
+          completed_at: string | null
+          current_value: number | null
+          id: string
+          player_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean | null
+          completed_at?: string | null
+          current_value?: number | null
+          id?: string
+          player_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean | null
+          completed_at?: string | null
+          current_value?: number | null
+          id?: string
+          player_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_challenge_progress_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       player_guardian_invites: {
         Row: {
@@ -1142,6 +1259,10 @@ export type Database = {
           p_local_event_id: string
           p_payload: Json
         }
+        Returns: Json
+      }
+      evaluate_player_challenges: {
+        Args: { p_player_id: string }
         Returns: Json
       }
       is_guardian_of_team_player: {
