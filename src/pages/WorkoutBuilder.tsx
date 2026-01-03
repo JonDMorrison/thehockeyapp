@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
-import { format, parseISO, addDays } from "date-fns";
+import { format, parseISO, addDays, startOfWeek } from "date-fns";
 import {
   ChevronLeft,
   Plus,
@@ -21,8 +21,11 @@ import {
   FileText,
   CheckCircle,
   Edit,
+  Sparkles,
 } from "lucide-react";
 import { getTierLabel } from "@/lib/tierScaling";
+import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
+import { TeamWeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 
 interface WeekPlan {
   id: string;
@@ -38,6 +41,12 @@ const WorkoutBuilder: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+  const [showAIAssist, setShowAIAssist] = useState(false);
+  
+  const nextWeekStart = format(
+    startOfWeek(addDays(new Date(), 7), { weekStartsOn: 1 }),
+    "yyyy-MM-dd"
+  );
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -140,14 +149,26 @@ const WorkoutBuilder: React.FC = () => {
     >
       <PageContainer>
         {/* Create New */}
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={() => navigate(`/teams/${teamId}/builder/new`)}
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Create Week Plan
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            className="flex-1"
+            size="lg"
+            onClick={() => navigate(`/teams/${teamId}/builder/new`)}
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Create Plan
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setShowAIAssist(true)}
+          >
+            <Sparkles className="w-5 h-5" />
+          </Button>
+        </div>
+        
+        {/* Team Summary */}
+        <TeamWeeklySummaryCard teamId={teamId!} />
 
         {/* Week Plans */}
         <div>
@@ -249,6 +270,21 @@ const WorkoutBuilder: React.FC = () => {
           )}
         </div>
       </PageContainer>
+      
+      {/* AI Assist Sheet */}
+      <AIAssistSheet
+        open={showAIAssist}
+        onOpenChange={setShowAIAssist}
+        teamId={teamId!}
+        mode="week_plan"
+        startDate={nextWeekStart}
+        onApply={(data) => {
+          // Navigate to editor with AI data in state
+          navigate(`/teams/${teamId}/builder/new`, { 
+            state: { aiDraft: data } 
+          });
+        }}
+      />
     </AppShell>
   );
 };

@@ -1,1 +1,7 @@
 project_id = "muwlroahtkdylxwguzyr"
+
+[functions.generate-workout-ai]
+verify_jwt = true
+
+[functions.generate-summaries-ai]
+verify_jwt = true

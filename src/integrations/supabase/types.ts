@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generations: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          error: string | null
+          generation_type: string
+          id: string
+          input_json: Json
+          output_json: Json | null
+          status: string
+          team_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          error?: string | null
+          generation_type: string
+          id?: string
+          input_json: Json
+          output_json?: Json | null
+          status?: string
+          team_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          error?: string | null
+          generation_type?: string
+          id?: string
+          input_json?: Json
+          output_json?: Json | null
+          status?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offline_events: {
         Row: {
           created_at: string | null
@@ -140,6 +184,51 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: true
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_week_summaries: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          id: string
+          player_id: string
+          summary_text: string
+          team_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          id?: string
+          player_id: string
+          summary_text: string
+          team_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          id?: string
+          player_id?: string
+          summary_text?: string
+          team_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_week_summaries_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_week_summaries_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -743,6 +832,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_week_plans_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_week_summaries: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          id: string
+          summary_text: string
+          team_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          id?: string
+          summary_text: string
+          team_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          id?: string
+          summary_text?: string
+          team_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_week_summaries_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
