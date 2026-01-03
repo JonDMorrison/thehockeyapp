@@ -7,6 +7,11 @@ import { useEffect } from "react";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import Players from "./pages/Players";
+import PlayerNew from "./pages/PlayerNew";
+import PlayerProfile from "./pages/PlayerProfile";
+import GuardianJoin from "./pages/GuardianJoin";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +34,11 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/players" element={<Players />} />
+            <Route path="/players/new" element={<PlayerNew />} />
+            <Route path="/players/:id" element={<PlayerProfile />} />
+            <Route path="/guardian/join/:token" element={<GuardianJoin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
