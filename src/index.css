@@ -2,95 +2,167 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  HOCKEY TRAINING APP - DESIGN SYSTEM
+  Premium, calm, modern aesthetic inspired by Apple Fitness / Calm / Notion
+  Mobile-first, neutral surfaces, team colors as subtle accents only
+  All colors in HSL format
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* ========================================
+       NEUTRAL COLOR SYSTEM
+       Warm off-white/stone palette for calm UI
+       ======================================== */
+    --background: 40 20% 98%;           /* Warm off-white */
+    --foreground: 220 15% 15%;          /* Rich charcoal */
+    
+    --surface: 0 0% 100%;               /* Pure white cards */
+    --surface-muted: 40 15% 96%;        /* Subtle gray surface */
+    
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 220 15% 15%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
+    --popover-foreground: 220 15% 15%;
+    
+    /* Text hierarchy */
+    --text-primary: 220 15% 15%;        /* Main text */
+    --text-secondary: 220 10% 40%;      /* Secondary text */
+    --text-muted: 220 8% 55%;           /* Muted/caption text */
+    --text-disabled: 220 5% 70%;        /* Disabled state */
+    
+    /* Borders */
+    --border: 220 10% 90%;              /* Subtle borders */
+    --border-muted: 220 8% 94%;         /* Even more subtle */
+    --input: 220 10% 90%;
+    --ring: 220 15% 15%;
+    
+    /* ========================================
+       TEAM THEMING VARIABLES
+       Applied via setTeamTheme() function
+       Used as accents only, never flood surfaces
+       ======================================== */
+    --team-primary: 221 83% 53%;        /* Default: Toronto blue */
+    --team-secondary: 0 0% 100%;
+    --team-tertiary: 221 70% 45%;
+    
+    /* Computed accent colors from team palette */
+    --primary: var(--team-primary);
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 10% 96%;
+    --secondary-foreground: 220 15% 15%;
+    
+    --accent: 220 10% 96%;
+    --accent-foreground: 220 15% 15%;
+    
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 8% 45%;
+    
+    /* ========================================
+       SEMANTIC COLORS
+       Calm, muted versions - not alarming
+       ======================================== */
+    --success: 152 60% 40%;             /* Calm green */
+    --success-foreground: 0 0% 100%;
+    --success-muted: 152 40% 95%;
+    
+    --warning: 38 92% 50%;              /* Warm amber */
+    --warning-foreground: 38 92% 15%;
+    --warning-muted: 38 60% 95%;
+    
+    --destructive: 0 65% 55%;           /* Soft red */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-muted: 0 40% 96%;
+    
+    /* ========================================
+       SPACING SCALE (reference)
+       4, 8, 12, 16, 24, 32, 48, 64
+       ======================================== */
+    
+    /* ========================================
+       RADIUS SCALE
+       Generous, friendly radii
+       ======================================== */
+    --radius: 1rem;                     /* 16px base */
+    --radius-sm: 0.75rem;               /* 12px */
+    --radius-lg: 1.5rem;                /* 24px */
+    --radius-full: 9999px;              /* Pills */
+    
+    /* ========================================
+       SHADOWS
+       Subtle, premium feel
+       ======================================== */
+    --shadow-subtle: 0 1px 2px 0 hsl(220 15% 15% / 0.03), 
+                     0 1px 3px 0 hsl(220 15% 15% / 0.05);
+    --shadow-medium: 0 4px 6px -1px hsl(220 15% 15% / 0.05), 
+                     0 2px 4px -2px hsl(220 15% 15% / 0.05);
+    --shadow-elevated: 0 10px 15px -3px hsl(220 15% 15% / 0.08), 
+                       0 4px 6px -4px hsl(220 15% 15% / 0.05);
+    
+    /* Safe area for mobile */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    
+    /* Sidebar (keeping for shadcn compatibility) */
     --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-foreground: 220 10% 30%;
+    --sidebar-primary: 220 15% 15%;
     --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 10% 96%;
+    --sidebar-accent-foreground: 220 15% 15%;
+    --sidebar-border: 220 10% 92%;
+    --sidebar-ring: var(--team-primary);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --background: 220 15% 10%;
+    --foreground: 220 10% 95%;
+    
+    --surface: 220 15% 13%;
+    --surface-muted: 220 12% 16%;
+    
+    --card: 220 15% 13%;
+    --card-foreground: 220 10% 95%;
+    
+    --popover: 220 15% 13%;
+    --popover-foreground: 220 10% 95%;
+    
+    --text-primary: 220 10% 95%;
+    --text-secondary: 220 8% 70%;
+    --text-muted: 220 6% 55%;
+    --text-disabled: 220 5% 40%;
+    
+    --border: 220 12% 20%;
+    --border-muted: 220 10% 16%;
+    --input: 220 12% 20%;
+    --ring: 220 10% 80%;
+    
+    --primary: var(--team-primary);
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 12% 18%;
+    --secondary-foreground: 220 10% 95%;
+    
+    --accent: 220 12% 18%;
+    --accent-foreground: 220 10% 95%;
+    
+    --muted: 220 12% 18%;
+    --muted-foreground: 220 8% 60%;
+    
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --sidebar-background: 220 15% 10%;
+    --sidebar-foreground: 220 8% 75%;
+    --sidebar-primary: var(--team-primary);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 12% 16%;
+    --sidebar-accent-foreground: 220 10% 95%;
+    --sidebar-border: 220 12% 18%;
+    --sidebar-ring: var(--team-primary);
   }
 }
 
@@ -99,7 +171,90 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+  
+  /* Typography defaults */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground;
+  }
+  
+  /* Focus styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary/30 ring-offset-2 ring-offset-background;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+@layer components {
+  /* Card base with shadow */
+  .card-elevated {
+    box-shadow: var(--shadow-subtle);
+  }
+  
+  .card-elevated:hover {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  /* Skeleton animation */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  .skeleton-animate {
+    animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Checkbox complete animation */
+  @keyframes check-bounce {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  
+  .check-animate {
+    animation: check-bounce 0.3s ease-out;
+  }
+  
+  /* Safe area padding utility */
+  .safe-top {
+    padding-top: var(--safe-area-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: var(--safe-area-bottom);
+  }
+  
+  /* Tap target minimum size */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 }
