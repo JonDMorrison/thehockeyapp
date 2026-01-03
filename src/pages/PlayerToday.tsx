@@ -51,6 +51,8 @@ import {
 } from "lucide-react";
 import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
+import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
+import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 
 interface PracticeTask {
   id: string;
@@ -119,6 +121,7 @@ const PlayerToday: React.FC = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const { isOnline, status: offlineStatus, pendingCount, triggerSync } = useOffline();
+  const { evaluate: evaluateBadges, newBadges, dismissAllBadges } = useBadgeEvaluation(playerId);
 
   const [showShotsSheet, setShowShotsSheet] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -597,6 +600,9 @@ const PlayerToday: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ["session-completion", practiceCard?.id, playerId] });
         setShowSuccess(true);
         toast.success("Session complete! 🎉");
+        
+        // Evaluate badges after session completion
+        evaluateBadges();
       } catch (err) {
         await queueForSync('session_complete', undefined, undefined, undefined, now);
         setShowSuccess(true);
@@ -949,6 +955,14 @@ const PlayerToday: React.FC = () => {
           onOpenChange={setShowSettingsSheet}
           playerId={playerId!}
           playerName={player.first_name}
+        />
+      )}
+
+      {/* Badge Earned Toast */}
+      {newBadges.length > 0 && (
+        <BadgeEarnedToast
+          badgeName={newBadges[0].name}
+          onClose={dismissAllBadges}
         />
       )}
     </AppShell>

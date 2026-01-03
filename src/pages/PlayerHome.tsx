@@ -27,6 +27,7 @@ import {
   User,
   Check,
   Star,
+  Trophy,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 
@@ -340,18 +341,30 @@ const PlayerHome: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/players/${id}/badges`)}
+            className="flex flex-col items-center gap-1 h-auto py-3"
+          >
+            <Trophy className="w-5 h-5 text-team-primary" />
+            <span className="text-xs">Badges</span>
+          </Button>
           <Button
             variant="outline"
             onClick={() => navigate(`/players/${id}`)}
+            className="flex flex-col items-center gap-1 h-auto py-3"
           >
-            Edit Profile
+            <User className="w-5 h-5 text-text-muted" />
+            <span className="text-xs">Profile</span>
           </Button>
           <Button
             variant="outline"
             onClick={() => navigate("/players")}
+            className="flex flex-col items-center gap-1 h-auto py-3"
           >
-            Switch Player
+            <Users className="w-5 h-5 text-text-muted" />
+            <span className="text-xs">Switch</span>
           </Button>
         </div>
       </PageContainer>

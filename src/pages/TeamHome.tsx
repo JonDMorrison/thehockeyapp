@@ -24,6 +24,7 @@ import {
   ClipboardList,
   Zap,
   Layers,
+  Trophy,
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
@@ -211,7 +212,7 @@ const TeamHome: React.FC = () => {
           <h2 className="text-sm font-semibold text-text-secondary mb-3">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Button
               variant="action"
               className="flex-col h-auto py-4 gap-2"
@@ -226,7 +227,7 @@ const TeamHome: React.FC = () => {
               onClick={() => navigate(`/teams/${id}/practice`)}
             >
               <ClipboardList className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Practice Cards</span>
+              <span className="text-xs">Cards</span>
             </Button>
             <Button
               variant="action"
@@ -239,32 +240,30 @@ const TeamHome: React.FC = () => {
             <Button
               variant="action"
               className="flex-col h-auto py-4 gap-2"
+              onClick={() => navigate(`/teams/${id}/progress`)}
+            >
+              <Trophy className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Progress</span>
+            </Button>
+            <Button
+              variant="action"
+              className="flex-col h-auto py-4 gap-2"
               onClick={() => setShowInviteModal(true)}
             >
               <UserPlus className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Invite Parents</span>
+              <span className="text-xs">Invite</span>
+            </Button>
+            <Button
+              variant="action"
+              className="flex-col h-auto py-4 gap-2"
+              onClick={() => navigate(`/teams/${id}/roster`)}
+            >
+              <Users className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Roster</span>
             </Button>
           </div>
         </div>
 
-        {/* Roster Link */}
-        <AppCard
-          className="cursor-pointer hover:shadow-medium transition-shadow"
-          onClick={() => navigate(`/teams/${id}/roster`)}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-team-primary" />
-              </div>
-              <div>
-                <p className="font-semibold">View Roster</p>
-                <p className="text-xs text-text-muted">See players on this team</p>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-text-muted" />
-          </div>
-        </AppCard>
 
         {/* Adults */}
         <AppCard>
