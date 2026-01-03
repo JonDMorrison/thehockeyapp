@@ -23,6 +23,7 @@ import {
   ChevronRight,
   ClipboardList,
   Zap,
+  Layers,
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
@@ -210,14 +211,14 @@ const TeamHome: React.FC = () => {
           <h2 className="text-sm font-semibold text-text-secondary mb-3">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Button
               variant="action"
               className="flex-col h-auto py-4 gap-2"
-              onClick={() => setShowInviteModal(true)}
+              onClick={() => navigate(`/teams/${id}/builder`)}
             >
-              <UserPlus className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Invite Parents</span>
+              <Layers className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Week Builder</span>
             </Button>
             <Button
               variant="action"
@@ -225,7 +226,7 @@ const TeamHome: React.FC = () => {
               onClick={() => navigate(`/teams/${id}/practice`)}
             >
               <ClipboardList className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Practice</span>
+              <span className="text-xs">Practice Cards</span>
             </Button>
             <Button
               variant="action"
@@ -234,6 +235,14 @@ const TeamHome: React.FC = () => {
             >
               <Zap className="w-5 h-5 text-team-primary" />
               <span className="text-xs">Game Day</span>
+            </Button>
+            <Button
+              variant="action"
+              className="flex-col h-auto py-4 gap-2"
+              onClick={() => setShowInviteModal(true)}
+            >
+              <UserPlus className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Invite Parents</span>
             </Button>
           </div>
         </div>

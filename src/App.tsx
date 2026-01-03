@@ -24,6 +24,9 @@ import JoinTeam from "./pages/JoinTeam";
 import JoinTeamPlayer from "./pages/JoinTeamPlayer";
 import TeamPractice from "./pages/TeamPractice";
 import PracticeCardEditor from "./pages/PracticeCardEditor";
+import WorkoutBuilder from "./pages/WorkoutBuilder";
+import WeekPlanEditor from "./pages/WeekPlanEditor";
+import Templates from "./pages/Templates";
 import Today from "./pages/Today";
 import PlayerToday from "./pages/PlayerToday";
 import PlayerHistory from "./pages/PlayerHistory";
@@ -64,6 +67,10 @@ const App = () => {
             <Route path="/teams/:id/practice" element={<TeamPractice />} />
             <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
+            <Route path="/teams/:id/builder/new" element={<WeekPlanEditor />} />
+            <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
+            <Route path="/templates" element={<Templates />} />
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
             <Route path="/join/:token" element={<JoinTeam />} />
             <Route path="/join/:token/player" element={<JoinTeamPlayer />} />

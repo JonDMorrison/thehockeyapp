@@ -618,6 +618,138 @@ export type Database = {
           },
         ]
       }
+      team_week_plan_days: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          team_week_plan_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          team_week_plan_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          team_week_plan_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_week_plan_days_team_week_plan_id_fkey"
+            columns: ["team_week_plan_id"]
+            isOneToOne: false
+            referencedRelation: "team_week_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_week_plan_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          label: string
+          shot_type: string | null
+          shots_expected: number | null
+          sort_order: number
+          target_type: string | null
+          target_value: number | null
+          task_type: string
+          team_week_plan_day_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type: string
+          team_week_plan_day_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order?: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type?: string
+          team_week_plan_day_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_week_plan_tasks_team_week_plan_day_id_fkey"
+            columns: ["team_week_plan_day_id"]
+            isOneToOne: false
+            referencedRelation: "team_week_plan_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_week_plans: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          id: string
+          name: string
+          start_date: string
+          status: string | null
+          team_id: string
+          tier: string | null
+          updated_at: string | null
+          use_tier_scaling: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          id?: string
+          name: string
+          start_date: string
+          status?: string | null
+          team_id: string
+          tier?: string | null
+          updated_at?: string | null
+          use_tier_scaling?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string | null
+          team_id?: string
+          tier?: string | null
+          updated_at?: string | null
+          use_tier_scaling?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_week_plans_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string | null
@@ -650,6 +782,121 @@ export type Database = {
           season_label?: string | null
           team_logo_url?: string | null
           team_photo_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      workout_template_days: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          id: string
+          notes: string | null
+          title: string | null
+          workout_template_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          id?: string
+          notes?: string | null
+          title?: string | null
+          workout_template_id: string
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          id?: string
+          notes?: string | null
+          title?: string | null
+          workout_template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_template_days_workout_template_id_fkey"
+            columns: ["workout_template_id"]
+            isOneToOne: false
+            referencedRelation: "workout_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_template_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          label: string
+          shot_type: string | null
+          shots_expected: number | null
+          sort_order: number
+          target_type: string | null
+          target_value: number | null
+          task_type: string
+          workout_template_day_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type: string
+          workout_template_day_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order?: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type?: string
+          workout_template_day_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_template_tasks_workout_template_day_id_fkey"
+            columns: ["workout_template_day_id"]
+            isOneToOne: false
+            referencedRelation: "workout_template_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_templates: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          description: string | null
+          id: string
+          name: string
+          tier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          description?: string | null
+          id?: string
+          name: string
+          tier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tier?: string | null
           updated_at?: string | null
         }
         Relationships: []
