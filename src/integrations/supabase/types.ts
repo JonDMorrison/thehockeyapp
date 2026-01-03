@@ -153,6 +153,118 @@ export type Database = {
         }
         Relationships: []
       }
+      team_adult_invites: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          expires_at: string
+          id: string
+          invited_email: string
+          role: string
+          status: string | null
+          team_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          expires_at: string
+          id?: string
+          invited_email: string
+          role: string
+          status?: string | null
+          team_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          expires_at?: string
+          id?: string
+          invited_email?: string
+          role?: string
+          status?: string | null
+          team_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_adult_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_roles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          id: string
+          name: string
+          palette_id: string
+          season_label: string | null
+          team_logo_url: string | null
+          team_photo_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          id?: string
+          name: string
+          palette_id?: string
+          season_label?: string | null
+          team_logo_url?: string | null
+          team_photo_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          id?: string
+          name?: string
+          palette_id?: string
+          season_label?: string | null
+          team_logo_url?: string | null
+          team_photo_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -166,7 +278,19 @@ export type Database = {
         Args: { player_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      is_team_adult: {
+        Args: { team_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
+      is_team_head_coach: {
+        Args: { team_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
       redeem_guardian_invite: { Args: { invite_token: string }; Returns: Json }
+      redeem_team_adult_invite: {
+        Args: { invite_token: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

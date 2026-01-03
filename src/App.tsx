@@ -12,6 +12,11 @@ import Players from "./pages/Players";
 import PlayerNew from "./pages/PlayerNew";
 import PlayerProfile from "./pages/PlayerProfile";
 import GuardianJoin from "./pages/GuardianJoin";
+import Teams from "./pages/Teams";
+import TeamNew from "./pages/TeamNew";
+import TeamHome from "./pages/TeamHome";
+import TeamSettings from "./pages/TeamSettings";
+import TeamAdultJoin from "./pages/TeamAdultJoin";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +44,11 @@ const App = () => {
             <Route path="/players/new" element={<PlayerNew />} />
             <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/new" element={<TeamNew />} />
+            <Route path="/teams/:id" element={<TeamHome />} />
+            <Route path="/teams/:id/settings" element={<TeamSettings />} />
+            <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
