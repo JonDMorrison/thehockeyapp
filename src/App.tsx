@@ -21,6 +21,11 @@ import TeamRoster from "./pages/TeamRoster";
 import TeamAdultJoin from "./pages/TeamAdultJoin";
 import JoinTeam from "./pages/JoinTeam";
 import JoinTeamPlayer from "./pages/JoinTeamPlayer";
+import TeamPractice from "./pages/TeamPractice";
+import PracticeCardEditor from "./pages/PracticeCardEditor";
+import Today from "./pages/Today";
+import PlayerToday from "./pages/PlayerToday";
+import PlayerHistory from "./pages/PlayerHistory";
 
 const queryClient = new QueryClient();
 
@@ -54,9 +59,15 @@ const App = () => {
             <Route path="/teams/:id" element={<TeamHome />} />
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
             <Route path="/teams/:id/roster" element={<TeamRoster />} />
+            <Route path="/teams/:id/practice" element={<TeamPractice />} />
+            <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
             <Route path="/join/:token" element={<JoinTeam />} />
             <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
+            <Route path="/today" element={<Today />} />
+            <Route path="/players/:id/today" element={<PlayerToday />} />
+            <Route path="/players/:id/history" element={<PlayerHistory />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
