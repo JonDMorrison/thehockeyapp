@@ -29,6 +29,8 @@ import {
   Check,
   ClipboardList,
   Zap,
+  MapPin,
+  Clock,
 } from "lucide-react";
 
 interface Player {
@@ -63,6 +65,15 @@ interface PracticeCard {
 
 interface GameDay {
   enabled: boolean;
+}
+
+interface TeamEvent {
+  id: string;
+  event_type: string;
+  title: string;
+  start_time: string;
+  location: string | null;
+  is_cancelled: boolean;
 }
 
 const tierLabels: Record<string, string> = {
@@ -167,6 +178,31 @@ const Today: React.FC = () => {
   });
 
   const isGameDay = gameDayData?.enabled === true;
+
+  // Fetch synced events for today (games/practices from TeamSnap)
+  const { data: todaysEvents } = useQuery({
+    queryKey: ["todays-team-events", teamData?.id, todayStr],
+    queryFn: async () => {
+      const dateStart = `${todayStr}T00:00:00`;
+      const dateEnd = `${todayStr}T23:59:59`;
+      
+      const { data, error } = await supabase
+        .from("team_events")
+        .select("*")
+        .eq("team_id", teamData!.id)
+        .eq("is_cancelled", false)
+        .gte("start_time", dateStart)
+        .lte("start_time", dateEnd)
+        .order("start_time", { ascending: true });
+
+      if (error) throw error;
+      return data as TeamEvent[];
+    },
+    enabled: !!teamData?.id,
+  });
+
+  const todaysGame = todaysEvents?.find((e) => e.event_type === "game");
+  const todaysPractice = todaysEvents?.find((e) => e.event_type === "practice");
 
   // Fetch today's practice card for the team (prioritize game_day if enabled)
   const { data: todaysCard, isLoading: cardLoading } = useQuery({
@@ -320,6 +356,36 @@ const Today: React.FC = () => {
                 )}
               </div>
             </div>
+            
+            {/* Synced game/practice info */}
+            {(todaysGame || todaysPractice) && (
+              <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                {todaysGame && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{todaysGame.title}</span>
+                    <span className="text-muted-foreground">
+                      {format(new Date(todaysGame.start_time), "h:mm a")}
+                    </span>
+                    {todaysGame.location && (
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span className="truncate max-w-[120px]">{todaysGame.location}</span>
+                      </span>
+                    )}
+                  </div>
+                )}
+                {todaysPractice && !todaysGame && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">{todaysPractice.title}</span>
+                    <span className="text-muted-foreground">
+                      {format(new Date(todaysPractice.start_time), "h:mm a")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </AppCard>
         ) : teamLoading ? (
           <SkeletonCard />

@@ -118,6 +118,29 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
     enabled: open && !!teamId,
   });
 
+  // Check if there's a synced game event for this date
+  const { data: syncedGame } = useQuery({
+    queryKey: ["team-synced-game", teamId, selectedDate],
+    queryFn: async () => {
+      const dateStart = `${selectedDate}T00:00:00`;
+      const dateEnd = `${selectedDate}T23:59:59`;
+      
+      const { data, error } = await supabase
+        .from("team_events")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("event_type", "game")
+        .eq("is_cancelled", false)
+        .gte("start_time", dateStart)
+        .lte("start_time", dateEnd)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && !!teamId,
+  });
+
   // Update notes when gameDay data loads
   useEffect(() => {
     if (gameDay?.notes) {
@@ -324,6 +347,22 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
               rows={2}
             />
           </div>
+
+          {/* Synced Game Info */}
+          {syncedGame && (
+            <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+              <div className="flex gap-3">
+                <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-primary">Game Detected from TeamSnap</p>
+                  <p className="text-text-muted mt-1">
+                    {syncedGame.title}
+                    {syncedGame.location && ` • ${syncedGame.location}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Info */}
           <div className="p-4 rounded-xl bg-warning-muted border border-warning/20">

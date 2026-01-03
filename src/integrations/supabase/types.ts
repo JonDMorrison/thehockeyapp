@@ -748,6 +748,59 @@ export type Database = {
           },
         ]
       }
+      team_events: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          event_type: string
+          external_event_id: string
+          id: string
+          is_cancelled: boolean | null
+          location: string | null
+          source_type: string
+          start_time: string
+          team_id: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type: string
+          external_event_id: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          source_type: string
+          start_time: string
+          team_id: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type?: string
+          external_event_id?: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          source_type?: string
+          start_time?: string
+          team_id?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_game_days: {
         Row: {
           created_at: string | null
@@ -891,6 +944,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_roles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_schedule_sources: {
+        Row: {
+          auto_game_day: boolean | null
+          created_at: string | null
+          created_by_user_id: string
+          ical_url: string
+          id: string
+          include_practices: boolean | null
+          last_synced_at: string | null
+          source_type: string
+          sync_error: string | null
+          sync_status: string | null
+          team_id: string
+          timezone: string
+          updated_at: string | null
+        }
+        Insert: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id: string
+          ical_url: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          source_type: string
+          sync_error?: string | null
+          sync_status?: string | null
+          team_id: string
+          timezone?: string
+          updated_at?: string | null
+        }
+        Update: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id?: string
+          ical_url?: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          source_type?: string
+          sync_error?: string | null
+          sync_status?: string | null
+          team_id?: string
+          timezone?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_schedule_sources_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
@@ -1293,6 +1402,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_and_enable_game_days: { Args: never; Returns: undefined }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
         Returns: Json
