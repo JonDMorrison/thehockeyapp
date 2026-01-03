@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { InviteAdultModal } from "@/components/team/InviteAdultModal";
 import { TeamBioSection, TeamChallengesToggle } from "@/components/team/TeamBioSection";
+import { ScheduleSyncSection } from "@/components/team/ScheduleSyncSection";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -498,6 +499,9 @@ const TeamSettings: React.FC = () => {
 
         {/* National Challenges Toggle */}
         <TeamChallengesToggle teamId={id!} />
+
+        {/* Schedule Sync */}
+        <ScheduleSyncSection teamId={id!} />
 
         {/* Adults */}
         <AppCard>
