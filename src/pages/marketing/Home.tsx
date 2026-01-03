@@ -8,13 +8,18 @@ import {
   Shield,
   Heart,
   Zap,
+  Target,
   Users,
-  Calendar,
+  Lock,
+  Wifi,
+  WifiOff,
   ArrowRight,
-  Star,
+  Eye,
+  UserCheck,
 } from "lucide-react";
-import heroPlayer from "@/assets/hero-player.jpg";
-import mockupPlayer from "@/assets/mockup-player-checklist.png";
+import mockupToday from "@/assets/mockup-today-checklist.png";
+import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
+import mockupPrivacy from "@/assets/mockup-privacy-trust.png";
 
 const Home: React.FC = () => {
   return (
@@ -23,245 +28,228 @@ const Home: React.FC = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Star className="w-4 h-4" />
-                Trusted by 200+ hockey families
-              </div>
-              
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                Build better hockey players through{" "}
-                <span className="text-primary">consistent practice</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight">
+                Build better hockey habits —{" "}
+                <span className="text-primary">without the chaos</span>
               </h1>
-              
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto lg:mx-0">
-                A training platform designed for youth hockey coaches and parents. 
-                Daily practice cards, progress tracking, and game day prep—all in one calm, 
-                focused app.
+
+              <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0">
+                Simple daily training, automatic game-day prep, and parent-friendly 
+                tracking — built for youth hockey.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button size="lg" asChild>
-                  <Link to="/auth">
-                    Start Free Trial
+                  <Link to="/demo">
+                    See how it works
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <Link to="/demo">See Demo</Link>
+                  <Link to="/auth">Book a demo</Link>
                 </Button>
               </div>
-
-              <div className="mt-8 flex items-center gap-6 justify-center lg:justify-start text-sm text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-success" />
-                  Free for coaches
-                </span>
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-success" />
-                  No credit card
-                </span>
-              </div>
             </div>
 
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-elevated">
+            <div className="relative flex justify-center lg:justify-end">
+              <div className="relative">
                 <img
-                  src={heroPlayer}
-                  alt="Young hockey player practicing"
-                  className="w-full h-auto"
+                  src={mockupToday}
+                  alt="Today's Practice app screen showing simple checklist"
+                  className="w-72 lg:w-80 rounded-3xl shadow-elevated"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-              </div>
-              {/* Floating mockup */}
-              <div className="absolute -bottom-8 -left-8 w-48 rounded-2xl shadow-elevated overflow-hidden hidden lg:block">
-                <img
-                  src={mockupPlayer}
-                  alt="App mockup"
-                  className="w-full h-auto"
-                />
+                {/* Overlay badge */}
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-border">
+                  <span className="text-sm font-medium text-foreground">
+                    Today's Practice • 3 of 5 complete
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Built on the right values</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              We believe youth sports should build confidence, not anxiety. 
-              Our platform reflects that in every decision we make.
+      {/* The Problem Section */}
+      <section className="py-20 lg:py-28 bg-muted/40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+            Youth hockey doesn't need more pressure.
+          </h2>
+          
+          <div className="space-y-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p>Parents want structure without arguments.</p>
+            <p>Coaches want preparation without admin work.</p>
+            <p className="font-medium text-foreground">
+              Most apps add rankings, streaks, and stress.
             </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Heart,
-                title: "Consistency over pressure",
-                description:
-                  "Small daily habits beat occasional heroics. We encourage steady progress, not burnout.",
-              },
-              {
-                icon: Shield,
-                title: "Privacy by default",
-                description:
-                  "No public leaderboards. No comparisons between kids. Parent-controlled, always.",
-              },
-              {
-                icon: Users,
-                title: "Coach-approved, parent-trusted",
-                description:
-                  "Coaches set the training. Parents see progress. Kids build skills.",
-              },
-            ].map((value, i) => (
-              <div
-                key={i}
-                className="bg-background rounded-2xl p-8 shadow-subtle"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <value.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{value.title}</h3>
-                <p className="text-muted-foreground">{value.description}</p>
-              </div>
-            ))}
+            <p className="text-xl font-semibold text-primary">
+              We built the opposite.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* How it Works */}
-      <section className="py-16 lg:py-24">
+      {/* The Solution Section */}
+      <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Simple for everyone</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Coaches create training plans. Parents track progress. Kids build skills.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "1",
-                title: "Coach creates the plan",
-                description:
-                  "Set up your team, define training preferences, and publish daily practice cards.",
-              },
-              {
-                step: "2",
-                title: "Parents receive the card",
-                description:
-                  "Each day, parents see exactly what their player needs to practice. No guessing.",
-              },
-              {
-                step: "3",
-                title: "Track and celebrate",
-                description:
-                  "Mark tasks complete, earn badges, and watch skills grow week over week.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Preview */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">
-                Everything your team needs
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+                A calm system that works in real hockey life
               </h2>
-              <div className="space-y-4">
+
+              <div className="space-y-5">
                 {[
-                  {
-                    icon: Calendar,
-                    title: "Daily practice cards",
-                    description: "Simple checklists that players can complete in 15-20 minutes.",
-                  },
-                  {
-                    icon: Zap,
-                    title: "Game day mode",
-                    description: "Automatic pre-game prep routines when games are detected.",
-                  },
-                  {
-                    icon: Users,
-                    title: "Team management",
-                    description: "Invite parents, track roster, see team-wide progress.",
-                  },
-                  {
-                    icon: Shield,
-                    title: "Privacy controls",
-                    description: "Parents control what's visible. No child data exposed.",
-                  },
-                ].map((feature, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <feature.icon className="w-5 h-5 text-primary" />
+                  { icon: CheckCircle, text: "Daily practice cards" },
+                  { icon: Target, text: "One-tap checklists" },
+                  { icon: Zap, text: "Automatic game-day prep" },
+                  { icon: UserCheck, text: "Parent-controlled tracking" },
+                  { icon: WifiOff, text: "Works offline in garages and driveways" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">{feature.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {feature.description}
-                      </p>
-                    </div>
+                    <span className="text-lg">{item.text}</span>
                   </div>
                 ))}
               </div>
-              <Button className="mt-8" asChild>
-                <Link to="/features">
-                  See all features
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
+            </div>
+
+            <div className="order-1 lg:order-2 relative flex justify-center">
+              <div className="relative">
+                <img
+                  src={mockupLockscreen}
+                  alt="Lock screen quick checkoff interface"
+                  className="w-72 lg:w-80 rounded-3xl shadow-elevated"
+                />
+                {/* Saved offline badge */}
+                <div className="absolute top-4 right-4 bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg border border-border flex items-center gap-2">
+                  <Wifi className="w-4 h-4 text-success" />
+                  <span className="text-xs font-medium">Saved offline</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Outcomes Section */}
+      <section className="py-20 lg:py-28 bg-muted/40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              What this means for your team
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-4">
+            {[
+              {
+                icon: Heart,
+                title: "Better habits",
+                description: "Small daily actions add up to lasting improvement.",
+              },
+              {
+                icon: Target,
+                title: "More shots",
+                description: "Track volume without obsessing over numbers.",
+              },
+              {
+                icon: Zap,
+                title: "Game-day ready",
+                description: "Automatic prep routines when games are detected.",
+              },
+              {
+                icon: Users,
+                title: "Parent-coach alignment",
+                description: "Everyone sees the same plan, no miscommunication.",
+              },
+              {
+                icon: Shield,
+                title: "Safety by design",
+                description: "No public data, no comparisons, no pressure.",
+              },
+            ].map((outcome, i) => (
+              <div
+                key={i}
+                className="bg-background rounded-2xl p-6 shadow-subtle text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <outcome.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{outcome.title}</h3>
+                <p className="text-sm text-muted-foreground">{outcome.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Safety & Privacy Section - PROMINENT */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/10 text-success text-sm font-medium mb-6">
+                <Lock className="w-4 h-4" />
+                Privacy First
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8">
+                Built for kids. Designed for trust.
+              </h2>
+
+              <div className="space-y-5">
+                {[
+                  { icon: UserCheck, text: "Parent-owned accounts" },
+                  { icon: Eye, text: "No public profiles" },
+                  { icon: Shield, text: "No leaderboards" },
+                  { icon: Users, text: "No comparisons between kids" },
+                  { icon: Lock, text: "Coaches only see what parents allow" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-success" />
+                    </div>
+                    <span className="text-lg">{item.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="relative flex justify-center">
               <img
-                src={mockupPlayer}
-                alt="Player app mockup"
-                className="w-64 rounded-3xl shadow-elevated"
+                src={mockupPrivacy}
+                alt="Privacy-focused app interface"
+                className="w-72 lg:w-80 rounded-3xl shadow-elevated"
               />
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24">
+      {/* Final CTA Section */}
+      <section className="py-20 lg:py-28 bg-primary/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-            Ready to build better training habits?
+            See the demo
           </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join coaches and parents who are helping their players develop skills 
-            through consistent, focused practice.
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Experience how coaches and parents use the app together to build 
+            consistent training habits.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
-              <Link to="/auth">
-                Get Started Free
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/demo">Try the Demo</Link>
-            </Button>
-          </div>
+          <Button size="lg" asChild>
+            <Link to="/demo">
+              Try the demo
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
         </div>
       </section>
 
