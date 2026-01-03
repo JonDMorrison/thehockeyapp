@@ -6,7 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import { initOfflineDB } from "@/lib/offlineStorage";
-import Index from "./pages/Index";
+
+// Marketing pages
+import Home from "./pages/marketing/Home";
+import Features from "./pages/marketing/Features";
+import Demo from "./pages/marketing/Demo";
+
+// App pages
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Players from "./pages/Players";
@@ -58,16 +64,29 @@ const App = () => {
         />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            {/* Marketing pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/demo" element={<Demo />} />
+            
+            {/* Auth */}
             <Route path="/auth" element={<Auth />} />
+            
+            {/* Player management */}
             <Route path="/players" element={<Players />} />
             <Route path="/players/new" element={<PlayerNew />} />
             <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/players/:id/home" element={<PlayerHome />} />
+            <Route path="/players/:id/today" element={<PlayerToday />} />
+            <Route path="/players/:id/history" element={<PlayerHistory />} />
+            <Route path="/players/:id/badges" element={<PlayerBadges />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
+            
+            {/* Team management */}
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/new" element={<TeamNew />} />
             <Route path="/teams/:id" element={<TeamHome />} />
+            <Route path="/teams/:id/coach" element={<CoachDashboard />} />
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
             <Route path="/teams/:id/roster" element={<TeamRoster />} />
             <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
@@ -77,20 +96,20 @@ const App = () => {
             <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
             <Route path="/teams/:id/builder/new" element={<WeekPlanEditor />} />
             <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
-            <Route path="/templates" element={<Templates />} />
+            <Route path="/teams/:id/progress" element={<TeamProgress />} />
+            
+            {/* Join flows */}
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
             <Route path="/join/:token" element={<JoinTeam />} />
             <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
+            
+            {/* Other */}
             <Route path="/today" element={<Today />} />
-            <Route path="/players/:id/today" element={<PlayerToday />} />
-            <Route path="/players/:id/history" element={<PlayerHistory />} />
-            <Route path="/players/:id/badges" element={<PlayerBadges />} />
-            <Route path="/teams/:id/progress" element={<TeamProgress />} />
-            <Route path="/teams/:id/coach" element={<CoachDashboard />} />
-            {/* Quick checkoff and widget settings */}
+            <Route path="/templates" element={<Templates />} />
             <Route path="/quick-checkoff" element={<QuickCheckoff />} />
             <Route path="/settings/widgets" element={<WidgetSettings />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            
+            {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
