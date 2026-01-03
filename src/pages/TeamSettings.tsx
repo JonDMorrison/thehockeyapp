@@ -46,6 +46,7 @@ import {
 import { InviteAdultModal } from "@/components/team/InviteAdultModal";
 import { TeamBioSection, TeamChallengesToggle } from "@/components/team/TeamBioSection";
 import { ScheduleSyncSection } from "@/components/team/ScheduleSyncSection";
+import { TrainingPreferencesSection } from "@/components/team/TrainingPreferencesSection";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -499,6 +500,9 @@ const TeamSettings: React.FC = () => {
 
         {/* National Challenges Toggle */}
         <TeamChallengesToggle teamId={id!} />
+
+        {/* Training Preferences */}
+        <TrainingPreferencesSection teamId={id!} />
 
         {/* Schedule Sync */}
         <ScheduleSyncSection teamId={id!} />

@@ -919,6 +919,38 @@ export type Database = {
           },
         ]
       }
+      team_onboarding_state: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          last_step_completed: string | null
+          team_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          last_step_completed?: string | null
+          team_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          last_step_completed?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_onboarding_state_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_roles: {
         Row: {
           created_at: string | null
@@ -1026,6 +1058,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_settings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_training_preferences: {
+        Row: {
+          allowed_task_types: string[] | null
+          created_at: string | null
+          default_tier: string | null
+          team_id: string
+          training_mode: string | null
+          updated_at: string | null
+          use_ai_assist: boolean | null
+        }
+        Insert: {
+          allowed_task_types?: string[] | null
+          created_at?: string | null
+          default_tier?: string | null
+          team_id: string
+          training_mode?: string | null
+          updated_at?: string | null
+          use_ai_assist?: boolean | null
+        }
+        Update: {
+          allowed_task_types?: string[] | null
+          created_at?: string | null
+          default_tier?: string | null
+          team_id?: string
+          training_mode?: string | null
+          updated_at?: string | null
+          use_ai_assist?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_training_preferences_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: true
             referencedRelation: "teams"
