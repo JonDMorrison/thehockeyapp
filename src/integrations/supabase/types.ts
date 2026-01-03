@@ -155,6 +155,32 @@ export type Database = {
           },
         ]
       }
+      player_privacy_settings: {
+        Row: {
+          national_challenges_opt_in: boolean | null
+          player_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          national_challenges_opt_in?: boolean | null
+          player_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          national_challenges_opt_in?: boolean | null
+          player_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_privacy_settings_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_team_preferences: {
         Row: {
           active_team_id: string | null
@@ -459,6 +485,54 @@ export type Database = {
           },
         ]
       }
+      session_photos: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          id: string
+          player_id: string
+          practice_card_id: string
+          storage_path: string
+          uploaded_by_user_id: string
+          visibility: string | null
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          player_id: string
+          practice_card_id: string
+          storage_path: string
+          uploaded_by_user_id: string
+          visibility?: string | null
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          id?: string
+          player_id?: string
+          practice_card_id?: string
+          storage_path?: string
+          uploaded_by_user_id?: string
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_photos_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_photos_practice_card_id_fkey"
+            columns: ["practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_completions: {
         Row: {
           completed: boolean | null
@@ -707,6 +781,32 @@ export type Database = {
           },
         ]
       }
+      team_settings: {
+        Row: {
+          challenges_enabled: boolean | null
+          team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          challenges_enabled?: boolean | null
+          team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          challenges_enabled?: boolean | null
+          team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_settings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_week_plan_days: {
         Row: {
           created_at: string | null
@@ -878,6 +978,7 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by_user_id: string
+          description: string | null
           id: string
           name: string
           palette_id: string
@@ -885,10 +986,12 @@ export type Database = {
           team_logo_url: string | null
           team_photo_url: string | null
           updated_at: string | null
+          values_text: string | null
         }
         Insert: {
           created_at?: string | null
           created_by_user_id: string
+          description?: string | null
           id?: string
           name: string
           palette_id?: string
@@ -896,10 +999,12 @@ export type Database = {
           team_logo_url?: string | null
           team_photo_url?: string | null
           updated_at?: string | null
+          values_text?: string | null
         }
         Update: {
           created_at?: string | null
           created_by_user_id?: string
+          description?: string | null
           id?: string
           name?: string
           palette_id?: string
@@ -907,6 +1012,7 @@ export type Database = {
           team_logo_url?: string | null
           team_photo_url?: string | null
           updated_at?: string | null
+          values_text?: string | null
         }
         Relationships: []
       }

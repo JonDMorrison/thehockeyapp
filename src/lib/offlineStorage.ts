@@ -28,6 +28,18 @@ export interface QueuedEvent {
   retryCount: number;
 }
 
+export interface QueuedPhoto {
+  localPhotoId: string;
+  playerId: string;
+  practiceCardId: string;
+  localUri: string; // blob URL or data URI
+  visibility: 'parent_only' | 'team_adults';
+  caption: string;
+  status: 'pending' | 'uploading' | 'succeeded' | 'failed';
+  createdAt: string;
+  retryCount: number;
+}
+
 export interface CompletionSnapshot {
   key: string; // player_id + practice_card_id
   playerId: string;
@@ -75,6 +87,12 @@ export async function initOfflineDB(): Promise<IDBDatabase> {
       // Sync metadata store
       if (!database.objectStoreNames.contains('syncMeta')) {
         database.createObjectStore('syncMeta', { keyPath: 'key' });
+      }
+
+      // Queued photos store (for offline photo uploads)
+      if (!database.objectStoreNames.contains('queuedPhotos')) {
+        const photoStore = database.createObjectStore('queuedPhotos', { keyPath: 'localPhotoId' });
+        photoStore.createIndex('status', 'status', { unique: false });
       }
     };
   });
@@ -346,4 +364,111 @@ export async function setLastSyncTime(time: string): Promise<void> {
 // Generate unique local event ID
 export function generateLocalEventId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+}
+
+// Queued Photos for offline upload
+export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount'>): Promise<void> {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('queuedPhotos', 'readwrite');
+    const store = tx.objectStore('queuedPhotos');
+    
+    const data: QueuedPhoto = {
+      ...photo,
+      retryCount: 0,
+    };
+    
+    const request = store.put(data);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getPendingPhotos(): Promise<QueuedPhoto[]> {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('queuedPhotos', 'readonly');
+    const store = tx.objectStore('queuedPhotos');
+    const index = store.index('status');
+    const request = index.getAll('pending');
+    
+    request.onsuccess = () => {
+      resolve(request.result as QueuedPhoto[]);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function updatePhotoStatus(
+  localPhotoId: string,
+  status: QueuedPhoto['status']
+): Promise<void> {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('queuedPhotos', 'readwrite');
+    const store = tx.objectStore('queuedPhotos');
+    const getRequest = store.get(localPhotoId);
+    
+    getRequest.onsuccess = () => {
+      const photo = getRequest.result as QueuedPhoto | undefined;
+      if (photo) {
+        photo.status = status;
+        if (status === 'failed') photo.retryCount++;
+        
+        const putRequest = store.put(photo);
+        putRequest.onsuccess = () => resolve();
+        putRequest.onerror = () => reject(putRequest.error);
+      } else {
+        resolve();
+      }
+    };
+    getRequest.onerror = () => reject(getRequest.error);
+  });
+}
+
+export async function removeSucceededPhotos(): Promise<void> {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('queuedPhotos', 'readwrite');
+    const store = tx.objectStore('queuedPhotos');
+    const index = store.index('status');
+    const request = index.openCursor('succeeded');
+    
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (cursor) {
+        cursor.delete();
+        cursor.continue();
+      } else {
+        resolve();
+      }
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getQueuedPhotosForSession(
+  playerId: string,
+  practiceCardId: string
+): Promise<QueuedPhoto[]> {
+  const database = await getDB();
+  
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction('queuedPhotos', 'readonly');
+    const store = tx.objectStore('queuedPhotos');
+    const request = store.getAll();
+    
+    request.onsuccess = () => {
+      const all = request.result as QueuedPhoto[];
+      const filtered = all.filter(
+        (p) => p.playerId === playerId && p.practiceCardId === practiceCardId
+      );
+      resolve(filtered);
+    };
+    request.onerror = () => reject(request.error);
+  });
 }
