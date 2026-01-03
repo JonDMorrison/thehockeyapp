@@ -26,6 +26,7 @@ import {
   Zap,
   Layers,
   Trophy,
+  LayoutDashboard,
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
@@ -249,6 +250,14 @@ const TeamHome: React.FC = () => {
             <Button
               variant="action"
               className="flex-col h-auto py-4 gap-2"
+              onClick={() => navigate(`/teams/${id}/coach`)}
+            >
+              <LayoutDashboard className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Dashboard</span>
+            </Button>
+            <Button
+              variant="action"
+              className="flex-col h-auto py-4 gap-2"
               onClick={() => navigate(`/teams/${id}/builder`)}
             >
               <Layers className="w-5 h-5 text-team-primary" />
@@ -285,14 +294,6 @@ const TeamHome: React.FC = () => {
             >
               <UserPlus className="w-5 h-5 text-team-primary" />
               <span className="text-xs">Invite</span>
-            </Button>
-            <Button
-              variant="action"
-              className="flex-col h-auto py-4 gap-2"
-              onClick={() => navigate(`/teams/${id}/roster`)}
-            >
-              <Users className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Roster</span>
             </Button>
           </div>
         </div>
