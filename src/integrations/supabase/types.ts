@@ -84,6 +84,39 @@ export type Database = {
           },
         ]
       }
+      player_team_preferences: {
+        Row: {
+          active_team_id: string | null
+          player_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          active_team_id?: string | null
+          player_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          active_team_id?: string | null
+          player_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_team_preferences_active_team_id_fkey"
+            columns: ["active_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_team_preferences_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           birth_year: number
@@ -197,6 +230,83 @@ export type Database = {
           },
         ]
       }
+      team_invites: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          expires_at: string
+          id: string
+          status: string | null
+          team_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          expires_at: string
+          id?: string
+          status?: string | null
+          team_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          expires_at?: string
+          id?: string
+          status?: string | null
+          team_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_memberships: {
+        Row: {
+          id: string
+          joined_at: string | null
+          player_id: string
+          status: string | null
+          team_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          player_id: string
+          status?: string | null
+          team_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          player_id?: string
+          status?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_memberships_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_memberships_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_roles: {
         Row: {
           created_at: string | null
@@ -286,11 +396,17 @@ export type Database = {
         Args: { team_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      join_team_with_invite: {
+        Args: { invite_token: string; p_player_id: string }
+        Returns: Json
+      }
+      preview_team_by_invite: { Args: { invite_token: string }; Returns: Json }
       redeem_guardian_invite: { Args: { invite_token: string }; Returns: Json }
       redeem_team_adult_invite: {
         Args: { invite_token: string }
         Returns: Json
       }
+      regenerate_team_invite: { Args: { p_team_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

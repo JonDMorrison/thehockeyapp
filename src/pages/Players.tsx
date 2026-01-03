@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -11,6 +12,16 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, UserPlus } from "lucide-react";
+
+interface PlayerPreferences {
+  active_team_id: string | null;
+}
+
+interface ActiveTeam {
+  id: string;
+  name: string;
+  palette_id: string;
+}
 
 const Players: React.FC = () => {
   const navigate = useNavigate();
@@ -23,19 +34,55 @@ const Players: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  // Check for pending join token after auth
+  useEffect(() => {
+    const pendingToken = sessionStorage.getItem("pendingJoinToken");
+    if (pendingToken && isAuthenticated) {
+      sessionStorage.removeItem("pendingJoinToken");
+      navigate(`/join/${pendingToken}/player`);
+    }
+  }, [isAuthenticated, navigate]);
+
   const { data: players, isLoading } = useQuery({
-    queryKey: ["players", user?.id],
+    queryKey: ["players-with-teams", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch players
+      const { data: playersData, error: playersError } = await supabase
         .from("players")
-        .select(`
-          *,
-          player_guardians!inner(guardian_role)
-        `)
+        .select("*, player_guardians!inner(guardian_role)")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (playersError) throw playersError;
+
+      // Fetch preferences for all players
+      const playerIds = playersData.map((p) => p.id);
+      const { data: preferencesData } = await supabase
+        .from("player_team_preferences")
+        .select("player_id, active_team_id")
+        .in("player_id", playerIds);
+
+      // Fetch active teams
+      const activeTeamIds = preferencesData
+        ?.filter((p) => p.active_team_id)
+        .map((p) => p.active_team_id) || [];
+      
+      let teamsData: ActiveTeam[] = [];
+      if (activeTeamIds.length > 0) {
+        const { data } = await supabase
+          .from("teams")
+          .select("id, name, palette_id")
+          .in("id", activeTeamIds);
+        teamsData = (data || []) as ActiveTeam[];
+      }
+
+      // Combine data
+      return playersData.map((player) => {
+        const pref = preferencesData?.find((p) => p.player_id === player.id);
+        const activeTeam = pref?.active_team_id
+          ? teamsData.find((t) => t.id === pref.active_team_id)
+          : null;
+        return { ...player, activeTeam };
+      });
     },
     enabled: !!user,
   });
@@ -82,30 +129,43 @@ const Players: React.FC = () => {
               const isOwner = player.player_guardians?.some(
                 (pg: { guardian_role: string }) => pg.guardian_role === "owner"
               );
-              
+              const activeTeam = player.activeTeam as ActiveTeam | null;
+              const palette = activeTeam?.palette_id
+                ? teamPalettes.find((p) => p.id === activeTeam.palette_id)
+                : null;
+
               return (
                 <AppCard
                   key={player.id}
                   className="cursor-pointer hover:shadow-medium transition-shadow"
-                  onClick={() => navigate(`/players/${player.id}`)}
+                  onClick={() => navigate(`/players/${player.id}/home`)}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar
-                      src={player.profile_photo_url}
-                      fallback={`${player.first_name} ${player.last_initial || ""}`}
-                      size="lg"
-                    />
+                    <div className="relative">
+                      <Avatar
+                        src={player.profile_photo_url}
+                        fallback={`${player.first_name} ${player.last_initial || ""}`}
+                        size="lg"
+                      />
+                      {palette && (
+                        <div
+                          className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-card"
+                          style={{ backgroundColor: `hsl(${palette.primary})` }}
+                        />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold">
                         {player.first_name} {player.last_initial && `${player.last_initial}.`}
                       </p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Tag variant="neutral" size="sm">
-                          Born {player.birth_year}
-                        </Tag>
-                        {player.shoots && player.shoots !== "unknown" && (
+                        {activeTeam ? (
                           <Tag variant="accent" size="sm">
-                            {player.shoots === "left" ? "L" : "R"}
+                            {activeTeam.name}
+                          </Tag>
+                        ) : (
+                          <Tag variant="neutral" size="sm">
+                            Born {player.birth_year}
                           </Tag>
                         )}
                         {player.jersey_number && (

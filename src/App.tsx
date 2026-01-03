@@ -11,12 +11,16 @@ import Auth from "./pages/Auth";
 import Players from "./pages/Players";
 import PlayerNew from "./pages/PlayerNew";
 import PlayerProfile from "./pages/PlayerProfile";
+import PlayerHome from "./pages/PlayerHome";
 import GuardianJoin from "./pages/GuardianJoin";
 import Teams from "./pages/Teams";
 import TeamNew from "./pages/TeamNew";
 import TeamHome from "./pages/TeamHome";
 import TeamSettings from "./pages/TeamSettings";
+import TeamRoster from "./pages/TeamRoster";
 import TeamAdultJoin from "./pages/TeamAdultJoin";
+import JoinTeam from "./pages/JoinTeam";
+import JoinTeamPlayer from "./pages/JoinTeamPlayer";
 
 const queryClient = new QueryClient();
 
@@ -43,12 +47,16 @@ const App = () => {
             <Route path="/players" element={<Players />} />
             <Route path="/players/new" element={<PlayerNew />} />
             <Route path="/players/:id" element={<PlayerProfile />} />
+            <Route path="/players/:id/home" element={<PlayerHome />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/new" element={<TeamNew />} />
             <Route path="/teams/:id" element={<TeamHome />} />
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
+            <Route path="/teams/:id/roster" element={<TeamRoster />} />
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
+            <Route path="/join/:token" element={<JoinTeam />} />
+            <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

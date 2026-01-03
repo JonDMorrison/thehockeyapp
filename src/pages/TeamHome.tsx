@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ import {
   Users,
   ChevronRight,
 } from "lucide-react";
+import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -43,6 +44,7 @@ const TeamHome: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -207,8 +209,8 @@ const TeamHome: React.FC = () => {
           <div className="grid grid-cols-3 gap-3">
             <Button
               variant="action"
-              className="flex-col h-auto py-4 gap-2 opacity-50"
-              disabled
+              className="flex-col h-auto py-4 gap-2"
+              onClick={() => setShowInviteModal(true)}
             >
               <UserPlus className="w-5 h-5 text-team-primary" />
               <span className="text-xs">Invite Parents</span>
@@ -231,6 +233,25 @@ const TeamHome: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {/* Roster Link */}
+        <AppCard
+          className="cursor-pointer hover:shadow-medium transition-shadow"
+          onClick={() => navigate(`/teams/${id}/roster`)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-team-primary" />
+              </div>
+              <div>
+                <p className="font-semibold">View Roster</p>
+                <p className="text-xs text-text-muted">See players on this team</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-text-muted" />
+          </div>
+        </AppCard>
 
         {/* Adults */}
         <AppCard>
@@ -287,6 +308,14 @@ const TeamHome: React.FC = () => {
           </AppCardDescription>
         </AppCard>
       </PageContainer>
+
+      {/* Invite Parents Modal */}
+      <InviteParentsModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        teamId={id!}
+        teamName={team?.name || ""}
+      />
     </AppShell>
   );
 };
