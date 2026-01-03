@@ -28,6 +28,7 @@ import {
   Users,
   Check,
   ClipboardList,
+  Zap,
 } from "lucide-react";
 
 interface Player {
@@ -56,7 +57,12 @@ interface PracticeCard {
   date: string;
   tier: string;
   title: string | null;
+  mode: string;
   practice_tasks: { id: string }[];
+}
+
+interface GameDay {
+  enabled: boolean;
 }
 
 const tierLabels: Record<string, string> = {
@@ -141,11 +147,54 @@ const Today: React.FC = () => {
     enabled: !!selectedPlayerId,
   });
 
-  // Fetch today's practice card for the team
   const todayStr = format(new Date(), "yyyy-MM-dd");
-  const { data: todaysCard, isLoading: cardLoading } = useQuery({
-    queryKey: ["todays-card", teamData?.id, todayStr],
+
+  // Check if game day is enabled
+  const { data: gameDayData, isLoading: gameDayLoading } = useQuery({
+    queryKey: ["team-game-day", teamData?.id, todayStr],
     queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_game_days")
+        .select("enabled")
+        .eq("team_id", teamData!.id)
+        .eq("date", todayStr)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as GameDay | null;
+    },
+    enabled: !!teamData?.id,
+  });
+
+  const isGameDay = gameDayData?.enabled === true;
+
+  // Fetch today's practice card for the team (prioritize game_day if enabled)
+  const { data: todaysCard, isLoading: cardLoading } = useQuery({
+    queryKey: ["todays-card", teamData?.id, todayStr, isGameDay],
+    queryFn: async () => {
+      // If game day is enabled, look for game_day card first
+      if (isGameDay) {
+        const { data: gameDayCard, error: gameDayError } = await supabase
+          .from("practice_cards")
+          .select(`
+            id,
+            date,
+            tier,
+            title,
+            mode,
+            practice_tasks (id)
+          `)
+          .eq("team_id", teamData!.id)
+          .eq("date", todayStr)
+          .eq("mode", "game_day")
+          .not("published_at", "is", null)
+          .maybeSingle();
+
+        if (gameDayError) throw gameDayError;
+        if (gameDayCard) return gameDayCard as PracticeCard;
+      }
+
+      // Otherwise, fall back to normal card
       const { data, error } = await supabase
         .from("practice_cards")
         .select(`
@@ -153,17 +202,19 @@ const Today: React.FC = () => {
           date,
           tier,
           title,
+          mode,
           practice_tasks (id)
         `)
         .eq("team_id", teamData!.id)
         .eq("date", todayStr)
+        .eq("mode", "normal")
         .not("published_at", "is", null)
         .maybeSingle();
 
       if (error) throw error;
       return data as PracticeCard | null;
     },
-    enabled: !!teamData?.id,
+    enabled: !!teamData?.id && gameDayLoading === false,
   });
 
   // Apply team theme
@@ -303,15 +354,28 @@ const Today: React.FC = () => {
                       background: palette ? `hsl(${palette.primary} / 0.1)` : undefined,
                     }}
                   >
-                    <ClipboardList
-                      className="w-6 h-6"
-                      style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-                    />
+                    {todaysCard.mode === "game_day" ? (
+                      <Zap
+                        className="w-6 h-6"
+                        style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
+                      />
+                    ) : (
+                      <ClipboardList
+                        className="w-6 h-6"
+                        style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold">Today's Practice</p>
-                      <Tag variant="tier" size="sm">{tierLabels[todaysCard.tier]}</Tag>
+                      <p className="font-semibold">
+                        {todaysCard.mode === "game_day" ? "Game Day Prep" : "Today's Practice"}
+                      </p>
+                      {todaysCard.mode === "game_day" ? (
+                        <Tag variant="accent" size="sm">Game Day</Tag>
+                      ) : (
+                        <Tag variant="tier" size="sm">{tierLabels[todaysCard.tier]}</Tag>
+                      )}
                     </div>
                     <p className="text-sm text-text-muted">
                       {todaysCard.title || `${todaysCard.practice_tasks.length} tasks ready`}

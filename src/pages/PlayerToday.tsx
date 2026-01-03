@@ -46,6 +46,7 @@ import {
   Trophy,
   Calendar,
   WifiOff,
+  Zap,
 } from "lucide-react";
 
 interface PracticeTask {
@@ -80,7 +81,12 @@ interface PracticeCard {
   tier: string;
   title: string | null;
   notes: string | null;
+  mode: string;
   practice_tasks: PracticeTask[];
+}
+
+interface GameDay {
+  enabled: boolean;
 }
 
 interface LocalCompletion {
@@ -174,12 +180,55 @@ const PlayerToday: React.FC = () => {
     enabled: !!user && !!playerId,
   });
 
-  // Fetch today's practice card with tasks (with offline fallback)
+  // Check if game day is enabled
   const todayStr = format(new Date(), "yyyy-MM-dd");
+  const { data: gameDayData } = useQuery({
+    queryKey: ["team-game-day", teamData?.id, todayStr],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_game_days")
+        .select("enabled")
+        .eq("team_id", teamData!.id)
+        .eq("date", todayStr)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as GameDay | null;
+    },
+    enabled: !!teamData?.id && isOnline,
+  });
+
+  const isGameDay = gameDayData?.enabled === true;
+
+  // Fetch today's practice card with tasks (with offline fallback)
   const { data: practiceCard, isLoading: cardLoading } = useQuery<PracticeCard | null>({
-    queryKey: ["todays-card-full", teamData?.id, todayStr],
+    queryKey: ["todays-card-full", teamData?.id, todayStr, isGameDay],
     queryFn: async (): Promise<PracticeCard | null> => {
       try {
+        // If game day is enabled, look for game_day card first
+        if (isGameDay) {
+          const { data: gameDayCard, error: gameDayError } = await supabase
+            .from("practice_cards")
+            .select(`
+              *,
+              practice_tasks (*)
+            `)
+            .eq("team_id", teamData!.id)
+            .eq("date", todayStr)
+            .eq("mode", "game_day")
+            .not("published_at", "is", null)
+            .maybeSingle();
+
+          if (gameDayError) throw gameDayError;
+          
+          if (gameDayCard) {
+            await cachePracticeCard(teamData!.id, `${todayStr}_game_day`, gameDayCard);
+            setUsingCache(false);
+            return gameDayCard as PracticeCard;
+          }
+        }
+
+        // Otherwise, fall back to normal card
         const { data, error } = await supabase
           .from("practice_cards")
           .select(`
@@ -188,6 +237,7 @@ const PlayerToday: React.FC = () => {
           `)
           .eq("team_id", teamData!.id)
           .eq("date", todayStr)
+          .eq("mode", "normal")
           .not("published_at", "is", null)
           .maybeSingle();
 
@@ -203,6 +253,16 @@ const PlayerToday: React.FC = () => {
       } catch (err) {
         // Try to load from cache if network fails
         if (!isOnline) {
+          // Try game day cache first
+          const cachedGameDay = await getCachedCard(teamData!.id, `${todayStr}_game_day`);
+          if (cachedGameDay) {
+            setUsingCache(true);
+            const cardData = cachedGameDay as PracticeCard;
+            setCachedCardData(cardData);
+            return cardData;
+          }
+          
+          // Fall back to normal cache
           const cached = await getCachedCard(teamData!.id, todayStr);
           if (cached) {
             setUsingCache(true);
@@ -645,10 +705,17 @@ const PlayerToday: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold mb-2">Great work!</h1>
           <p className="text-text-muted mb-2">
-            {player?.first_name} completed today's practice
+            {player?.first_name} completed {practiceCard.mode === "game_day" ? "game day prep" : "today's practice"}
           </p>
           <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
-            <Tag variant="tier">{tierLabels[practiceCard.tier]}</Tag>
+            {practiceCard.mode === "game_day" ? (
+              <Tag variant="accent">
+                <Zap className="w-3 h-3" />
+                Game Day
+              </Tag>
+            ) : (
+              <Tag variant="tier">{tierLabels[practiceCard.tier]}</Tag>
+            )}
             {totalShots > 0 && (
               <Tag variant="accent">{totalShots} shots</Tag>
             )}
@@ -676,11 +743,20 @@ const PlayerToday: React.FC = () => {
           </Button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold truncate">Today</h1>
+              <h1 className="text-lg font-bold truncate">
+                {practiceCard.mode === "game_day" ? "Game Day" : "Today"}
+              </h1>
               <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} />
             </div>
             <div className="flex items-center gap-2">
-              <Tag variant="tier" size="sm">{tierLabels[practiceCard.tier]}</Tag>
+              {practiceCard.mode === "game_day" ? (
+                <Tag variant="accent" size="sm">
+                  <Zap className="w-3 h-3" />
+                  Prep
+                </Tag>
+              ) : (
+                <Tag variant="tier" size="sm">{tierLabels[practiceCard.tier]}</Tag>
+              )}
               {teamData && (
                 <span className="text-xs text-text-muted truncate">{teamData.name}</span>
               )}

@@ -38,6 +38,8 @@ import {
   Heart,
   Sparkles,
   MoreHorizontal,
+  Zap,
+  AlertTriangle,
 } from "lucide-react";
 
 interface PracticeTask {
@@ -378,6 +380,20 @@ const PracticeCardEditor: React.FC = () => {
             <div className="flex items-center gap-2 text-sm">
               <Lock className="w-4 h-4 text-warning" />
               <span>This card is locked. Unlock to make changes.</span>
+            </div>
+          </AppCard>
+        )}
+
+        {existingCard?.mode === "game_day" && (
+          <AppCard variant="muted" className="border-team-primary/30 bg-team-primary/5">
+            <div className="flex gap-3">
+              <Zap className="w-5 h-5 text-team-primary flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-team-primary">Game Day Prep Card</p>
+                <p className="text-text-muted mt-1">
+                  Keep tasks light and focused on readiness. Avoid conditioning-heavy exercises.
+                </p>
+              </div>
             </div>
           </AppCard>
         )}
