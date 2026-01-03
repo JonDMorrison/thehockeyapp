@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      offline_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          local_event_id: string
+          payload: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          local_event_id: string
+          payload: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          local_event_id?: string
+          payload?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_guardian_invites: {
         Row: {
           created_at: string | null
@@ -297,8 +324,10 @@ export type Database = {
           completed_at: string | null
           completed_by: string | null
           id: string
+          local_event_id: string | null
           player_id: string
           practice_card_id: string
+          source: string | null
           status: string | null
           updated_at: string | null
         }
@@ -306,8 +335,10 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           id?: string
+          local_event_id?: string | null
           player_id: string
           practice_card_id: string
+          source?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -315,8 +346,10 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           id?: string
+          local_event_id?: string | null
           player_id?: string
           practice_card_id?: string
+          source?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -343,9 +376,11 @@ export type Database = {
           completed_at: string | null
           completed_by: string | null
           id: string
+          local_event_id: string | null
           player_id: string
           practice_task_id: string
           shots_logged: number | null
+          source: string | null
           updated_at: string | null
         }
         Insert: {
@@ -353,9 +388,11 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           id?: string
+          local_event_id?: string | null
           player_id: string
           practice_task_id: string
           shots_logged?: number | null
+          source?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -363,9 +400,11 @@ export type Database = {
           completed_at?: string | null
           completed_by?: string | null
           id?: string
+          local_event_id?: string | null
           player_id?: string
           practice_task_id?: string
           shots_logged?: number | null
+          source?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -579,6 +618,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_offline_event: {
+        Args: {
+          p_event_type: string
+          p_local_event_id: string
+          p_payload: Json
+        }
+        Returns: Json
+      }
       is_guardian_of_team_player: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean

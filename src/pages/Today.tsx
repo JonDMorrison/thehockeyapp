@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
+import { useOffline } from "@/hooks/useOffline";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -11,6 +12,7 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
+import { OfflineIndicator } from "@/components/app/OfflineIndicator";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -67,6 +69,7 @@ const Today: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+  const { status: offlineStatus, pendingCount } = useOffline();
   
   const [showPlayerSelector, setShowPlayerSelector] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -208,10 +211,13 @@ const Today: React.FC = () => {
   return (
     <AppShell>
       <PageContainer>
-        <PageHeader 
-          title="Today" 
-          subtitle={format(new Date(), "EEEE, MMMM d")} 
-        />
+        <div className="flex items-start justify-between">
+          <PageHeader 
+            title="Today" 
+            subtitle={format(new Date(), "EEEE, MMMM d")} 
+          />
+          <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} />
+        </div>
 
         {/* Player Selector (if multiple) */}
         {players.length > 1 && (
