@@ -7,104 +7,108 @@ import {
   ClipboardList,
   Zap,
   Calendar,
-  Users,
-  Shield,
-  Target,
-  Smartphone,
-  WifiOff,
   Sparkles,
-  Trophy,
-  Bell,
-  Lock,
-  ArrowRight,
+  Camera,
+  Shield,
+  WifiOff,
   CheckCircle,
+  Smartphone,
+  UserCheck,
+  Target,
+  ArrowRight,
+  MessageSquareOff,
+  Eye,
+  Lock,
 } from "lucide-react";
-import mockupCoach from "@/assets/mockup-coach-dashboard.png";
-import mockupPlayer from "@/assets/mockup-player-checklist.png";
+import featurePracticeCard from "@/assets/feature-practice-card.png";
+import featureCheckoff from "@/assets/feature-checkoff.png";
+import featureGameday from "@/assets/feature-gameday.png";
+import featureBuilder from "@/assets/feature-builder.png";
+import featurePhoto from "@/assets/feature-photo.png";
+import featurePrivacy from "@/assets/feature-privacy.png";
 
 const Features: React.FC = () => {
   const features = [
     {
       icon: ClipboardList,
-      title: "Daily Practice Cards",
-      description:
-        "Simple, focused checklists for each day. Shooting, mobility, conditioning—all customized to your team's level.",
-      details: [
-        "Coach sets the training plan",
-        "Players see clear daily tasks",
-        "15-20 minute sessions",
-        "Works for Rec, Rep, or Elite",
+      title: "Clear plans. No guessing.",
+      bullets: [
+        "Coach-built or AI-assisted",
+        "Rec / Rep / Elite tiers",
+        "Shooting-only or balanced",
+        "Works offline",
       ],
+      image: featurePracticeCard,
+      imageAlt: "Daily practice card on phone",
     },
     {
-      icon: Zap,
-      title: "Game Day Mode",
-      description:
-        "When games are detected, training automatically switches to pre-game prep. Light work, mental focus, hydration.",
-      details: [
-        "Auto-detects from TeamSnap",
-        "Light pre-game routines",
-        "Mental preparation tasks",
-        "Manual override available",
+      icon: CheckCircle,
+      title: "Consistency without nagging.",
+      bullets: [
+        "One-tap checklist",
+        "Optional widgets",
+        "Parent or player checkoff",
+        "Quiet shot totals",
       ],
+      image: featureCheckoff,
+      imageAlt: "Checklist being checked off",
     },
     {
       icon: Calendar,
-      title: "Schedule Sync",
-      description:
-        "Connect your TeamSnap calendar. Games and practices sync automatically. No double entry.",
-      details: [
-        "One-time iCal setup",
-        "Games trigger Game Day mode",
-        "Practice reminders",
-        "Works on mobile",
+      title: "Game days handled for you.",
+      bullets: [
+        "Syncs with TeamSnap (iCal)",
+        "Automatically switches modes",
+        "Hydration, stretching, visualization",
       ],
+      image: featureGameday,
+      imageAlt: "Game Day prep screen",
     },
     {
-      icon: Users,
-      title: "Team Management",
-      description:
-        "Invite parents with a link. Track which players have completed training. See team-wide progress.",
-      details: [
-        "Easy invite links",
-        "Multi-child support",
-        "Role-based access",
-        "Roster management",
+      icon: Sparkles,
+      title: "Build a week in minutes.",
+      bullets: [
+        "Simple wizard",
+        "Shooting-only mode available",
+        "AI drafts, coach approves",
+        "Templates",
       ],
+      image: featureBuilder,
+      imageAlt: "Coach workout builder",
+    },
+    {
+      icon: Camera,
+      title: "Effort, not performance.",
+      bullets: [
+        "Optional photo upload",
+        "Private by default",
+        "Parent-controlled",
+        "No public sharing",
+      ],
+      image: featurePhoto,
+      imageAlt: "Photo upload with privacy",
     },
     {
       icon: Shield,
-      title: "Privacy First",
-      description:
-        "No public leaderboards. No comparing kids. Parents control visibility. We take child safety seriously.",
-      details: [
-        "No public profiles",
-        "No child comparisons",
-        "Parent-controlled data",
-        "COPPA compliant design",
+      title: "Not social media. Not a leaderboard.",
+      bullets: [
+        "No rankings",
+        "No public feeds",
+        "No child messaging",
+        "Privacy first",
       ],
-    },
-    {
-      icon: Trophy,
-      title: "Badges & Motivation",
-      description:
-        "Celebrate consistency, not competition. Earn badges for showing up, not for outperforming others.",
-      details: [
-        "Personal achievement badges",
-        "Consistency rewards",
-        "Private to player/parent",
-        "No rankings or leaderboards",
-      ],
+      image: featurePrivacy,
+      imageAlt: "Privacy settings screen",
     },
   ];
 
-  const additionalFeatures = [
-    { icon: WifiOff, label: "Offline Support", description: "Works without internet. Syncs when back online." },
-    { icon: Smartphone, label: "Mobile First", description: "Designed for phones. Fast and easy to use." },
-    { icon: Target, label: "Tier Scaling", description: "Tasks auto-adjust for Rec, Rep, or Elite levels." },
-    { icon: Sparkles, label: "AI Assist", description: "Generate training plans with one click." },
-    { icon: Bell, label: "Notifications", description: "Gentle reminders, never pushy." },
-    { icon: Lock, label: "Secure", description: "Enterprise-grade security for family data." },
+  const featureLabels = [
+    "Daily Practice Cards",
+    "Ultra-Fast Checkoff",
+    "Automatic Game-Day Prep",
+    "Workout Builder (with AI)",
+    "Proof of Work (Optional)",
+    "Safety & Privacy",
   ];
 
   return (
@@ -112,69 +116,65 @@ const Features: React.FC = () => {
       <MarketingNav />
 
       {/* Hero */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-6">
-              Features built for hockey families
+              Features that respect families
             </h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Everything coaches need to run effective training programs. 
-              Everything parents need to support their players.
+              Everything coaches need. Nothing that creates pressure. 
+              Simple tools for real hockey life.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild>
-                <Link to="/auth">
-                  Start Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/demo">Try the Demo</Link>
-              </Button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Main Features */}
-      <section className="py-16 bg-muted/30">
+      {/* Feature Sections */}
+      <section className="py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-24">
+          <div className="space-y-32">
             {features.map((feature, i) => (
               <div
                 key={i}
-                className={`grid lg:grid-cols-2 gap-12 items-center ${
-                  i % 2 === 1 ? "lg:flex-row-reverse" : ""
-                }`}
+                className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-center`}
               >
+                {/* Content */}
                 <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                    <feature.icon className="w-7 h-7 text-primary" />
+                  {/* Feature label */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                    <feature.icon className="w-4 h-4" />
+                    {featureLabels[i]}
                   </div>
-                  <h2 className="text-3xl font-bold mb-4">{feature.title}</h2>
-                  <p className="text-lg text-muted-foreground mb-6">
-                    {feature.description}
-                  </p>
-                  <ul className="space-y-3">
-                    {feature.details.map((detail, j) => (
-                      <li key={j} className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
-                        <span>{detail}</span>
+                  
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                    {feature.title}
+                  </h2>
+                  
+                  <ul className="space-y-4">
+                    {feature.bullets.map((bullet, j) => (
+                      <li key={j} className="flex items-center gap-4">
+                        <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-4 h-4 text-success" />
+                        </div>
+                        <span className="text-lg text-muted-foreground">{bullet}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
+
+                {/* Mockup */}
                 <div
                   className={`flex justify-center ${
                     i % 2 === 1 ? "lg:order-1" : ""
                   }`}
                 >
-                  <div className="bg-gradient-to-br from-muted to-muted/50 rounded-3xl p-8 w-full max-w-sm">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent rounded-3xl blur-3xl opacity-50" />
                     <img
-                      src={i % 2 === 0 ? mockupPlayer : mockupCoach}
-                      alt={feature.title}
-                      className="w-full rounded-2xl shadow-elevated"
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      className="relative w-64 sm:w-72 lg:w-80 rounded-3xl shadow-elevated"
                     />
                   </div>
                 </div>
@@ -184,92 +184,18 @@ const Features: React.FC = () => {
         </div>
       </section>
 
-      {/* Additional Features Grid */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">And so much more</h2>
-            <p className="text-muted-foreground">
-              Every detail designed to make training easier for families.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {additionalFeatures.map((feature, i) => (
-              <div
-                key={i}
-                className="bg-background border border-border rounded-2xl p-6 hover:shadow-medium transition-shadow"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">{feature.label}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* For Coaches / For Parents */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-background rounded-2xl p-8 shadow-subtle">
-              <h3 className="text-2xl font-bold mb-4">For Coaches</h3>
-              <ul className="space-y-3">
-                {[
-                  "Create training plans in minutes",
-                  "Sync with your TeamSnap schedule",
-                  "See who's completing training",
-                  "Adjust for Rec, Rep, or Elite",
-                  "AI-assisted workout generation",
-                  "Free for unlimited teams",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                    <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-background rounded-2xl p-8 shadow-subtle">
-              <h3 className="text-2xl font-bold mb-4">For Parents</h3>
-              <ul className="space-y-3">
-                {[
-                  "Know exactly what to practice each day",
-                  "Track progress without pressure",
-                  "Works offline at the rink",
-                  "Support multiple children",
-                  "Celebrate consistency, not competition",
-                  "Full privacy control",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                    <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 lg:py-24">
+      {/* Final CTA */}
+      <section className="py-20 lg:py-28 bg-primary/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to simplify training for your team?
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+            See it in action
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Free for coaches. Easy for parents. Fun for players.
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Experience the coach view and parent/player view side by side.
           </p>
           <Button size="lg" asChild>
-            <Link to="/auth">
-              Get Started Free
+            <Link to="/demo">
+              View the demo
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
