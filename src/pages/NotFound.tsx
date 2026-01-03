@@ -1,5 +1,8 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { AppShell, PageContainer, EmptyState } from "@/components/app";
+import { Button } from "@/components/ui/button";
+import { Home, AlertCircle } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -9,15 +12,21 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
-        <a href="/" className="text-primary underline hover:text-primary/90">
-          Return to Home
-        </a>
-      </div>
-    </div>
+    <AppShell hideNav>
+      <PageContainer className="flex flex-col items-center justify-center min-h-[80vh]">
+        <EmptyState
+          icon={AlertCircle}
+          title="Page not found"
+          description={`The page "${location.pathname}" doesn't exist or has been moved.`}
+        />
+        <Button asChild variant="team" className="mt-4">
+          <Link to="/">
+            <Home className="w-4 h-4 mr-2" />
+            Back to Home
+          </Link>
+        </Button>
+      </PageContainer>
+    </AppShell>
   );
 };
 
