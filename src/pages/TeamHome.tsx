@@ -22,8 +22,10 @@ import {
   Users,
   ChevronRight,
   ClipboardList,
+  Zap,
 } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
+import { GameDayModal } from "@/components/team/GameDayModal";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -46,6 +48,7 @@ const TeamHome: React.FC = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showGameDayModal, setShowGameDayModal] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -226,10 +229,10 @@ const TeamHome: React.FC = () => {
             </Button>
             <Button
               variant="action"
-              className="flex-col h-auto py-4 gap-2 opacity-50"
-              disabled
+              className="flex-col h-auto py-4 gap-2"
+              onClick={() => setShowGameDayModal(true)}
             >
-              <Calendar className="w-5 h-5 text-team-primary" />
+              <Zap className="w-5 h-5 text-team-primary" />
               <span className="text-xs">Game Day</span>
             </Button>
           </div>
@@ -314,6 +317,14 @@ const TeamHome: React.FC = () => {
       <InviteParentsModal
         open={showInviteModal}
         onOpenChange={setShowInviteModal}
+        teamId={id!}
+        teamName={team?.name || ""}
+      />
+
+      {/* Game Day Modal */}
+      <GameDayModal
+        open={showGameDayModal}
+        onOpenChange={setShowGameDayModal}
         teamId={id!}
         teamName={team?.name || ""}
       />

@@ -468,6 +468,47 @@ export type Database = {
           },
         ]
       }
+      team_game_days: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          date: string
+          enabled: boolean | null
+          id: string
+          notes: string | null
+          team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          date: string
+          enabled?: boolean | null
+          id?: string
+          notes?: string | null
+          team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          date?: string
+          enabled?: boolean | null
+          id?: string
+          notes?: string | null
+          team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_game_days_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_invites: {
         Row: {
           created_at: string | null
