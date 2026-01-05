@@ -845,6 +845,110 @@ export type Database = {
           },
         ]
       }
+      team_goal_contributions: {
+        Row: {
+          contribution_value: number
+          goal_id: string
+          id: string
+          player_id: string
+          updated_at: string
+        }
+        Insert: {
+          contribution_value?: number
+          goal_id: string
+          id?: string
+          player_id: string
+          updated_at?: string
+        }
+        Update: {
+          contribution_value?: number
+          goal_id?: string
+          id?: string
+          player_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_goal_contributions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "team_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_goal_contributions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by_user_id: string
+          current_value: number
+          description: string | null
+          end_date: string
+          goal_type: string
+          id: string
+          name: string
+          show_leaderboard: boolean
+          start_date: string
+          status: string
+          target_value: number
+          team_id: string
+          timeframe: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_user_id: string
+          current_value?: number
+          description?: string | null
+          end_date: string
+          goal_type: string
+          id?: string
+          name: string
+          show_leaderboard?: boolean
+          start_date: string
+          status?: string
+          target_value: number
+          team_id: string
+          timeframe: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          current_value?: number
+          description?: string | null
+          end_date?: string
+          goal_type?: string
+          id?: string
+          name?: string
+          show_leaderboard?: boolean
+          start_date?: string
+          status?: string
+          target_value?: number
+          team_id?: string
+          timeframe?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_goals_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_invites: {
         Row: {
           created_at: string | null
@@ -1475,6 +1579,7 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_goal_progress: { Args: { p_goal_id: string }; Returns: Json }
       check_and_enable_game_days: { Args: never; Returns: undefined }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
