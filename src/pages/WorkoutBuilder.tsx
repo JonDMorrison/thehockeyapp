@@ -148,24 +148,15 @@ const WorkoutBuilder: React.FC = () => {
       }
     >
       <PageContainer>
-        {/* Create New */}
-        <div className="flex gap-3">
-          <Button
-            className="flex-1"
-            size="lg"
-            onClick={() => navigate(`/teams/${teamId}/builder/new`)}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Create Plan
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => setShowAIAssist(true)}
-          >
-            <Sparkles className="w-5 h-5" />
-          </Button>
-        </div>
+        {/* Create New - Simple CTA */}
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={() => navigate(`/teams/${teamId}/builder/new`)}
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Plan Next Week
+        </Button>
         
         {/* Team Summary */}
         <TeamWeeklySummaryCard teamId={teamId!} />
