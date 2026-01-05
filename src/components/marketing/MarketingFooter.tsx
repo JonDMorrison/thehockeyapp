@@ -16,8 +16,8 @@ export const MarketingFooter: React.FC = () => {
               <span className="font-bold text-lg">PuckTrack</span>
             </div>
             <p className="text-background/70 max-w-sm mb-6">
-              Building consistent training habits for young hockey players. 
-              Designed for coaches, trusted by parents.
+              Off-ice training made simple. Coaches assign, kids complete, 
+              parents stay in control.
             </p>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-sm text-background/60">

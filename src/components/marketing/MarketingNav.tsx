@@ -25,9 +25,12 @@ export const MarketingNav: React.FC = () => {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--gradient-end))] flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow">
               <span className="text-white font-bold text-sm">PT</span>
             </div>
-            <span className="font-bold text-xl hidden sm:block bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-              PuckTrack
-            </span>
+            <div className="hidden sm:flex flex-col">
+              <span className="font-bold text-xl bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent leading-tight">
+                PuckTrack
+              </span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5">Off-Ice Training</span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
