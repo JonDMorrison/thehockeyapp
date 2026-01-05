@@ -5,8 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
-import { Loader2, Mail, Lock, User, ChevronLeft, Sparkles } from "lucide-react";
+import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
+import logoImage from "@/assets/hockey-app-logo.png";
 
 const authSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -115,16 +116,18 @@ const Auth: React.FC = () => {
         <div className="max-w-md mx-auto w-full">
           {/* Header */}
           <div className="text-center mb-10">
-            {/* Animated Logo */}
+            {/* App Logo */}
             <div className="relative inline-block mb-6">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/25">
-                <Sparkles className="w-10 h-10 text-primary-foreground" />
-              </div>
+              <img 
+                src={logoImage} 
+                alt="Hockey App" 
+                className="w-20 h-20 rounded-3xl shadow-lg shadow-primary/25"
+              />
               <div className="absolute -inset-2 bg-primary/20 rounded-[28px] blur-xl -z-10 animate-pulse" />
             </div>
             
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              {mode === "signin" ? "Welcome back" : "Join the team"}
+              {mode === "signin" ? "Welcome back" : "Join Hockey App"}
             </h1>
             <p className="text-muted-foreground">
               {mode === "signin" 

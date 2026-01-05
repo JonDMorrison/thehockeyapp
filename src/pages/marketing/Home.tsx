@@ -59,7 +59,7 @@ const Home: React.FC = () => {
               {/* Floating badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-soft mb-8">
                 <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-medium text-foreground">Youth Hockey Training Platform</span>
+                <span className="text-sm font-medium text-foreground">Youth Hockey App</span>
               </div>
               
               {/* Gradient headline */}
