@@ -22,7 +22,7 @@ import PlayerHome from "./pages/PlayerHome";
 import GuardianJoin from "./pages/GuardianJoin";
 import Teams from "./pages/Teams";
 import TeamNew from "./pages/TeamNew";
-import TeamHome from "./pages/TeamHome";
+// TeamHome merged into CoachDashboard
 import TeamSettings from "./pages/TeamSettings";
 import TeamRoster from "./pages/TeamRoster";
 import TeamAdultJoin from "./pages/TeamAdultJoin";
@@ -88,8 +88,8 @@ const App = () => {
             {/* Team management */}
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/new" element={<TeamNew />} />
-            <Route path="/teams/:id" element={<TeamHome />} />
-            <Route path="/teams/:id/coach" element={<CoachDashboard />} />
+            <Route path="/teams/:id" element={<CoachDashboard />} />
+            <Route path="/teams/:id/coach" element={<CoachDashboard />} /> {/* Legacy route */}
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
             <Route path="/teams/:id/roster" element={<TeamRoster />} />
             <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
