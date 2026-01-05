@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
+import { useTeamOnboarding } from "@/hooks/useTeamOnboarding";
 import { teamPalettes } from "@/lib/themes";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -21,25 +22,31 @@ import {
   Shield,
   Users,
 } from "lucide-react";
-import { SetupChecklist } from "@/components/dashboard/SetupChecklist";
-import { TodayControlCenter } from "@/components/dashboard/TodayControlCenter";
-import { TeamPulse } from "@/components/dashboard/TeamPulse";
-import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
-import { QuickActions } from "@/components/dashboard/QuickActions";
+import { TodayHeroCard } from "@/components/dashboard/TodayHeroCard";
+import { QuickActionRow } from "@/components/dashboard/QuickActionRow";
+import { TeamCelebration } from "@/components/dashboard/TeamCelebration";
+import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
+import { CoachOnboardingWizard } from "@/components/onboarding/CoachOnboardingWizard";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showGameDayModal, setShowGameDayModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
+  const { data: onboardingState, isLoading: onboardingLoading } = useTeamOnboarding(id);
+
+  // Check if coming from team creation
+  const isNewTeam = searchParams.get("onboarding") === "true";
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -54,38 +61,32 @@ const CoachDashboard: React.FC = () => {
     }
   }, [dashboard?.team?.palette_id, setTeamTheme]);
 
+  // Show onboarding if new team or not completed
+  useEffect(() => {
+    if (!onboardingLoading && !isLoading && dashboard) {
+      const shouldShowOnboarding = isNewTeam || !onboardingState?.completed;
+      setShowOnboarding(shouldShowOnboarding);
+    }
+  }, [onboardingLoading, isLoading, dashboard, onboardingState, isNewTeam]);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    searchParams.delete("onboarding");
+    setSearchParams(searchParams, { replace: true });
+    queryClient.invalidateQueries({ queryKey: ["team-onboarding", id] });
+    queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    searchParams.delete("onboarding");
+    setSearchParams(searchParams, { replace: true });
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
-  };
-
-  const handleChecklistAction = (itemId: string) => {
-    switch (itemId) {
-      case "set_preferences":
-        navigate(`/teams/${id}/settings`);
-        break;
-      case "connect_schedule":
-        navigate(`/teams/${id}/settings`);
-        break;
-      case "invite_parents":
-        setShowInviteModal(true);
-        break;
-      case "add_players":
-        setShowInviteModal(true);
-        break;
-      case "publish_first_card":
-        if (dashboard?.today?.practice_card?.card_id) {
-          handlePublishCard();
-        } else {
-          navigate(`/teams/${id}/practice/new`);
-        }
-        break;
-    }
-  };
-
-  const handleCreateCard = () => {
-    navigate(`/teams/${id}/practice/new`);
   };
 
   const handlePublishCard = async () => {
@@ -106,26 +107,19 @@ const CoachDashboard: React.FC = () => {
     }
   };
 
-  const handleViewCard = () => {
-    if (dashboard?.today?.practice_card?.card_id) {
-      navigate(`/teams/${id}/practice/${dashboard.today.practice_card.card_id}`);
+  const handleNudgeAction = (itemId: string) => {
+    switch (itemId) {
+      case "set_preferences":
+        navigate(`/teams/${id}/settings`);
+        break;
+      case "connect_schedule":
+        navigate(`/teams/${id}/settings`);
+        break;
+      case "invite_parents":
+      case "add_players":
+        setShowInviteModal(true);
+        break;
     }
-  };
-
-  const handleAIDraft = () => {
-    navigate(`/teams/${id}/practice/new?ai=true`);
-  };
-
-  const handleToggleGameDay = () => {
-    setShowGameDayModal(true);
-  };
-
-  const handleConnectSchedule = () => {
-    navigate(`/teams/${id}/settings`);
-  };
-
-  const handleViewProgress = () => {
-    navigate(`/teams/${id}/progress`);
   };
 
   const palette = dashboard?.team?.palette_id
@@ -135,13 +129,16 @@ const CoachDashboard: React.FC = () => {
   const scheduleConnected = dashboard?.upcoming && dashboard.upcoming.length > 0 || 
     dashboard?.onboarding?.checklist?.find(i => i.id === 'connect_schedule')?.done;
 
+  // Check if there's a week plan (approximated by having practice card)
+  const hasWeekPlan = dashboard?.today?.practice_card?.exists || false;
+
   if (isLoading || authLoading) {
     return (
       <AppShell hideNav>
         <PageContainer>
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+          <SkeletonCard className="h-48" />
+          <SkeletonCard className="h-16" />
+          <SkeletonCard className="h-20" />
         </PageContainer>
       </AppShell>
     );
@@ -217,79 +214,41 @@ const CoachDashboard: React.FC = () => {
       }
     >
       <PageContainer className="space-y-4">
-        {/* Team Header with Branding */}
-        <AppCard
-          className="relative overflow-hidden py-4"
-          style={{
-            background: palette
-              ? `linear-gradient(135deg, hsl(${palette.primary} / 0.15), hsl(${palette.tertiary} / 0.05))`
-              : undefined,
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={dashboard.team.logo_url || dashboard.team.photo_url}
-              fallback={dashboard.team.name}
-              size="lg"
-            />
-            <div className="flex-1">
-              <h2 className="text-lg font-bold">{dashboard.team.name}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <Tag variant="accent" size="sm">
-                  <Shield className="w-3 h-3" />
-                  Coach
-                </Tag>
-                {dashboard.team.season_label && (
-                  <span className="text-xs text-text-muted">
-                    {dashboard.team.season_label}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </AppCard>
-
-        {/* Setup Checklist - only show if not all complete */}
-        <SetupChecklist
-          items={dashboard.onboarding.checklist}
-          onAction={handleChecklistAction}
-        />
-
-        {/* Today Control Center */}
-        <TodayControlCenter
+        {/* TODAY HERO - The One Thing */}
+        <TodayHeroCard
+          teamId={id!}
           date={dashboard.today.date}
           mode={dashboard.today.mode}
           gameDay={dashboard.today.game_day}
           practiceCard={dashboard.today.practice_card}
-          scheduleConnected={!!scheduleConnected}
-          onCreateCard={handleCreateCard}
-          onPublishCard={handlePublishCard}
-          onViewCard={handleViewCard}
-          onAIDraft={handleAIDraft}
-          onToggleGameDay={handleToggleGameDay}
+          hasWeekPlan={hasWeekPlan}
+          onPublish={handlePublishCard}
+          onToggleGameDay={() => setShowGameDayModal(true)}
         />
 
-        {/* Quick Actions */}
-        <QuickActions
-          onInviteParents={() => setShowInviteModal(true)}
-          onCreateWeekPlan={() => navigate(`/teams/${id}/builder`)}
-          onViewRoster={() => navigate(`/teams/${id}/roster`)}
+        {/* Quick Actions - 4 icons max */}
+        <QuickActionRow
+          onRoster={() => navigate(`/teams/${id}/roster`)}
+          onWeekPlan={() => navigate(`/teams/${id}/builder`)}
+          onProgress={() => navigate(`/teams/${id}/progress`)}
+          onInvite={() => setShowInviteModal(true)}
         />
 
-        {/* Team Pulse */}
-        <TeamPulse
+        {/* Celebration Stats - only shows when there's activity */}
+        <TeamCelebration
           playersCount={dashboard.pulse.players_count}
           activeToday={dashboard.pulse.active_today_count}
           sessionsComplete={dashboard.pulse.sessions_complete_today}
           totalShots={dashboard.pulse.total_shots_today}
-          onViewDetails={handleViewProgress}
+          onViewDetails={() => navigate(`/teams/${id}/progress`)}
         />
 
-        {/* Upcoming Events */}
-        <UpcomingEvents
-          events={dashboard.upcoming}
+        {/* Contextual Nudge - one suggestion at a time */}
+        <ContextualNudge
+          checklist={dashboard.onboarding.checklist}
+          playersCount={dashboard.pulse.players_count}
           scheduleConnected={!!scheduleConnected}
-          onConnectSchedule={handleConnectSchedule}
+          onAction={handleNudgeAction}
         />
       </PageContainer>
 
@@ -307,6 +266,16 @@ const CoachDashboard: React.FC = () => {
         teamId={id!}
         teamName={dashboard.team.name}
       />
+
+      {/* Onboarding Wizard */}
+      {showOnboarding && dashboard && (
+        <CoachOnboardingWizard
+          teamId={id!}
+          teamName={dashboard.team.name}
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      )}
     </AppShell>
   );
 };
