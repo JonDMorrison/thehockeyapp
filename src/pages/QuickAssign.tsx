@@ -252,9 +252,9 @@ const QuickAssign: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
       
       if (result.published) {
-        toast.success("Published!", "Players can now see today's practice.");
+        toast.success("Published!", "Players can now see today's workout.");
       } else {
-        toast.success("Saved", "Practice saved as draft.");
+        toast.success("Saved", "Workout saved as draft.");
       }
       
       navigate(`/teams/${id}`);
@@ -289,7 +289,7 @@ const QuickAssign: React.FC = () => {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold">Assign Practice</h1>
+              <h1 className="text-lg font-bold">Assign Workout</h1>
               <p className="text-xs text-muted-foreground">
                 {format(new Date(), "EEEE, MMM d")}
               </p>
@@ -301,7 +301,7 @@ const QuickAssign: React.FC = () => {
       <PageContainer className="space-y-4 pb-32">
         {/* Instructions */}
         <p className="text-sm text-muted-foreground">
-          Tap exercises to select them. Publish when ready.
+          Tap exercises to build today's workout. Publish when ready.
         </p>
 
         {/* Exercise Grid */}
@@ -340,7 +340,7 @@ const QuickAssign: React.FC = () => {
         {existingCard && (
           <AppCard variant="muted" className="border-warning/30">
             <p className="text-sm text-muted-foreground">
-              You already have a practice card for today. This will replace it.
+              You already have a workout for today. This will replace it.
             </p>
           </AppCard>
         )}
