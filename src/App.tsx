@@ -42,6 +42,7 @@ import TeamProgress from "./pages/TeamProgress";
 import QuickCheckoff from "./pages/QuickCheckoff";
 import WidgetSettings from "./pages/WidgetSettings";
 import CoachDashboard from "./pages/CoachDashboard";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => {
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
+            <Route path="/welcome" element={<Welcome />} />
             
             {/* Player management */}
             <Route path="/players" element={<Players />} />

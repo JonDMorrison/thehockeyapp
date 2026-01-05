@@ -30,7 +30,7 @@ const Auth: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      navigate("/players", { replace: true });
+      navigate("/welcome", { replace: true });
     }
   }, [isAuthenticated, authLoading, navigate]);
 
@@ -71,7 +71,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast.success("Welcome!", "Your account has been created.");
-          navigate("/players", { replace: true });
+          navigate("/welcome", { replace: true });
         }
       } else {
         const { error } = await signIn(email, password);
@@ -83,7 +83,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast.success("Welcome back!", "You're now signed in.");
-          navigate("/players", { replace: true });
+          navigate("/welcome", { replace: true });
         }
       }
     } catch {
