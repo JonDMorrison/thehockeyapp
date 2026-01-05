@@ -17,15 +17,17 @@ export const MarketingNav: React.FC = () => {
   const isActive = (href: string) => location.pathname === href;
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">PT</span>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--gradient-end))] flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow">
+              <span className="text-white font-bold text-sm">PT</span>
             </div>
-            <span className="font-bold text-lg hidden sm:block">PuckTrack</span>
+            <span className="font-bold text-xl hidden sm:block bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
+              PuckTrack
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -35,10 +37,11 @@ export const MarketingNav: React.FC = () => {
                 key={link.href}
                 to={link.href}
                 className={cn(
-                  "text-sm font-medium transition-colors",
+                  "text-sm font-medium transition-colors relative",
                   isActive(link.href)
                     ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                  "after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-primary after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left"
                 )}
               >
                 {link.label}
@@ -48,17 +51,20 @@ export const MarketingNav: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" className="text-sm" asChild>
               <Link to="/auth">Sign in</Link>
             </Button>
-            <Button asChild>
+            <Button 
+              className="text-sm bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:opacity-90 transition-opacity shadow-soft hover:shadow-glow" 
+              asChild
+            >
               <Link to="/auth">Get Started</Link>
             </Button>
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -72,7 +78,7 @@ export const MarketingNav: React.FC = () => {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background">
+        <div className="md:hidden border-t border-border/50 bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl">
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => (
               <Link
@@ -80,10 +86,10 @@ export const MarketingNav: React.FC = () => {
                 to={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "block py-2 text-base font-medium",
+                  "block py-2.5 text-base font-medium rounded-lg px-3 transition-colors",
                   isActive(link.href)
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground hover:bg-muted/50"
                 )}
               >
                 {link.label}
@@ -93,7 +99,10 @@ export const MarketingNav: React.FC = () => {
               <Button variant="outline" asChild className="w-full">
                 <Link to="/auth">Sign in</Link>
               </Button>
-              <Button asChild className="w-full">
+              <Button 
+                className="w-full bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))]" 
+                asChild
+              >
                 <Link to="/auth">Get Started</Link>
               </Button>
             </div>

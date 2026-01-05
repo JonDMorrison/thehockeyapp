@@ -52,6 +52,11 @@
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
+    /* Gradient stops for hero/CTA effects */
+    --gradient-start: 221 83% 53%;
+    --gradient-mid: 221 70% 60%;
+    --gradient-end: 200 70% 55%;
+    
     --secondary: 220 10% 96%;
     --secondary-foreground: 220 15% 15%;
     
