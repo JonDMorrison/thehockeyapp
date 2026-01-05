@@ -47,7 +47,7 @@ export type WeekThemeId = typeof WEEK_THEMES[number]["id"];
 export interface TaskTemplate {
   id: string;
   label: string;
-  type: "shooting" | "stickhandling" | "skating" | "conditioning" | "mobility" | "mental";
+  type: "shooting" | "conditioning" | "mobility" | "recovery" | "prep" | "other";
   icon: string;
   shots?: number;
   minutes?: number;
@@ -64,10 +64,10 @@ export const TASK_LIBRARY: TaskTemplate[] = [
   { id: "one_timers", label: "One-timers", type: "shooting", icon: "🔥", shots: 15 },
   { id: "quick_release", label: "Quick release drills", type: "shooting", icon: "⏱️", shots: 25 },
   
-  // Stickhandling
-  { id: "toe_drags", label: "Toe drags", type: "stickhandling", icon: "🦶", reps: 20 },
-  { id: "figure_8", label: "Figure 8 drills", type: "stickhandling", icon: "♾️", minutes: 5 },
-  { id: "puck_control", label: "Puck control circuit", type: "stickhandling", icon: "🎮", minutes: 10 },
+  // Prep (stickhandling, skating, etc.)
+  { id: "toe_drags", label: "Toe drags", type: "prep", icon: "🦶", reps: 20 },
+  { id: "figure_8", label: "Figure 8 drills", type: "prep", icon: "♾️", minutes: 5 },
+  { id: "puck_control", label: "Puck control circuit", type: "prep", icon: "🎮", minutes: 10 },
   
   // Conditioning
   { id: "wall_sits", label: "Wall sits", type: "conditioning", icon: "🏋️", reps: 3 },
@@ -80,9 +80,9 @@ export const TASK_LIBRARY: TaskTemplate[] = [
   { id: "foam_rolling", label: "Foam rolling", type: "mobility", icon: "💆", minutes: 10 },
   { id: "hip_openers", label: "Hip openers", type: "mobility", icon: "🦋", minutes: 5 },
   
-  // Mental
-  { id: "visualization", label: "Game visualization", type: "mental", icon: "🧠", minutes: 5 },
-  { id: "breathing", label: "Breathing exercises", type: "mental", icon: "🌬️", minutes: 3 },
+  // Recovery / Mental (using "other" type)
+  { id: "visualization", label: "Game visualization", type: "other", icon: "🧠", minutes: 5 },
+  { id: "breathing", label: "Breathing exercises", type: "other", icon: "🌬️", minutes: 3 },
 ];
 
 // Day templates - pre-built day combinations
