@@ -27,6 +27,7 @@ interface ExercisePreset {
   icon: React.ReactNode;
   target_value: number;
   target_type: string;
+  shot_type: string;
   description: string;
 }
 
@@ -37,7 +38,8 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     task_type: "shooting",
     icon: <Target className="w-5 h-5" />,
     target_value: 50,
-    target_type: "shots",
+    target_type: "reps",
+    shot_type: "wrist",
     description: "50 shots",
   },
   {
@@ -46,7 +48,8 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     task_type: "shooting",
     icon: <Target className="w-5 h-5" />,
     target_value: 30,
-    target_type: "shots",
+    target_type: "reps",
+    shot_type: "snap",
     description: "30 shots",
   },
   {
@@ -55,7 +58,8 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     task_type: "shooting",
     icon: <Target className="w-5 h-5" />,
     target_value: 25,
-    target_type: "shots",
+    target_type: "reps",
+    shot_type: "slap",
     description: "25 shots",
   },
   {
@@ -64,7 +68,8 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     task_type: "shooting",
     icon: <Target className="w-5 h-5" />,
     target_value: 25,
-    target_type: "shots",
+    target_type: "reps",
+    shot_type: "backhand",
     description: "25 shots",
   },
   {
@@ -74,6 +79,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Dumbbell className="w-5 h-5" />,
     target_value: 20,
     target_type: "reps",
+    shot_type: "none",
     description: "20 reps",
   },
   {
@@ -83,6 +89,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Dumbbell className="w-5 h-5" />,
     target_value: 25,
     target_type: "reps",
+    shot_type: "none",
     description: "25 reps",
   },
   {
@@ -92,6 +99,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Timer className="w-5 h-5" />,
     target_value: 60,
     target_type: "seconds",
+    shot_type: "none",
     description: "60 seconds",
   },
   {
@@ -101,6 +109,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Heart className="w-5 h-5" />,
     target_value: 5,
     target_type: "minutes",
+    shot_type: "none",
     description: "5 minutes",
   },
   {
@@ -110,6 +119,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Target className="w-5 h-5" />,
     target_value: 5,
     target_type: "minutes",
+    shot_type: "none",
     description: "5 minutes",
   },
   {
@@ -119,6 +129,7 @@ const EXERCISE_PRESETS: ExercisePreset[] = [
     icon: <Dumbbell className="w-5 h-5" />,
     target_value: 20,
     target_type: "reps",
+    shot_type: "none",
     description: "20 reps (10 each leg)",
   },
 ];
@@ -236,6 +247,7 @@ const QuickAssign: React.FC = () => {
         label: preset.label,
         target_type: preset.target_type,
         target_value: preset.target_value,
+        shot_type: preset.shot_type,
         shots_expected: preset.task_type === "shooting" ? preset.target_value : null,
         is_required: true,
       }));
