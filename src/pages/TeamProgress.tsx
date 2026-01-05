@@ -13,6 +13,7 @@ import { ProgressBar } from "@/components/app/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WeeklyHeatmap } from "@/components/dashboard/WeeklyHeatmap";
 import {
   ChevronLeft,
   ChevronRight,
@@ -27,6 +28,7 @@ import {
   Medal,
   Star,
   Zap,
+  BarChart3,
 } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 
@@ -376,6 +378,18 @@ const TeamProgress: React.FC = () => {
             <p className="text-xs text-text-muted">Avg per Player</p>
           </AppCard>
         </div>
+
+        {/* Weekly Activity Heatmap */}
+        <AppCard>
+          <AppCardTitle className="text-base flex items-center gap-2 mb-1">
+            <BarChart3 className="w-4 h-4 text-team-primary" />
+            Weekly Training Pattern
+          </AppCardTitle>
+          <AppCardDescription className="mb-4">
+            See which days your team trains most
+          </AppCardDescription>
+          <WeeklyHeatmap completions={completions || []} />
+        </AppCard>
 
         {/* Leaderboards */}
         <AppCard>
