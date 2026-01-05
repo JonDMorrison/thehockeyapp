@@ -6,21 +6,17 @@ import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
-import { AppCard } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
+import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import {
-  ChevronLeft,
-  Settings,
-  RefreshCw,
-  Users,
-} from "lucide-react";
-import { TodayHeroCard } from "@/components/dashboard/TodayHeroCard";
-import { QuickActionRow } from "@/components/dashboard/QuickActionRow";
-import { TeamCelebration } from "@/components/dashboard/TeamCelebration";
+import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
+import { TodayHeader } from "@/components/dashboard/TodayHeader";
+import { TodayStatus } from "@/components/dashboard/TodayStatus";
+import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
+import { CoachDock } from "@/components/dashboard/CoachDock";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
@@ -67,7 +63,7 @@ const CoachDashboard: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success("Practice published!");
+      toast.success("Workout published!");
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
     } catch {
       toast.error("Failed to publish");
@@ -92,16 +88,13 @@ const CoachDashboard: React.FC = () => {
   const scheduleConnected = dashboard?.upcoming && dashboard.upcoming.length > 0 || 
     dashboard?.onboarding?.checklist?.find(i => i.id === 'connect_schedule')?.done;
 
-  // Check if there's a week plan (approximated by having practice card)
-  const hasWeekPlan = dashboard?.today?.practice_card?.exists || false;
-
   if (isLoading || authLoading) {
     return (
       <AppShell hideNav>
-        <PageContainer>
-          <SkeletonCard className="h-48" />
-          <SkeletonCard className="h-16" />
+        <PageContainer className="space-y-4">
           <SkeletonCard className="h-20" />
+          <SkeletonCard className="h-32" />
+          <SkeletonCard className="h-24" />
         </PageContainer>
       </AppShell>
     );
@@ -145,16 +138,8 @@ const CoachDashboard: React.FC = () => {
               fallback={dashboard.team.name}
               size="sm"
             />
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold truncate">{dashboard.team.name}</h1>
-              {dashboard.team.season_label && (
-                <p className="text-xs text-text-muted">
-                  {dashboard.team.season_label}
-                </p>
-              )}
-            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon-sm"
@@ -176,37 +161,47 @@ const CoachDashboard: React.FC = () => {
         </div>
       }
     >
-      <PageContainer className="space-y-4">
-        {/* TODAY HERO - The One Thing */}
-        <TodayHeroCard
-          teamId={id!}
+      <PageContainer className="space-y-6">
+        {/* Layer 1: Context - Date, Team, Day Type */}
+        <TodayHeader
+          teamName={dashboard.team.name}
+          seasonLabel={dashboard.team.season_label}
           date={dashboard.today.date}
           mode={dashboard.today.mode}
           gameDay={dashboard.today.game_day}
-          practiceCard={dashboard.today.practice_card}
-          hasWeekPlan={hasWeekPlan}
-          onPublish={handlePublishCard}
-          onToggleGameDay={() => setShowGameDayModal(true)}
         />
 
-        {/* Quick Actions - 4 icons max */}
-        <QuickActionRow
+        {/* Layer 2: Primary Action - State-aware CTA */}
+        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+          <TodayStatus
+            teamId={id!}
+            mode={dashboard.today.mode}
+            practiceCard={dashboard.today.practice_card}
+            onPublish={handlePublishCard}
+            onToggleGameDay={() => setShowGameDayModal(true)}
+          />
+        </div>
+
+        {/* Layer 3: Status Feedback - Today Snapshot */}
+        <TodaySnapshot
+          playersActive={dashboard.pulse.active_today_count}
+          sessionsComplete={dashboard.pulse.sessions_complete_today}
+          shotsLogged={dashboard.pulse.total_shots_today}
+        />
+
+        {/* Layer 4: Navigation - Coach Dock */}
+        <CoachDock
+          playersCount={dashboard.pulse.players_count}
+          weekPlanStatus={undefined} // Could be derived from week plan data
+          activeToday={dashboard.pulse.active_today_count}
+          hasPlayers={dashboard.pulse.players_count > 0}
           onRoster={() => navigate(`/teams/${id}/roster`)}
           onWeekPlan={() => navigate(`/teams/${id}/builder`)}
           onProgress={() => navigate(`/teams/${id}/progress`)}
           onInvite={() => setShowInviteModal(true)}
         />
 
-        {/* Celebration Stats - only shows when there's activity */}
-        <TeamCelebration
-          playersCount={dashboard.pulse.players_count}
-          activeToday={dashboard.pulse.active_today_count}
-          sessionsComplete={dashboard.pulse.sessions_complete_today}
-          totalShots={dashboard.pulse.total_shots_today}
-          onViewDetails={() => navigate(`/teams/${id}/progress`)}
-        />
-
-        {/* Contextual Nudge - one suggestion at a time */}
+        {/* Contextual Nudge - One suggestion at a time */}
         <ContextualNudge
           checklist={dashboard.onboarding.checklist}
           playersCount={dashboard.pulse.players_count}
@@ -229,7 +224,6 @@ const CoachDashboard: React.FC = () => {
         teamId={id!}
         teamName={dashboard.team.name}
       />
-
     </AppShell>
   );
 };
