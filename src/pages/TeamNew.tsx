@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
-import { Loader2, ChevronLeft, Palette } from "lucide-react";
+import { Loader2, ChevronLeft, Palette, AlertCircle, RefreshCw } from "lucide-react";
 
 const teamSchema = z.object({
   name: z.string().trim().min(1, "Team name is required").max(100),
@@ -39,6 +39,7 @@ const TeamNew: React.FC = () => {
     palette_id: "toronto",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -82,7 +83,11 @@ const TeamNew: React.FC = () => {
       navigate(`/teams/${team.id}?onboarding=true`);
     },
     onError: (error: Error) => {
-      toast.error("Failed to create team", error.message);
+      if (error.message.includes("row-level security") || error.message.includes("permission")) {
+        setBackendError("We couldn't save your team due to a permissions issue. This is on us — please try again or contact support.");
+      } else {
+        setBackendError(error.message);
+      }
     },
   });
 
@@ -107,6 +112,7 @@ const TeamNew: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setBackendError(null);
     if (!validate()) return;
     createTeam.mutate(formData);
   };
@@ -216,6 +222,41 @@ const TeamNew: React.FC = () => {
               )}
             </div>
           </AppCard>
+
+          {backendError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-destructive">Something went wrong</p>
+                  <p className="text-sm text-muted-foreground">{backendError}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 pl-8">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setBackendError(null);
+                    createTeam.mutate(formData);
+                  }}
+                  disabled={createTeam.isPending}
+                >
+                  <RefreshCw className="w-4 h-4 mr-1.5" />
+                  Try Again
+                </Button>
+                <a
+                  href="https://lovable.dev/support"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Contact Support
+                </a>
+              </div>
+            </div>
+          )}
 
           <Button
             type="submit"
