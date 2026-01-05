@@ -225,7 +225,7 @@ const WidgetSettings: React.FC = () => {
                 <ol className="list-decimal list-inside text-muted-foreground space-y-1">
                   <li>Long press on your home screen</li>
                   <li>Tap the + button in the top left</li>
-                  <li>Search for "Hockey Training"</li>
+                  <li>Search for "Hockey App"</li>
                   <li>Choose your widget size and tap "Add Widget"</li>
                 </ol>
               </div>
@@ -235,7 +235,7 @@ const WidgetSettings: React.FC = () => {
                 <ol className="list-decimal list-inside text-muted-foreground space-y-1">
                   <li>Long press on your home screen</li>
                   <li>Select "Widgets"</li>
-                  <li>Find "Hockey Training" and hold to place</li>
+                  <li>Find "Hockey App" and hold to place</li>
                 </ol>
               </div>
 

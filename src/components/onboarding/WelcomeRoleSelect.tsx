@@ -42,7 +42,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
           {/* Welcome badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Welcome to Hockey Training</span>
+            <span className="text-sm font-medium text-muted-foreground">Welcome to Hockey App</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
