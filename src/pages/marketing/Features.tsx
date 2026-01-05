@@ -29,13 +29,13 @@ const Features: React.FC = () => {
       icon: ClipboardList,
       title: "Simple tasks. No confusion.",
       bullets: [
-        "Coach creates dryland assignments",
+        "Coach creates off-ice assignments",
         "Easy for any age to understand",
         "Clear daily expectations",
         "Works offline everywhere",
       ],
       image: featurePracticeCard,
-      imageAlt: "Daily dryland task card",
+      imageAlt: "Daily off-ice task card",
       gradient: "from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)]",
     },
     {
@@ -140,7 +140,7 @@ const Features: React.FC = () => {
             {/* Floating badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
               <Dumbbell className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">Dryland Training Made Simple</span>
+              <span className="text-sm font-medium text-muted-foreground">Off-Ice Training Made Simple</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
@@ -149,7 +149,7 @@ const Features: React.FC = () => {
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Simple tools for coaches to assign dryland tasks, fun rewards to keep kids motivated, 
+              Simple tools for coaches to assign off-ice tasks, fun rewards to keep kids motivated, 
               and complete control for parents.
             </p>
           </div>
@@ -229,7 +229,7 @@ const Features: React.FC = () => {
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Watch how coaches assign dryland tasks and how families track completion.
+              Watch how coaches assign off-ice tasks and how families track completion.
             </p>
             <Button 
               size="lg" 

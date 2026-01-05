@@ -61,12 +61,12 @@ const Home: React.FC = () => {
               {/* Floating badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-soft mb-8">
                 <Dumbbell className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Dryland Training App</span>
+                <span className="text-sm font-medium text-foreground">Off-Ice Training App</span>
               </div>
               
               {/* Gradient headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
-                Dryland training{" "}
+                Off-ice training{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
                   made simple
                 </span>
@@ -116,7 +116,7 @@ const Home: React.FC = () => {
               <div className="relative">
                 <PhoneMockup 
                   imageSrc={mockupToday} 
-                  imageAlt="Today's dryland tasks - simple checklist for players"
+                  imageAlt="Today's off-ice tasks - simple checklist for players"
                   showGlow
                   glowColor="primary"
                   className="w-72 lg:w-80"
@@ -140,7 +140,7 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
-              Dryland shouldn't feel like homework.
+              Off-ice training shouldn't feel like homework.
             </h2>
             
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -166,7 +166,7 @@ const Home: React.FC = () => {
                 Assign tasks. See them done.
               </h2>
               <p className="text-lg text-muted-foreground mb-10">
-                Coaches create simple dryland tasks. Kids check them off. 
+                Coaches create simple off-ice tasks. Kids check them off. 
                 Parents see progress. Everyone wins.
               </p>
 
@@ -195,7 +195,7 @@ const Home: React.FC = () => {
               <div className="relative">
                 <PhoneMockup 
                   imageSrc={mockupLockscreen} 
-                  imageAlt="Quick task checkoff for dryland training"
+                  imageAlt="Quick task checkoff for off-ice training"
                   showGlow
                   glowColor="muted"
                   className="w-72 lg:w-80"
@@ -347,7 +347,7 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Ready to simplify dryland?
+              Ready to simplify off-ice training?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
               See how coaches assign tasks and how families track progress — 
