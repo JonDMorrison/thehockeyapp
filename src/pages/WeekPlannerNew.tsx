@@ -192,7 +192,7 @@ const WeekPlannerNew: React.FC = () => {
             sort_order: index,
             shots_expected: task.shots || null,
             target_value: task.minutes || task.reps || null,
-            target_type: task.minutes ? "duration" : task.reps ? "reps" : null,
+            target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none",
             is_required: task.isRequired || false,
           }));
 
