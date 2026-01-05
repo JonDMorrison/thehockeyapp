@@ -1,15 +1,17 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Circle } from "lucide-react";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   alt?: string;
   fallback?: string;
   size?: "sm" | "default" | "lg" | "xl";
+  type?: "player" | "team";
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt = "", fallback, size = "default", ...props }, ref) => {
+  ({ className, src, alt = "", fallback, size = "default", type = "team", ...props }, ref) => {
     const [hasError, setHasError] = React.useState(false);
     
     const initials = fallback || alt
@@ -24,6 +26,13 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       default: "w-10 h-10 text-sm",
       lg: "w-12 h-12 text-base",
       xl: "w-16 h-16 text-lg",
+    };
+
+    const iconSizes = {
+      sm: 14,
+      default: 18,
+      lg: 22,
+      xl: 28,
     };
 
     return (
@@ -43,6 +52,10 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             className="h-full w-full object-cover"
             onError={() => setHasError(true)}
           />
+        ) : type === "team" ? (
+          <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary">
+            <Circle size={iconSizes[size]} strokeWidth={2.5} fill="currentColor" />
+          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary font-medium">
             {initials}
