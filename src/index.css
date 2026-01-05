@@ -227,6 +227,37 @@
     box-shadow: var(--shadow-medium);
   }
   
+  /* Glass Morphism */
+  .glass {
+    @apply bg-white/40 dark:bg-white/5 backdrop-blur-xl border border-white/20;
+  }
+
+  .glass-strong {
+    @apply bg-white/60 dark:bg-white/10 backdrop-blur-2xl border border-white/30;
+  }
+
+  /* Apple Easing */
+  .apple-ease {
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Typography Classes */
+  .text-display {
+    @apply text-5xl md:text-7xl font-extrabold tracking-[-0.02em] leading-[1.1];
+  }
+
+  .text-h1 {
+    @apply text-4xl md:text-6xl font-bold tracking-[-0.02em] leading-[1.15];
+  }
+
+  .text-h2 {
+    @apply text-3xl md:text-5xl font-bold tracking-[-0.015em] leading-[1.2];
+  }
+
+  .text-body-lg {
+    @apply text-lg leading-relaxed;
+  }
+  
   /* Skeleton animation */
   @keyframes skeleton-pulse {
     0%, 100% { opacity: 1; }
