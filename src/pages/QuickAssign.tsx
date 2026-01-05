@@ -9,9 +9,10 @@ import { AppCard } from "@/components/app/AppCard";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { format } from "date-fns";
+import { format, addDays, isSameDay, isToday, isTomorrow } from "date-fns";
 import {
   ChevronLeft,
+  ChevronRight,
   Check,
   Target,
   Dumbbell,
@@ -142,10 +143,34 @@ const QuickAssign: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { setTeamTheme } = useTeamTheme();
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const formatDateLabel = (date: Date) => {
+    if (isToday(date)) return "Today";
+    if (isTomorrow(date)) return "Tomorrow";
+    return format(date, "EEEE");
+  };
+
+  const goToPreviousDay = () => {
+    const prev = addDays(selectedDate, -1);
+    // Don't allow past dates
+    if (prev >= new Date(format(new Date(), "yyyy-MM-dd"))) {
+      setSelectedDate(prev);
+    }
+  };
+
+  const goToNextDay = () => {
+    const next = addDays(selectedDate, 1);
+    // Limit to 7 days ahead
+    const maxDate = addDays(new Date(), 7);
+    if (next <= maxDate) {
+      setSelectedDate(next);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -168,15 +193,15 @@ const QuickAssign: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Check if there's already a practice card for today
+  // Check if there's already a practice card for this date
   const { data: existingCard } = useQuery({
-    queryKey: ["practice-card-today", id, today],
+    queryKey: ["practice-card-date", id, selectedDateStr],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("practice_cards")
         .select("id, published_at")
         .eq("team_id", id)
-        .eq("date", today)
+        .eq("date", selectedDateStr)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -186,13 +211,13 @@ const QuickAssign: React.FC = () => {
 
   // Check if it's a game day
   const { data: gameDay } = useQuery({
-    queryKey: ["game-day-today", id, today],
+    queryKey: ["game-day-date", id, selectedDateStr],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_game_days")
         .select("enabled, notes")
         .eq("team_id", id)
-        .eq("date", today)
+        .eq("date", selectedDateStr)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -200,12 +225,12 @@ const QuickAssign: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Check for team events today (games or practices)
-  const { data: todayEvents } = useQuery({
-    queryKey: ["team-events-today", id, today],
+  // Check for team events on this date (games or practices)
+  const { data: dateEvents } = useQuery({
+    queryKey: ["team-events-date", id, selectedDateStr],
     queryFn: async () => {
-      const startOfDay = `${today}T00:00:00Z`;
-      const endOfDay = `${today}T23:59:59Z`;
+      const startOfDay = `${selectedDateStr}T00:00:00Z`;
+      const endOfDay = `${selectedDateStr}T23:59:59Z`;
       const { data, error } = await supabase
         .from("team_events")
         .select("id, event_type, title, start_time, location")
@@ -220,10 +245,10 @@ const QuickAssign: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  const isGameDay = gameDay?.enabled || todayEvents?.some(e => e.event_type === "game");
-  const hasPracticeEvent = todayEvents?.some(e => e.event_type === "practice");
-  const gameEvent = todayEvents?.find(e => e.event_type === "game");
-  const practiceEvent = todayEvents?.find(e => e.event_type === "practice");
+  const isGameDayFlag = gameDay?.enabled || dateEvents?.some(e => e.event_type === "game");
+  const hasPracticeEvent = dateEvents?.some(e => e.event_type === "practice");
+  const gameEvent = dateEvents?.find(e => e.event_type === "game");
+  const practiceEvent = dateEvents?.find(e => e.event_type === "practice");
 
   useEffect(() => {
     if (team?.palette_id) {
@@ -271,7 +296,7 @@ const QuickAssign: React.FC = () => {
           .from("practice_cards")
           .insert({
             team_id: id,
-            date: today,
+            date: selectedDateStr,
             tier: "rep",
             created_by_user_id: user!.id,
             published_at: publish ? new Date().toISOString() : null,
@@ -308,7 +333,8 @@ const QuickAssign: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
       
       if (result.published) {
-        toast.success("Published!", "Players can now see today's workout.");
+        const dateLabel = isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s";
+        toast.success("Published!", `Players can now see ${dateLabel} workout.`);
       } else {
         toast.success("Saved", "Workout saved as draft.");
       }
@@ -346,24 +372,44 @@ const QuickAssign: React.FC = () => {
             </Button>
             <div>
               <h1 className="text-lg font-bold">Assign Workout</h1>
-              <p className="text-xs text-muted-foreground">
-                {format(new Date(), "EEEE, MMM d")}
-              </p>
             </div>
+          </div>
+          {/* Date Picker */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={goToPreviousDay}
+              disabled={isToday(selectedDate)}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <div className="text-center min-w-[100px]">
+              <p className="text-sm font-medium">{formatDateLabel(selectedDate)}</p>
+              <p className="text-xs text-muted-foreground">{format(selectedDate, "MMM d")}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={goToNextDay}
+              disabled={isSameDay(selectedDate, addDays(new Date(), 7))}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       }
     >
       <PageContainer className="space-y-4 pb-32">
         {/* Game Day Warning */}
-        {isGameDay && (
+        {isGameDayFlag && (
           <AppCard className="border-amber-500/50 bg-amber-500/10">
             <div className="flex items-start gap-3">
               <Zap className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-amber-700 dark:text-amber-400">Game Day!</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {gameEvent ? `${gameEvent.title || "Game"} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : "Keep workouts light today."}
+                  {gameEvent ? `${gameEvent.title || "Game"} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : "Keep workouts light."}
                 </p>
               </div>
             </div>
@@ -371,12 +417,12 @@ const QuickAssign: React.FC = () => {
         )}
 
         {/* Practice Event Info */}
-        {hasPracticeEvent && !isGameDay && practiceEvent && (
+        {hasPracticeEvent && !isGameDayFlag && practiceEvent && (
           <AppCard className="border-blue-500/50 bg-blue-500/10">
             <div className="flex items-start gap-3">
               <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-700 dark:text-blue-400">Practice Today</p>
+                <p className="font-medium text-blue-700 dark:text-blue-400">Practice Scheduled</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {practiceEvent.title || "Practice"} at {format(new Date(practiceEvent.start_time), "h:mm a")}
                   {practiceEvent.location && ` • ${practiceEvent.location}`}
@@ -388,7 +434,7 @@ const QuickAssign: React.FC = () => {
 
         {/* Instructions */}
         <p className="text-sm text-muted-foreground">
-          Tap exercises to build today's workout. Publish when ready.
+          Tap exercises to build {isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s"} workout. Publish when ready.
         </p>
 
         {/* Exercise Grid */}
@@ -429,7 +475,7 @@ const QuickAssign: React.FC = () => {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
               <p className="text-sm text-muted-foreground">
-                You already have a workout for today. This will replace it.
+                You already have a workout for {isToday(selectedDate) ? "today" : formatDateLabel(selectedDate)}. This will replace it.
               </p>
             </div>
           </AppCard>
