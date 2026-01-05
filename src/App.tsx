@@ -32,6 +32,7 @@ import TeamPractice from "./pages/TeamPractice";
 import PracticeCardEditor from "./pages/PracticeCardEditor";
 import WorkoutBuilder from "./pages/WorkoutBuilder";
 import WeekPlanEditor from "./pages/WeekPlanEditor";
+import WeekPlannerNew from "./pages/WeekPlannerNew";
 import Templates from "./pages/Templates";
 import Today from "./pages/Today";
 import PlayerToday from "./pages/PlayerToday";
@@ -96,7 +97,7 @@ const App = () => {
             <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
-            <Route path="/teams/:id/builder/new" element={<WeekPlanEditor />} />
+            <Route path="/teams/:id/builder/new" element={<WeekPlannerNew />} />
             <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
             <Route path="/teams/:id/progress" element={<TeamProgress />} />
             
