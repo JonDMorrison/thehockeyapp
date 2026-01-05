@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,21 +14,29 @@ export function useAuth() {
     session: null,
     loading: true,
   });
+  
+  // Track if initial session check has completed
+  const initialSessionChecked = useRef(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      setAuthState({
-        user: session?.user ?? null,
-        session,
-        loading: false,
-      });
+      // Only update state after initial session check completes
+      // This prevents race condition where listener fires before getSession
+      if (initialSessionChecked.current) {
+        setAuthState({
+          user: session?.user ?? null,
+          session,
+          loading: false,
+        });
+      }
     });
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      initialSessionChecked.current = true;
       setAuthState({
         user: session?.user ?? null,
         session,
