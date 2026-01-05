@@ -40,6 +40,7 @@ import {
   MoreHorizontal,
   Zap,
   AlertTriangle,
+  MessageSquare,
 } from "lucide-react";
 import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
 
@@ -53,6 +54,7 @@ interface PracticeTask {
   shot_type: string;
   shots_expected: number | null;
   is_required: boolean;
+  coach_notes: string;
 }
 
 const taskTypeIcons: Record<string, React.ReactNode> = {
@@ -165,6 +167,7 @@ const PracticeCardEditor: React.FC = () => {
           shot_type: t.shot_type,
           shots_expected: t.shots_expected,
           is_required: t.is_required,
+          coach_notes: t.coach_notes || "",
         }))
       );
     }
@@ -234,6 +237,7 @@ const PracticeCardEditor: React.FC = () => {
           shot_type: task.shot_type,
           shots_expected: task.shots_expected,
           is_required: task.is_required,
+          coach_notes: task.coach_notes || null,
         }));
 
         const { error: tasksError } = await supabase
@@ -294,6 +298,7 @@ const PracticeCardEditor: React.FC = () => {
         shot_type: "none",
         shots_expected: null,
         is_required: true,
+        coach_notes: "",
       },
     ]);
   };
@@ -340,6 +345,7 @@ const PracticeCardEditor: React.FC = () => {
           shot_type: t.shot_type || "none",
           shots_expected: t.shots_expected,
           is_required: t.is_required !== false,
+          coach_notes: t.coach_notes || "",
         }))
       );
     }
@@ -628,6 +634,33 @@ const PracticeCardEditor: React.FC = () => {
                           />
                         </div>
                       )}
+
+                      {/* Coach Notes (optional) */}
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const notesInput = document.getElementById(`task-notes-${index}`);
+                            if (notesInput) {
+                              notesInput.classList.toggle("hidden");
+                              notesInput.focus();
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
+                          disabled={isLocked}
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                          {task.coach_notes ? "Edit note" : "Add coach note"}
+                        </button>
+                        <Input
+                          id={`task-notes-${index}`}
+                          value={task.coach_notes}
+                          onChange={(e) => updateTask(index, { coach_notes: e.target.value })}
+                          placeholder="Tips or instructions for this task..."
+                          className={`mt-2 text-sm ${!task.coach_notes ? "hidden" : ""}`}
+                          disabled={isLocked}
+                        />
+                      </div>
                     </div>
                   </div>
                 </AppCard>

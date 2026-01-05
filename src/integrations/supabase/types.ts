@@ -479,6 +479,7 @@ export type Database = {
       }
       practice_tasks: {
         Row: {
+          coach_notes: string | null
           created_at: string | null
           id: string
           is_required: boolean | null
@@ -493,6 +494,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          coach_notes?: string | null
           created_at?: string | null
           id?: string
           is_required?: boolean | null
@@ -507,6 +509,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          coach_notes?: string | null
           created_at?: string | null
           id?: string
           is_required?: boolean | null
