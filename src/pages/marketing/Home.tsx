@@ -16,8 +16,10 @@ import {
   ArrowRight,
   EyeOff,
   UserCheck,
-  Calendar,
+  Trophy,
   Play,
+  Dumbbell,
+  ClipboardCheck,
 } from "lucide-react";
 import mockupToday from "@/assets/mockup-today-checklist.png";
 import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
@@ -58,21 +60,21 @@ const Home: React.FC = () => {
             <div className="text-center lg:text-left">
               {/* Floating badge */}
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-soft mb-8">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-medium text-foreground">Youth Hockey App</span>
+                <Dumbbell className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Dryland Training App</span>
               </div>
               
               {/* Gradient headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
-                Build better{" "}
+                Dryland training{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  hockey habits
+                  made simple
                 </span>
               </h1>
 
               <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Simple daily routines. Automatic game-day prep. Parent-friendly tracking 
-                that works offline — in garages and driveways.
+                Coaches assign simple tasks. Kids check them off with fun rewards. 
+                Parents stay in total control — all offline-ready.
               </p>
 
               {/* Dual CTAs */}
@@ -114,7 +116,7 @@ const Home: React.FC = () => {
               <div className="relative">
                 <PhoneMockup 
                   imageSrc={mockupToday} 
-                  imageAlt="Today's Practice app screen showing a simple daily checklist"
+                  imageAlt="Today's dryland tasks - simple checklist for players"
                   showGlow
                   glowColor="primary"
                   className="w-72 lg:w-80"
@@ -138,17 +140,17 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
-              Youth hockey doesn't need more pressure.
+              Dryland shouldn't feel like homework.
             </h2>
             
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-              <p>Parents want structure — without the daily arguments.</p>
-              <p>Coaches want prepared players — without the admin overhead.</p>
+              <p>Parents want their kids to practice — without the daily arguments.</p>
+              <p>Coaches want accountability — without becoming task managers.</p>
               <p className="font-medium text-foreground pt-2">
-                Most training apps add rankings, streaks, and comparison stress.
+                Most apps add streaks, pressure, and complicated features.
               </p>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
-                We built the opposite.
+                We built something simpler.
               </p>
             </div>
           </div>
@@ -161,20 +163,20 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                A calm system that works in real hockey life
+                Assign tasks. See them done.
               </h2>
               <p className="text-lg text-muted-foreground mb-10">
-                No complicated setup. No pressure tactics. Just simple daily habits 
-                that fit between school, practice, and family time.
+                Coaches create simple dryland tasks. Kids check them off. 
+                Parents see progress. Everyone wins.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: CheckCircle, text: "Daily practice cards — clear, coach-approved routines" },
-                  { icon: Target, text: "One-tap checklists — done in under 10 seconds" },
-                  { icon: Calendar, text: "Automatic game-day mode — syncs with TeamSnap" },
-                  { icon: UserCheck, text: "Parent-controlled — you decide what's visible" },
-                  { icon: Wifi, text: "Works offline — in garages, driveways, and rinks" },
+                  { icon: ClipboardCheck, text: "Simple task cards — coaches build in minutes" },
+                  { icon: CheckCircle, text: "One-tap checkoff — kids complete in seconds" },
+                  { icon: Trophy, text: "Fun rewards & badges — motivation without pressure" },
+                  { icon: UserCheck, text: "Parent dashboard — total visibility and control" },
+                  { icon: Wifi, text: "Works offline — garages, basements, anywhere" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -193,7 +195,7 @@ const Home: React.FC = () => {
               <div className="relative">
                 <PhoneMockup 
                   imageSrc={mockupLockscreen} 
-                  imageAlt="Quick checkoff widget for fast task completion"
+                  imageAlt="Quick task checkoff for dryland training"
                   showGlow
                   glowColor="muted"
                   className="w-72 lg:w-80"
@@ -202,7 +204,7 @@ const Home: React.FC = () => {
                 {/* Saved offline badge */}
                 <div className="absolute top-12 -right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-depth border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-2">
                   <Wifi className="w-4 h-4 text-success" />
-                  <span className="text-sm font-medium">Saved offline</span>
+                  <span className="text-sm font-medium">Works offline</span>
                 </div>
               </div>
             </div>
@@ -215,36 +217,36 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              What families actually experience
+              What coaches and families love
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Real results from real hockey families — without the stress.
+              Simple tools that actually get used — by kids and parents alike.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
             {[
               {
-                icon: Heart,
-                title: "Better habits",
-                description: "5 minutes daily adds up to lasting skills.",
+                icon: ClipboardCheck,
+                title: "Tasks get done",
+                description: "Simple assignments kids actually complete.",
                 gradient: true,
               },
               {
-                icon: Target,
-                title: "More shots taken",
-                description: "Track reps without obsessing over stats.",
+                icon: Trophy,
+                title: "Fun rewards",
+                description: "Badges and milestones keep kids motivated.",
               },
               {
-                icon: Zap,
-                title: "Game-day ready",
-                description: "Auto-switch to hydration and mental prep.",
+                icon: Target,
+                title: "Real progress",
+                description: "See who's putting in the work.",
                 gradient: true,
               },
               {
                 icon: Users,
-                title: "Less friction",
-                description: "Parents and coaches see the same plan.",
+                title: "Parent control",
+                description: "Full visibility. You decide what's shared.",
               },
               {
                 icon: Shield,
@@ -290,24 +292,24 @@ const Home: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success text-sm font-semibold mb-8">
                 <Shield className="w-4 h-4" />
-                Privacy-First Design
+                Total Parent Control
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                Built for kids. Designed for trust.
+                Parents are always in charge.
               </h2>
               <p className="text-lg text-muted-foreground mb-10">
-                We're parents too. This app was designed from day one to protect 
-                your child's privacy — not exploit it.
+                We're parents too. Every feature was designed to keep you in control 
+                of your child's data and experience.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: UserCheck, text: "Parent-owned accounts — you're always in control" },
-                  { icon: EyeOff, text: "No public profiles — nothing is shared publicly" },
-                  { icon: Shield, text: "No leaderboards — we don't rank kids against each other" },
+                  { icon: UserCheck, text: "Parent-owned accounts — you manage everything" },
+                  { icon: EyeOff, text: "Nothing public — all data stays private" },
+                  { icon: Shield, text: "No leaderboards — we don't rank kids" },
                   { icon: Users, text: "No social features — zero comparison pressure" },
-                  { icon: Lock, text: "Coach visibility controls — you decide what coaches see" },
+                  { icon: Lock, text: "You control visibility — decide what coaches see" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -325,7 +327,7 @@ const Home: React.FC = () => {
             <div className="relative flex justify-center">
               <PhoneMockup 
                 imageSrc={mockupPrivacy} 
-                imageAlt="Privacy settings screen showing parent controls"
+                imageAlt="Parent control settings"
                 showGlow
                 glowColor="success"
                 className="w-72 lg:w-80"
@@ -345,10 +347,10 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Ready to see it in action?
+              Ready to simplify dryland?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Watch how coaches build weekly plans and how families use daily checklists — 
+              See how coaches assign tasks and how families track progress — 
               all in under 2 minutes.
             </p>
             
@@ -378,7 +380,7 @@ const Home: React.FC = () => {
             </div>
             
             <p className="text-sm text-muted-foreground mt-8">
-              Free for coaches. Family plans start at $5/month.
+              Free for coaches. No credit card required.
             </p>
           </div>
         </div>
