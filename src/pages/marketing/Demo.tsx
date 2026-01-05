@@ -27,7 +27,7 @@ const Demo: React.FC = () => {
   const [activeView, setActiveView] = useState<"coach" | "player">("coach");
 
   const coachFeatures = [
-    { icon: ClipboardList, text: "Assign simple tasks", description: "Create dryland assignments in minutes" },
+    { icon: ClipboardList, text: "Assign simple tasks", description: "Create off-ice assignments in minutes" },
     { icon: TrendingUp, text: "See who's completing", description: "Team dashboard shows participation" },
     { icon: Trophy, text: "Reward consistency", description: "Badges motivate without pressure" },
     { icon: Users, text: "Whole team visibility", description: "Track completion at a glance" },
@@ -72,7 +72,7 @@ const Demo: React.FC = () => {
           {/* Floating badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
             <Dumbbell className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Dryland Training Demo</span>
+            <span className="text-sm font-medium text-muted-foreground">Off-Ice Training Demo</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
@@ -81,7 +81,7 @@ const Demo: React.FC = () => {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Coaches assign dryland tasks. Kids check them off with fun rewards. Parents stay in control.
+            Coaches assign off-ice tasks. Kids check them off with fun rewards. Parents stay in control.
           </p>
 
           {/* View Switcher */}
@@ -211,7 +211,7 @@ const Demo: React.FC = () => {
               <div className="glass-strong rounded-2xl p-6">
                 <p className="text-xl font-semibold">
                   <span className="bg-gradient-to-r from-success to-[hsl(160,60%,40%)] bg-clip-text text-transparent">
-                    "My kids actually want to do their dryland now."
+                    "My kids actually want to do their off-ice training now."
                   </span>
                 </p>
               </div>
@@ -269,7 +269,7 @@ const Demo: React.FC = () => {
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Ready to simplify dryland?
+                Ready to simplify off-ice training?
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
