@@ -112,6 +112,12 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
 
   const generateMutation = useMutation({
     mutationFn: async () => {
+      // Verify session is valid before calling
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
+
       const payload: any = {
         type: mode,
         team_id: teamId,
@@ -132,8 +138,14 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
         body: payload,
       });
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (error) {
+        // Check for auth errors
+        if (error.message?.includes("401") || error.message?.includes("JWT") || error.message?.includes("Invalid")) {
+          throw new Error("Your session has expired. Please refresh and sign in again.");
+        }
+        throw error;
+      }
+      if (data?.error) throw new Error(data.error);
 
       return data.data;
     },
@@ -143,7 +155,11 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
     },
     onError: (error: Error) => {
       console.error("AI generation error:", error);
-      toast.error("Generation failed", error.message || "Couldn't generate a draft right now. Try again.");
+      const isAuthError = error.message?.includes("session") || error.message?.includes("sign in");
+      toast.error(
+        isAuthError ? "Session Expired" : "Generation failed", 
+        error.message || "Couldn't generate a draft right now. Try again."
+      );
     },
   });
 
