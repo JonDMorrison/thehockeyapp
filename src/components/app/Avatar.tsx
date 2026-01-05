@@ -1,6 +1,24 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Circle } from "lucide-react";
+
+const HockeyIcon = ({ size = 24 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {/* Hockey stick */}
+    <path d="M4 20L16 8" />
+    <path d="M16 8L20 12L18 14" />
+    {/* Puck */}
+    <ellipse cx="8" cy="18" rx="3" ry="1.5" fill="currentColor" />
+  </svg>
+);
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
@@ -29,10 +47,10 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     };
 
     const iconSizes = {
-      sm: 14,
-      default: 18,
-      lg: 22,
-      xl: 28,
+      sm: 16,
+      default: 20,
+      lg: 24,
+      xl: 32,
     };
 
     return (
@@ -54,7 +72,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
           />
         ) : type === "team" ? (
           <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary">
-            <Circle size={iconSizes[size]} strokeWidth={2.5} fill="currentColor" />
+            <HockeyIcon size={iconSizes[size]} />
           </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary font-medium">
