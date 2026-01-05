@@ -282,17 +282,21 @@ const Demo: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <AppleButton size="lg" asChild>
-                <Link to="/auth">
-                  <Users className="w-5 h-5" />
-                  I'm a Coach
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
+                {(
+                  <Link to="/auth">
+                    <Users className="w-5 h-5" />
+                    I'm a Coach
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                )}
               </AppleButton>
               <AppleButton variant="outline" size="lg" asChild>
-                <Link to="/join">
-                  <UserCircle className="w-5 h-5" />
-                  I'm a Player
-                </Link>
+                {(
+                  <Link to="/join">
+                    <UserCircle className="w-5 h-5" />
+                    I'm a Player
+                  </Link>
+                )}
               </AppleButton>
             </div>
           </div>

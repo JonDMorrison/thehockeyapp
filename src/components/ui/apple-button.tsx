@@ -62,21 +62,35 @@ const AppleButton = React.forwardRef<HTMLButtonElement, AppleButtonProps>(
     const Comp = asChild ? Slot : "button";
     const isDisabled = disabled || loading;
 
+    // IMPORTANT: Radix Slot requires exactly one child element.
+    // When `asChild` is true, we must render ONLY `{children}` inside Slot.
+    if (asChild) {
+      return (
+        <Comp
+          className={cn(appleButtonVariants({ variant, size, className }))}
+          ref={ref}
+          aria-disabled={isDisabled || undefined}
+          {...props}
+        >
+          {children}
+        </Comp>
+      );
+    }
+
     return (
       <Comp
         className={cn(appleButtonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={!asChild ? isDisabled : undefined}
-        aria-disabled={asChild ? isDisabled : undefined}
+        disabled={isDisabled}
         {...props}
       >
-        {!asChild && (loading ? (
+        {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           iconLeft
-        ))}
+        )}
         {children}
-        {!asChild && !loading && iconRight}
+        {!loading && iconRight}
       </Comp>
     );
   }

@@ -233,10 +233,12 @@ const Features: React.FC = () => {
               asChild
               className="bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] hover:scale-105 transition-transform shadow-glow text-white border-0 h-14 px-8 text-lg"
             >
-              <Link to="/demo">
-                View the demo
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
+              {(
+                <Link to="/demo">
+                  View the demo
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Link>
+              )}
             </Button>
           </div>
         </div>

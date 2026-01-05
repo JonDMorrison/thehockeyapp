@@ -82,10 +82,12 @@ const Home: React.FC = () => {
                   className="text-base px-8 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
                   asChild
                 >
-                  <Link to="/auth">
-                    <Users className="w-5 h-5 mr-2" />
-                    I'm a Coach — Get Started
-                  </Link>
+                  {(
+                    <Link to="/auth">
+                      <Users className="w-5 h-5 mr-2" />
+                      I'm a Coach — Get Started
+                    </Link>
+                  )}
                 </Button>
                 <Button 
                   size="lg" 
@@ -93,10 +95,12 @@ const Home: React.FC = () => {
                   className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary hover:scale-105 transition-all"
                   asChild
                 >
-                  <Link to="/join">
-                    <Play className="w-5 h-5 mr-2" />
-                    I'm a Player — Join Team
-                  </Link>
+                  {(
+                    <Link to="/join">
+                      <Play className="w-5 h-5 mr-2" />
+                      I'm a Player — Join Team
+                    </Link>
+                  )}
                 </Button>
               </div>
               
@@ -354,10 +358,12 @@ const Home: React.FC = () => {
                 className="text-base px-8 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
                 asChild
               >
-                <Link to="/demo">
-                  Watch the demo
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
+                {(
+                  <Link to="/demo">
+                    Watch the demo
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                )}
               </Button>
               <Button 
                 size="lg" 
@@ -365,7 +371,9 @@ const Home: React.FC = () => {
                 className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary hover:scale-105 transition-all"
                 asChild
               >
-                <Link to="/auth">Start free trial</Link>
+                {(
+                  <Link to="/auth">Start free trial</Link>
+                )}
               </Button>
             </div>
             
