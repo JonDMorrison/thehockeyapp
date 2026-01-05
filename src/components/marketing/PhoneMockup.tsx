@@ -22,6 +22,9 @@ export const PhoneMockup: React.FC<PhoneMockupProps> = ({
     primary: "bg-primary/20",
     success: "bg-success/20",
     muted: "bg-muted/30",
+    purple: "bg-[hsl(280,70%,50%)]/20",
+    orange: "bg-[hsl(35,90%,55%)]/20",
+    cyan: "bg-[hsl(200,70%,50%)]/20",
   };
 
   return (
