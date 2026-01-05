@@ -44,6 +44,7 @@ import QuickCheckoff from "./pages/QuickCheckoff";
 import WidgetSettings from "./pages/WidgetSettings";
 import CoachDashboard from "./pages/CoachDashboard";
 import Welcome from "./pages/Welcome";
+import QuickAssign from "./pages/QuickAssign";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => {
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/new" element={<TeamNew />} />
             <Route path="/teams/:id" element={<CoachDashboard />} />
+            <Route path="/teams/:id/assign" element={<QuickAssign />} />
             <Route path="/teams/:id/coach" element={<CoachDashboard />} /> {/* Legacy route */}
             <Route path="/teams/:id/settings" element={<TeamSettings />} />
             <Route path="/teams/:id/roster" element={<TeamRoster />} />

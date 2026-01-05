@@ -96,17 +96,17 @@ const heroContent: Record<HeroState, {
   create_practice: {
     icon: Sparkles,
     emoji: "✨",
-    title: "Create today's practice",
-    subtitle: "Use AI to draft a practice card in seconds.",
-    buttonLabel: "Draft with AI",
+    title: "Assign today's practice",
+    subtitle: "Pick exercises and publish in seconds.",
+    buttonLabel: "Assign Practice",
     buttonVariant: "default",
   },
   plan_week: {
-    icon: Calendar,
-    emoji: "📅",
-    title: "Plan this week",
-    subtitle: "Set up your weekly training plan to get started.",
-    buttonLabel: "Plan Week",
+    icon: Sparkles,
+    emoji: "✨",
+    title: "Assign today's practice",
+    subtitle: "Pick exercises and publish in seconds.",
+    buttonLabel: "Assign Practice",
     buttonVariant: "default",
   },
 };
@@ -126,10 +126,8 @@ export const TodayHeroCard: React.FC<TodayHeroCardProps> = (props) => {
         props.onPublish();
         break;
       case "create_practice":
-        navigate(`/teams/${props.teamId}/practice/new?ai=true`);
-        break;
       case "plan_week":
-        navigate(`/teams/${props.teamId}/builder/new`);
+        navigate(`/teams/${props.teamId}/assign`);
         break;
     }
   };

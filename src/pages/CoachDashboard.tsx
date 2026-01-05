@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
-import { useTeamOnboarding } from "@/hooks/useTeamOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -25,25 +24,18 @@ import { TeamCelebration } from "@/components/dashboard/TeamCelebration";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
-import { CoachOnboardingWizard } from "@/components/onboarding/CoachOnboardingWizard";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showGameDayModal, setShowGameDayModal] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
-  const { data: onboardingState, isLoading: onboardingLoading } = useTeamOnboarding(id);
-
-  // Check if coming from team creation
-  const isNewTeam = searchParams.get("onboarding") === "true";
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -57,28 +49,6 @@ const CoachDashboard: React.FC = () => {
       setTeamTheme(dashboard.team.palette_id);
     }
   }, [dashboard?.team?.palette_id, setTeamTheme]);
-
-  // Show onboarding if new team or not completed
-  useEffect(() => {
-    if (!onboardingLoading && !isLoading && dashboard) {
-      const shouldShowOnboarding = isNewTeam || !onboardingState?.completed;
-      setShowOnboarding(shouldShowOnboarding);
-    }
-  }, [onboardingLoading, isLoading, dashboard, onboardingState, isNewTeam]);
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    searchParams.delete("onboarding");
-    setSearchParams(searchParams, { replace: true });
-    queryClient.invalidateQueries({ queryKey: ["team-onboarding", id] });
-    queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
-  };
-
-  const handleOnboardingSkip = () => {
-    setShowOnboarding(false);
-    searchParams.delete("onboarding");
-    setSearchParams(searchParams, { replace: true });
-  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -260,15 +230,6 @@ const CoachDashboard: React.FC = () => {
         teamName={dashboard.team.name}
       />
 
-      {/* Onboarding Wizard */}
-      {showOnboarding && dashboard && (
-        <CoachOnboardingWizard
-          teamId={id!}
-          teamName={dashboard.team.name}
-          onComplete={handleOnboardingComplete}
-          onSkip={handleOnboardingSkip}
-        />
-      )}
     </AppShell>
   );
 };
