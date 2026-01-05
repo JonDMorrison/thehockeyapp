@@ -60,20 +60,23 @@ const AppleButton = React.forwardRef<HTMLButtonElement, AppleButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
+    const isDisabled = disabled || loading;
+
     return (
       <Comp
         className={cn(appleButtonVariants({ variant, size, className }))}
         ref={ref}
-        disabled={disabled || loading}
+        disabled={!asChild ? isDisabled : undefined}
+        aria-disabled={asChild ? isDisabled : undefined}
         {...props}
       >
-        {loading ? (
+        {!asChild && (loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           iconLeft
-        )}
+        ))}
         {children}
-        {!loading && iconRight}
+        {!asChild && !loading && iconRight}
       </Comp>
     );
   }
