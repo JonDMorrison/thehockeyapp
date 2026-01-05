@@ -56,43 +56,49 @@ function parseICalDate(dateStr: string, tzid?: string): Date {
 // Parse iCal content into events
 function parseICalContent(icalContent: string): ICalEvent[] {
   const events: ICalEvent[] = [];
-  const lines = icalContent.split(/\r?\n/);
+  
+  // Unfold lines first (lines starting with space/tab are continuations)
+  const unfoldedContent = icalContent.replace(/\r?\n[ \t]/g, "");
+  const lines = unfoldedContent.split(/\r?\n/);
+  
+  console.log(`[sync-schedule] Total lines in iCal: ${lines.length}`);
   
   let currentEvent: Partial<ICalEvent> | null = null;
-  let currentKey = "";
-  let currentValue = "";
+  let eventCount = 0;
   
   for (const line of lines) {
-    // Handle line folding (lines starting with space/tab are continuations)
-    if (line.startsWith(" ") || line.startsWith("\t")) {
-      currentValue += line.slice(1);
+    const trimmedLine = line.trim();
+    
+    // Check for event boundaries
+    if (trimmedLine === "BEGIN:VEVENT") {
+      currentEvent = { status: "CONFIRMED" };
+      eventCount++;
       continue;
     }
     
-    // Process previous key-value pair
-    if (currentKey && currentEvent) {
-      processKeyValue(currentEvent, currentKey, currentValue);
-    }
-    
-    // Parse new line
-    const colonIndex = line.indexOf(":");
-    if (colonIndex === -1) {
-      if (line === "BEGIN:VEVENT") {
-        currentEvent = { status: "CONFIRMED" };
-      } else if (line === "END:VEVENT" && currentEvent) {
-        if (currentEvent.uid && currentEvent.dtstart) {
-          events.push(currentEvent as ICalEvent);
-        }
-        currentEvent = null;
+    if (trimmedLine === "END:VEVENT" && currentEvent) {
+      if (currentEvent.uid && currentEvent.dtstart) {
+        events.push(currentEvent as ICalEvent);
+        console.log(`[sync-schedule] Parsed event: ${currentEvent.summary} @ ${currentEvent.dtstart}`);
+      } else {
+        console.log(`[sync-schedule] Skipped incomplete event: uid=${currentEvent.uid}, dtstart=${currentEvent.dtstart}`);
       }
-      currentKey = "";
-      currentValue = "";
+      currentEvent = null;
       continue;
     }
     
-    currentKey = line.slice(0, colonIndex);
-    currentValue = line.slice(colonIndex + 1);
+    // Parse key:value pairs within an event
+    if (currentEvent) {
+      const colonIndex = trimmedLine.indexOf(":");
+      if (colonIndex > 0) {
+        const key = trimmedLine.slice(0, colonIndex);
+        const value = trimmedLine.slice(colonIndex + 1);
+        processKeyValue(currentEvent, key, value);
+      }
+    }
   }
+  
+  console.log(`[sync-schedule] Found ${eventCount} VEVENT blocks, parsed ${events.length} valid events`);
   
   return events;
 }
@@ -257,6 +263,10 @@ Deno.serve(async (req) => {
       }
 
       const icalContent = await icalResponse.text();
+      
+      // Debug: Log first 500 chars of iCal content
+      console.log(`[sync-schedule] iCal content preview: ${icalContent.slice(0, 500)}`);
+      console.log(`[sync-schedule] iCal total length: ${icalContent.length} chars`);
       
       if (!icalContent.includes("BEGIN:VCALENDAR")) {
         return new Response(
