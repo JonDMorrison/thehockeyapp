@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import { AppShell, PageContainer } from "@/components/app/AppShell";
-import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
-import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
+import { Loader2, Mail, Lock, User, ChevronLeft, Sparkles } from "lucide-react";
+import { AppleButton } from "@/components/ui/apple-button";
 
 const authSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -95,130 +93,165 @@ const Auth: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-team-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <AppShell hideNav>
-      <PageContainer className="min-h-screen flex flex-col justify-center">
-        <div className="max-w-sm mx-auto w-full">
-          {/* Logo/Brand area */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-              <div className="w-8 h-8 rounded-lg bg-team-primary" />
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-primary/15 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
+      
+      {/* Floating decorative elements */}
+      <div className="absolute top-20 left-[10%] w-24 h-24 bg-primary/10 rounded-3xl rotate-12 blur-sm" />
+      <div className="absolute bottom-32 right-[15%] w-16 h-16 bg-primary/15 rounded-2xl -rotate-12 blur-sm" />
+      
+      {/* Content */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-6 py-12">
+        <div className="max-w-md mx-auto w-full">
+          {/* Header */}
+          <div className="text-center mb-10">
+            {/* Animated Logo */}
+            <div className="relative inline-block mb-6">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/25">
+                <Sparkles className="w-10 h-10 text-primary-foreground" />
+              </div>
+              <div className="absolute -inset-2 bg-primary/20 rounded-[28px] blur-xl -z-10 animate-pulse" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Hockey Training</h1>
-            <p className="text-text-muted text-sm mt-1">
-              {mode === "signin" ? "Welcome back" : "Create your parent account"}
+            
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              {mode === "signin" ? "Welcome back" : "Join the team"}
+            </h1>
+            <p className="text-muted-foreground">
+              {mode === "signin" 
+                ? "Sign in to track your training progress" 
+                : "Create your account to get started"}
             </p>
           </div>
 
-          <AppCard>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Form Card */}
+          <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl shadow-primary/5 border border-border/50">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {mode === "signup" && (
                 <div className="space-y-2">
-                  <Label htmlFor="displayName" className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-text-muted" />
+                  <Label htmlFor="displayName" className="text-sm font-medium">
                     Your Name
                   </Label>
-                  <Input
-                    id="displayName"
-                    type="text"
-                    placeholder="First and last name"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className={errors.displayName ? "border-destructive" : ""}
-                    autoComplete="name"
-                  />
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="First and last name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.displayName ? "border-destructive" : ""}`}
+                      autoComplete="name"
+                    />
+                  </div>
                   {errors.displayName && (
-                    <p className="text-xs text-destructive">{errors.displayName}</p>
+                    <p className="text-xs text-destructive pl-1">{errors.displayName}</p>
                   )}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-text-muted" />
+                <Label htmlFor="email" className="text-sm font-medium">
                   Email
                 </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={errors.email ? "border-destructive" : ""}
-                  autoComplete="email"
-                  autoFocus
-                />
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.email ? "border-destructive" : ""}`}
+                    autoComplete="email"
+                    autoFocus
+                  />
+                </div>
                 {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email}</p>
+                  <p className="text-xs text-destructive pl-1">{errors.email}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-text-muted" />
+                <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={errors.password ? "border-destructive" : ""}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                />
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  />
+                </div>
                 {errors.password && (
-                  <p className="text-xs text-destructive">{errors.password}</p>
+                  <p className="text-xs text-destructive pl-1">{errors.password}</p>
                 )}
               </div>
 
-              <Button
+              <AppleButton
                 type="submit"
-                variant="team"
-                size="lg"
-                className="w-full"
+                variant="primary"
+                size="xl"
+                className="w-full mt-6"
                 disabled={loading}
+                loading={loading}
               >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {mode === "signin" ? "Sign In" : "Create Account"}
-              </Button>
+              </AppleButton>
             </form>
 
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(mode === "signin" ? "signup" : "signin");
-                  setErrors({});
-                }}
-                className="text-sm text-team-primary hover:underline"
-              >
-                {mode === "signin"
-                  ? "Don't have an account? Sign up"
-                  : "Already have an account? Sign in"}
-              </button>
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-3 text-muted-foreground">or</span>
+              </div>
             </div>
-          </AppCard>
+
+            {/* Toggle mode */}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setErrors({});
+              }}
+              className="w-full py-3 text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              {mode === "signin"
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+          </div>
 
           {/* Back to home link */}
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-foreground transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               Back to home
             </button>
           </div>
         </div>
-      </PageContainer>
-    </AppShell>
+      </div>
+    </div>
   );
 };
 
