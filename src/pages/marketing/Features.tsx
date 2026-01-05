@@ -9,10 +9,12 @@ import {
   Zap,
   Calendar,
   Sparkles,
-  Camera,
+  Trophy,
   Shield,
   CheckCircle,
   ArrowRight,
+  Dumbbell,
+  Users,
 } from "lucide-react";
 import featurePracticeCard from "@/assets/feature-practice-card.png";
 import featureCheckoff from "@/assets/feature-checkoff.png";
@@ -25,90 +27,91 @@ const Features: React.FC = () => {
   const features = [
     {
       icon: ClipboardList,
-      title: "Clear plans. No guessing.",
+      title: "Simple tasks. No confusion.",
       bullets: [
-        "Coach-built or AI-assisted",
-        "Rec / Rep / Elite tiers",
-        "Shooting-only or balanced",
-        "Works offline",
+        "Coach creates dryland assignments",
+        "Easy for any age to understand",
+        "Clear daily expectations",
+        "Works offline everywhere",
       ],
       image: featurePracticeCard,
-      imageAlt: "Daily practice card on phone",
+      imageAlt: "Daily dryland task card",
       gradient: "from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)]",
     },
     {
       icon: CheckCircle,
-      title: "Consistency without nagging.",
+      title: "One tap. Done.",
       bullets: [
-        "One-tap checklist",
-        "Optional widgets",
-        "Parent or player checkoff",
-        "Quiet shot totals",
+        "Kids check off tasks in seconds",
+        "Parents can help verify",
+        "No complicated tracking",
+        "Completion is automatic",
       ],
       image: featureCheckoff,
-      imageAlt: "Checklist being checked off",
+      imageAlt: "One-tap task checkoff",
       gradient: "from-success via-[hsl(142,60%,45%)] to-[hsl(160,60%,40%)]",
     },
     {
-      icon: Calendar,
-      title: "Game days handled for you.",
+      icon: Trophy,
+      title: "Fun rewards that motivate.",
       bullets: [
-        "Syncs with TeamSnap (iCal)",
-        "Automatically switches modes",
-        "Hydration, stretching, visualization",
+        "Earn badges for consistency",
+        "Celebrate milestones",
+        "No public leaderboards",
+        "Positive reinforcement only",
       ],
       image: featureGameday,
-      imageAlt: "Game Day prep screen",
-      gradient: "from-[hsl(280,70%,50%)] via-[hsl(260,60%,55%)] to-primary",
-    },
-    {
-      icon: Sparkles,
-      title: "Build a week in minutes.",
-      bullets: [
-        "Simple wizard",
-        "Shooting-only mode available",
-        "AI drafts, coach approves",
-        "Templates",
-      ],
-      image: featureBuilder,
-      imageAlt: "Coach workout builder",
+      imageAlt: "Rewards and badges",
       gradient: "from-[hsl(35,90%,55%)] via-[hsl(25,85%,50%)] to-[hsl(15,80%,50%)]",
     },
     {
-      icon: Camera,
-      title: "Effort, not performance.",
+      icon: Sparkles,
+      title: "Build tasks in minutes.",
       bullets: [
-        "Optional photo upload",
-        "Private by default",
-        "Parent-controlled",
-        "No public sharing",
+        "Simple task builder for coaches",
+        "AI can help draft ideas",
+        "Copy from templates",
+        "Customize per week",
+      ],
+      image: featureBuilder,
+      imageAlt: "Coach task builder",
+      gradient: "from-[hsl(280,70%,50%)] via-[hsl(260,60%,55%)] to-primary",
+    },
+    {
+      icon: Users,
+      title: "Coaches see who's doing the work.",
+      bullets: [
+        "Team completion dashboard",
+        "See who checked off today",
+        "No individual rankings",
+        "Celebrate participation",
       ],
       image: featurePhoto,
-      imageAlt: "Photo upload with privacy",
+      imageAlt: "Coach visibility dashboard",
       gradient: "from-[hsl(200,70%,50%)] via-[hsl(190,65%,45%)] to-[hsl(180,60%,40%)]",
     },
     {
       icon: Shield,
-      title: "Not social media. Not a leaderboard.",
+      title: "Total parent control.",
       bullets: [
-        "No rankings",
-        "No public feeds",
-        "No child messaging",
-        "Privacy first",
+        "Parents own the account",
+        "Nothing is ever public",
+        "No social features",
+        "You decide what's shared",
       ],
       image: featurePrivacy,
-      imageAlt: "Privacy settings screen",
+      imageAlt: "Parent control settings",
       gradient: "from-success via-[hsl(142,60%,45%)] to-[hsl(160,60%,40%)]",
     },
   ];
 
   const featureLabels = [
-    "Daily Practice Cards",
-    "Ultra-Fast Checkoff",
-    "Automatic Game-Day Prep",
-    "Workout Builder (with AI)",
-    "Proof of Work (Optional)",
-    "Safety & Privacy",
+    "Simple Task Cards",
+    "Quick Checkoff",
+    "Fun Rewards",
+    "Easy Task Builder",
+    "Coach Visibility",
+    "Parent Control",
   ];
 
   return (
@@ -136,18 +139,18 @@ const Features: React.FC = () => {
           <div className="text-center max-w-3xl mx-auto">
             {/* Floating badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">Designed for Youth Hockey</span>
+              <Dumbbell className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">Dryland Training Made Simple</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Features that respect families
+                Everything you need. Nothing you don't.
               </span>
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything coaches need. Nothing that creates pressure. 
-              Simple tools for real hockey life.
+              Simple tools for coaches to assign dryland tasks, fun rewards to keep kids motivated, 
+              and complete control for parents.
             </p>
           </div>
         </div>
@@ -226,7 +229,7 @@ const Features: React.FC = () => {
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Experience the coach view and parent/player view side by side.
+              Watch how coaches assign dryland tasks and how families track completion.
             </p>
             <Button 
               size="lg" 

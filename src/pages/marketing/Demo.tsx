@@ -4,17 +4,13 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { AppleButton } from "@/components/ui/apple-button";
-import { AppleTabs } from "@/components/ui/apple-tabs";
 import {
   ArrowRight,
   Users,
   UserCircle,
-  LayoutDashboard,
-  Calendar,
-  Zap,
-  Link2,
+  ClipboardList,
   CheckCircle,
-  Smartphone,
+  Trophy,
   WifiOff,
   TrendingUp,
   Shield,
@@ -22,6 +18,7 @@ import {
   Eye,
   Sparkles,
   Play,
+  Dumbbell,
 } from "lucide-react";
 import demoCoachDashboard from "@/assets/demo-coach-dashboard.png";
 import demoPlayerToday from "@/assets/demo-player-today.png";
@@ -30,25 +27,24 @@ const Demo: React.FC = () => {
   const [activeView, setActiveView] = useState<"coach" | "player">("coach");
 
   const coachFeatures = [
-    { icon: LayoutDashboard, text: "Coach Dashboard", description: "See team activity at a glance" },
-    { icon: Calendar, text: "Today control center", description: "Manage daily practice cards" },
-    { icon: TrendingUp, text: "Participation snapshot", description: "Track who's completing workouts" },
-    { icon: Zap, text: "Auto game-day detection", description: "Automatically adjusts for games" },
-    { icon: Link2, text: "TeamSnap sync", description: "Import your schedule via iCal" },
+    { icon: ClipboardList, text: "Assign simple tasks", description: "Create dryland assignments in minutes" },
+    { icon: TrendingUp, text: "See who's completing", description: "Team dashboard shows participation" },
+    { icon: Trophy, text: "Reward consistency", description: "Badges motivate without pressure" },
+    { icon: Users, text: "Whole team visibility", description: "Track completion at a glance" },
   ];
 
   const playerFeatures = [
-    { icon: CheckCircle, text: "Clear daily checklist", description: "Simple tasks, no confusion" },
-    { icon: Smartphone, text: "One-tap completion", description: "Mark done in seconds" },
-    { icon: WifiOff, text: "Offline support", description: "Works without internet" },
-    { icon: TrendingUp, text: "Calm progress tracking", description: "No pressure, just consistency" },
+    { icon: CheckCircle, text: "Clear daily tasks", description: "Know exactly what to do today" },
+    { icon: Play, text: "One-tap completion", description: "Check off tasks in seconds" },
+    { icon: Trophy, text: "Earn fun rewards", description: "Badges celebrate consistency" },
+    { icon: WifiOff, text: "Works offline", description: "No internet needed" },
   ];
 
   const privacyFeatures = [
     { icon: Eye, title: "Nothing is public", description: "All data stays within your team" },
     { icon: Users, title: "No comparisons", description: "Kids aren't ranked against each other" },
-    { icon: Zap, title: "No streak pressure", description: "Missing a day is okay" },
-    { icon: Lock, title: "Intentionally private", description: "Built this way on purpose" },
+    { icon: Shield, title: "Parent-controlled", description: "You decide what coaches see" },
+    { icon: Lock, title: "Built for families", description: "Privacy by design, not afterthought" },
   ];
 
   return (
@@ -75,17 +71,17 @@ const Demo: React.FC = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Floating badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
-            <Play className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Interactive Demo</span>
+            <Dumbbell className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-muted-foreground">Dryland Training Demo</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-              One system. Two simple experiences.
+              Simple for everyone.
             </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Built for coaches. Trusted by parents. See how both sides work together.
+            Coaches assign dryland tasks. Kids check them off with fun rewards. Parents stay in control.
           </p>
 
           {/* View Switcher */}
@@ -131,7 +127,7 @@ const Demo: React.FC = () => {
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                  What coaches see
+                  Assign tasks. See results.
                 </span>
               </h2>
 
@@ -156,7 +152,7 @@ const Demo: React.FC = () => {
               <div className="glass-strong rounded-2xl p-6">
                 <p className="text-xl font-semibold">
                   <span className="bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] bg-clip-text text-transparent">
-                    "Less chasing. Better preparation."
+                    "Finally, I can see who's putting in the work."
                   </span>
                 </p>
               </div>
@@ -190,7 +186,7 @@ const Demo: React.FC = () => {
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-success via-[hsl(152,50%,45%)] to-[hsl(160,60%,40%)] bg-clip-text text-transparent">
-                  What families see
+                  Simple tasks. Fun rewards.
                 </span>
               </h2>
 
@@ -215,7 +211,7 @@ const Demo: React.FC = () => {
               <div className="glass-strong rounded-2xl p-6">
                 <p className="text-xl font-semibold">
                   <span className="bg-gradient-to-r from-success to-[hsl(160,60%,40%)] bg-clip-text text-transparent">
-                    "No nagging. Just habits."
+                    "My kids actually want to do their dryland now."
                   </span>
                 </p>
               </div>
@@ -230,12 +226,12 @@ const Demo: React.FC = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
               <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">Privacy First</span>
+              <span className="text-sm font-medium text-muted-foreground">Total Parent Control</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Everything here is private.
+                Parents are always in charge.
               </span>
             </h2>
           </div>
@@ -273,7 +269,7 @@ const Demo: React.FC = () => {
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Ready to try it with your team?
+                Ready to simplify dryland?
               </span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
