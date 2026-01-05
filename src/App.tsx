@@ -97,6 +97,7 @@ const App = () => {
             <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
             <Route path="/teams/:id/practice" element={<TeamPractice />} />
             <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/practice/:cardId" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
             <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
             <Route path="/teams/:id/builder/new" element={<WeekPlannerNew />} />
