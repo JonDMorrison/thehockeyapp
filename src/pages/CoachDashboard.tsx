@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
 import { useTeamOnboarding } from "@/hooks/useTeamOnboarding";
-import { teamPalettes } from "@/lib/themes";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -13,13 +12,11 @@ import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
-import { Tag } from "@/components/app/Tag";
 import { toast } from "@/components/app/Toast";
 import {
   ChevronLeft,
   Settings,
   RefreshCw,
-  Shield,
   Users,
 } from "lucide-react";
 import { TodayHeroCard } from "@/components/dashboard/TodayHeroCard";
@@ -121,10 +118,6 @@ const CoachDashboard: React.FC = () => {
         break;
     }
   };
-
-  const palette = dashboard?.team?.palette_id
-    ? teamPalettes.find((p) => p.id === dashboard.team.palette_id)
-    : null;
 
   const scheduleConnected = dashboard?.upcoming && dashboard.upcoming.length > 0 || 
     dashboard?.onboarding?.checklist?.find(i => i.id === 'connect_schedule')?.done;
