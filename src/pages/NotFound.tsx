@@ -20,10 +20,12 @@ const NotFound = () => {
           description={`The page "${location.pathname}" doesn't exist or has been moved.`}
         />
         <Button asChild variant="team" className="mt-4">
-          <Link to="/">
-            <Home className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
+          {(
+            <Link to="/">
+              <Home className="w-4 h-4 mr-2" />
+              Back to Home
+            </Link>
+          )}
         </Button>
       </PageContainer>
     </AppShell>
