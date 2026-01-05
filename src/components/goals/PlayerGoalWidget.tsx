@@ -1,12 +1,14 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Target, Clock, Trophy, Flame } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GoalThermometer } from './GoalThermometer';
 import { ContributorLeaderboard } from './ContributorLeaderboard';
 import { useTeamGoal, useGoalContributions } from '@/hooks/useTeamGoal';
+import { fireGoalConfetti } from '@/lib/confetti';
 
 interface PlayerGoalWidgetProps {
   teamId: string;
@@ -24,6 +26,20 @@ const motivationalMessages = [
 export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
   const { data: goal, isLoading } = useTeamGoal(teamId);
   const { data: contributions } = useGoalContributions(goal?.id);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // Trigger celebration on first load if goal is completed
+  useEffect(() => {
+    if (goal?.status === 'completed' && !showCelebration) {
+      // Check if we've already shown this celebration
+      const celebrationKey = `goal_celebrated_${goal.id}`;
+      if (!sessionStorage.getItem(celebrationKey)) {
+        sessionStorage.setItem(celebrationKey, 'true');
+        setShowCelebration(true);
+        fireGoalConfetti();
+      }
+    }
+  }, [goal?.status, goal?.id, showCelebration]);
 
   if (isLoading) {
     return (
@@ -103,17 +119,25 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
               </div>
 
               {/* Motivational message */}
-              <div className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium',
-                goal.status === 'completed'
-                  ? 'bg-green-500/10 text-green-700'
-                  : progress >= 75
-                    ? 'bg-orange-500/10 text-orange-700'
-                    : 'bg-primary/10 text-primary'
-              )}>
-                <MessageIcon className="w-4 h-4" />
-                {message.message}
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={goal.status === 'completed' ? 'completed' : 'progress'}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium',
+                    goal.status === 'completed'
+                      ? 'bg-green-500/10 text-green-700'
+                      : progress >= 75
+                        ? 'bg-orange-500/10 text-orange-700'
+                        : 'bg-primary/10 text-primary'
+                  )}
+                >
+                  <MessageIcon className={cn('w-4 h-4', goal.status === 'completed' && 'animate-bounce')} />
+                  {message.message}
+                </motion.div>
+              </AnimatePresence>
 
               {/* Leaderboard if enabled */}
               {goal.show_leaderboard && contributions && contributions.length > 0 && (

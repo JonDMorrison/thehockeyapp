@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Sparkles, Target } from 'lucide-react';
+import { fireGoalConfetti } from '@/lib/confetti';
 
 interface GoalThermometerProps {
   current: number;
@@ -10,6 +11,7 @@ interface GoalThermometerProps {
   size?: 'sm' | 'md' | 'lg';
   showMilestones?: boolean;
   className?: string;
+  onComplete?: () => void;
 }
 
 const milestones = [25, 50, 75, 100];
@@ -21,8 +23,12 @@ export function GoalThermometer({
   size = 'md',
   showMilestones = true,
   className,
+  onComplete,
 }: GoalThermometerProps) {
   const [animatedProgress, setAnimatedProgress] = useState(0);
+  const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
+  const prevProgressRef = useRef(0);
+  
   const progress = Math.min((current / target) * 100, 100);
   const isComplete = progress >= 100;
   const isHot = progress >= 75;
@@ -32,6 +38,19 @@ export function GoalThermometer({
     const timer = setTimeout(() => setAnimatedProgress(progress), 100);
     return () => clearTimeout(timer);
   }, [progress]);
+
+  // Trigger confetti when goal is completed
+  useEffect(() => {
+    if (isComplete && !hasTriggeredConfetti && prevProgressRef.current < 100) {
+      setHasTriggeredConfetti(true);
+      // Delay confetti to sync with animation
+      setTimeout(() => {
+        fireGoalConfetti();
+        onComplete?.();
+      }, 1000);
+    }
+    prevProgressRef.current = progress;
+  }, [isComplete, hasTriggeredConfetti, progress, onComplete]);
 
   const sizeClasses = {
     sm: { container: 'h-24 w-8', bulb: 'w-10 h-10 -bottom-2', text: 'text-xs' },
