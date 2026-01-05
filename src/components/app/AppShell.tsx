@@ -2,11 +2,13 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Home, Users, User, Settings } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { UserMenu } from "./UserMenu";
 
 interface AppShellProps {
   children: React.ReactNode;
   header?: React.ReactNode;
   hideNav?: boolean;
+  hideUserMenu?: boolean;
 }
 
 interface NavItem {
@@ -22,15 +24,22 @@ const navItems: NavItem[] = [
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
-export const AppShell: React.FC<AppShellProps> = ({ children, header, hideNav = false }) => {
+export const AppShell: React.FC<AppShellProps> = ({ children, header, hideNav = false, hideUserMenu = false }) => {
   const location = useLocation();
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      {/* Fixed user menu in top right */}
+      {!hideUserMenu && (
+        <div className="fixed top-3 right-3 z-50">
+          <UserMenu />
+        </div>
+      )}
+      
       {/* Header */}
       {header && (
         <header className="sticky top-0 z-40 safe-top bg-background/80 backdrop-blur-lg border-b border-border">
-          <div className="px-4 py-3">
+          <div className="px-4 py-3 pr-14">
             {header}
           </div>
         </header>
