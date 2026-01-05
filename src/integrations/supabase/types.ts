@@ -1301,6 +1301,7 @@ export type Database = {
           created_by_user_id: string
           id: string
           name: string
+          program_id: string | null
           start_date: string
           status: string | null
           team_id: string
@@ -1313,6 +1314,7 @@ export type Database = {
           created_by_user_id: string
           id?: string
           name: string
+          program_id?: string | null
           start_date: string
           status?: string | null
           team_id: string
@@ -1325,6 +1327,7 @@ export type Database = {
           created_by_user_id?: string
           id?: string
           name?: string
+          program_id?: string | null
           start_date?: string
           status?: string | null
           team_id?: string
@@ -1333,6 +1336,13 @@ export type Database = {
           use_tier_scaling?: boolean | null
         }
         Relationships: [
+          {
+            foreignKeyName: "team_week_plans_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "training_programs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_week_plans_team_id_fkey"
             columns: ["team_id"]
@@ -1418,6 +1428,65 @@ export type Database = {
           values_text?: string | null
         }
         Relationships: []
+      }
+      training_programs: {
+        Row: {
+          created_at: string | null
+          created_by_user_id: string
+          days_per_week: number | null
+          description: string | null
+          end_date: string
+          focus_areas: string[] | null
+          id: string
+          name: string
+          start_date: string
+          status: string | null
+          team_id: string
+          tier: string | null
+          time_budget_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by_user_id: string
+          days_per_week?: number | null
+          description?: string | null
+          end_date: string
+          focus_areas?: string[] | null
+          id?: string
+          name: string
+          start_date: string
+          status?: string | null
+          team_id: string
+          tier?: string | null
+          time_budget_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by_user_id?: string
+          days_per_week?: number | null
+          description?: string | null
+          end_date?: string
+          focus_areas?: string[] | null
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string | null
+          team_id?: string
+          tier?: string | null
+          time_budget_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_programs_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_privacy_settings: {
         Row: {

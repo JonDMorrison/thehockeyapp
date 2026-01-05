@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
@@ -14,13 +15,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
 import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
-import { TodayStatus } from "@/components/dashboard/TodayStatus";
 import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
 import { CoachDock } from "@/components/dashboard/CoachDock";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
+import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +31,8 @@ const CoachDashboard: React.FC = () => {
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showGameDayModal, setShowGameDayModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showProgramWizard, setShowProgramWizard] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
@@ -172,16 +175,13 @@ const CoachDashboard: React.FC = () => {
           gameDay={dashboard.today.game_day}
         />
 
-        {/* Layer 2: Primary Action - State-aware CTA */}
-        <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-          <TodayStatus
-            teamId={id!}
-            mode={dashboard.today.mode}
-            practiceCard={dashboard.today.practice_card}
-            onPublish={handlePublishCard}
-            onToggleGameDay={() => setShowGameDayModal(true)}
-          />
-        </div>
+        {/* Layer 2: Planning Hub - 3 Creative Cards */}
+        <PlanningHubCards
+          teamId={id!}
+          onAddWorkout={() => setShowDatePicker(true)}
+          onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+          onCreateProgram={() => setShowProgramWizard(true)}
+        />
 
         {/* Team Goal Section */}
         <TeamGoalCard
@@ -230,6 +230,21 @@ const CoachDashboard: React.FC = () => {
         onOpenChange={setShowGameDayModal}
         teamId={id!}
         teamName={dashboard.team.name}
+      />
+
+      <DatePickerSheet
+        open={showDatePicker}
+        onOpenChange={setShowDatePicker}
+        onSelectDate={(date) => {
+          const dateStr = format(date, "yyyy-MM-dd");
+          navigate(`/teams/${id}/assign?date=${dateStr}`);
+        }}
+      />
+
+      <ProgramBuilderWizard
+        open={showProgramWizard}
+        onOpenChange={setShowProgramWizard}
+        teamId={id!}
       />
     </AppShell>
   );
