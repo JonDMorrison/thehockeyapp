@@ -9,7 +9,7 @@ import { AppCard } from "@/components/app/AppCard";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { format, addDays, isSameDay, isToday, isTomorrow } from "date-fns";
+import { format, addDays, isSameDay, isToday, isTomorrow, subDays } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,7 +22,15 @@ import {
   Zap,
   Calendar,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface ExercisePreset {
   id: string;
@@ -146,6 +154,7 @@ const QuickAssign: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { setTeamTheme } = useTeamTheme();
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
+  const [copySheetOpen, setCopySheetOpen] = useState(false);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
 
@@ -245,6 +254,32 @@ const QuickAssign: React.FC = () => {
     enabled: !!user && !!id,
   });
 
+  // Fetch recent practice cards with tasks for copy feature
+  const { data: recentCards } = useQuery({
+    queryKey: ["recent-practice-cards", id],
+    queryFn: async () => {
+      const weekAgo = format(subDays(new Date(), 14), "yyyy-MM-dd");
+      const { data, error } = await supabase
+        .from("practice_cards")
+        .select(`
+          id, 
+          date, 
+          title,
+          practice_tasks (
+            id, task_type, label, target_type, target_value, shot_type, shots_expected, is_required, sort_order
+          )
+        `)
+        .eq("team_id", id)
+        .gte("date", weekAgo)
+        .neq("date", selectedDateStr)
+        .order("date", { ascending: false })
+        .limit(7);
+      if (error) throw error;
+      return data?.filter(card => card.practice_tasks && card.practice_tasks.length > 0);
+    },
+    enabled: !!user && !!id && copySheetOpen,
+  });
+
   const isGameDayFlag = gameDay?.enabled || dateEvents?.some(e => e.event_type === "game");
   const hasPracticeEvent = dateEvents?.some(e => e.event_type === "practice");
   const gameEvent = dateEvents?.find(e => e.event_type === "game");
@@ -267,6 +302,79 @@ const QuickAssign: React.FC = () => {
       return next;
     });
   };
+
+  const copyWorkoutMutation = useMutation({
+    mutationFn: async (sourceCardId: string) => {
+      const sourceCard = recentCards?.find(c => c.id === sourceCardId);
+      if (!sourceCard?.practice_tasks?.length) {
+        throw new Error("No tasks to copy");
+      }
+
+      let practiceCardId = existingCard?.id;
+
+      // Create or update practice card
+      if (practiceCardId) {
+        // Delete existing tasks
+        await supabase.from("practice_tasks").delete().eq("practice_card_id", practiceCardId);
+        
+        // Update card
+        const { error } = await supabase
+          .from("practice_cards")
+          .update({
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", practiceCardId);
+        if (error) throw error;
+      } else {
+        // Create new card
+        const { data: newCard, error } = await supabase
+          .from("practice_cards")
+          .insert({
+            team_id: id,
+            date: selectedDateStr,
+            tier: "rep",
+            created_by_user_id: user!.id,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        practiceCardId = newCard.id;
+      }
+
+      // Copy tasks from source card
+      const tasks = sourceCard.practice_tasks.map((task, index) => ({
+        practice_card_id: practiceCardId,
+        sort_order: task.sort_order ?? index,
+        task_type: task.task_type,
+        label: task.label,
+        target_type: task.target_type,
+        target_value: task.target_value,
+        shot_type: task.shot_type,
+        shots_expected: task.shots_expected,
+        is_required: task.is_required,
+      }));
+
+      const { error: tasksError } = await supabase
+        .from("practice_tasks")
+        .insert(tasks);
+      if (tasksError) throw tasksError;
+
+      return { taskCount: tasks.length };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
+      queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
+      queryClient.invalidateQueries({ queryKey: ["practice-card-date", id] });
+      
+      const dateLabel = isToday(selectedDate) ? "today" : formatDateLabel(selectedDate);
+      toast.success("Copied!", `${result.taskCount} tasks copied to ${dateLabel}.`);
+      setCopySheetOpen(false);
+      navigate(`/teams/${id}`);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed", error.message);
+    },
+  });
 
   const assignMutation = useMutation({
     mutationFn: async (publish: boolean) => {
@@ -432,10 +540,57 @@ const QuickAssign: React.FC = () => {
           </AppCard>
         )}
 
-        {/* Instructions */}
-        <p className="text-sm text-muted-foreground">
-          Tap exercises to build {isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s"} workout. Publish when ready.
-        </p>
+        {/* Instructions and Copy Button */}
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            Tap exercises to build {isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s"} workout.
+          </p>
+          <Sheet open={copySheetOpen} onOpenChange={setCopySheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="shrink-0">
+                <Copy className="w-4 h-4 mr-1.5" />
+                Copy
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[70vh]">
+              <SheetHeader>
+                <SheetTitle>Copy from another day</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 space-y-3 overflow-y-auto max-h-[50vh]">
+                {recentCards && recentCards.length > 0 ? (
+                  recentCards.map((card) => {
+                    const cardDate = new Date(card.date + "T12:00:00");
+                    const taskCount = card.practice_tasks?.length || 0;
+                    const taskLabels = card.practice_tasks?.slice(0, 3).map(t => t.label).join(", ") || "";
+                    const hasMore = taskCount > 3;
+                    
+                    return (
+                      <button
+                        key={card.id}
+                        onClick={() => copyWorkoutMutation.mutate(card.id)}
+                        disabled={copyWorkoutMutation.isPending}
+                        className="w-full p-4 rounded-xl text-left bg-card border border-border hover:border-primary/50 transition-all disabled:opacity-50"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium">{format(cardDate, "EEEE, MMM d")}</span>
+                          <span className="text-xs text-muted-foreground">{taskCount} tasks</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {taskLabels}{hasMore && `, +${taskCount - 3} more`}
+                        </p>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Copy className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No recent workouts to copy</p>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
 
         {/* Exercise Grid */}
         <div className="grid grid-cols-2 gap-3">
