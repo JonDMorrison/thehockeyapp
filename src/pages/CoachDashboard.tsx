@@ -20,6 +20,7 @@ import { CoachDock } from "@/components/dashboard/CoachDock";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
+import { TeamGoalCard } from "@/components/goals";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -181,6 +182,12 @@ const CoachDashboard: React.FC = () => {
             onToggleGameDay={() => setShowGameDayModal(true)}
           />
         </div>
+
+        {/* Team Goal Section */}
+        <TeamGoalCard
+          teamId={id!}
+          rosterCount={dashboard.pulse.players_count}
+        />
 
         {/* Layer 3: Status Feedback - Today Snapshot */}
         <TodaySnapshot

@@ -53,6 +53,7 @@ import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
+import { PlayerGoalWidget } from "@/components/goals";
 
 interface PracticeTask {
   id: string;
@@ -803,6 +804,11 @@ const PlayerToday: React.FC = () => {
       }
     >
       <PageContainer>
+        {/* Team Goal Widget */}
+        {teamData?.id && (
+          <PlayerGoalWidget teamId={teamData.id} className="mb-4" />
+        )}
+
         {/* Progress */}
         <AppCard>
           <div className="flex items-center justify-between mb-3">
