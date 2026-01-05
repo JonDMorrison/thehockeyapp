@@ -18,6 +18,9 @@ import {
   Timer,
   Heart,
   Send,
+  Zap,
+  Calendar,
+  AlertTriangle,
 } from "lucide-react";
 
 interface ExercisePreset {
@@ -181,6 +184,47 @@ const QuickAssign: React.FC = () => {
     enabled: !!user && !!id,
   });
 
+  // Check if it's a game day
+  const { data: gameDay } = useQuery({
+    queryKey: ["game-day-today", id, today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_game_days")
+        .select("enabled, notes")
+        .eq("team_id", id)
+        .eq("date", today)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!id,
+  });
+
+  // Check for team events today (games or practices)
+  const { data: todayEvents } = useQuery({
+    queryKey: ["team-events-today", id, today],
+    queryFn: async () => {
+      const startOfDay = `${today}T00:00:00Z`;
+      const endOfDay = `${today}T23:59:59Z`;
+      const { data, error } = await supabase
+        .from("team_events")
+        .select("id, event_type, title, start_time, location")
+        .eq("team_id", id)
+        .eq("is_cancelled", false)
+        .gte("start_time", startOfDay)
+        .lte("start_time", endOfDay)
+        .order("start_time");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && !!id,
+  });
+
+  const isGameDay = gameDay?.enabled || todayEvents?.some(e => e.event_type === "game");
+  const hasPracticeEvent = todayEvents?.some(e => e.event_type === "practice");
+  const gameEvent = todayEvents?.find(e => e.event_type === "game");
+  const practiceEvent = todayEvents?.find(e => e.event_type === "practice");
+
   useEffect(() => {
     if (team?.palette_id) {
       setTeamTheme(team.palette_id);
@@ -311,6 +355,37 @@ const QuickAssign: React.FC = () => {
       }
     >
       <PageContainer className="space-y-4 pb-32">
+        {/* Game Day Warning */}
+        {isGameDay && (
+          <AppCard className="border-amber-500/50 bg-amber-500/10">
+            <div className="flex items-start gap-3">
+              <Zap className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-700 dark:text-amber-400">Game Day!</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {gameEvent ? `${gameEvent.title || "Game"} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : "Keep workouts light today."}
+                </p>
+              </div>
+            </div>
+          </AppCard>
+        )}
+
+        {/* Practice Event Info */}
+        {hasPracticeEvent && !isGameDay && practiceEvent && (
+          <AppCard className="border-blue-500/50 bg-blue-500/10">
+            <div className="flex items-start gap-3">
+              <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-blue-700 dark:text-blue-400">Practice Today</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {practiceEvent.title || "Practice"} at {format(new Date(practiceEvent.start_time), "h:mm a")}
+                  {practiceEvent.location && ` • ${practiceEvent.location}`}
+                </p>
+              </div>
+            </div>
+          </AppCard>
+        )}
+
         {/* Instructions */}
         <p className="text-sm text-muted-foreground">
           Tap exercises to build today's workout. Publish when ready.
@@ -351,9 +426,12 @@ const QuickAssign: React.FC = () => {
         {/* Existing card warning */}
         {existingCard && (
           <AppCard variant="muted" className="border-warning/30">
-            <p className="text-sm text-muted-foreground">
-              You already have a workout for today. This will replace it.
-            </p>
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
+                You already have a workout for today. This will replace it.
+              </p>
+            </div>
           </AppCard>
         )}
       </PageContainer>
