@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,18 +8,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-import { CalendarIcon, Target, Zap, Users, Award, Loader2 } from 'lucide-react';
+import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { CalendarIcon, Target, Zap, Users, Award, Loader2, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCreateGoal } from '@/hooks/useTeamGoal';
+import { useCreateGoal, useUpdateGoal, TeamGoal } from '@/hooks/useTeamGoal';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { InlineRewardSelector } from './GoalRewardPrompt';
 
 interface GoalCreatorSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   teamId: string;
   rosterCount?: number;
+  editGoal?: TeamGoal | null;
 }
 
 const goalTypes = [
@@ -35,9 +37,10 @@ const timeframes = [
   { value: 'custom', label: 'Custom Dates' },
 ] as const;
 
-export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 }: GoalCreatorSheetProps) {
+export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10, editGoal }: GoalCreatorSheetProps) {
   const { user } = useAuth();
   const createGoal = useCreateGoal();
+  const updateGoal = useUpdateGoal();
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -47,6 +50,28 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(addDays(new Date(), 7));
   const [showLeaderboard, setShowLeaderboard] = useState(true);
+  const [rewardType, setRewardType] = useState<string | null>(null);
+  const [rewardDescription, setRewardDescription] = useState<string | null>(null);
+
+  const isEditing = !!editGoal;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editGoal && open) {
+      setName(editGoal.name);
+      setDescription(editGoal.description || '');
+      setGoalType(editGoal.goal_type);
+      setTargetValue(editGoal.target_value.toString());
+      setTimeframe(editGoal.timeframe);
+      setStartDate(parseISO(editGoal.start_date));
+      setEndDate(parseISO(editGoal.end_date));
+      setShowLeaderboard(editGoal.show_leaderboard);
+      setRewardType(editGoal.reward_type);
+      setRewardDescription(editGoal.reward_description);
+    } else if (!open) {
+      resetForm();
+    }
+  }, [editGoal, open]);
 
   const getDateRange = () => {
     const today = new Date();
@@ -78,26 +103,43 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
     const dateRange = getDateRange();
 
     try {
-      await createGoal.mutateAsync({
-        team_id: teamId,
-        name: name.trim(),
-        description: description.trim() || null,
-        goal_type: goalType,
-        target_value: parseInt(targetValue),
-        timeframe,
-        start_date: format(dateRange.start, 'yyyy-MM-dd'),
-        end_date: format(dateRange.end, 'yyyy-MM-dd'),
-        show_leaderboard: showLeaderboard,
-        created_by_user_id: user.id,
-        reward_type: null,
-        reward_description: null,
-      });
+      if (isEditing) {
+        await updateGoal.mutateAsync({
+          id: editGoal.id,
+          name: name.trim(),
+          description: description.trim() || null,
+          goal_type: goalType,
+          target_value: parseInt(targetValue),
+          timeframe,
+          start_date: format(dateRange.start, 'yyyy-MM-dd'),
+          end_date: format(dateRange.end, 'yyyy-MM-dd'),
+          show_leaderboard: showLeaderboard,
+          reward_type: rewardType,
+          reward_description: rewardDescription,
+        });
+        toast.success('Goal updated!');
+      } else {
+        await createGoal.mutateAsync({
+          team_id: teamId,
+          name: name.trim(),
+          description: description.trim() || null,
+          goal_type: goalType,
+          target_value: parseInt(targetValue),
+          timeframe,
+          start_date: format(dateRange.start, 'yyyy-MM-dd'),
+          end_date: format(dateRange.end, 'yyyy-MM-dd'),
+          show_leaderboard: showLeaderboard,
+          created_by_user_id: user.id,
+          reward_type: rewardType,
+          reward_description: rewardDescription,
+        });
+        toast.success('Team goal created!');
+      }
 
-      toast.success('Team goal created!');
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      toast.error('Failed to create goal');
+      toast.error(isEditing ? 'Failed to update goal' : 'Failed to create goal');
     }
   };
 
@@ -110,7 +152,11 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
     setStartDate(new Date());
     setEndDate(addDays(new Date(), 7));
     setShowLeaderboard(true);
+    setRewardType(null);
+    setRewardDescription(null);
   };
+
+  const isPending = createGoal.isPending || updateGoal.isPending;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -118,10 +164,10 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
         <SheetHeader className="mb-6">
           <SheetTitle className="flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
-            Set a Team Goal
+            {isEditing ? 'Edit Team Goal' : 'Set a Team Goal'}
           </SheetTitle>
           <SheetDescription>
-            Create a goal for your team to work towards together
+            {isEditing ? 'Update your team goal and reward' : 'Create a goal for your team to work towards together'}
           </SheetDescription>
         </SheetHeader>
 
@@ -281,22 +327,38 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
             />
           </div>
 
+          {/* Goal Reward */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Gift className="w-4 h-4 text-primary" />
+              <Label className="font-medium">Goal Reward (optional)</Label>
+            </div>
+            <InlineRewardSelector
+              selectedReward={rewardType}
+              customReward={rewardDescription}
+              onSelect={(type, description) => {
+                setRewardType(type);
+                setRewardDescription(description);
+              }}
+            />
+          </div>
+
           {/* Submit */}
           <Button
             className="w-full"
             size="lg"
             onClick={handleSubmit}
-            disabled={createGoal.isPending || !name.trim() || !targetValue}
+            disabled={isPending || !name.trim() || !targetValue}
           >
-            {createGoal.isPending ? (
+            {isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating...
+                {isEditing ? 'Saving...' : 'Creating...'}
               </>
             ) : (
               <>
                 <Target className="w-4 h-4 mr-2" />
-                Create Team Goal
+                {isEditing ? 'Save Changes' : 'Create Team Goal'}
               </>
             )}
           </Button>
