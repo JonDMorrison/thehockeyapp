@@ -121,6 +121,147 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_practice_cards: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          mode: string | null
+          notes: string | null
+          player_id: string
+          published_at: string | null
+          tier: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          mode?: string | null
+          notes?: string | null
+          player_id: string
+          published_at?: string | null
+          tier?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          mode?: string | null
+          notes?: string | null
+          player_id?: string
+          published_at?: string | null
+          tier?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_practice_cards_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personal_practice_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          label: string
+          personal_practice_card_id: string
+          shot_type: string | null
+          shots_expected: number | null
+          sort_order: number
+          target_type: string | null
+          target_value: number | null
+          task_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label: string
+          personal_practice_card_id: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order?: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          label?: string
+          personal_practice_card_id?: string
+          shot_type?: string | null
+          shots_expected?: number | null
+          sort_order?: number
+          target_type?: string | null
+          target_value?: number | null
+          task_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_practice_tasks_personal_practice_card_id_fkey"
+            columns: ["personal_practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "personal_practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personal_training_plans: {
+        Row: {
+          created_at: string | null
+          days_per_week: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          player_id: string
+          tier: string | null
+          training_focus: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_per_week?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          player_id: string
+          tier?: string | null
+          training_focus?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_per_week?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          player_id?: string
+          tier?: string | null
+          training_focus?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_training_plans_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_badges: {
         Row: {
           awarded_at: string | null

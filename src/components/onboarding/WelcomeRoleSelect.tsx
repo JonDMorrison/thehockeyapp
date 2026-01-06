@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserCircle, ArrowRight, Sparkles, Shield, Calendar, Zap } from "lucide-react";
+import { Users, UserCircle, Dumbbell, ArrowRight, Sparkles, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 
 interface WelcomeRoleSelectProps {
@@ -9,13 +9,15 @@ interface WelcomeRoleSelectProps {
 
 export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayName }) => {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<"coach" | "player" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"coach" | "player" | "solo" | null>(null);
 
   const firstName = displayName?.split(" ")[0] || "there";
 
   const handleContinue = () => {
     if (selectedRole === "coach") {
       navigate("/teams/new");
+    } else if (selectedRole === "solo") {
+      navigate("/solo/setup");
     } else {
       navigate("/players/new");
     }
@@ -100,7 +102,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
               )}
             </button>
 
-            {/* Player/Parent Option */}
+            {/* Player/Parent Option (joining a team) */}
             <button
               onClick={() => setSelectedRole("player")}
               className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
@@ -118,25 +120,63 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
                   <UserCircle className={`w-7 h-7 ${selectedRole === "player" ? "text-white" : "text-success"}`} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold mb-1">I'm a Player or Parent</h3>
+                  <h3 className="text-lg font-semibold mb-1">Joining a Team</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Track daily workouts, build habits, and stay connected with your coach.
+                    Your coach has invited you. Track assigned workouts and team progress.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
-                      Daily checklist
+                      Coach-led plans
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
-                      Works offline
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
-                      No pressure
+                      Team sync
                     </span>
                   </div>
                 </div>
               </div>
               {selectedRole === "player" && (
                 <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+            </button>
+
+            {/* Solo Training Option */}
+            <button
+              onClick={() => setSelectedRole("solo")}
+              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+                selectedRole === "solo"
+                  ? "border-orange-500 bg-orange-500/5 shadow-[0_0_40px_-10px_hsl(25,95%,53%/0.3)]"
+                  : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-orange-500/50 hover:shadow-soft"
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                  selectedRole === "solo"
+                    ? "bg-gradient-to-br from-orange-500 to-amber-500"
+                    : "bg-orange-500/10"
+                }`}>
+                  <Dumbbell className={`w-7 h-7 ${selectedRole === "solo" ? "text-white" : "text-orange-500"}`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold mb-1">Solo Training</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Train on your own with pre-built workouts. No team or coach needed.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+                      <Target className="w-3 h-3" /> Pick your focus
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+                      <Clock className="w-3 h-3" /> Your schedule
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {selectedRole === "solo" && (
+                <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -151,7 +191,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
             onClick={handleContinue}
             disabled={!selectedRole}
             variant={selectedRole === "player" ? "success" : "primary"}
-            className="w-full sm:w-auto min-w-[200px]"
+            className={`w-full sm:w-auto min-w-[200px] ${selectedRole === "solo" ? "!bg-orange-500 hover:!bg-orange-600" : ""}`}
           >
             Continue
             <ArrowRight className="w-5 h-5" />
