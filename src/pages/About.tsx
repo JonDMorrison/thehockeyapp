@@ -1,10 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Send, Loader2, CheckCircle } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const About: React.FC = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const { error } = await supabase
+      .from("contact_submissions")
+      .insert({ name: name.trim(), email: email.trim(), message: message.trim() });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Failed to submit. Please try again.");
+      return;
+    }
+
+    setIsSubmitted(true);
+    toast.success("Message sent! We'll get back to you soon.");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <MarketingNav />
@@ -41,10 +78,69 @@ const About: React.FC = () => {
             </p>
             
             <h2 className="text-2xl font-semibold mt-8 mb-4">Contact Us</h2>
-            <p className="text-muted-foreground">
-              Have questions or feedback? We'd love to hear from you. 
-              Reach out to our team and we'll get back to you as soon as possible.
+            <p className="text-muted-foreground mb-6">
+              Have questions or feedback? We'd love to hear from you.
             </p>
+
+            {isSubmitted ? (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-6 flex items-center gap-4">
+                <CheckCircle className="w-8 h-8 text-primary flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-foreground">Thank you for reaching out!</p>
+                  <p className="text-sm text-muted-foreground">We'll review your message and get back to you soon.</p>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4 not-prose">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Your question or feedback..."
+                    rows={4}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Send Message
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
       </main>
