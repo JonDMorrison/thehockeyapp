@@ -1,14 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { 
-  Flame, Target, Dumbbell, Activity, Zap, Trophy, Heart,
-  Play, CheckCircle2, Calendar, ChevronRight, Lock, RotateCcw
+  Flame, Play, CheckCircle2, ChevronRight, Lock, RotateCcw,
+  Target, Dumbbell, Zap, Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
-import { AppCard } from "@/components/app/AppCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -60,13 +59,10 @@ interface DashboardData {
   };
 }
 
-const WORKOUT_CATEGORIES = [
-  { id: 'shooting', label: 'Shooting', icon: Target, color: 'bg-red-500/10 text-red-500', description: 'Work on your shot' },
-  { id: 'conditioning', label: 'Conditioning', icon: Dumbbell, color: 'bg-orange-500/10 text-orange-500', description: 'Build strength' },
-  { id: 'mobility', label: 'Mobility', icon: Activity, color: 'bg-green-500/10 text-green-500', description: 'Stretch & recover' },
-  { id: 'quick', label: 'Quick Skills', icon: Zap, color: 'bg-yellow-500/10 text-yellow-500', description: '15 min sessions' },
-  { id: 'gameprep', label: 'Game Prep', icon: Trophy, color: 'bg-purple-500/10 text-purple-500', description: 'Get ready to compete' },
-  { id: 'recovery', label: 'Recovery', icon: Heart, color: 'bg-pink-500/10 text-pink-500', description: 'Rest & restore' },
+const FOCUS_AREAS = [
+  { id: 'shooting', label: 'Shooting', icon: Target },
+  { id: 'conditioning', label: 'Strength', icon: Dumbbell },
+  { id: 'skills', label: 'Skills', icon: Zap },
 ];
 
 export default function SoloDashboard() {
@@ -85,7 +81,6 @@ export default function SoloDashboard() {
     enabled: !!playerId,
   });
 
-  // Fetch badges for the showcase
   const { data: badges } = useQuery({
     queryKey: ['player-badges-showcase', playerId],
     queryFn: async () => {
@@ -111,10 +106,16 @@ export default function SoloDashboard() {
   if (isLoading) {
     return (
       <AppShell>
-        <div className="p-4 space-y-4">
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-32 w-full" />
+        <div className="p-4 space-y-6">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-14 w-14 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
         </div>
       </AppShell>
     );
@@ -123,7 +124,7 @@ export default function SoloDashboard() {
   if (!dashboard?.success) {
     return (
       <AppShell>
-        <div className="p-4 text-center">
+        <div className="p-4 text-center pt-20">
           <p className="text-muted-foreground">Unable to load dashboard</p>
           <Button className="mt-4" onClick={() => navigate('/solo/setup')}>
             Go to Setup
@@ -140,32 +141,53 @@ export default function SoloDashboard() {
   };
 
   const handleRepeatWorkout = (cardId: string) => {
-    // For now, navigate to today - in future could clone the workout
     navigate(`/solo/today/${playerId}`);
   };
+
+  // Generate week days for display
+  const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(weekStart, i);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const activity = week_activity?.find(w => w.date === dateStr);
+    return {
+      date,
+      dayLetter: format(date, 'EEEEE'),
+      isToday: format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
+      completed: activity?.completed || false
+    };
+  });
+
+  const progressPercent = today.task_count > 0 
+    ? Math.round((today.completed_count / today.task_count) * 100) 
+    : 0;
 
   return (
     <AppShell>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="p-4 pb-2">
+        <div className="px-5 pt-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <Avatar className="h-14 w-14 border-2 border-border">
                 <AvatarImage src={player.photo_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                <AvatarFallback className="bg-muted text-muted-foreground text-lg font-semibold">
                   {player.first_name[0]}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-bold">Hey {player.first_name}! 👋</h1>
-                <p className="text-sm text-muted-foreground">{format(new Date(), 'EEEE, MMMM d')}</p>
+                <h1 className="text-xl font-bold text-foreground">
+                  Hey {player.first_name}!
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(), 'EEEE, MMM d')}
+                </p>
               </div>
             </div>
             
-            {/* Streak Badge */}
+            {/* Streak */}
             {streak.current_streak > 0 && (
-              <div className="flex items-center gap-1.5 bg-orange-500/10 text-orange-500 px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-2 rounded-full">
                 <Flame className="h-4 w-4" />
                 <span className="font-bold text-sm">{streak.current_streak}</span>
               </div>
@@ -173,102 +195,108 @@ export default function SoloDashboard() {
           </div>
         </div>
 
-        <div className="p-4 space-y-6">
-          {/* Hero Card - Today's Status */}
-          <AppCard className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+        <div className="px-5 space-y-6 pb-8">
+          {/* Hero Card */}
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
             {today.status === 'complete' ? (
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 mb-3">
-                  <CheckCircle2 className="h-8 w-8 text-green-500" />
+              <div className="text-center py-2">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
+                  <CheckCircle2 className="h-7 w-7 text-primary" />
                 </div>
-                <h2 className="text-xl font-bold text-green-600">Workout Complete! 🎉</h2>
-                <p className="text-muted-foreground mt-1">Great work today, {player.first_name}!</p>
-                <p className="text-sm text-muted-foreground mt-2">Come back tomorrow to keep your streak alive</p>
+                <h2 className="text-xl font-bold text-foreground">Done for today!</h2>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Great work. Come back tomorrow.
+                </p>
               </div>
             ) : today.status === 'in_progress' ? (
-              <div className="text-center">
-                <h2 className="text-xl font-bold">Keep Going! 💪</h2>
-                <p className="text-muted-foreground mt-1">
-                  {today.completed_count} of {today.task_count} tasks done
-                </p>
-                <div className="w-full bg-muted rounded-full h-2 mt-3 mb-4">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">In Progress</p>
+                    <h2 className="text-lg font-bold text-foreground">
+                      {today.title || "Today's Workout"}
+                    </h2>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">{progressPercent}%</p>
+                  </div>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2 mb-5">
                   <div 
-                    className="bg-primary h-2 rounded-full transition-all"
-                    style={{ width: `${(today.completed_count / today.task_count) * 100}%` }}
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
                 <Button onClick={handleStartWorkout} size="lg" className="w-full">
-                  <Play className="mr-2 h-5 w-5" />
-                  Continue Workout
-                </Button>
-              </div>
-            ) : today.card_id ? (
-              <div className="text-center">
-                <h2 className="text-xl font-bold">Ready to Train? 🏒</h2>
-                <p className="text-muted-foreground mt-1">
-                  {today.title || 'Today\'s workout'} • {today.task_count} tasks
-                </p>
-                <Button onClick={handleStartWorkout} size="lg" className="w-full mt-4">
-                  <Play className="mr-2 h-5 w-5" />
-                  Start Workout
+                  <Play className="mr-2 h-4 w-4" />
+                  Continue
                 </Button>
               </div>
             ) : (
-              <div className="text-center">
-                <h2 className="text-xl font-bold">Ready to Train? 🏒</h2>
-                <p className="text-muted-foreground mt-1">Pick a workout to get started</p>
-                <Button onClick={handleStartWorkout} size="lg" className="w-full mt-4">
-                  <Play className="mr-2 h-5 w-5" />
+              <div className="text-center py-2">
+                <h2 className="text-xl font-bold text-foreground mb-1">
+                  Ready to train?
+                </h2>
+                <p className="text-muted-foreground text-sm mb-5">
+                  {today.card_id 
+                    ? `${today.task_count} tasks waiting for you`
+                    : "Start your workout for today"
+                  }
+                </p>
+                <Button onClick={handleStartWorkout} size="lg" className="w-full">
+                  <Play className="mr-2 h-4 w-4" />
                   Start Workout
                 </Button>
               </div>
             )}
-          </AppCard>
+          </div>
 
-          {/* This Week */}
+          {/* Week Progress */}
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              This Week
-            </h3>
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-medium text-muted-foreground">This Week</h3>
+            </div>
             <div className="flex gap-2">
-              {week_activity.map((day, idx) => {
-                const date = new Date(day.date);
-                const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-                return (
-                  <div 
-                    key={day.date}
-                    className={cn(
-                      "flex-1 aspect-square rounded-lg flex flex-col items-center justify-center text-xs",
-                      day.completed ? "bg-green-500/20 text-green-600" : "bg-muted/50 text-muted-foreground",
-                      isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                    )}
-                  >
-                    <span className="font-medium">{format(date, 'EEE')[0]}</span>
-                    {day.completed && <CheckCircle2 className="h-3 w-3 mt-0.5" />}
-                  </div>
-                );
-              })}
+              {weekDays.map((day, idx) => (
+                <div 
+                  key={idx}
+                  className={cn(
+                    "flex-1 aspect-square rounded-xl flex flex-col items-center justify-center transition-all",
+                    day.completed 
+                      ? "bg-primary/10" 
+                      : "bg-muted/50",
+                    day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                  )}
+                >
+                  <span className={cn(
+                    "text-xs font-medium",
+                    day.completed ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {day.dayLetter}
+                  </span>
+                  {day.completed && (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* What Do You Want To Work On */}
+          {/* Focus Areas */}
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-              What Do You Want To Work On?
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">
+              What do you want to work on?
             </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {WORKOUT_CATEGORIES.map((cat) => (
+            <div className="grid grid-cols-3 gap-3">
+              {FOCUS_AREAS.map((area) => (
                 <button
-                  key={cat.id}
-                  onClick={() => navigate(`/solo/today/${playerId}?category=${cat.id}`)}
-                  className={cn(
-                    "p-3 rounded-xl text-center transition-all hover:scale-105 active:scale-95",
-                    cat.color
-                  )}
+                  key={area.id}
+                  onClick={() => navigate(`/solo/today/${playerId}?focus=${area.id}`)}
+                  className="bg-card border border-border rounded-xl p-4 text-center hover:bg-muted/50 transition-colors active:scale-[0.98]"
                 >
-                  <cat.icon className="h-6 w-6 mx-auto mb-1" />
-                  <span className="text-xs font-medium block">{cat.label}</span>
+                  <area.icon className="h-6 w-6 mx-auto mb-2 text-foreground" />
+                  <span className="text-xs font-medium text-foreground">{area.label}</span>
                 </button>
               ))}
             </div>
@@ -277,32 +305,37 @@ export default function SoloDashboard() {
           {/* Recent Workouts */}
           {recent_workouts && recent_workouts.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">
-                Recent Workouts
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                Completed Workouts
               </h3>
               <div className="space-y-2">
                 {recent_workouts.slice(0, 3).map((workout) => (
-                  <AppCard key={workout.id} className="p-3 flex items-center justify-between">
+                  <div 
+                    key={workout.id} 
+                    className="bg-card border border-border rounded-xl p-4 flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                         <CheckCircle2 className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{workout.title || 'Workout'}</p>
+                        <p className="font-medium text-sm text-foreground">
+                          {workout.title || 'Workout'}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(workout.date), 'MMM d')} • {workout.task_count} tasks
+                          {format(new Date(workout.date), 'MMM d')} · {workout.task_count} tasks
                         </p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="text-muted-foreground"
                       onClick={() => handleRepeatWorkout(workout.id)}
                     >
-                      <RotateCcw className="h-4 w-4 mr-1" />
-                      Again
+                      <RotateCcw className="h-4 w-4" />
                     </Button>
-                  </AppCard>
+                  </div>
                 ))}
               </div>
             </div>
@@ -311,25 +344,23 @@ export default function SoloDashboard() {
           {/* Badges */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">
-                Your Badges
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Badges
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs"
+              <button 
+                className="text-xs text-primary font-medium flex items-center gap-0.5"
                 onClick={() => navigate(`/player/${playerId}/badges`)}
               >
-                View All <ChevronRight className="h-3 w-3 ml-1" />
-              </Button>
+                View all <ChevronRight className="h-3 w-3" />
+              </button>
             </div>
             
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-3 overflow-x-auto pb-1">
               {/* Earned badges */}
               {badges?.earned.slice(0, 4).map((badge: any) => (
                 <div
                   key={badge.id}
-                  className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-yellow-400/20 to-orange-500/20 flex items-center justify-center text-2xl border border-yellow-500/30"
+                  className="flex-shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-xl border border-primary/20"
                 >
                   {badge.challenges?.badge_icon || '🏆'}
                 </div>
@@ -338,39 +369,39 @@ export default function SoloDashboard() {
               {/* Locked badges */}
               {badges?.all
                 .filter((c: any) => !badges.earned.find((e: any) => e.challenge_id === c.id))
-                .slice(0, 4 - (badges?.earned.length || 0))
+                .slice(0, Math.max(0, 4 - (badges?.earned.length || 0)))
                 .map((challenge: any) => (
                   <div
                     key={challenge.id}
-                    className="flex-shrink-0 w-16 h-16 rounded-xl bg-muted/50 flex items-center justify-center text-2xl opacity-40 relative"
+                    className="flex-shrink-0 w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-xl grayscale opacity-40 relative"
                   >
                     {challenge.badge_icon}
-                    <Lock className="h-3 w-3 absolute bottom-1 right-1 text-muted-foreground" />
+                    <Lock className="h-3 w-3 absolute bottom-1.5 right-1.5 text-muted-foreground" />
                   </div>
                 ))}
                 
               {(!badges || (badges.earned.length === 0 && badges.all.length === 0)) && (
-                <div className="text-sm text-muted-foreground py-4">
+                <p className="text-sm text-muted-foreground py-4">
                   Complete workouts to earn badges!
-                </div>
+                </p>
               )}
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <AppCard className="p-3 text-center">
-              <p className="text-2xl font-bold text-primary">{stats.total_workouts}</p>
-              <p className="text-xs text-muted-foreground">Workouts</p>
-            </AppCard>
-            <AppCard className="p-3 text-center">
-              <p className="text-2xl font-bold text-primary">{stats.total_shots}</p>
-              <p className="text-xs text-muted-foreground">Shots</p>
-            </AppCard>
-            <AppCard className="p-3 text-center">
-              <p className="text-2xl font-bold text-primary">{stats.badges_earned}</p>
-              <p className="text-xs text-muted-foreground">Badges</p>
-            </AppCard>
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.total_workouts}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Workouts</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.total_shots}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Shots</p>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.badges_earned}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Badges</p>
+            </div>
           </div>
         </div>
       </div>
