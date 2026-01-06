@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Check, 
@@ -8,10 +8,12 @@ import {
   CalendarSync, 
   Settings2, 
   CalendarPlus,
-  Sparkles
+  Sparkles,
+  PartyPopper
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { fireGoalConfetti } from "@/lib/confetti";
 
 interface ChecklistItem {
   id: string;
@@ -84,10 +86,60 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   const totalCount = steps.length;
   const progressPercent = (completedCount / totalCount) * 100;
   const allComplete = completedCount === totalCount;
+  
+  // Track previous completion state to detect when all steps become complete
+  const prevAllCompleteRef = useRef(allComplete);
+  const hasShownCelebration = useRef(false);
+  
+  // Show celebration when transitioning to all complete
+  useEffect(() => {
+    if (allComplete && !prevAllCompleteRef.current && !hasShownCelebration.current) {
+      hasShownCelebration.current = true;
+      fireGoalConfetti();
+    }
+    prevAllCompleteRef.current = allComplete;
+  }, [allComplete]);
 
-  // Don't show if all complete
-  if (allComplete) {
+  // Show completion state briefly before hiding
+  const [showCompletionMessage, setShowCompletionMessage] = useState(false);
+  
+  useEffect(() => {
+    if (allComplete) {
+      setShowCompletionMessage(true);
+      const timer = setTimeout(() => {
+        setShowCompletionMessage(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [allComplete]);
+
+  // Don't render if complete and message dismissed
+  if (allComplete && !showCompletionMessage) {
     return null;
+  }
+
+  // Show completion message
+  if (allComplete && showCompletionMessage) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-4"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+            <PartyPopper className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-foreground">You're all set!</p>
+            <p className="text-sm text-muted-foreground">
+              Your team is ready to start training
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    );
   }
 
   return (
