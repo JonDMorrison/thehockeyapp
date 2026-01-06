@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
@@ -22,6 +23,7 @@ import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
+import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +38,12 @@ const CoachDashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
+  
+  const {
+    showWalkthrough,
+    completeWalkthrough,
+    skipWalkthrough,
+  } = usePlanningWalkthrough(id || "");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -246,6 +254,16 @@ const CoachDashboard: React.FC = () => {
         onOpenChange={setShowProgramWizard}
         teamId={id!}
       />
+
+      {/* First-time user walkthrough */}
+      <AnimatePresence>
+        {showWalkthrough && (
+          <PlanningWalkthrough
+            onComplete={completeWalkthrough}
+            onSkip={skipWalkthrough}
+          />
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 };
