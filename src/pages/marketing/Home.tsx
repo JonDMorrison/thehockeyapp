@@ -6,6 +6,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { MarketingMilestonePreview } from "@/components/marketing/MarketingMilestonePreview";
+import { MarketingAIPreview } from "@/components/marketing/MarketingAIPreview";
 import {
   CheckCircle,
   Shield,
@@ -118,10 +119,10 @@ const Home: React.FC = () => {
               <div className="relative">
                 <PhoneMockup 
                   showGlow
-                  glowColor="primary"
+                  glowColor="purple"
                   className="w-72 lg:w-80"
                 >
-                  <MarketingAppPreview />
+                  <MarketingAIPreview />
                 </PhoneMockup>
                 
                 {/* Floating badge */}
