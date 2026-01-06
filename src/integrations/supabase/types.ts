@@ -218,6 +218,54 @@ export type Database = {
           },
         ]
       }
+      personal_session_completions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          personal_practice_card_id: string
+          player_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          personal_practice_card_id: string
+          player_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          personal_practice_card_id?: string
+          player_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_session_completions_personal_practice_card_id_fkey"
+            columns: ["personal_practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "personal_practice_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_session_completions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_task_completions: {
         Row: {
           completed: boolean | null
@@ -1844,11 +1892,13 @@ export type Database = {
         Returns: Json
       }
       calculate_goal_progress: { Args: { p_goal_id: string }; Returns: Json }
+      calculate_solo_streak: { Args: { p_player_id: string }; Returns: Json }
       check_and_enable_game_days: { Args: never; Returns: undefined }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
         Returns: Json
       }
+      get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
       get_team_dashboard_snapshot: {
         Args: { p_team_id: string }
         Returns: Json
