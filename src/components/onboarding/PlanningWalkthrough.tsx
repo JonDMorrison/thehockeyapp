@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowRight, CalendarPlus, CalendarRange, Sparkles } from "lucide-react";
+import { X, ArrowRight, CalendarPlus, CalendarRange, Sparkles, Users, CalendarSync, BarChart3, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -10,17 +10,29 @@ interface WalkthroughStep {
   description: string;
   icon: React.ReactNode;
   gradient: string;
-  position: "full" | "left" | "right";
 }
 
 const steps: WalkthroughStep[] = [
+  {
+    id: "import-roster",
+    title: "Import Your Roster",
+    description: "Add your players quickly—type names manually or import from a spreadsheet. Each player gets their own profile to track progress.",
+    icon: <Users className="w-6 h-6" />,
+    gradient: "from-amber-500 to-orange-500",
+  },
+  {
+    id: "sync-calendar",
+    title: "Sync Your Calendar",
+    description: "Connect your team's schedule from TeamSnap, SportsEngine, or any iCal link. Games and practices appear automatically—no double entry.",
+    icon: <CalendarSync className="w-6 h-6" />,
+    gradient: "from-cyan-500 to-blue-500",
+  },
   {
     id: "add-workout",
     title: "Add a Single Workout",
     description: "Need something quick for today or a specific date? This creates one workout that players can check off. Great for game days or one-off drills.",
     icon: <CalendarPlus className="w-6 h-6" />,
     gradient: "from-emerald-500 to-teal-500",
-    position: "full",
   },
   {
     id: "plan-week",
@@ -28,7 +40,6 @@ const steps: WalkthroughStep[] = [
     description: "Set up Monday through Sunday once, then reuse it. Perfect for establishing a consistent training routine your players can follow every week.",
     icon: <CalendarRange className="w-6 h-6" />,
     gradient: "from-blue-500 to-indigo-500",
-    position: "left",
   },
   {
     id: "create-program",
@@ -36,7 +47,20 @@ const steps: WalkthroughStep[] = [
     description: "Tell us your goals and timeline, and AI creates 4–8 weeks of progressive training. No planning required—just review and apply.",
     icon: <Sparkles className="w-6 h-6" />,
     gradient: "from-purple-500 to-pink-500",
-    position: "right",
+  },
+  {
+    id: "monitor-activity",
+    title: "Monitor Player Activity",
+    description: "See who's training and who needs a nudge. Track completion rates, shot counts, and streaks—all in real time as players check off tasks.",
+    icon: <BarChart3 className="w-6 h-6" />,
+    gradient: "from-rose-500 to-red-500",
+  },
+  {
+    id: "share-families",
+    title: "Share with Families",
+    description: "Invite parents and guardians so they can see their child's progress and help with check-offs. Everyone stays in the loop, no extra apps needed.",
+    icon: <Share2 className="w-6 h-6" />,
+    gradient: "from-violet-500 to-purple-500",
   },
 ];
 
