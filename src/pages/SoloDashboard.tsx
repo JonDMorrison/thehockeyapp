@@ -12,10 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { InviteFriendModal } from "@/components/player/InviteFriendModal";
 import { SoloUpcomingEvents } from "@/components/player/SoloUpcomingEvents";
+import { UserMenu } from "@/components/app/UserMenu";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {
@@ -214,12 +214,18 @@ export default function SoloDashboard() {
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Avatar className="h-14 w-14 border-2 border-border">
-                <AvatarImage src={player.photo_url || undefined} />
-                <AvatarFallback className="bg-muted text-muted-foreground text-lg font-semibold">
-                  {player.first_name[0]}
-                </AvatarFallback>
-              </Avatar>
+              <UserMenu
+                avatarUrl={player.photo_url}
+                initials={player.first_name[0]}
+                displayName={player.first_name}
+                size="lg"
+                playerId={playerId}
+                settingsPath={`/solo/settings/${playerId}`}
+                onPhotoUploaded={() => {
+                  // Refetch dashboard data to update avatar
+                  window.location.reload();
+                }}
+              />
               <div>
                 <h1 className="text-xl font-bold text-foreground">
                   Hey {player.first_name}!
@@ -238,14 +244,6 @@ export default function SoloDashboard() {
                   <span className="font-bold text-sm">{streak.current_streak}</span>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10"
-                onClick={() => navigate(`/solo/settings/${playerId}`)}
-              >
-                <Settings className="h-5 w-5 text-muted-foreground" />
-              </Button>
             </div>
           </div>
         </div>
