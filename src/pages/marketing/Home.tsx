@@ -87,7 +87,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="text-base px-10 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
+                  className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
                   onClick={() => setShowGetStarted(true)}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
