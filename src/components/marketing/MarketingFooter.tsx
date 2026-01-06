@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Heart, Shield, Lock } from "lucide-react";
+import { HockeyAppLogo } from "./HockeyAppLogo";
 
 export const MarketingFooter: React.FC = () => {
   return (
@@ -11,7 +12,7 @@ export const MarketingFooter: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center">
-                <span className="text-foreground font-bold text-sm">HA</span>
+                <HockeyAppLogo size={18} className="text-foreground" />
               </div>
               <span className="font-bold text-lg">The Hockey App</span>
             </div>
