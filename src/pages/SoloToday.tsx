@@ -458,6 +458,12 @@ const SoloToday: React.FC = () => {
                 <p className="text-sm text-muted-foreground mt-1">
                   Great work, {player.first_name}! See you tomorrow.
                 </p>
+                <Button
+                  className="mt-4"
+                  onClick={() => navigate("/solo/setup")}
+                >
+                  Return to Dashboard
+                </Button>
               </AppCard>
             )}
           </div>
