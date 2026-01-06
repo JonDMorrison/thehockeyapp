@@ -26,6 +26,7 @@ import {
   Dumbbell,
   Calendar,
   ChevronRight,
+  ChevronLeft,
   Check,
   Target,
   Flame,
@@ -295,6 +296,12 @@ const SoloToday: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center justify-between w-full">
+          <button
+            onClick={() => navigate("/solo/setup")}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors -ml-1 p-1"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
           <div className="flex items-center gap-3">
             <Avatar
               src={player.profile_photo_url}
