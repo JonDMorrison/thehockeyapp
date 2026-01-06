@@ -118,24 +118,7 @@ const Auth: React.FC = () => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-              }
-
-              {mode === "signin" && (
-                <div className="flex items-center gap-3 pt-1">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked === true)}
-                    className="rounded-md"
-                  />
-                  <Label 
-                    htmlFor="rememberMe" 
-                    className="text-sm text-muted-foreground cursor-pointer select-none"
-                  >
-                    Remember me
-                  </Label>
-                </div>
-              )}
+  }
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
@@ -237,12 +220,29 @@ const Auth: React.FC = () => {
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   />
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive pl-1">{errors.password}</p>
-                )}
-              </div>
+              {errors.password && (
+                <p className="text-xs text-destructive pl-1">{errors.password}</p>
+              )}
+            </div>
 
-              <AppleButton
+            {mode === "signin" && (
+              <div className="flex items-center gap-3 pt-1">
+                <Checkbox
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                  className="rounded-md"
+                />
+                <Label 
+                  htmlFor="rememberMe" 
+                  className="text-sm text-muted-foreground cursor-pointer select-none"
+                >
+                  Remember me
+                </Label>
+              </div>
+            )}
+
+            <AppleButton
                 type="submit"
                 variant="primary"
                 size="xl"

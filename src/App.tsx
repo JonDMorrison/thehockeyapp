@@ -11,6 +11,9 @@ import { initOfflineDB } from "@/lib/offlineStorage";
 import Home from "./pages/marketing/Home";
 import Features from "./pages/marketing/Features";
 import Demo from "./pages/marketing/Demo";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 // App pages
 import NotFound from "./pages/NotFound";
@@ -76,12 +79,15 @@ const App = () => {
             className: "bg-card text-foreground border border-border shadow-medium",
           }}
         />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
             <Route path="/demo" element={<Demo />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
