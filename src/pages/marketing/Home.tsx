@@ -5,6 +5,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
+import { MarketingMilestonePreview } from "@/components/marketing/MarketingMilestonePreview";
 import {
   CheckCircle,
   Shield,
@@ -195,12 +196,12 @@ const Home: React.FC = () => {
             <div className="order-1 lg:order-2 relative flex justify-center">
               <div className="relative">
                 <PhoneMockup 
-                  imageSrc={mockupLockscreen} 
-                  imageAlt="Quick task checkoff for off-ice training"
                   showGlow
-                  glowColor="muted"
+                  glowColor="orange"
                   className="w-72 lg:w-80"
-                />
+                >
+                  <MarketingMilestonePreview />
+                </PhoneMockup>
                 
                 {/* Saved offline badge */}
                 <div className="absolute top-12 -right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-depth border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-2">
