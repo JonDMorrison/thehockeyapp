@@ -143,7 +143,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
               )}
             </button>
 
-            {/* Solo Training Option */}
+            {/* Train On My Own Option */}
             <button
               onClick={() => setSelectedRole("solo")}
               className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
@@ -161,9 +161,9 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
                   <Dumbbell className={`w-7 h-7 ${selectedRole === "solo" ? "text-white" : "text-orange-500"}`} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold mb-1">Solo Training</h3>
+                  <h3 className="text-lg font-semibold mb-1">Train On My Own</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Train on your own with pre-built workouts. No team or coach needed.
+                    Train independently with pre-built workouts. No team or coach needed.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">

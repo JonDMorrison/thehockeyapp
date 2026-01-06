@@ -236,7 +236,7 @@ const JoinTeamSearch: React.FC = () => {
           </>
         )}
 
-        {/* Solo Training Option */}
+        {/* Train On My Own Option */}
         <div className="mt-8 pt-6 border-t border-border">
           <AppCard className="bg-primary/5 border-primary/20">
             <div className="flex items-start gap-4">
@@ -246,7 +246,7 @@ const JoinTeamSearch: React.FC = () => {
               <div className="flex-1">
                 <h3 className="font-semibold mb-1">Not on a team?</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Train solo and track your own progress without a coach.
+                  Train on your own and track your progress without a coach.
                 </p>
                 <Button
                   variant="outline"
@@ -254,7 +254,7 @@ const JoinTeamSearch: React.FC = () => {
                   asChild
                 >
                   <Link to="/solo/setup">
-                    Start Solo Training
+                    Train On My Own
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Link>
                 </Button>
