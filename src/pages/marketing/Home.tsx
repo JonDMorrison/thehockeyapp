@@ -225,7 +225,6 @@ const Home: React.FC = () => {
                 icon: ClipboardCheck,
                 title: "Tasks get done",
                 description: "Simple assignments kids actually complete.",
-                gradient: true,
               },
               {
                 icon: Trophy,
@@ -236,7 +235,6 @@ const Home: React.FC = () => {
                 icon: Target,
                 title: "Real progress",
                 description: "See who's putting in the work.",
-                gradient: true,
               },
               {
                 icon: Users,
@@ -247,31 +245,19 @@ const Home: React.FC = () => {
                 icon: Shield,
                 title: "Zero pressure",
                 description: "No rankings. No comparisons. No stress.",
-                gradient: true,
               },
             ].map((outcome, i) => (
               <div
                 key={i}
-                className={`group relative rounded-2xl p-6 text-center transition-all duration-300 ${
-                  outcome.gradient
-                    ? "bg-gradient-to-br from-primary to-[hsl(var(--gradient-end))] text-white hover:scale-105 shadow-depth"
-                    : "bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 shadow-soft hover:shadow-depth hover:-translate-y-1"
-                }`}
+                className="group relative rounded-2xl p-6 text-center transition-all duration-300 bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 shadow-soft hover:shadow-depth hover:-translate-y-1"
               >
-                {outcome.gradient && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl" />
-                )}
-                <div className={`relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-                  outcome.gradient 
-                    ? "bg-white/20 backdrop-blur-sm" 
-                    : "bg-primary/10"
-                }`}>
-                  <outcome.icon className={`w-7 h-7 ${outcome.gradient ? "text-white" : "text-primary"}`} />
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <outcome.icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
                 </div>
-                <h3 className={`relative z-10 text-lg font-semibold mb-2 ${outcome.gradient ? "" : "text-foreground"}`}>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">
                   {outcome.title}
                 </h3>
-                <p className={`relative z-10 text-sm leading-relaxed ${outcome.gradient ? "text-white/90" : "text-muted-foreground"}`}>
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {outcome.description}
                 </p>
               </div>
