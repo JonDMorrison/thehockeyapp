@@ -1,10 +1,10 @@
 project_id = "muwlroahtkdylxwguzyr"
 
 [functions.generate-workout-ai]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-summaries-ai]
-verify_jwt = true
+verify_jwt = false
 
 [functions.sync-schedule]
 verify_jwt = false
