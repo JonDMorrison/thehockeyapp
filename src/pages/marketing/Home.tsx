@@ -124,14 +124,6 @@ const Home: React.FC = () => {
                 >
                   <MarketingAIPreview />
                 </PhoneMockup>
-                
-                {/* Floating badge */}
-                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-5 py-2.5 rounded-full shadow-depth border border-gray-200/50 dark:border-gray-700/50">
-                  <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    3 of 5 complete
-                  </span>
-                </div>
               </div>
             </div>
           </div>
