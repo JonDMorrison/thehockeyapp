@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Target, Clock, Trophy, Flame } from 'lucide-react';
+import { Target, Clock, Trophy, Flame, Gift, Medal, Pizza, Gamepad2, Star } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,17 @@ const motivationalMessages = [
   { min: 100, max: Infinity, message: "Goal achieved! 🏆", icon: Trophy },
 ];
 
+// Reward display config matching GoalRewardPrompt options
+const rewardConfig: Record<string, { emoji: string; label: string; icon: React.ComponentType<any>; color: string }> = {
+  badges: { emoji: "🏅", label: "Badge Hunt", icon: Medal, color: "from-amber-500 to-yellow-500" },
+  scrimmage: { emoji: "🏒", label: "Scrimmage Game", icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
+  pizza: { emoji: "🍕", label: "Pizza Party", icon: Pizza, color: "from-red-500 to-orange-500" },
+  trophy: { emoji: "🏆", label: "Team Trophy", icon: Trophy, color: "from-yellow-500 to-amber-600" },
+  stars: { emoji: "⭐", label: "Star Stickers", icon: Star, color: "from-purple-500 to-pink-500" },
+  surprise: { emoji: "🎁", label: "Mystery Prize", icon: Gift, color: "from-emerald-500 to-teal-500" },
+  custom: { emoji: "🎯", label: "Custom Reward", icon: Gift, color: "from-indigo-500 to-purple-500" },
+};
+
 export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
   const { data: goal, isLoading } = useTeamGoal(teamId);
   const { data: contributions } = useGoalContributions(goal?.id);
@@ -31,7 +42,6 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
   // Trigger celebration on first load if goal is completed
   useEffect(() => {
     if (goal?.status === 'completed' && !showCelebration) {
-      // Check if we've already shown this celebration
       const celebrationKey = `goal_celebrated_${goal.id}`;
       if (!sessionStorage.getItem(celebrationKey)) {
         sessionStorage.setItem(celebrationKey, 'true');
@@ -59,6 +69,10 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
   const daysLeft = differenceInDays(new Date(goal.end_date), new Date());
   const message = motivationalMessages.find(m => progress >= m.min && progress < m.max) || motivationalMessages[0];
   const MessageIcon = message.icon;
+
+  // Get reward display info
+  const reward = goal.reward_type ? rewardConfig[goal.reward_type] || rewardConfig.custom : null;
+  const rewardLabel = goal.reward_description || reward?.label || null;
 
   return (
     <motion.div
@@ -93,7 +107,7 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
             </div>
 
             {/* Info */}
-            <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex-1 min-w-0 space-y-2">
               {/* Header */}
               <div>
                 <div className="flex items-center gap-2">
@@ -117,6 +131,29 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
                   )}
                 </div>
               </div>
+
+              {/* Reward display - what they're working towards */}
+              {reward && rewardLabel && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-2 rounded-lg text-sm',
+                    'bg-gradient-to-r',
+                    reward.color,
+                    'bg-opacity-10'
+                  )}
+                  style={{
+                    background: `linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))`
+                  }}
+                >
+                  <span className="text-lg">{reward.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs text-muted-foreground block">Working towards</span>
+                    <span className="font-medium text-foreground truncate block">{rewardLabel}</span>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Motivational message */}
               <AnimatePresence mode="wait">

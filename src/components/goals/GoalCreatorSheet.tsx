@@ -89,6 +89,8 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10 
         end_date: format(dateRange.end, 'yyyy-MM-dd'),
         show_leaderboard: showLeaderboard,
         created_by_user_id: user.id,
+        reward_type: null,
+        reward_description: null,
       });
 
       toast.success('Team goal created!');
