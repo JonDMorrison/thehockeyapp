@@ -64,12 +64,6 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left column - Text */}
             <div className="text-center lg:text-left">
-              {/* Floating badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-soft mb-8">
-                <Dumbbell className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Off-Ice Training App</span>
-              </div>
-              
               {/* Gradient headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
                 Off-ice training{" "}
