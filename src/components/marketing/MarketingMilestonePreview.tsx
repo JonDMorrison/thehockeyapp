@@ -20,10 +20,15 @@ const demoTasks: DemoTask[] = [
 
 export const MarketingMilestonePreview: React.FC = () => {
   return (
-    <div className="h-full w-full bg-background text-foreground overflow-y-auto relative">
+    <div className="h-full w-full bg-background text-foreground overflow-hidden relative">
+      {/* Safe area padding for phone notch */}
+      <div className="h-6 bg-background" />
+      
       {/* Celebration overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
       
+      {/* Scrollable content */}
+      <div className="h-[calc(100%-1.5rem)] overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
@@ -132,6 +137,7 @@ export const MarketingMilestonePreview: React.FC = () => {
           <span className="text-sm font-bold text-foreground">7 Day Streak!</span>
           <span className="text-lg">🔥</span>
         </div>
+      </div>
       </div>
     </div>
   );
