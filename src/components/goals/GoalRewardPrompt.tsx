@@ -286,3 +286,119 @@ export const QuickGoalPrompt: React.FC<QuickGoalPromptProps> = ({
     </motion.div>
   );
 };
+
+// Inline reward selector for forms
+interface InlineRewardSelectorProps {
+  selectedReward: string | null;
+  customReward: string | null;
+  onSelect: (rewardType: string | null, description: string | null) => void;
+}
+
+export const InlineRewardSelector: React.FC<InlineRewardSelectorProps> = ({
+  selectedReward,
+  customReward,
+  onSelect,
+}) => {
+  const [showCustomInput, setShowCustomInput] = useState(selectedReward === 'custom');
+  const [customValue, setCustomValue] = useState(customReward || '');
+
+  const handleSelect = (id: string) => {
+    if (id === 'custom') {
+      setShowCustomInput(true);
+      onSelect('custom', customValue || null);
+    } else {
+      setShowCustomInput(false);
+      const reward = rewardOptions.find(r => r.id === id);
+      onSelect(id, reward?.label || null);
+    }
+  };
+
+  const handleClear = () => {
+    setShowCustomInput(false);
+    setCustomValue('');
+    onSelect(null, null);
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Reward Options Grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {rewardOptions.map((option) => {
+          const isSelected = selectedReward === option.id;
+          return (
+            <motion.button
+              key={option.id}
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleSelect(option.id)}
+              className={cn(
+                "relative p-3 rounded-lg text-center transition-all border-2",
+                isSelected
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/50 bg-card"
+              )}
+            >
+              <span className="text-xl block mb-1">{option.emoji}</span>
+              <p className="font-medium text-xs truncate">{option.label}</p>
+              {isSelected && (
+                <motion.div
+                  layoutId="inline-reward-check"
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center"
+                >
+                  <Target className="w-2.5 h-2.5 text-primary-foreground" />
+                </motion.div>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Custom Option */}
+      <button
+        type="button"
+        onClick={() => handleSelect('custom')}
+        className={cn(
+          "w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all",
+          selectedReward === 'custom'
+            ? "border-primary bg-primary/5"
+            : "border-dashed border-muted-foreground/30 hover:border-muted-foreground/50"
+        )}
+      >
+        <Pencil className="w-4 h-4 text-muted-foreground" />
+        <span className="font-medium text-sm">Custom reward</span>
+      </button>
+
+      <AnimatePresence>
+        {showCustomInput && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <Input
+              placeholder="e.g., Extra scrimmage time, Team outing..."
+              value={customValue}
+              onChange={(e) => {
+                setCustomValue(e.target.value);
+                onSelect('custom', e.target.value || null);
+              }}
+              autoFocus
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Clear selection */}
+      {selectedReward && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="text-xs text-muted-foreground hover:text-foreground underline"
+        >
+          Clear selection
+        </button>
+      )}
+    </div>
+  );
+};

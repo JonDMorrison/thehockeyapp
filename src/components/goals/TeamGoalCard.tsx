@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Plus, Calendar, Trophy, MoreVertical, RefreshCw, Archive } from 'lucide-react';
+import { Target, Plus, Calendar, Trophy, MoreVertical, RefreshCw, Archive, Pencil } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -26,10 +26,25 @@ interface TeamGoalCardProps {
 
 export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCardProps) {
   const [showCreator, setShowCreator] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<TeamGoal | null>(null);
   const { data: goal, isLoading } = useTeamGoal(teamId);
   const { data: contributions } = useGoalContributions(goal?.id);
   const refreshProgress = useRefreshGoalProgress();
   const updateGoal = useUpdateGoal();
+
+  const handleEdit = () => {
+    if (goal) {
+      setEditingGoal(goal);
+      setShowCreator(true);
+    }
+  };
+
+  const handleSheetClose = (open: boolean) => {
+    setShowCreator(open);
+    if (!open) {
+      setEditingGoal(null);
+    }
+  };
 
   const handleRefresh = async () => {
     if (!goal) return;
@@ -86,9 +101,10 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
         </Card>
         <GoalCreatorSheet
           open={showCreator}
-          onOpenChange={setShowCreator}
+          onOpenChange={handleSheetClose}
           teamId={teamId}
           rosterCount={rosterCount}
+          editGoal={editingGoal}
         />
       </>
     );
@@ -131,6 +147,10 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit Goal
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleRefresh} disabled={refreshProgress.isPending}>
                   <RefreshCw className={cn('w-4 h-4 mr-2', refreshProgress.isPending && 'animate-spin')} />
                   Refresh Progress
@@ -190,9 +210,10 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
 
       <GoalCreatorSheet
         open={showCreator}
-        onOpenChange={setShowCreator}
+        onOpenChange={handleSheetClose}
         teamId={teamId}
         rosterCount={rosterCount}
+        editGoal={editingGoal}
       />
     </>
   );
