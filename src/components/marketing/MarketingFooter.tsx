@@ -11,9 +11,9 @@ export const MarketingFooter: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center">
-                <span className="text-foreground font-bold text-sm">PT</span>
+                <span className="text-foreground font-bold text-sm">HA</span>
               </div>
-              <span className="font-bold text-lg">PuckTrack</span>
+              <span className="font-bold text-lg">The Hockey App</span>
             </div>
             <p className="text-background/70 max-w-sm mb-6">
               Off-ice training made simple. Coaches assign, kids complete, 
@@ -53,7 +53,7 @@ export const MarketingFooter: React.FC = () => {
 
         <div className="pt-8 border-t border-background/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-background/50">
-            © 2026 PuckTrack. All rights reserved.
+            © 2026 The Hockey App. All rights reserved.
           </p>
           <p className="text-sm text-background/50 flex items-center gap-1">
             Made with <Heart className="w-3 h-3 text-destructive" /> for hockey families
