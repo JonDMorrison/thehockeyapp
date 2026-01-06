@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 import logoImage from "@/assets/hockey-app-logo.png";
@@ -20,6 +21,7 @@ const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,7 +75,7 @@ const Auth: React.FC = () => {
           navigate("/welcome", { replace: true });
         }
       } else {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(email, password, rememberMe);
         if (error) {
           if (error.message.includes("Invalid login")) {
             toast.error("Invalid credentials", "Please check your email and password.");
@@ -98,7 +100,24 @@ const Auth: React.FC = () => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-  }
+              }
+
+              {mode === "signin" && (
+                <div className="flex items-center gap-3 pt-1">
+                  <Checkbox
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked === true)}
+                    className="rounded-md"
+                  />
+                  <Label 
+                    htmlFor="rememberMe" 
+                    className="text-sm text-muted-foreground cursor-pointer select-none"
+                  >
+                    Remember me
+                  </Label>
+                </div>
+              )}
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">

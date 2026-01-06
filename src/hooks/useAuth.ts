@@ -44,7 +44,20 @@ export function useAuth() {
       });
     });
 
-    return () => subscription.unsubscribe();
+    // Handle session-only mode: clear auth on page unload if flag is set
+    const handleBeforeUnload = () => {
+      if (sessionStorage.getItem("auth_session_only") === "true") {
+        // Clear the session from localStorage to simulate session-only behavior
+        localStorage.removeItem("sb-muwlroahtkdylxwguzyr-auth-token");
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
@@ -64,7 +77,15 @@ export function useAuth() {
     return { data, error };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string, rememberMe: boolean = true) => {
+    // If not remembering, we'll handle session cleanup on browser close
+    // by storing a flag that the auth listener can check
+    if (!rememberMe) {
+      sessionStorage.setItem("auth_session_only", "true");
+    } else {
+      sessionStorage.removeItem("auth_session_only");
+    }
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
