@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
+import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import {
   CheckCircle,
   Shield,
@@ -21,7 +22,6 @@ import {
   Dumbbell,
   ClipboardCheck,
 } from "lucide-react";
-import mockupToday from "@/assets/mockup-today-checklist.png";
 import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
 import mockupPrivacy from "@/assets/mockup-privacy-trust.png";
 
@@ -115,12 +115,12 @@ const Home: React.FC = () => {
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative">
                 <PhoneMockup 
-                  imageSrc={mockupToday} 
-                  imageAlt="Today's off-ice tasks - simple checklist for players"
                   showGlow
                   glowColor="primary"
                   className="w-72 lg:w-80"
-                />
+                >
+                  <MarketingAppPreview />
+                </PhoneMockup>
                 
                 {/* Floating badge */}
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-5 py-2.5 rounded-full shadow-depth border border-gray-200/50 dark:border-gray-700/50">
