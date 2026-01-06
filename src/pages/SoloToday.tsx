@@ -365,6 +365,10 @@ const SoloToday: React.FC = () => {
               const isCompleted = completions?.some(
                 (c) => c.practice_task_id === task.id
               );
+              
+              // Look up description from task library
+              const taskTemplate = TASK_LIBRARY.find(t => t.label === task.label);
+              const description = taskTemplate?.description;
 
               return (
                 <AppCard
@@ -376,9 +380,9 @@ const SoloToday: React.FC = () => {
                   }`}
                   onClick={() => toggleTask.mutate(task.id)}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                         isCompleted
                           ? "bg-green-500 text-white"
                           : "bg-muted text-muted-foreground"
@@ -391,24 +395,31 @@ const SoloToday: React.FC = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p
-                        className={`font-medium ${
-                          isCompleted ? "line-through text-muted-foreground" : ""
-                        }`}
-                      >
-                        {task.label}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p
+                          className={`font-medium ${
+                            isCompleted ? "line-through text-muted-foreground" : ""
+                          }`}
+                        >
+                          {task.label}
+                        </p>
+                        {task.is_required && (
+                          <Tag variant="warning" size="sm">
+                            Required
+                          </Tag>
+                        )}
+                      </div>
                       {task.shots_expected && (
                         <p className="text-xs text-muted-foreground">
                           {task.shots_expected} shots
                         </p>
                       )}
+                      {description && !isCompleted && (
+                        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                          {description}
+                        </p>
+                      )}
                     </div>
-                    {task.is_required && (
-                      <Tag variant="warning" size="sm">
-                        Required
-                      </Tag>
-                    )}
                   </div>
                 </AppCard>
               );
