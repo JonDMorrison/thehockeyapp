@@ -890,6 +890,73 @@ export type Database = {
           },
         ]
       }
+      solo_referral_invites: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          plan_id: string | null
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          referrer_player_id: string
+          share_type: string
+          status: string | null
+          token: string
+          trial_ends_at: string | null
+          workout_card_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          plan_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          referrer_player_id: string
+          share_type: string
+          status?: string | null
+          token: string
+          trial_ends_at?: string | null
+          workout_card_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          plan_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          referrer_player_id?: string
+          share_type?: string
+          status?: string | null
+          token?: string
+          trial_ends_at?: string | null
+          workout_card_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_referral_invites_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "personal_training_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solo_referral_invites_referrer_player_id_fkey"
+            columns: ["referrer_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solo_referral_invites_workout_card_id_fkey"
+            columns: ["workout_card_id"]
+            isOneToOne: false
+            referencedRelation: "personal_practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_completions: {
         Row: {
           completed: boolean | null
