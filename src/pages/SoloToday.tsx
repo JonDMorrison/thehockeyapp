@@ -209,6 +209,7 @@ const SoloToday: React.FC = () => {
   const toggleTask = useMutation({
     mutationFn: async (taskId: string) => {
       const existing = completions?.find((c) => c.practice_task_id === taskId);
+      const task = tasks?.find((t) => t.id === taskId);
 
       if (existing) {
         // Toggle off
@@ -217,6 +218,7 @@ const SoloToday: React.FC = () => {
           .delete()
           .eq("id", existing.id);
         if (error) throw error;
+        return { completed: false, taskLabel: task?.label };
       } else {
         // Toggle on
         const { error } = await supabase
@@ -230,10 +232,26 @@ const SoloToday: React.FC = () => {
             source: "solo",
           });
         if (error) throw error;
+        return { completed: true, taskLabel: task?.label };
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["task-completions", playerId] });
+      
+      if (result?.completed) {
+        // Check if this completes all tasks
+        const newCompletedCount = (completions?.length || 0) + 1;
+        const isNowAllDone = newCompletedCount === totalCount;
+        
+        if (isNowAllDone) {
+          toast.success("Workout Complete! 🎉", "Amazing work today!");
+        } else {
+          toast.success("Nice! ✓", result.taskLabel || "Task completed");
+        }
+      }
+    },
+    onError: (error: Error) => {
+      toast.error("Couldn't save", error.message);
     },
   });
 
