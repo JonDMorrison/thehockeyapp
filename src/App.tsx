@@ -28,6 +28,7 @@ import TeamRoster from "./pages/TeamRoster";
 import TeamAdultJoin from "./pages/TeamAdultJoin";
 import JoinTeam from "./pages/JoinTeam";
 import JoinTeamPlayer from "./pages/JoinTeamPlayer";
+import JoinTeamSearch from "./pages/JoinTeamSearch";
 import TeamPractice from "./pages/TeamPractice";
 import PracticeCardEditor from "./pages/PracticeCardEditor";
 import WorkoutBuilder from "./pages/WorkoutBuilder";
@@ -108,6 +109,7 @@ const App = () => {
             
             {/* Join flows */}
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
+            <Route path="/join" element={<JoinTeamSearch />} />
             <Route path="/join/:token" element={<JoinTeam />} />
             <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
             
