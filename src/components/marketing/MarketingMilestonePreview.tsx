@@ -66,7 +66,6 @@ export const MarketingMilestonePreview: React.FC = () => {
             <div>
               <p className="text-xs font-medium text-white/80">🎉 Achievement Unlocked!</p>
               <p className="text-lg font-bold">Perfect Week</p>
-              <p className="text-xs text-white/80">Completed all tasks 5 days in a row</p>
             </div>
           </div>
         </div>
