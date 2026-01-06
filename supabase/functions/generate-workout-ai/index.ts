@@ -63,7 +63,8 @@ const WEEK_PLAN_SCHEMA = {
 
 interface GenerateRequest {
   type: "day_card" | "week_plan";
-  team_id: string;
+  team_id?: string;
+  player_id?: string;
   date?: string; // for day_card
   start_date?: string; // for week_plan
   tier: "rec" | "rep" | "elite";
@@ -71,6 +72,10 @@ interface GenerateRequest {
   days_per_week?: number; // for week_plan
   focus_areas?: string[];
   keep_simple?: boolean;
+  schedule_events?: Array<{
+    date: string;
+    event_type: "game" | "practice";
+  }>;
 }
 
 function validateDayCard(output: any): boolean {
@@ -156,34 +161,56 @@ serve(async (req) => {
     }
 
     const body: GenerateRequest = await req.json();
-    const { type, team_id, date, start_date, tier, time_budget, days_per_week, focus_areas, keep_simple } = body;
+    const { type, team_id, player_id, date, start_date, tier, time_budget, days_per_week, focus_areas, keep_simple, schedule_events } = body;
 
-    // Verify user is team adult
-    const { data: teamRole, error: roleError } = await supabase
-      .from("team_roles")
-      .select("role")
-      .eq("team_id", team_id)
-      .eq("user_id", user.id)
-      .single();
+    // For solo players without team_id, skip team role verification
+    let allowedTaskTypes = ["shooting", "mobility", "conditioning", "recovery", "prep"];
+    let trainingMode = "balanced";
+    let effectiveTier = tier;
 
-    if (roleError || !teamRole) {
-      return new Response(JSON.stringify({ error: "Not authorized for this team" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (team_id) {
+      // Verify user is team adult
+      const { data: teamRole, error: roleError } = await supabase
+        .from("team_roles")
+        .select("role")
+        .eq("team_id", team_id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (roleError || !teamRole) {
+        return new Response(JSON.stringify({ error: "Not authorized for this team" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fetch team training preferences
+      const { data: preferences } = await supabase
+        .from("team_training_preferences")
+        .select("training_mode, allowed_task_types, default_tier, use_ai_assist")
+        .eq("team_id", team_id)
+        .maybeSingle();
+
+      // Use preferences if available
+      effectiveTier = tier || preferences?.default_tier || "rep";
+      allowedTaskTypes = preferences?.allowed_task_types || allowedTaskTypes;
+      trainingMode = preferences?.training_mode || "balanced";
+    } else if (player_id) {
+      // For solo players, verify ownership
+      const { data: playerData, error: playerError } = await supabase
+        .from("players")
+        .select("id, owner_user_id")
+        .eq("id", player_id)
+        .eq("owner_user_id", user.id)
+        .single();
+
+      if (playerError || !playerData) {
+        return new Response(JSON.stringify({ error: "Not authorized for this player" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
-
-    // Fetch team training preferences
-    const { data: preferences } = await supabase
-      .from("team_training_preferences")
-      .select("training_mode, allowed_task_types, default_tier, use_ai_assist")
-      .eq("team_id", team_id)
-      .maybeSingle();
-
-    // Use preferences if available, otherwise use request values
-    const effectiveTier = tier || preferences?.default_tier || "rep";
-    const allowedTaskTypes = preferences?.allowed_task_types || ["shooting", "mobility", "conditioning", "recovery", "prep"];
-    const trainingMode = preferences?.training_mode || "balanced";
 
     // Build constraint hints based on training mode
     let modeHint = "";
@@ -193,6 +220,21 @@ serve(async (req) => {
       modeHint = "Include a balanced mix of shooting, mobility, and prep tasks. Light conditioning optional.";
     } else if (trainingMode === "performance") {
       modeHint = "Include comprehensive training: shooting, conditioning, mobility, and recovery. Higher volume and intensity.";
+    }
+
+    // Build schedule-aware hints
+    let scheduleHint = "";
+    if (schedule_events && schedule_events.length > 0) {
+      const gameDays = schedule_events.filter(e => e.event_type === "game").map(e => e.date);
+      const practiceDays = schedule_events.filter(e => e.event_type === "practice").map(e => e.date);
+      
+      scheduleHint = `
+IMPORTANT SCHEDULE CONSTRAINTS:
+- Game days (${gameDays.join(", ")}): Create LIGHT "Game Day Prep" routines - only quick prep, visualization, and light mobility. Max 15 minutes.
+- Practice days (${practiceDays.join(", ")}): Create REDUCED workouts - player already has ice time. Focus on recovery/light mobility. Max 15 minutes.
+- Day BEFORE a game: Reduce intensity, avoid heavy conditioning. Focus on technique and mental prep.
+- Day AFTER a game: Recovery-focused with light stretching and mobility.
+For non-game/practice days, create normal training sessions.`;
     }
 
     // Build the user prompt based on type
@@ -208,6 +250,7 @@ serve(async (req) => {
 - Allowed task types: ${allowedTaskTypes.join(", ")}
 - Focus areas: ${focus_areas?.join(", ") || "based on allowed types"}
 ${modeHint}
+${scheduleHint}
 ${keep_simple ? "- Keep it simple with 2-4 tasks" : "- Include 4-6 varied tasks"}
 
 Output the JSON matching this exact schema:
@@ -222,6 +265,7 @@ ${JSON.stringify(schema, null, 2)}`;
 - Allowed task types: ${allowedTaskTypes.join(", ")}
 - Focus areas: ${focus_areas?.join(", ") || "based on allowed types"}
 ${modeHint}
+${scheduleHint}
 ${keep_simple ? "- Keep each day simple with 2-4 tasks" : "- Include 4-6 varied tasks per day"}
 
 Output the JSON matching this exact schema:

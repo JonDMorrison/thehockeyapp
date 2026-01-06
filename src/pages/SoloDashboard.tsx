@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { 
   Flame, Play, CheckCircle2, ChevronRight, Lock, RotateCcw,
   Target, Dumbbell, Zap, Calendar, Star, Award, Trophy, Medal,
-  Shield, Crown, CheckCircle, Brain, Users, Gift
+  Shield, Crown, CheckCircle, Brain, Users, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { InviteFriendModal } from "@/components/player/InviteFriendModal";
+import { SoloUpcomingEvents } from "@/components/player/SoloUpcomingEvents";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {
@@ -105,6 +106,7 @@ export default function SoloDashboard() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showScheduleConnect, setShowScheduleConnect] = useState(false);
 
   const { data: dashboard, isLoading } = useQuery({
     queryKey: ['solo-dashboard', playerId],
@@ -227,12 +229,22 @@ export default function SoloDashboard() {
             </div>
             
             {/* Streak */}
-            {streak.current_streak > 0 && (
-              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-2 rounded-full">
-                <Flame className="h-4 w-4" />
-                <span className="font-bold text-sm">{streak.current_streak}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {streak.current_streak > 0 && (
+                <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-2 rounded-full">
+                  <Flame className="h-4 w-4" />
+                  <span className="font-bold text-sm">{streak.current_streak}</span>
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                onClick={() => navigate(`/solo/settings/${playerId}`)}
+              >
+                <Settings className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -394,7 +406,11 @@ export default function SoloDashboard() {
             </div>
           </div>
 
-          {/* Recent Workouts */}
+          {/* Schedule Widget */}
+          <SoloUpcomingEvents 
+            playerId={playerId!}
+            onConnectSchedule={() => navigate(`/solo/settings/${playerId}`)}
+          />
           {recent_workouts && recent_workouts.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
