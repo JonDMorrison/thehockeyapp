@@ -23,11 +23,11 @@ export const MarketingNav: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--gradient-end))] flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-soft group-hover:shadow-md transition-shadow">
               <HockeyAppLogo size={20} className="text-white" />
             </div>
             <div className="hidden sm:flex flex-col">
-              <span className="font-bold text-xl bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent leading-tight">
+              <span className="font-bold text-xl text-foreground leading-tight">
                 The Hockey App
               </span>
               <span className="text-[10px] text-muted-foreground -mt-0.5">Off-Ice Training</span>
@@ -59,7 +59,7 @@ export const MarketingNav: React.FC = () => {
               <Link to="/auth">Sign in</Link>
             </Button>
             <Button 
-              className="text-sm bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:opacity-90 transition-opacity shadow-soft hover:shadow-glow" 
+              className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft" 
               asChild
             >
               <Link to="/auth">Get Started</Link>
@@ -104,7 +104,7 @@ export const MarketingNav: React.FC = () => {
                 <Link to="/auth">Sign in</Link>
               </Button>
               <Button 
-                className="w-full bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))]" 
+                className="w-full bg-primary hover:bg-primary/90" 
                 asChild
               >
                 <Link to="/auth">Get Started</Link>
