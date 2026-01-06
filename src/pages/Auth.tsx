@@ -9,6 +9,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 import logoImage from "@/assets/hockey-app-logo.png";
+import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
+
+// Helper to get the redirect path based on stored role
+const getRedirectPath = (): string => {
+  const role = getSelectedRole();
+  if (role === "coach") {
+    clearSelectedRole();
+    return "/teams/new";
+  } else if (role === "solo") {
+    clearSelectedRole();
+    return "/solo/setup";
+  } else if (role === "player") {
+    clearSelectedRole();
+    return "/players/new";
+  }
+  // No stored role, go to welcome for role selection
+  return "/welcome";
+};
 
 const authSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -31,7 +49,7 @@ const Auth: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      navigate("/welcome", { replace: true });
+      navigate(getRedirectPath(), { replace: true });
     }
   }, [isAuthenticated, authLoading, navigate]);
 
@@ -72,7 +90,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast.success("Welcome!", "Your account has been created.");
-          navigate("/welcome", { replace: true });
+          navigate(getRedirectPath(), { replace: true });
         }
       } else {
         const { error } = await signIn(email, password, rememberMe);
@@ -84,7 +102,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast.success("Welcome back!", "You're now signed in.");
-          navigate("/welcome", { replace: true });
+          navigate(getRedirectPath(), { replace: true });
         }
       }
     } catch {
