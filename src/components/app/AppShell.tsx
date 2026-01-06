@@ -24,11 +24,18 @@ const navItems: NavItem[] = [
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
-export const AppShell: React.FC<AppShellProps> = ({ children, header, hideNav = false, hideUserMenu = true }) => {
+export const AppShell: React.FC<AppShellProps> = ({ children, header, hideNav = false, hideUserMenu = false }) => {
   const location = useLocation();
   
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      
+      {/* Floating User Menu - Top Right */}
+      {!hideUserMenu && (
+        <div className="fixed top-3 right-3 z-50">
+          <UserMenu size="sm" />
+        </div>
+      )}
       
       {/* Header */}
       {header && (
