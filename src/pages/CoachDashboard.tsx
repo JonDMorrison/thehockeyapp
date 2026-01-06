@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +20,7 @@ import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
 import { CoachDock } from "@/components/dashboard/CoachDock";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
+import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
@@ -39,6 +40,42 @@ const CoachDashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
+
+  // Fetch schedule source for sync functionality
+  const { data: scheduleSource } = useQuery({
+    queryKey: ["team-schedule-source", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_schedule_sources")
+        .select("id, last_synced_at, sync_status")
+        .eq("team_id", id!)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Sync schedule mutation
+  const syncScheduleMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("sync-schedule", {
+        body: { action: "sync", team_id: id },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team-schedule-source", id] });
+      queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
+      toast.success("Schedule synced!");
+    },
+    onError: () => {
+      toast.error("Failed to sync schedule");
+    },
+  });
   
   const {
     showWalkthrough,
@@ -228,10 +265,21 @@ const CoachDashboard: React.FC = () => {
           shotsLogged={dashboard.pulse.total_shots_today}
         />
 
+        {/* Upcoming Events with Sync */}
+        {scheduleConnected && dashboard.upcoming && dashboard.upcoming.length > 0 && (
+          <UpcomingEvents
+            events={dashboard.upcoming}
+            scheduleConnected={!!scheduleConnected}
+            lastSyncedAt={scheduleSource?.last_synced_at}
+            isSyncing={syncScheduleMutation.isPending}
+            onSyncSchedule={() => syncScheduleMutation.mutate()}
+          />
+        )}
+
         {/* Layer 4: Navigation - Coach Dock */}
         <CoachDock
           playersCount={dashboard.pulse.players_count}
-          weekPlanStatus={undefined} // Could be derived from week plan data
+          weekPlanStatus={undefined}
           activeToday={dashboard.pulse.active_today_count}
           hasPlayers={dashboard.pulse.players_count > 0}
           onRoster={() => navigate(`/teams/${id}/roster`)}

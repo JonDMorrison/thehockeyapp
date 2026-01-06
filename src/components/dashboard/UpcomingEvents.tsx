@@ -1,6 +1,6 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
-import { Calendar, MapPin, Zap, Users, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Zap, Users, ChevronRight, RefreshCw } from "lucide-react";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -16,14 +16,20 @@ interface Event {
 interface UpcomingEventsProps {
   events: Event[];
   scheduleConnected: boolean;
+  lastSyncedAt?: string | null;
+  isSyncing?: boolean;
   onConnectSchedule?: () => void;
+  onSyncSchedule?: () => void;
   onViewAll?: () => void;
 }
 
 export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({
   events,
   scheduleConnected,
+  lastSyncedAt,
+  isSyncing,
   onConnectSchedule,
+  onSyncSchedule,
   onViewAll,
 }) => {
   if (!scheduleConnected) {
@@ -58,18 +64,39 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({
   return (
     <AppCard>
       <div className="flex items-center justify-between mb-4">
-        <AppCardTitle className="text-base">Upcoming</AppCardTitle>
-        {onViewAll && events.length > 3 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs text-text-muted"
-            onClick={onViewAll}
-          >
-            View all
-            <ChevronRight className="w-3 h-3 ml-1" />
-          </Button>
-        )}
+        <div>
+          <AppCardTitle className="text-base">Upcoming</AppCardTitle>
+          {lastSyncedAt && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Synced {format(new Date(lastSyncedAt), "MMM d 'at' h:mm a")}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {onSyncSchedule && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5"
+              onClick={onSyncSchedule}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
+              {isSyncing ? "Syncing..." : "Sync"}
+            </Button>
+          )}
+          {onViewAll && events.length > 3 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={onViewAll}
+            >
+              View all
+              <ChevronRight className="w-3 h-3 ml-1" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">
