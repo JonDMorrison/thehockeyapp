@@ -45,6 +45,8 @@ import WidgetSettings from "./pages/WidgetSettings";
 import CoachDashboard from "./pages/CoachDashboard";
 import Welcome from "./pages/Welcome";
 import QuickAssign from "./pages/QuickAssign";
+import SoloSetup from "./pages/SoloSetup";
+import SoloToday from "./pages/SoloToday";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +110,10 @@ const App = () => {
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
             <Route path="/join/:token" element={<JoinTeam />} />
             <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
+            
+            {/* Solo training */}
+            <Route path="/solo/setup" element={<SoloSetup />} />
+            <Route path="/solo/today/:playerId" element={<SoloToday />} />
             
             {/* Other */}
             <Route path="/today" element={<Today />} />
