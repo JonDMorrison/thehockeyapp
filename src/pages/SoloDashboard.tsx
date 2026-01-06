@@ -92,6 +92,7 @@ interface DashboardData {
   }>;
   week_activity: Array<{
     date: string;
+    has_workout: boolean;
     completed: boolean;
   }>;
   stats: {
@@ -197,6 +198,7 @@ export default function SoloDashboard() {
       date,
       dayLetter: format(date, 'EEEEE'),
       isToday: format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
+      hasWorkout: activity?.has_workout || false,
       completed: activity?.completed || false
     };
   });
@@ -388,19 +390,27 @@ export default function SoloDashboard() {
                     "flex-1 aspect-square rounded-xl flex flex-col items-center justify-center transition-all",
                     day.completed 
                       ? "bg-primary/10" 
-                      : "bg-muted/50",
+                      : day.hasWorkout
+                        ? "bg-amber-500/10"
+                        : "bg-muted/50",
                     day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
                   )}
                 >
                   <span className={cn(
                     "text-xs font-medium",
-                    day.completed ? "text-primary" : "text-muted-foreground"
+                    day.completed 
+                      ? "text-primary" 
+                      : day.hasWorkout
+                        ? "text-amber-600"
+                        : "text-muted-foreground"
                   )}>
                     {day.dayLetter}
                   </span>
-                  {day.completed && (
+                  {day.completed ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5" />
-                  )}
+                  ) : day.hasWorkout ? (
+                    <Dumbbell className="h-3 w-3 text-amber-600 mt-0.5" />
+                  ) : null}
                 </div>
               ))}
             </div>
