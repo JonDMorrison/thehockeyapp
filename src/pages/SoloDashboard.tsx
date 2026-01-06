@@ -4,13 +4,52 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, addDays } from "date-fns";
 import { 
   Flame, Play, CheckCircle2, ChevronRight, Lock, RotateCcw,
-  Target, Dumbbell, Zap, Calendar
+  Target, Dumbbell, Zap, Calendar, Star, Award, Trophy, Medal,
+  Shield, Crown, CheckCircle, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+
+// Map database icon names to Lucide components
+const BADGE_ICONS: Record<string, React.ElementType> = {
+  'target': Target,
+  'flame': Flame,
+  'trophy': Trophy,
+  'medal': Medal,
+  'star': Star,
+  'award': Award,
+  'shield': Shield,
+  'crown': Crown,
+  'zap': Zap,
+  'brain': Brain,
+  'check-circle': CheckCircle,
+  'calendar': Calendar,
+};
+
+// Badge categories for grouping
+const BADGE_CATEGORIES = [
+  { 
+    id: 'consistency', 
+    label: 'Consistency', 
+    metricTypes: ['sessions_completed'],
+    description: 'Keep showing up'
+  },
+  { 
+    id: 'shooting', 
+    label: 'Shooting', 
+    metricTypes: ['total_shots'],
+    description: 'Put in the reps'
+  },
+  { 
+    id: 'gameday', 
+    label: 'Game Ready', 
+    metricTypes: ['game_day_completed', 'prep_tasks_completed'],
+    description: 'Be prepared'
+  },
+];
 
 interface DashboardData {
   success: boolean;
@@ -341,11 +380,11 @@ export default function SoloDashboard() {
             </div>
           )}
 
-          {/* Badges */}
+          {/* Aspirational Badges by Category */}
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-muted-foreground">
-                Badges
+                Badges to Earn
               </h3>
               <button 
                 className="text-xs text-primary font-medium flex items-center gap-0.5"
@@ -355,36 +394,81 @@ export default function SoloDashboard() {
               </button>
             </div>
             
-            <div className="flex gap-3 overflow-x-auto pb-1">
-              {/* Earned badges */}
-              {badges?.earned.slice(0, 4).map((badge: any) => (
-                <div
-                  key={badge.id}
-                  className="flex-shrink-0 w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-xl border border-primary/20"
-                >
-                  {badge.challenges?.badge_icon || '🏆'}
-                </div>
-              ))}
-              
-              {/* Locked badges */}
-              {badges?.all
-                .filter((c: any) => !badges.earned.find((e: any) => e.challenge_id === c.id))
-                .slice(0, Math.max(0, 4 - (badges?.earned.length || 0)))
-                .map((challenge: any) => (
-                  <div
-                    key={challenge.id}
-                    className="flex-shrink-0 w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-xl grayscale opacity-40 relative"
-                  >
-                    {challenge.badge_icon}
-                    <Lock className="h-3 w-3 absolute bottom-1.5 right-1.5 text-muted-foreground" />
-                  </div>
-                ))}
+            <div className="space-y-3">
+              {BADGE_CATEGORIES.map((category) => {
+                // Get badges for this category
+                const categoryBadges = badges?.all.filter((c: any) => 
+                  category.metricTypes.includes(c.metric_type)
+                ) || [];
                 
-              {(!badges || (badges.earned.length === 0 && badges.all.length === 0)) && (
-                <p className="text-sm text-muted-foreground py-4">
-                  Complete workouts to earn badges!
-                </p>
-              )}
+                // Get earned badges in this category
+                const earnedInCategory = categoryBadges.filter((c: any) =>
+                  badges?.earned.find((e: any) => e.challenge_id === c.id)
+                );
+                
+                // Get next badge to earn (lowest target not yet earned)
+                const unearnedBadges = categoryBadges
+                  .filter((c: any) => !badges?.earned.find((e: any) => e.challenge_id === c.id))
+                  .sort((a: any, b: any) => a.target_value - b.target_value);
+                
+                const nextBadge = unearnedBadges[0];
+                const IconComponent = nextBadge ? BADGE_ICONS[nextBadge.badge_icon] || Star : Star;
+                
+                return (
+                  <div 
+                    key={category.id}
+                    className="bg-card border border-border rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Badge Icon */}
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center",
+                        earnedInCategory.length > 0 
+                          ? "bg-primary/10" 
+                          : "bg-muted/50"
+                      )}>
+                        {nextBadge ? (
+                          <IconComponent className={cn(
+                            "h-6 w-6",
+                            earnedInCategory.length > 0 
+                              ? "text-primary" 
+                              : "text-muted-foreground"
+                          )} />
+                        ) : (
+                          <CheckCircle2 className="h-6 w-6 text-primary" />
+                        )}
+                      </div>
+                      
+                      {/* Badge Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm text-foreground">
+                            {category.label}
+                          </p>
+                          {earnedInCategory.length > 0 && (
+                            <span className="text-xs text-primary font-medium">
+                              {earnedInCategory.length}/{categoryBadges.length}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {nextBadge 
+                            ? `Next: ${nextBadge.name}` 
+                            : "All badges earned!"
+                          }
+                        </p>
+                      </div>
+                      
+                      {/* Lock or Check */}
+                      {nextBadge ? (
+                        <Lock className="h-4 w-4 text-muted-foreground/50" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
