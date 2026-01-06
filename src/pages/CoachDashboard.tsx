@@ -26,6 +26,7 @@ import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
+import { TeamProgressWidget } from "@/components/dashboard/TeamProgressWidget";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -259,9 +260,10 @@ const CoachDashboard: React.FC = () => {
           onAction={handleOnboardingAction}
         />
 
-        {/* Layer 3: Status Feedback - Today Snapshot */}
-        <TodaySnapshot
-          playersActive={dashboard.pulse.active_today_count}
+        {/* Team Progress Widget */}
+        <TeamProgressWidget
+          playersCount={dashboard.pulse.players_count}
+          activeToday={dashboard.pulse.active_today_count}
           sessionsComplete={dashboard.pulse.sessions_complete_today}
           shotsLogged={dashboard.pulse.total_shots_today}
         />
