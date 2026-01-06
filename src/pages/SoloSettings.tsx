@@ -81,7 +81,7 @@ export default function SoloSettings() {
                   variant="link"
                   size="sm"
                   className="h-auto p-0 text-xs text-primary"
-                  onClick={() => navigate(`/solo/profile/${playerId}`)}
+                  onClick={() => navigate(`/players/${playerId}`)}
                 >
                   Edit profile
                 </Button>
