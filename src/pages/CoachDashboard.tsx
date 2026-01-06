@@ -19,6 +19,7 @@ import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
 import { CoachDock } from "@/components/dashboard/CoachDock";
 import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
+import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
@@ -79,6 +80,21 @@ const CoachDashboard: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
     } catch {
       toast.error("Failed to publish");
+    }
+  };
+
+  const handleOnboardingAction = (itemId: string) => {
+    switch (itemId) {
+      case "add_players":
+        setShowInviteModal(true);
+        break;
+      case "connect_schedule":
+      case "set_preferences":
+        navigate(`/teams/${id}/settings`);
+        break;
+      case "first_workout":
+        setShowDatePicker(true);
+        break;
     }
   };
 
@@ -195,6 +211,14 @@ const CoachDashboard: React.FC = () => {
         <TeamGoalCard
           teamId={id!}
           rosterCount={dashboard.pulse.players_count}
+        />
+
+        {/* Onboarding Progress Checklist */}
+        <OnboardingProgress
+          checklist={dashboard.onboarding.checklist}
+          playersCount={dashboard.pulse.players_count}
+          hasWorkouts={dashboard.today.practice_card.exists}
+          onAction={handleOnboardingAction}
         />
 
         {/* Layer 3: Status Feedback - Today Snapshot */}
