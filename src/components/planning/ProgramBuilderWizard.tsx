@@ -41,6 +41,7 @@ import {
   Brain,
 } from "lucide-react";
 import { ProgramPreviewCalendar } from "./ProgramPreviewCalendar";
+import { GoalRewardPrompt } from "@/components/goals";
 
 interface ProgramBuilderWizardProps {
   open: boolean;
@@ -74,7 +75,7 @@ interface GeneratedProgram {
   }>;
 }
 
-type Step = "setup" | "goals" | "generating" | "preview";
+type Step = "setup" | "goals" | "generating" | "preview" | "reward";
 
 const focusOptions = [
   { id: "shooting_accuracy", label: "Shooting accuracy", icon: Target },
@@ -117,6 +118,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   const [step, setStep] = useState<Step>("setup");
   const [generatingStep, setGeneratingStep] = useState(0);
   const [generatedProgram, setGeneratedProgram] = useState<GeneratedProgram | null>(null);
+  const [selectedReward, setSelectedReward] = useState<{ type: string; description?: string } | null>(null);
 
   const toggleFocus = (id: string) => {
     setSelectedFocus((prev) =>
@@ -285,6 +287,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       setStep("setup");
       setGeneratingStep(0);
       setGeneratedProgram(null);
+      setSelectedReward(null);
     }, 300);
   };
 
@@ -543,20 +546,29 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             </Button>
             <Button 
               className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              onClick={() => applyMutation.mutate()}
-              disabled={applyMutation.isPending}
+              onClick={() => setStep("reward")}
             >
-              {applyMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Rocket className="w-4 h-4 mr-2" />
-              )}
-              Apply Program
+              <Rocket className="w-4 h-4 mr-2" />
+              Continue
             </Button>
           </div>
         </>
       )}
     </motion.div>
+  );
+
+  const renderReward = () => (
+    <GoalRewardPrompt
+      context="program"
+      onSetGoal={(rewardType, customReward) => {
+        setSelectedReward({ type: rewardType, description: customReward });
+        applyMutation.mutate();
+      }}
+      onSkip={() => {
+        setSelectedReward(null);
+        applyMutation.mutate();
+      }}
+    />
   );
 
   const canProceed = () => {
@@ -579,10 +591,11 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             </div>
             Create a Program
             <span className="ml-auto text-xs font-normal text-muted-foreground">
-              {step === "setup" && "Step 1/3"}
-              {step === "goals" && "Step 2/3"}
+              {step === "setup" && "Step 1/4"}
+              {step === "goals" && "Step 2/4"}
               {step === "generating" && "Generating..."}
-              {step === "preview" && "Preview"}
+              {step === "preview" && "Step 3/4"}
+              {step === "reward" && "Step 4/4"}
             </span>
           </SheetTitle>
           <SheetDescription>
@@ -590,6 +603,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             {step === "goals" && "Define training goals and focus areas"}
             {step === "generating" && "AI is building your program"}
             {step === "preview" && "Review your generated program"}
+            {step === "reward" && "Motivate your team with a goal"}
           </SheetDescription>
         </SheetHeader>
 
@@ -599,6 +613,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             {step === "goals" && renderGoals()}
             {step === "generating" && renderGenerating()}
             {step === "preview" && renderPreview()}
+            {step === "reward" && renderReward()}
           </AnimatePresence>
         </div>
 

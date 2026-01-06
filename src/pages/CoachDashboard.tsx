@@ -23,7 +23,7 @@ import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
-import { TeamGoalCard } from "@/components/goals";
+import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 
@@ -37,6 +37,7 @@ const CoachDashboard: React.FC = () => {
   const [showGameDayModal, setShowGameDayModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showProgramWizard, setShowProgramWizard] = useState(false);
+  const [showGoalCreator, setShowGoalCreator] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
@@ -319,6 +320,14 @@ const CoachDashboard: React.FC = () => {
           const dateStr = format(date, "yyyy-MM-dd");
           navigate(`/teams/${id}/assign?date=${dateStr}`);
         }}
+        onOpenGoalCreator={() => setShowGoalCreator(true)}
+      />
+
+      <GoalCreatorSheet
+        open={showGoalCreator}
+        onOpenChange={setShowGoalCreator}
+        teamId={id!}
+        rosterCount={dashboard.pulse.players_count}
       />
 
       <ProgramBuilderWizard
