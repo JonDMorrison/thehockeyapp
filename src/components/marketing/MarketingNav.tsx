@@ -26,11 +26,11 @@ export const MarketingNav: React.FC = () => {
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-soft group-hover:shadow-md transition-shadow">
               <HockeyAppLogo size={20} className="text-white" />
             </div>
-            <div className="hidden sm:flex flex-col">
-              <span className="font-bold text-xl text-foreground leading-tight">
+            <div className="flex flex-col">
+              <span className="font-bold text-lg sm:text-xl text-foreground leading-tight">
                 The Hockey App
               </span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5">Off-Ice Training</span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">Off-Ice Training</span>
             </div>
           </Link>
 
