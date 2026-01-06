@@ -304,11 +304,8 @@ const Home: React.FC = () => {
       {/* Social Proof / Trust Section */}
       <section className="py-16 lg:py-20 bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-lg text-muted-foreground mb-3">
+          <p className="text-lg text-muted-foreground">
             Built by hockey parents, for hockey families.
-          </p>
-          <p className="text-base text-muted-foreground/80">
-            No venture capital. No growth hacks. Just a useful tool that respects your family's time and privacy.
           </p>
         </div>
       </section>
