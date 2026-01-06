@@ -170,7 +170,7 @@ const SoloSetup: React.FC = () => {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Solo Training Setup</p>
+            <p className="text-sm font-semibold">Train On My Own</p>
             <p className="text-xs text-muted-foreground">Step {stepNumber} of 3</p>
           </div>
         </div>
