@@ -48,6 +48,7 @@ import Welcome from "./pages/Welcome";
 import QuickAssign from "./pages/QuickAssign";
 import SoloSetup from "./pages/SoloSetup";
 import SoloToday from "./pages/SoloToday";
+import SoloDashboard from "./pages/SoloDashboard";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,7 @@ const App = () => {
             
             {/* Solo training */}
             <Route path="/solo/setup" element={<SoloSetup />} />
+            <Route path="/solo/dashboard/:playerId" element={<SoloDashboard />} />
             <Route path="/solo/today/:playerId" element={<SoloToday />} />
             
             {/* Other */}

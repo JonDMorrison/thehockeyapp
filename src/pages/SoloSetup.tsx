@@ -115,7 +115,7 @@ const SoloSetup: React.FC = () => {
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
       toast.success("You're all set!", "Your solo training is ready to go.");
-      navigate(`/solo/today/${player.id}`);
+      navigate(`/solo/dashboard/${player.id}`);
     },
     onError: (error: Error) => {
       toast.error("Setup failed", error.message);

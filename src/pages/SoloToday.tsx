@@ -237,7 +237,7 @@ const SoloToday: React.FC = () => {
         return { completed: true, taskLabel: task?.label };
       }
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
       
       if (result?.completed) {
@@ -245,8 +245,21 @@ const SoloToday: React.FC = () => {
         const newCompletedCount = (completions?.length || 0) + 1;
         const isNowAllDone = newCompletedCount === totalCount;
         
-        if (isNowAllDone) {
+        if (isNowAllDone && todayCard) {
           toast.success("Workout Complete! 🎉", "Amazing work today!");
+          
+          // Log session completion
+          await supabase
+            .from("personal_session_completions")
+            .upsert({
+              player_id: playerId,
+              personal_practice_card_id: todayCard.id,
+              status: "complete",
+              completed_at: new Date().toISOString(),
+            }, { onConflict: "player_id,personal_practice_card_id" });
+          
+          // Invalidate dashboard data
+          queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
         } else {
           toast.success("Nice! ✓", result.taskLabel || "Task completed");
         }
@@ -460,7 +473,7 @@ const SoloToday: React.FC = () => {
                 </p>
                 <Button
                   className="mt-4"
-                  onClick={() => navigate("/solo/setup")}
+                  onClick={() => navigate(`/solo/dashboard/${playerId}`)}
                 >
                   Return to Dashboard
                 </Button>
