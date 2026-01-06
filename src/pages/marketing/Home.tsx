@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -7,6 +7,7 @@ import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { MarketingMilestonePreview } from "@/components/marketing/MarketingMilestonePreview";
 import { MarketingAIPreview } from "@/components/marketing/MarketingAIPreview";
+import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
   Shield,
@@ -20,15 +21,17 @@ import {
   EyeOff,
   UserCheck,
   Trophy,
-  Play,
   Dumbbell,
   ClipboardCheck,
+  Sparkles,
 } from "lucide-react";
 import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
 import mockupPrivacy from "@/assets/mockup-privacy-trust.png";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
 const Home: React.FC = () => {
+  const [showGetStarted, setShowGetStarted] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
@@ -80,37 +83,20 @@ const Home: React.FC = () => {
                 Parents stay in total control — all offline-ready.
               </p>
 
-              {/* Dual CTAs */}
+              {/* Single CTA */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="text-base px-8 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
-                  asChild
+                  className="text-base px-10 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
+                  onClick={() => setShowGetStarted(true)}
                 >
-                  {(
-                    <Link to="/auth">
-                      <Users className="w-5 h-5 mr-2" />
-                      I'm a Coach — Get Started
-                    </Link>
-                  )}
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary hover:scale-105 transition-all"
-                  asChild
-                >
-                  {(
-                    <Link to="/join">
-                      <Play className="w-5 h-5 mr-2" />
-                      I'm a Player — Join Team
-                    </Link>
-                  )}
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Get Started — It's Free
                 </Button>
               </div>
               
               <p className="text-sm text-muted-foreground mt-6">
-                Free for coaches. No credit card required.
+                Free for coaches, players, and families.
               </p>
             </div>
 
@@ -370,6 +356,9 @@ const Home: React.FC = () => {
       </section>
 
       <MarketingFooter />
+
+      {/* Get Started Modal */}
+      <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
 };
