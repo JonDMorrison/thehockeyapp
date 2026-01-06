@@ -36,29 +36,26 @@ const PlanningCard = ({
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.3 }}
     onClick={onClick}
-    className="w-full bg-card border border-border rounded-2xl p-5 text-left hover:bg-muted/50 transition-colors active:scale-[0.98]"
+    className="aspect-square bg-card border border-border rounded-2xl p-4 text-left hover:bg-muted/50 transition-colors active:scale-[0.98] flex flex-col"
   >
-    <div className="flex items-start gap-4">
-      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-        {icon}
+    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+      {icon}
+    </div>
+    <div className="flex-1 flex flex-col">
+      <div className="flex items-center gap-1.5">
+        <h3 className="font-semibold text-foreground text-sm">{title}</h3>
+        {badge && (
+          <span className={cn(
+            "text-[9px] font-bold px-1.5 py-0.5 rounded",
+            badgeVariant === 'premium' 
+              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+              : "bg-muted text-muted-foreground"
+          )}>
+            {badge}
+          </span>
+        )}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-foreground">{title}</h3>
-          {badge && (
-            <span className={cn(
-              "text-[10px] font-bold px-1.5 py-0.5 rounded",
-              badgeVariant === 'premium' 
-                ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                : "bg-muted text-muted-foreground"
-            )}>
-              {badge}
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
-      </div>
-      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0 mt-1" />
+      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{subtitle}</p>
     </div>
   </motion.button>
 );
@@ -180,33 +177,28 @@ export default function SoloPlanningHub() {
               What would you like to create?
             </h2>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
               <PlanningCard
-                title="Today's Workout"
-                subtitle="Build a single workout for today or any date"
-                icon={<CalendarPlus className="w-6 h-6 text-primary" />}
-                badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts} today` : undefined}
+                title="Workout"
+                subtitle="Single day"
+                icon={<CalendarPlus className="w-5 h-5 text-primary" />}
+                badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts}` : undefined}
                 onClick={() => navigate(`/solo/workout/${playerId}`)}
                 delay={0}
               />
 
               <PlanningCard
-                title="Weekly Routine"
-                subtitle="Plan Monday through Sunday, reuse every week"
-                icon={<CalendarRange className="w-6 h-6 text-primary" />}
+                title="Weekly"
+                subtitle="Mon–Sun routine"
+                icon={<CalendarRange className="w-5 h-5 text-primary" />}
                 onClick={() => navigate(`/solo/week-planner/${playerId}`)}
                 delay={0.1}
               />
 
               <PlanningCard
-                title="Training Program"
-                subtitle="AI builds 2-8 weeks of progressive training"
-                icon={
-                  <div className="flex items-center gap-0.5">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    <Rocket className="w-4 h-4 text-primary/70" />
-                  </div>
-                }
+                title="Program"
+                subtitle="2–8 weeks"
+                icon={<Sparkles className="w-5 h-5 text-primary" />}
                 badge="AI"
                 badgeVariant="premium"
                 onClick={() => navigate(`/solo/program/${playerId}`)}
