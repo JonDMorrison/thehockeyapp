@@ -98,7 +98,7 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
       {/* Add Workout - Full width */}
       <PlanningCard
         title="Add Workout"
-        subtitle="Assign today or pick a date"
+        subtitle="One workout for one day—perfect for today or any date"
         icon={<CalendarPlus className="w-6 h-6 text-white" />}
         gradient="from-emerald-500 to-teal-500"
         badge={weekPlanCount > 0 ? `${weekPlanCount} this week` : undefined}
@@ -110,7 +110,7 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <PlanningCard
           title="Plan the Week"
-          subtitle="Build a routine"
+          subtitle="Set up Mon–Sun, reuse it every week"
           icon={<CalendarRange className="w-6 h-6 text-white" />}
           gradient="from-blue-500 to-indigo-500"
           onClick={onPlanWeek}
@@ -119,7 +119,7 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
         
         <PlanningCard
           title="Create a Program"
-          subtitle="AI builds it"
+          subtitle="AI builds 4–8 weeks of training for you"
           icon={
             <div className="flex items-center gap-0.5">
               <Sparkles className="w-5 h-5 text-white" />
