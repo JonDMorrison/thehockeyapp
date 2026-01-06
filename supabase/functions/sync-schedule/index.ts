@@ -24,17 +24,69 @@ interface ParsedEvent {
   is_cancelled: boolean;
 }
 
+// Timezone offset map for common North American timezones
+const TIMEZONE_OFFSETS: Record<string, number> = {
+  "America/Los_Angeles": -8,
+  "America/Vancouver": -8,
+  "America/Denver": -7,
+  "America/Phoenix": -7,
+  "America/Chicago": -6,
+  "America/New_York": -5,
+  "America/Toronto": -5,
+  "US/Pacific": -8,
+  "US/Mountain": -7,
+  "US/Central": -6,
+  "US/Eastern": -5,
+  "Pacific": -8,
+  "PST": -8,
+  "PDT": -7,
+  "MST": -7,
+  "MDT": -6,
+  "CST": -6,
+  "CDT": -5,
+  "EST": -5,
+  "EDT": -4,
+};
+
+// Check if date falls in DST for North American timezones
+function isDST(date: Date, baseOffset: number): boolean {
+  // DST in North America: Second Sunday in March to First Sunday in November
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+  
+  // March: Find second Sunday
+  const marchFirst = new Date(Date.UTC(year, 2, 1));
+  const marchFirstDay = marchFirst.getUTCDay();
+  const secondSunday = marchFirstDay === 0 ? 8 : 15 - marchFirstDay;
+  
+  // November: Find first Sunday
+  const novFirst = new Date(Date.UTC(year, 10, 1));
+  const novFirstDay = novFirst.getUTCDay();
+  const firstSunday = novFirstDay === 0 ? 1 : 8 - novFirstDay;
+  
+  // DST starts at 2am on second Sunday in March (becomes 3am)
+  // DST ends at 2am on first Sunday in November (becomes 1am)
+  if (month > 2 && month < 10) return true; // April-October
+  if (month === 2 && day > secondSunday) return true; // After March DST start
+  if (month === 2 && day === secondSunday) return true; // Simplified: count the day as DST
+  if (month === 10 && day < firstSunday) return true; // Before November DST end
+  
+  return false;
+}
+
 // Parse iCal date/time format
 function parseICalDate(dateStr: string, tzid?: string): Date {
   // Handle formats: 20240115T180000Z, 20240115T180000, 20240115
   const cleaned = dateStr.replace(/[^0-9TZ]/g, "");
   
   if (cleaned.length === 8) {
-    // Date only: YYYYMMDD
+    // Date only: YYYYMMDD - treat as local midnight
     const year = parseInt(cleaned.slice(0, 4));
     const month = parseInt(cleaned.slice(4, 6)) - 1;
     const day = parseInt(cleaned.slice(6, 8));
-    return new Date(year, month, day);
+    // For date-only, use noon UTC to avoid date boundary issues
+    return new Date(Date.UTC(year, month, day, 12, 0, 0));
   }
   
   // DateTime format: YYYYMMDDTHHmmss or YYYYMMDDTHHmmssZ
@@ -46,11 +98,31 @@ function parseICalDate(dateStr: string, tzid?: string): Date {
   const second = parseInt(cleaned.slice(13, 15)) || 0;
   
   if (cleaned.endsWith("Z")) {
+    // Already UTC
     return new Date(Date.UTC(year, month, day, hour, minute, second));
   }
   
-  // Local time - create as local date
-  return new Date(year, month, day, hour, minute, second);
+  // If we have a timezone identifier, apply the offset
+  if (tzid) {
+    const baseOffset = TIMEZONE_OFFSETS[tzid];
+    if (baseOffset !== undefined) {
+      // Create a preliminary date to check DST
+      const prelimDate = new Date(Date.UTC(year, month, day, hour, minute, second));
+      const dstActive = isDST(prelimDate, baseOffset);
+      // DST adds 1 hour, so offset is less negative
+      const actualOffset = dstActive ? baseOffset + 1 : baseOffset;
+      // Convert local time to UTC by subtracting the offset
+      return new Date(Date.UTC(year, month, day, hour - actualOffset, minute, second));
+    }
+    console.log(`[sync-schedule] Unknown timezone: ${tzid}, treating as UTC`);
+  }
+  
+  // No timezone info - assume Pacific Time as default for TeamSnap
+  const prelimDate = new Date(Date.UTC(year, month, day, hour, minute, second));
+  const dstActive = isDST(prelimDate, -8);
+  const actualOffset = dstActive ? -7 : -8;
+  console.log(`[sync-schedule] No timezone for date ${dateStr}, assuming Pacific (offset: ${actualOffset})`);
+  return new Date(Date.UTC(year, month, day, hour - actualOffset, minute, second));
 }
 
 // Parse iCal content into events
@@ -108,6 +180,15 @@ function processKeyValue(event: Partial<ICalEvent>, key: string, value: string) 
   const keyParts = key.split(";");
   const baseKey = keyParts[0];
   
+  // Extract timezone if present
+  let tzid: string | undefined;
+  for (const part of keyParts) {
+    if (part.startsWith("TZID=")) {
+      tzid = part.substring(5);
+      break;
+    }
+  }
+  
   switch (baseKey) {
     case "UID":
       event.uid = value;
@@ -116,10 +197,11 @@ function processKeyValue(event: Partial<ICalEvent>, key: string, value: string) 
       event.summary = unescapeICalValue(value);
       break;
     case "DTSTART":
-      event.dtstart = parseICalDate(value);
+      event.dtstart = parseICalDate(value, tzid);
+      console.log(`[sync-schedule] Parsed DTSTART: ${value} (tzid: ${tzid}) -> ${event.dtstart?.toISOString()}`);
       break;
     case "DTEND":
-      event.dtend = parseICalDate(value);
+      event.dtend = parseICalDate(value, tzid);
       break;
     case "LOCATION":
       event.location = unescapeICalValue(value);
