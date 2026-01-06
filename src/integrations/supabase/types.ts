@@ -218,6 +218,54 @@ export type Database = {
           },
         ]
       }
+      personal_task_completions: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          personal_practice_task_id: string
+          player_id: string
+          source: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          personal_practice_task_id: string
+          player_id: string
+          source?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          personal_practice_task_id?: string
+          player_id?: string
+          source?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_task_completions_personal_practice_task_id_fkey"
+            columns: ["personal_practice_task_id"]
+            isOneToOne: false
+            referencedRelation: "personal_practice_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_task_completions_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_training_plans: {
         Row: {
           created_at: string | null

@@ -53,9 +53,9 @@ interface PersonalCard {
   tier: string | null;
 }
 
-interface TaskCompletion {
+interface PersonalTaskCompletion {
   id: string;
-  practice_task_id: string;
+  personal_practice_task_id: string;
   completed: boolean;
 }
 
@@ -136,18 +136,18 @@ const SoloToday: React.FC = () => {
     enabled: !!todayCard?.id,
   });
 
-  // Fetch task completions (using the same task_completions table)
+  // Fetch task completions (using personal_task_completions table)
   const { data: completions } = useQuery({
-    queryKey: ["task-completions", playerId, tasks?.map(t => t.id)],
+    queryKey: ["personal-task-completions", playerId, tasks?.map(t => t.id)],
     queryFn: async () => {
       if (!tasks || tasks.length === 0) return [];
       const { data, error } = await supabase
-        .from("task_completions")
+        .from("personal_task_completions")
         .select("*")
         .eq("player_id", playerId)
-        .in("practice_task_id", tasks.map(t => t.id));
+        .in("personal_practice_task_id", tasks.map(t => t.id));
       if (error) throw error;
-      return data as TaskCompletion[];
+      return data as PersonalTaskCompletion[];
     },
     enabled: !!tasks && tasks.length > 0,
   });
@@ -209,13 +209,13 @@ const SoloToday: React.FC = () => {
   // Toggle task completion
   const toggleTask = useMutation({
     mutationFn: async (taskId: string) => {
-      const existing = completions?.find((c) => c.practice_task_id === taskId);
+      const existing = completions?.find((c) => c.personal_practice_task_id === taskId);
       const task = tasks?.find((t) => t.id === taskId);
 
       if (existing) {
         // Toggle off
         const { error } = await supabase
-          .from("task_completions")
+          .from("personal_task_completions")
           .delete()
           .eq("id", existing.id);
         if (error) throw error;
@@ -223,10 +223,10 @@ const SoloToday: React.FC = () => {
       } else {
         // Toggle on
         const { error } = await supabase
-          .from("task_completions")
+          .from("personal_task_completions")
           .insert({
             player_id: playerId,
-            practice_task_id: taskId,
+            personal_practice_task_id: taskId,
             completed: true,
             completed_at: new Date().toISOString(),
             completed_by: user!.id,
@@ -237,7 +237,7 @@ const SoloToday: React.FC = () => {
       }
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["task-completions", playerId] });
+      queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
       
       if (result?.completed) {
         // Check if this completes all tasks
@@ -388,7 +388,7 @@ const SoloToday: React.FC = () => {
             
             {tasks.map((task) => {
               const isCompleted = completions?.some(
-                (c) => c.practice_task_id === task.id
+                (c) => c.personal_practice_task_id === task.id
               );
               
               // Look up description from task library
