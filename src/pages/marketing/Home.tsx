@@ -309,9 +309,9 @@ const Home: React.FC = () => {
       {/* Final CTA Section */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
         {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-[hsl(var(--gradient-mid))]/10 to-[hsl(var(--gradient-end))]/5" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-[hsl(var(--gradient-end))]/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-muted/30" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
@@ -319,37 +319,33 @@ const Home: React.FC = () => {
               Ready to simplify off-ice training?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              See how coaches assign tasks and how families track progress — 
-              all in under 2 minutes.
+              Get started in minutes — it's completely free for coaches, players, and families.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-base px-8 bg-gradient-to-r from-primary to-[hsl(var(--gradient-end))] hover:scale-105 transition-transform shadow-glow text-white border-0"
-                asChild
+                className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
+                onClick={() => setShowGetStarted(true)}
               >
-                {(
-                  <Link to="/demo">
-                    Watch the demo
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                )}
+                <Sparkles className="w-5 h-5 mr-2" />
+                Get Started — It's Free
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary hover:scale-105 transition-all"
+                className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary transition-colors"
                 asChild
               >
-                {(
-                  <Link to="/auth">Start free trial</Link>
-                )}
+                <Link to="/demo">
+                  Watch the Demo
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
             </div>
             
             <p className="text-sm text-muted-foreground mt-8">
-              Free for coaches. No credit card required.
+              No credit card required.
             </p>
           </div>
         </div>
