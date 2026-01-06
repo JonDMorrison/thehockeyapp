@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
 import mockupPrivacy from "@/assets/mockup-privacy-trust.png";
+import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
 const Home: React.FC = () => {
   return (
@@ -325,13 +326,15 @@ const Home: React.FC = () => {
             </div>
 
             <div className="relative flex justify-center">
-              <PhoneMockup 
-                imageSrc={mockupPrivacy} 
-                imageAlt="Parent control settings"
-                showGlow
-                glowColor="success"
-                className="w-72 lg:w-80"
-              />
+              <div className="relative rounded-3xl overflow-hidden shadow-depth">
+                <img 
+                  src={hockeyPlayerBasement} 
+                  alt="Hockey player practicing shots in basement"
+                  className="w-72 lg:w-80 h-auto object-cover"
+                />
+                {/* Glow effect */}
+                <div className="absolute -inset-8 -z-10 bg-success/20 blur-3xl rounded-full" />
+              </div>
             </div>
           </div>
         </div>
