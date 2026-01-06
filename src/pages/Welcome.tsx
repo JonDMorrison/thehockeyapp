@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { WelcomeRoleSelect } from "@/components/onboarding/WelcomeRoleSelect";
 import { Loader2 } from "lucide-react";
+import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
 
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
@@ -44,14 +45,28 @@ const Welcome: React.FC = () => {
   });
 
   // If user already has data, redirect to appropriate page
+  // Also check for stored role from GetStartedModal
   useEffect(() => {
     if (existingData) {
       if (existingData.hasTeams) {
         navigate("/teams", { replace: true });
       } else if (existingData.hasPlayers) {
         navigate("/players", { replace: true });
+      } else {
+        // No existing data - check if there's a stored role from the modal
+        const storedRole = getSelectedRole();
+        if (storedRole) {
+          clearSelectedRole();
+          if (storedRole === "coach") {
+            navigate("/teams/new", { replace: true });
+          } else if (storedRole === "solo") {
+            navigate("/solo/setup", { replace: true });
+          } else if (storedRole === "player") {
+            navigate("/players/new", { replace: true });
+          }
+        }
+        // Otherwise, stay on welcome to show role selection
       }
-      // If neither, stay on welcome to show role selection
     }
   }, [existingData, navigate]);
 

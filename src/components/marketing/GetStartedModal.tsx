@@ -13,14 +13,29 @@ interface GetStartedModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const options = [
+// Role type for localStorage
+export type SelectedRole = "coach" | "player" | "solo";
+
+const options: {
+  id: string;
+  role: SelectedRole;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: typeof Users;
+  directHref?: string; // For routes that don't need auth first
+  color: string;
+  bgClass: string;
+  iconBgClass: string;
+  hoverClass: string;
+}[] = [
   {
     id: "coach",
+    role: "coach",
     title: "I'm a Coach",
     subtitle: "Start a Team",
     description: "Create practice plans and track your team's progress",
     icon: Users,
-    href: "/auth",
     color: "primary",
     bgClass: "bg-primary/10",
     iconBgClass: "bg-gradient-to-br from-primary to-[hsl(221,70%,60%)]",
@@ -28,11 +43,12 @@ const options = [
   },
   {
     id: "player-team",
+    role: "player",
     title: "I'm a Player",
     subtitle: "Join My Team",
     description: "Your coach invited you to train together",
     icon: UserCircle,
-    href: "/join",
+    directHref: "/join", // Join flow doesn't need auth first
     color: "success",
     bgClass: "bg-success/10",
     iconBgClass: "bg-gradient-to-br from-success to-[hsl(160,60%,40%)]",
@@ -40,11 +56,11 @@ const options = [
   },
   {
     id: "player-solo",
+    role: "solo",
     title: "I'm a Player",
     subtitle: "Train On My Own",
     description: "Build your own training plan without a team",
     icon: Dumbbell,
-    href: "/solo/setup",
     color: "orange",
     bgClass: "bg-orange-500/10",
     iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
@@ -52,15 +68,39 @@ const options = [
   },
 ];
 
+// Helper to store/retrieve selected role
+export const SELECTED_ROLE_KEY = "hockey_app_selected_role";
+
+export const setSelectedRole = (role: SelectedRole) => {
+  localStorage.setItem(SELECTED_ROLE_KEY, role);
+};
+
+export const getSelectedRole = (): SelectedRole | null => {
+  return localStorage.getItem(SELECTED_ROLE_KEY) as SelectedRole | null;
+};
+
+export const clearSelectedRole = () => {
+  localStorage.removeItem(SELECTED_ROLE_KEY);
+};
+
 export const GetStartedModal: React.FC<GetStartedModalProps> = ({
   open,
   onOpenChange,
 }) => {
   const navigate = useNavigate();
 
-  const handleSelect = (href: string) => {
+  const handleSelect = (option: typeof options[0]) => {
     onOpenChange(false);
-    navigate(href);
+    
+    // If this option has a direct route (like /join), go there
+    if (option.directHref) {
+      navigate(option.directHref);
+      return;
+    }
+    
+    // Otherwise, store the role and go to auth
+    setSelectedRole(option.role);
+    navigate("/auth");
   };
 
   return (
@@ -78,7 +118,7 @@ export const GetStartedModal: React.FC<GetStartedModalProps> = ({
             return (
               <button
                 key={option.id}
-                onClick={() => handleSelect(option.href)}
+                onClick={() => handleSelect(option)}
                 className={`w-full p-4 rounded-xl border-2 border-border bg-card text-left transition-all duration-200 ${option.hoverClass} hover:shadow-md hover:-translate-y-0.5 group`}
               >
                 <div className="flex items-center gap-4">
