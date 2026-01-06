@@ -1,17 +1,20 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, addDays } from "date-fns";
+import { motion } from "framer-motion";
 import { 
   Flame, Play, CheckCircle2, ChevronRight, Lock, RotateCcw,
   Target, Dumbbell, Zap, Calendar, Star, Award, Trophy, Medal,
-  Shield, Crown, CheckCircle, Brain
+  Shield, Crown, CheckCircle, Brain, Users, Gift
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { InviteFriendModal } from "@/components/player/InviteFriendModal";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {
@@ -98,15 +101,10 @@ interface DashboardData {
   };
 }
 
-const FOCUS_AREAS = [
-  { id: 'shooting', label: 'Shooting', icon: Target },
-  { id: 'conditioning', label: 'Strength', icon: Dumbbell },
-  { id: 'skills', label: 'Skills', icon: Zap },
-];
-
 export default function SoloDashboard() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const { data: dashboard, isLoading } = useQuery({
     queryKey: ['solo-dashboard', playerId],
@@ -153,7 +151,11 @@ export default function SoloDashboard() {
               <Skeleton className="h-4 w-24" />
             </div>
           </div>
-          <Skeleton className="h-48 w-full rounded-2xl" />
+          <div className="grid grid-cols-3 gap-3">
+            <Skeleton className="aspect-square rounded-2xl" />
+            <Skeleton className="aspect-square rounded-2xl" />
+            <Skeleton className="aspect-square rounded-2xl" />
+          </div>
           <Skeleton className="h-24 w-full rounded-xl" />
         </div>
       </AppShell>
@@ -173,7 +175,7 @@ export default function SoloDashboard() {
     );
   }
 
-  const { player, today, streak, recent_workouts, week_activity, stats } = dashboard;
+  const { player, today, streak, recent_workouts, week_activity, stats, plan } = dashboard;
 
   const handleStartWorkout = () => {
     navigate(`/solo/today/${playerId}`);
@@ -235,59 +237,129 @@ export default function SoloDashboard() {
         </div>
 
         <div className="px-5 space-y-6 pb-8">
-          {/* Hero Card */}
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            {today.status === 'complete' ? (
-              <div className="text-center py-2">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
-                  <CheckCircle2 className="h-7 w-7 text-primary" />
-                </div>
-                <h2 className="text-xl font-bold text-foreground">Done for today!</h2>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  Great work. Come back tomorrow.
-                </p>
-              </div>
-            ) : today.status === 'in_progress' ? (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">In Progress</p>
-                    <h2 className="text-lg font-bold text-foreground">
-                      {today.title || "Today's Workout"}
-                    </h2>
+          {/* Three Card Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* Card 1: Ready to Train */}
+            <motion.button
+              onClick={handleStartWorkout}
+              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-blue-500 to-indigo-600 text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
+              <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
+              
+              {/* Icon */}
+              <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                {today.status === 'complete' ? (
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                ) : today.status === 'in_progress' ? (
+                  <div className="relative">
+                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24">
+                      <circle 
+                        cx="12" cy="12" r="10" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        opacity="0.3"
+                      />
+                      <circle 
+                        cx="12" cy="12" r="10" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2"
+                        strokeDasharray={`${progressPercent * 0.628} 100`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 12 12)"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">
+                      {progressPercent}%
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{progressPercent}%</p>
-                  </div>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2 mb-5">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-                <Button onClick={handleStartWorkout} size="lg" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Continue
-                </Button>
+                ) : (
+                  <Play className="w-5 h-5 text-white" />
+                )}
               </div>
-            ) : (
-              <div className="text-center py-2">
-                <h2 className="text-xl font-bold text-foreground mb-1">
-                  Ready to train?
-                </h2>
-                <p className="text-muted-foreground text-sm mb-5">
-                  {today.card_id 
-                    ? `${today.task_count} tasks waiting for you`
-                    : "Start your workout for today"
+              
+              {/* Content */}
+              <div className="relative z-10">
+                <h3 className="font-bold text-white text-sm leading-tight">
+                  {today.status === 'complete' 
+                    ? "Done!" 
+                    : today.status === 'in_progress' 
+                      ? "Continue" 
+                      : "Ready to Train"
+                  }
+                </h3>
+                <p className="text-white/70 text-xs mt-0.5">
+                  {today.status === 'complete' 
+                    ? "Great work" 
+                    : today.status === 'in_progress'
+                      ? `${today.completed_count}/${today.task_count} done`
+                      : today.card_id 
+                        ? `${today.task_count} tasks`
+                        : "Start now"
                   }
                 </p>
-                <Button onClick={handleStartWorkout} size="lg" className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Workout
-                </Button>
               </div>
-            )}
+            </motion.button>
+
+            {/* Card 2: Plan Training */}
+            <motion.button
+              onClick={() => navigate(`/solo/planning/${playerId}`)}
+              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-emerald-500 to-teal-600 text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
+              <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
+              
+              {/* Icon */}
+              <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10">
+                <h3 className="font-bold text-white text-sm leading-tight">Plan Training</h3>
+                <p className="text-white/70 text-xs mt-0.5">Build routines</p>
+              </div>
+            </motion.button>
+
+            {/* Card 3: Invite A Friend */}
+            <motion.button
+              onClick={() => setShowInviteModal(true)}
+              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-orange-500 to-amber-500 text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
+              <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
+              
+              {/* Icon */}
+              <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10">
+                <h3 className="font-bold text-white text-sm leading-tight">Invite Friend</h3>
+                <p className="text-white/70 text-xs mt-0.5">Give 7 days free</p>
+              </div>
+            </motion.button>
           </div>
 
           {/* Week Progress */}
@@ -320,23 +392,6 @@ export default function SoloDashboard() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Plan Training CTA */}
-          <div>
-            <button
-              onClick={() => navigate(`/solo/planning/${playerId}`)}
-              className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors active:scale-[0.99]"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-foreground">Plan Your Training</p>
-                <p className="text-sm text-muted-foreground">Build workouts, weekly routines, or AI programs</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </button>
           </div>
 
           {/* Recent Workouts */}
@@ -487,6 +542,16 @@ export default function SoloDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Invite Friend Modal */}
+      <InviteFriendModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        playerId={playerId!}
+        todayCardId={today.card_id}
+        activePlanId={plan?.id}
+        playerName={player.first_name}
+      />
     </AppShell>
   );
 }
