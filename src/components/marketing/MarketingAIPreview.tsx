@@ -28,7 +28,12 @@ const previewTasks = [
 
 export const MarketingAIPreview: React.FC = () => {
   return (
-    <div className="h-full w-full bg-background text-foreground overflow-y-auto">
+    <div className="h-full w-full bg-background text-foreground overflow-hidden">
+      {/* Safe area padding for phone notch */}
+      <div className="h-6 bg-background" />
+      
+      {/* Scrollable content */}
+      <div className="h-[calc(100%-1.5rem)] overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
@@ -172,6 +177,7 @@ export const MarketingAIPreview: React.FC = () => {
             <p className="text-[9px] text-muted-foreground uppercase">AI Built</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
