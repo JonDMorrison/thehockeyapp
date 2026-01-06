@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HockeyAppLogo } from "./HockeyAppLogo";
 
 export const MarketingNav: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ export const MarketingNav: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-[hsl(var(--gradient-end))] flex items-center justify-center shadow-soft group-hover:shadow-glow transition-shadow">
-              <span className="text-white font-bold text-sm">HA</span>
+              <HockeyAppLogo size={20} className="text-white" />
             </div>
             <div className="hidden sm:flex flex-col">
               <span className="font-bold text-xl bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent leading-tight">
