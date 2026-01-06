@@ -50,6 +50,10 @@ import SoloSetup from "./pages/SoloSetup";
 import SoloToday from "./pages/SoloToday";
 import SoloDashboard from "./pages/SoloDashboard";
 import SoloBadges from "./pages/SoloBadges";
+import SoloPlanningHub from "./pages/SoloPlanningHub";
+import SoloWorkoutBuilder from "./pages/SoloWorkoutBuilder";
+import SoloWeekPlanner from "./pages/SoloWeekPlanner";
+import SoloProgramBuilder from "./pages/SoloProgramBuilder";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +124,10 @@ const App = () => {
             <Route path="/solo/dashboard/:playerId" element={<SoloDashboard />} />
             <Route path="/solo/today/:playerId" element={<SoloToday />} />
             <Route path="/solo/badges/:playerId" element={<SoloBadges />} />
+            <Route path="/solo/planning/:playerId" element={<SoloPlanningHub />} />
+            <Route path="/solo/workout/:playerId" element={<SoloWorkoutBuilder />} />
+            <Route path="/solo/week-planner/:playerId" element={<SoloWeekPlanner />} />
+            <Route path="/solo/program/:playerId" element={<SoloProgramBuilder />} />
             
             {/* Other */}
             <Route path="/today" element={<Today />} />

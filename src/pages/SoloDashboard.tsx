@@ -322,23 +322,21 @@ export default function SoloDashboard() {
             </div>
           </div>
 
-          {/* Focus Areas */}
+          {/* Plan Training CTA */}
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-3">
-              What do you want to work on?
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              {FOCUS_AREAS.map((area) => (
-                <button
-                  key={area.id}
-                  onClick={() => navigate(`/solo/today/${playerId}?focus=${area.id}`)}
-                  className="bg-card border border-border rounded-xl p-4 text-center hover:bg-muted/50 transition-colors active:scale-[0.98]"
-                >
-                  <area.icon className="h-6 w-6 mx-auto mb-2 text-foreground" />
-                  <span className="text-xs font-medium text-foreground">{area.label}</span>
-                </button>
-              ))}
-            </div>
+            <button
+              onClick={() => navigate(`/solo/planning/${playerId}`)}
+              className="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors active:scale-[0.99]"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-medium text-foreground">Plan Your Training</p>
+                <p className="text-sm text-muted-foreground">Build workouts, weekly routines, or AI programs</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            </button>
           </div>
 
           {/* Recent Workouts */}
