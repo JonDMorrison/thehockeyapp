@@ -330,7 +330,7 @@ const Home: React.FC = () => {
                 <img 
                   src={hockeyPlayerBasement} 
                   alt="Hockey player practicing shots in basement"
-                  className="w-72 lg:w-80 h-auto object-cover"
+                  className="w-[36rem] lg:w-[40rem] h-auto object-cover"
                 />
                 {/* Glow effect */}
                 <div className="absolute -inset-8 -z-10 bg-success/20 blur-3xl rounded-full" />
