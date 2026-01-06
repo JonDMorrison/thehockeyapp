@@ -388,7 +388,7 @@ export default function SoloDashboard() {
               </h3>
               <button 
                 className="text-xs text-primary font-medium flex items-center gap-0.5"
-                onClick={() => navigate(`/player/${playerId}/badges`)}
+                onClick={() => navigate(`/solo/badges/${playerId}`)}
               >
                 View all <ChevronRight className="h-3 w-3" />
               </button>
