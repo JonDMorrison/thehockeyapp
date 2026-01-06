@@ -55,6 +55,7 @@ import SoloWorkoutBuilder from "./pages/SoloWorkoutBuilder";
 import SoloWeekPlanner from "./pages/SoloWeekPlanner";
 import SoloProgramBuilder from "./pages/SoloProgramBuilder";
 import SoloTryWorkout from "./pages/SoloTryWorkout";
+import SoloSettings from "./pages/SoloSettings";
 
 const queryClient = new QueryClient();
 
@@ -130,6 +131,7 @@ const App = () => {
             <Route path="/solo/week-planner/:playerId" element={<SoloWeekPlanner />} />
             <Route path="/solo/program/:playerId" element={<SoloProgramBuilder />} />
             <Route path="/solo/try/:token" element={<SoloTryWorkout />} />
+            <Route path="/solo/settings/:playerId" element={<SoloSettings />} />
             
             {/* Other */}
             <Route path="/today" element={<Today />} />

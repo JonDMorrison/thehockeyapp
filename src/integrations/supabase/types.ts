@@ -890,6 +890,59 @@ export type Database = {
           },
         ]
       }
+      solo_events: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          event_type: string
+          external_event_id: string
+          id: string
+          is_cancelled: boolean | null
+          location: string | null
+          player_id: string
+          source_type: string
+          start_time: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type: string
+          external_event_id: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          player_id: string
+          source_type: string
+          start_time: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type?: string
+          external_event_id?: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          player_id?: string
+          source_type?: string
+          start_time?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_events_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solo_referral_invites: {
         Row: {
           created_at: string | null
@@ -953,6 +1006,62 @@ export type Database = {
             columns: ["workout_card_id"]
             isOneToOne: false
             referencedRelation: "personal_practice_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solo_schedule_sources: {
+        Row: {
+          auto_game_day: boolean | null
+          created_at: string | null
+          created_by_user_id: string
+          ical_url: string
+          id: string
+          include_practices: boolean | null
+          last_synced_at: string | null
+          player_id: string
+          source_type: string
+          sync_error: string | null
+          sync_status: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id: string
+          ical_url: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          player_id: string
+          source_type?: string
+          sync_error?: string | null
+          sync_status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id?: string
+          ical_url?: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          player_id?: string
+          source_type?: string
+          sync_error?: string | null
+          sync_status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_schedule_sources_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]

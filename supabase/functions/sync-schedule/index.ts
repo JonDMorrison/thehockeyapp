@@ -305,9 +305,9 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, team_id, ical_url, timezone } = await req.json();
+const { action, team_id, player_id, ical_url, timezone } = await req.json();
 
-    console.log(`[sync-schedule] Action: ${action}, Team: ${team_id}`);
+    console.log(`[sync-schedule] Action: ${action}, Team: ${team_id}, Player: ${player_id}`);
 
     if (action === "preview") {
       // Preview mode: fetch and parse without saving
@@ -508,6 +508,135 @@ Deno.serve(async (req) => {
         
         await supabase
           .from("team_schedule_sources")
+          .update({ 
+            sync_status: "error", 
+            sync_error: syncError instanceof Error ? syncError.message : "Unknown error",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", source.id);
+
+        return new Response(
+          JSON.stringify({ success: false, error: "Sync failed" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+        );
+      }
+    }
+
+    if (action === "sync_solo") {
+      // Sync solo player schedule
+      if (!player_id) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Missing player_id" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+
+      // Get the schedule source for this player
+      const { data: source, error: sourceError } = await supabase
+        .from("solo_schedule_sources")
+        .select("*")
+        .eq("player_id", player_id)
+        .eq("source_type", "teamsnap_ical")
+        .single();
+
+      if (sourceError || !source) {
+        console.error(`[sync-schedule] No schedule source for player: ${player_id}`);
+        return new Response(
+          JSON.stringify({ success: false, error: "No schedule source configured" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+        );
+      }
+
+      // Update sync status
+      await supabase
+        .from("solo_schedule_sources")
+        .update({ sync_status: "syncing", sync_error: null })
+        .eq("id", source.id);
+
+      try {
+        const normalizedUrl = normalizeICalUrl(source.ical_url);
+        
+        console.log(`[sync-schedule] Syncing player ${player_id} from ${normalizedUrl}`);
+        const icalResponse = await fetch(normalizedUrl, {
+          headers: { "User-Agent": "HockeyTraining/1.0" },
+        });
+
+        if (!icalResponse.ok) {
+          throw new Error(`Failed to fetch iCal: ${icalResponse.status}`);
+        }
+
+        const icalContent = await icalResponse.text();
+        const icalEvents = parseICalContent(icalContent);
+        const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
+
+        console.log(`[sync-schedule] Parsed ${events.length} events for solo player`);
+
+        // Get existing events for this player
+        const { data: existingEvents } = await supabase
+          .from("solo_events")
+          .select("external_event_id")
+          .eq("player_id", player_id)
+          .eq("source_type", "teamsnap_ical");
+
+        const existingIds = new Set(existingEvents?.map((e) => e.external_event_id) || []);
+        const newIds = new Set(events.map((e) => e.external_event_id));
+
+        // Upsert all events
+        for (const event of events) {
+          const { error: upsertError } = await supabase
+            .from("solo_events")
+            .upsert({
+              player_id,
+              source_type: "teamsnap_ical",
+              ...event,
+              updated_at: new Date().toISOString(),
+            }, { 
+              onConflict: "player_id,source_type,external_event_id" 
+            });
+
+          if (upsertError) {
+            console.error(`[sync-schedule] Failed to upsert solo event: ${upsertError.message}`);
+          }
+        }
+
+        // Mark events that no longer exist as cancelled
+        const removedIds = [...existingIds].filter((id) => !newIds.has(id));
+        if (removedIds.length > 0) {
+          await supabase
+            .from("solo_events")
+            .update({ is_cancelled: true, updated_at: new Date().toISOString() })
+            .eq("player_id", player_id)
+            .eq("source_type", "teamsnap_ical")
+            .in("external_event_id", removedIds);
+        }
+
+        // Update sync status
+        await supabase
+          .from("solo_schedule_sources")
+          .update({ 
+            sync_status: "success", 
+            sync_error: null,
+            last_synced_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", source.id);
+
+        console.log(`[sync-schedule] Solo sync complete for player ${player_id}`);
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            synced_events: events.length,
+            removed_events: removedIds.length,
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+
+      } catch (syncError) {
+        console.error(`[sync-schedule] Solo sync error: ${syncError}`);
+        
+        await supabase
+          .from("solo_schedule_sources")
           .update({ 
             sync_status: "error", 
             sync_error: syncError instanceof Error ? syncError.message : "Unknown error",
