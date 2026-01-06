@@ -15,47 +15,72 @@ import { motion } from "framer-motion";
 interface PlanningCardProps {
   title: string;
   subtitle: string;
+  description: string;
   icon: React.ReactNode;
   onClick: () => void;
   badge?: string;
   badgeVariant?: 'default' | 'premium';
   delay?: number;
+  gradient: string;
+  iconBg: string;
 }
 
 const PlanningCard = ({ 
   title, 
   subtitle, 
+  description,
   icon, 
   onClick, 
   badge,
   badgeVariant = 'default',
-  delay = 0 
+  delay = 0,
+  gradient,
+  iconBg
 }: PlanningCardProps) => (
   <motion.button
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
+    whileHover={{ scale: 1.02, y: -2 }}
+    whileTap={{ scale: 0.98 }}
     transition={{ delay, duration: 0.3 }}
     onClick={onClick}
-    className="aspect-square bg-card border border-border rounded-2xl p-4 text-left hover:bg-muted/50 transition-colors active:scale-[0.98] flex flex-col"
+    className={cn(
+      "relative overflow-hidden rounded-2xl p-5 text-left flex flex-col justify-between",
+      "min-h-[160px] shadow-sm hover:shadow-lg transition-all duration-300",
+      gradient
+    )}
   >
-    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+    {/* Decorative background elements */}
+    <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8" />
+    <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/5 translate-y-6 -translate-x-6" />
+    
+    {/* Badge */}
+    {badge && (
+      <div className="absolute top-3 right-3">
+        <span className={cn(
+          "text-[10px] font-bold px-2 py-1 rounded-full",
+          badgeVariant === 'premium' 
+            ? "bg-white/20 text-white backdrop-blur-sm border border-white/30"
+            : "bg-white/90 text-foreground"
+        )}>
+          {badge}
+        </span>
+      </div>
+    )}
+
+    {/* Icon */}
+    <div className={cn(
+      "w-12 h-12 rounded-xl flex items-center justify-center mb-4",
+      iconBg
+    )}>
       {icon}
     </div>
-    <div className="flex-1 flex flex-col">
-      <div className="flex items-center gap-1.5">
-        <h3 className="font-semibold text-foreground text-sm">{title}</h3>
-        {badge && (
-          <span className={cn(
-            "text-[9px] font-bold px-1.5 py-0.5 rounded",
-            badgeVariant === 'premium' 
-              ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-              : "bg-muted text-muted-foreground"
-          )}>
-            {badge}
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{subtitle}</p>
+
+    {/* Content */}
+    <div className="relative z-10">
+      <h3 className="font-bold text-white text-lg mb-0.5">{title}</h3>
+      <p className="text-white/90 font-medium text-sm">{subtitle}</p>
+      <p className="text-white/70 text-xs mt-2 leading-relaxed">{description}</p>
     </div>
   </motion.button>
 );
@@ -173,36 +198,45 @@ export default function SoloPlanningHub() {
 
           {/* Planning Options */}
           <div className="pt-2">
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            <h2 className="text-sm font-medium text-muted-foreground mb-4">
               What would you like to create?
             </h2>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <PlanningCard
                 title="Workout"
-                subtitle="Single day"
-                icon={<CalendarPlus className="w-5 h-5 text-primary" />}
-                badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts}` : undefined}
+                subtitle="Single Day"
+                description="Build a focused session for today or pick any date"
+                icon={<CalendarPlus className="w-6 h-6 text-white" />}
+                badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts} today` : undefined}
                 onClick={() => navigate(`/solo/workout/${playerId}`)}
                 delay={0}
+                gradient="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700"
+                iconBg="bg-white/20 backdrop-blur-sm"
               />
 
               <PlanningCard
                 title="Weekly"
-                subtitle="Mon–Sun routine"
-                icon={<CalendarRange className="w-5 h-5 text-primary" />}
+                subtitle="7-Day Routine"
+                description="Plan Mon–Sun and repeat every week automatically"
+                icon={<CalendarRange className="w-6 h-6 text-white" />}
                 onClick={() => navigate(`/solo/week-planner/${playerId}`)}
                 delay={0.1}
+                gradient="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700"
+                iconBg="bg-white/20 backdrop-blur-sm"
               />
 
               <PlanningCard
                 title="Program"
-                subtitle="2–8 weeks"
-                icon={<Sparkles className="w-5 h-5 text-primary" />}
-                badge="AI"
+                subtitle="Multi-Week Plan"
+                description="AI builds 2–8 weeks of progressive training for you"
+                icon={<Sparkles className="w-6 h-6 text-white" />}
+                badge="✨ AI"
                 badgeVariant="premium"
                 onClick={() => navigate(`/solo/program/${playerId}`)}
                 delay={0.2}
+                gradient="bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500"
+                iconBg="bg-white/20 backdrop-blur-sm"
               />
             </div>
           </div>
