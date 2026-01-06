@@ -17,6 +17,8 @@ export interface TeamGoal {
   completed_at: string | null;
   created_by_user_id: string;
   created_at: string;
+  reward_type: string | null;
+  reward_description: string | null;
 }
 
 export interface GoalContribution {

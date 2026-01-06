@@ -895,6 +895,8 @@ export type Database = {
           goal_type: string
           id: string
           name: string
+          reward_description: string | null
+          reward_type: string | null
           show_leaderboard: boolean
           start_date: string
           status: string
@@ -913,6 +915,8 @@ export type Database = {
           goal_type: string
           id?: string
           name: string
+          reward_description?: string | null
+          reward_type?: string | null
           show_leaderboard?: boolean
           start_date: string
           status?: string
@@ -931,6 +935,8 @@ export type Database = {
           goal_type?: string
           id?: string
           name?: string
+          reward_description?: string | null
+          reward_type?: string | null
           show_leaderboard?: boolean
           start_date?: string
           status?: string
