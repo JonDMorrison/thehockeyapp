@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -83,11 +83,9 @@ export const clearSelectedRole = () => {
   localStorage.removeItem(SELECTED_ROLE_KEY);
 };
 
-export const GetStartedModal: React.FC<GetStartedModalProps> = ({
-  open,
-  onOpenChange,
-}) => {
-  const navigate = useNavigate();
+export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
+  ({ open, onOpenChange }, ref) => {
+    const navigate = useNavigate();
 
   const handleSelect = (option: typeof options[0]) => {
     onOpenChange(false);
@@ -103,45 +101,48 @@ export const GetStartedModal: React.FC<GetStartedModalProps> = ({
     navigate("/auth");
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4">
-          <DialogTitle className="text-xl text-center">
-            How would you like to get started?
-          </DialogTitle>
-        </DialogHeader>
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-4">
+            <DialogTitle className="text-xl text-center">
+              How would you like to get started?
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="px-4 pb-6 space-y-3">
-          {options.map((option) => {
-            const Icon = option.icon;
-            return (
-              <button
-                key={option.id}
-                onClick={() => handleSelect(option)}
-                className={`w-full p-4 rounded-xl border-2 border-border bg-card text-left transition-all duration-200 ${option.hoverClass} hover:shadow-md hover:-translate-y-0.5 group`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${option.iconBgClass}`}>
-                    <Icon className="w-6 h-6 text-white" />
+          <div className="px-4 pb-6 space-y-3">
+            {options.map((option) => {
+              const Icon = option.icon;
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleSelect(option)}
+                  className={`w-full p-4 rounded-xl border-2 border-border bg-card text-left transition-all duration-200 ${option.hoverClass} hover:shadow-md hover:-translate-y-0.5 group`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${option.iconBgClass}`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-muted-foreground">{option.title}</p>
+                      <p className="font-semibold">{option.subtitle}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-muted-foreground">{option.title}</p>
-                    <p className="font-semibold">{option.subtitle}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="px-6 py-4 bg-muted/50 border-t border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            Free for everyone. No credit card required.
-          </p>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
+          <div className="px-6 py-4 bg-muted/50 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center">
+              Free for everyone. No credit card required.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+);
+
+GetStartedModal.displayName = "GetStartedModal";

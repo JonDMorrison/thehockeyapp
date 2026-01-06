@@ -45,9 +45,9 @@ export const MarketingFooter: React.FC = () => {
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-background/70">
-              <li><a href="#" className="hover:text-background transition-colors">About</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-background transition-colors">Terms of Service</a></li>
+              <li><Link to="/about" className="hover:text-background transition-colors">About</Link></li>
+              <li><Link to="/privacy" className="hover:text-background transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-background transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
