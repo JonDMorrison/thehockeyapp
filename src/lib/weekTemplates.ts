@@ -53,36 +53,165 @@ export interface TaskTemplate {
   minutes?: number;
   reps?: number;
   isRequired?: boolean;
+  description?: string; // How to do the exercise
 }
 
 export const TASK_LIBRARY: TaskTemplate[] = [
   // Shooting
-  { id: "wrist_shots", label: "Wrist shots", type: "shooting", icon: "🎯", shots: 50, isRequired: true },
-  { id: "snap_shots", label: "Snap shots", type: "shooting", icon: "⚡", shots: 30 },
-  { id: "backhand", label: "Backhand practice", type: "shooting", icon: "🏒", shots: 25 },
-  { id: "slap_shots", label: "Slap shots", type: "shooting", icon: "💥", shots: 20 },
-  { id: "one_timers", label: "One-timers", type: "shooting", icon: "🔥", shots: 15 },
-  { id: "quick_release", label: "Quick release drills", type: "shooting", icon: "⏱️", shots: 25 },
+  { 
+    id: "wrist_shots", 
+    label: "Wrist shots", 
+    type: "shooting", 
+    icon: "🎯", 
+    shots: 50, 
+    isRequired: true,
+    description: "Focus on quick release from your front foot. Keep your bottom hand loose and snap through the puck. Aim for corners."
+  },
+  { 
+    id: "snap_shots", 
+    label: "Snap shots", 
+    type: "shooting", 
+    icon: "⚡", 
+    shots: 30,
+    description: "Quick, powerful shots with minimal wind-up. Load your stick by pressing down just behind the puck, then snap through."
+  },
+  { 
+    id: "backhand", 
+    label: "Backhand practice", 
+    type: "shooting", 
+    icon: "🏒", 
+    shots: 25,
+    description: "Cup the puck on your backhand, roll your wrists over as you release. Start close to the net and work back."
+  },
+  { 
+    id: "slap_shots", 
+    label: "Slap shots", 
+    type: "shooting", 
+    icon: "💥", 
+    shots: 20,
+    description: "Wind up at shoulder height, strike the ice 2-3 inches behind the puck. Follow through low for power."
+  },
+  { 
+    id: "one_timers", 
+    label: "One-timers", 
+    type: "shooting", 
+    icon: "🔥", 
+    shots: 15,
+    description: "Pass to yourself off a wall or rebounder. Focus on timing - open your blade to receive, then snap through in one motion."
+  },
+  { 
+    id: "quick_release", 
+    label: "Quick release drills", 
+    type: "shooting", 
+    icon: "⏱️", 
+    shots: 25,
+    description: "Practice shooting the instant you receive the puck. No extra touches - catch and release in under 1 second."
+  },
   
   // Prep (stickhandling, skating, etc.)
-  { id: "toe_drags", label: "Toe drags", type: "prep", icon: "🦶", reps: 20 },
-  { id: "figure_8", label: "Figure 8 drills", type: "prep", icon: "♾️", minutes: 5 },
-  { id: "puck_control", label: "Puck control circuit", type: "prep", icon: "🎮", minutes: 10 },
+  { 
+    id: "toe_drags", 
+    label: "Toe drags", 
+    type: "prep", 
+    icon: "🦶", 
+    reps: 20,
+    description: "Pull the puck towards your body using the toe of your blade. Practice both sides - forehand and backhand toe drags."
+  },
+  { 
+    id: "figure_8", 
+    label: "Figure 8 drills", 
+    type: "prep", 
+    icon: "♾️", 
+    minutes: 5,
+    description: "Move the puck in a figure 8 pattern around two objects. Keep your head up and soft hands. Speed up as you improve."
+  },
+  { 
+    id: "puck_control", 
+    label: "Puck control circuit", 
+    type: "prep", 
+    icon: "🎮", 
+    minutes: 10,
+    description: "Combine toe drags, figure 8s, and quick hands. Move through cones or objects while maintaining puck control."
+  },
   
   // Conditioning
-  { id: "wall_sits", label: "Wall sits", type: "conditioning", icon: "🏋️", reps: 3 },
-  { id: "squats", label: "Squats", type: "conditioning", icon: "🦵", reps: 20 },
-  { id: "lunges", label: "Lunges", type: "conditioning", icon: "🚀", reps: 15 },
-  { id: "planks", label: "Planks", type: "conditioning", icon: "💪", minutes: 2 },
+  { 
+    id: "wall_sits", 
+    label: "Wall sits", 
+    type: "conditioning", 
+    icon: "🏋️", 
+    reps: 3,
+    description: "Back flat against wall, thighs parallel to floor. Hold for 30-60 seconds each rep. Builds skating endurance."
+  },
+  { 
+    id: "squats", 
+    label: "Squats", 
+    type: "conditioning", 
+    icon: "🦵", 
+    reps: 20,
+    description: "Feet shoulder-width apart. Lower until thighs are parallel, keep chest up. Builds leg power for skating."
+  },
+  { 
+    id: "lunges", 
+    label: "Lunges", 
+    type: "conditioning", 
+    icon: "🚀", 
+    reps: 15,
+    description: "Step forward, lower back knee toward ground. Alternate legs. Great for skating stride power."
+  },
+  { 
+    id: "planks", 
+    label: "Planks", 
+    type: "conditioning", 
+    icon: "💪", 
+    minutes: 2,
+    description: "Hold a straight line from head to heels. Engage your core. Essential for shot power and balance on ice."
+  },
   
   // Mobility
-  { id: "dynamic_stretch", label: "Dynamic stretching", type: "mobility", icon: "🧘", minutes: 5, isRequired: true },
-  { id: "foam_rolling", label: "Foam rolling", type: "mobility", icon: "💆", minutes: 10 },
-  { id: "hip_openers", label: "Hip openers", type: "mobility", icon: "🦋", minutes: 5 },
+  { 
+    id: "dynamic_stretch", 
+    label: "Dynamic stretching", 
+    type: "mobility", 
+    icon: "🧘", 
+    minutes: 5, 
+    isRequired: true,
+    description: "Leg swings, arm circles, hip rotations. Move through full range of motion to warm up muscles before training."
+  },
+  { 
+    id: "foam_rolling", 
+    label: "Foam rolling", 
+    type: "mobility", 
+    icon: "💆", 
+    minutes: 10,
+    description: "Roll slowly over quads, hamstrings, IT band, and back. Pause on tight spots. Helps recovery and prevents injury."
+  },
+  { 
+    id: "hip_openers", 
+    label: "Hip openers", 
+    type: "mobility", 
+    icon: "🦋", 
+    minutes: 5,
+    description: "Pigeon pose, frog stretch, and 90/90 stretch. Hold each for 30 seconds. Critical for skating mobility."
+  },
   
   // Recovery / Mental (using "other" type)
-  { id: "visualization", label: "Game visualization", type: "other", icon: "🧠", minutes: 5 },
-  { id: "breathing", label: "Breathing exercises", type: "other", icon: "🌬️", minutes: 3 },
+  { 
+    id: "visualization", 
+    label: "Game visualization", 
+    type: "other", 
+    icon: "🧠", 
+    minutes: 5,
+    description: "Close your eyes and picture yourself in game situations. See yourself making plays, scoring goals, and winning battles."
+  },
+  { 
+    id: "breathing", 
+    label: "Breathing exercises", 
+    type: "other", 
+    icon: "🌬️", 
+    minutes: 3,
+    description: "Box breathing: inhale 4 seconds, hold 4, exhale 4, hold 4. Calms nerves and improves focus before games."
+  },
 ];
 
 // Day templates - pre-built day combinations
