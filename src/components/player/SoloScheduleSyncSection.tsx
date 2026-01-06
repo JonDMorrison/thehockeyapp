@@ -429,12 +429,12 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
 
       {/* Connect Sheet */}
       <Sheet open={showConnectSheet} onOpenChange={setShowConnectSheet}>
-        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+        <SheetContent side="bottom" className="h-[90vh] flex flex-col">
           <SheetHeader>
             <SheetTitle>Connect TeamSnap Schedule</SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4 space-y-6">
+          <div className="flex-1 overflow-y-auto mt-4 space-y-6 pb-24">
             {/* Instructions */}
             <div className="space-y-2">
               <h4 className="text-sm font-medium text-foreground">How to get your iCal link:</h4>
@@ -553,24 +553,26 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
             </div>
 
             {/* Preview Button */}
-            <Button
-              onClick={() => previewMutation.mutate()}
-              disabled={!icalUrl || previewMutation.isPending}
-              variant="outline"
-              className="w-full"
-            >
-              {previewMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Checking schedule...
-                </>
-              ) : (
-                <>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Preview Schedule
-                </>
-              )}
-            </Button>
+            {!previewResult && (
+              <Button
+                onClick={() => previewMutation.mutate()}
+                disabled={!icalUrl || previewMutation.isPending}
+                variant="outline"
+                className="w-full"
+              >
+                {previewMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Checking schedule...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Preview Schedule
+                  </>
+                )}
+              </Button>
+            )}
 
             {/* Preview Result */}
             {previewResult && (
@@ -626,28 +628,30 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Connect Button */}
-            {previewResult && (
-              <Button
-                onClick={() => saveMutation.mutate()}
-                disabled={saveMutation.isPending}
-                className="w-full"
-                size="lg"
-              >
-                {saveMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Connect Schedule
-                  </>
-                )}
-              </Button>
-            )}
+          {/* Sticky Save Button */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={!previewResult || saveMutation.isPending}
+              className="w-full"
+              size="lg"
+            >
+              {saveMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving...
+                </>
+              ) : previewResult ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Save & Connect
+                </>
+              ) : (
+                "Preview Schedule First"
+              )}
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
