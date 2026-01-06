@@ -11,22 +11,18 @@ import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
   Shield,
-  Heart,
   Zap,
   Target,
   Users,
-  Lock,
   Wifi,
   ArrowRight,
-  EyeOff,
-  UserCheck,
   Trophy,
-  Dumbbell,
   ClipboardCheck,
   Sparkles,
+  Calendar,
+  User,
+  ChevronRight,
 } from "lucide-react";
-import mockupLockscreen from "@/assets/mockup-lockscreen-checkoff.png";
-import mockupPrivacy from "@/assets/mockup-privacy-trust.png";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
 const Home: React.FC = () => {
@@ -40,12 +36,10 @@ const Home: React.FC = () => {
       <section className="relative overflow-hidden pt-16">
         {/* Background effects */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Gradient orbs */}
           <div className="absolute top-20 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
           <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-[hsl(var(--gradient-end))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
           <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-[hsl(var(--gradient-mid))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '2s' }} />
           
-          {/* Grid pattern */}
           <div 
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -54,7 +48,6 @@ const Home: React.FC = () => {
             }}
           />
 
-          {/* Floating shapes */}
           <div className="absolute top-32 right-1/4 w-4 h-4 rounded-full bg-primary/20 animate-gentle-bounce" />
           <div className="absolute top-64 left-1/4 w-6 h-6 rounded-lg bg-[hsl(var(--gradient-end))]/20 animate-float" style={{ animationDelay: '1s' }} />
           <div className="absolute bottom-32 right-1/3 w-3 h-3 rounded-full bg-[hsl(var(--gradient-mid))]/20 animate-gentle-bounce" style={{ animationDelay: '2s' }} />
@@ -62,22 +55,19 @@ const Home: React.FC = () => {
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left column - Text */}
             <div className="text-center lg:text-left">
-              {/* Gradient headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
                 Off-ice training{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  made simple
+                  that gets done
                 </span>
               </h1>
 
               <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Coaches assign simple tasks. Kids check them off with fun rewards. 
-                Parents stay in total control — all offline-ready.
+                Simple daily tasks. Quick checkoffs. Real accountability. 
+                For teams or players training on their own.
               </p>
 
-              {/* Single CTA */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
@@ -85,7 +75,7 @@ const Home: React.FC = () => {
                   onClick={() => setShowGetStarted(true)}
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Get Started — It's Free
+                  Get Started Free
                 </Button>
               </div>
               
@@ -94,7 +84,6 @@ const Home: React.FC = () => {
               </p>
             </div>
 
-            {/* Right column - Phone mockup */}
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative">
                 <PhoneMockup 
@@ -115,130 +104,150 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
-              Off-ice training shouldn't feel like homework.
+              The off-ice work matters. Getting it done is the hard part.
             </h2>
             
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-              <p>Parents want their kids to practice — without the daily arguments.</p>
-              <p>Coaches want accountability — without becoming task managers.</p>
+              <p>Coaches know what players need to do at home.</p>
+              <p>Players know they should be doing it.</p>
               <p className="font-medium text-foreground pt-2">
-                Most apps add streaks, pressure, and complicated features.
+                But without a simple system, it just doesn't happen consistently.
               </p>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
-                We built something simpler.
+                We built a better way.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* The Solution Section */}
+      {/* How It Works Section */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div className="order-2 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                Assign tasks. See them done.
-              </h2>
-              <p className="text-lg text-muted-foreground mb-10">
-                Coaches create simple off-ice tasks. Kids check them off. 
-                Parents see progress. Everyone wins.
-              </p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+              How it works
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Three roles. One simple flow. Everyone stays on the same page.
+            </p>
+          </div>
 
-              <div className="space-y-4">
-                {[
-                  { icon: ClipboardCheck, text: "Simple task cards — coaches build in minutes" },
-                  { icon: CheckCircle, text: "One-tap checkoff — kids complete in seconds" },
-                  { icon: Trophy, text: "Fun rewards & badges — motivation without pressure" },
-                  { icon: UserCheck, text: "Parent dashboard — total visibility and control" },
-                  { icon: Wifi, text: "Works offline — garages, basements, anywhere" },
-                ].map((item, i) => (
-                  <div 
-                    key={i} 
-                    className="flex items-start gap-4 p-4 rounded-2xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50 hover:-translate-y-1 transition-transform cursor-default"
-                  >
-                    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-primary" />
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              {
+                step: "1",
+                role: "Coach",
+                icon: ClipboardCheck,
+                title: "Assign the work",
+                description: "Create weekly task cards in minutes. Stickhandling reps, shooting drills, fitness work — whatever the team needs. AI helps if you want it.",
+              },
+              {
+                step: "2",
+                role: "Player",
+                icon: CheckCircle,
+                title: "Get it done",
+                description: "Players see today's tasks on their phone. One tap to check off. Works offline in the garage or basement. Earn badges along the way.",
+              },
+              {
+                step: "3",
+                role: "Parent",
+                icon: Users,
+                title: "Stay in the loop",
+                description: "Parents own the account and see everything. Control what's shared with coaches. No rankings, no pressure — just progress.",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="relative group"
+              >
+                <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-soft h-full transition-all duration-300 hover:shadow-depth hover:-translate-y-1">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                      {item.step}
                     </div>
-                    <span className="text-lg leading-relaxed pt-2">{item.text}</span>
+                    <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                      {item.role}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="order-1 lg:order-2 relative flex justify-center">
-              <div className="relative">
-                <PhoneMockup 
-                  showGlow
-                  glowColor="orange"
-                  className="w-72 lg:w-80"
-                >
-                  <MarketingMilestonePreview />
-                </PhoneMockup>
-                
-                {/* Saved offline badge */}
-                <div className="absolute top-12 -right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-depth border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-2">
-                  <Wifi className="w-4 h-4 text-success" />
-                  <span className="text-sm font-medium">Works offline</span>
+                  
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
+                    <item.icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
+
+                {/* Arrow between cards */}
+                {i < 2 && (
+                  <div className="hidden md:flex absolute top-1/2 -right-4 lg:-right-5 transform -translate-y-1/2 z-10">
+                    <ChevronRight className="w-8 h-8 text-muted-foreground/30" />
+                  </div>
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Outcomes Section */}
+      {/* Features Grid Section */}
       <section className="py-20 lg:py-28 bg-muted/30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              What coaches and families love
+              Built for how hockey families actually live
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Simple tools that actually get used — by kids and parents alike.
+              Simple features that fit into busy schedules.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
-                icon: ClipboardCheck,
-                title: "Tasks get done",
-                description: "Simple assignments kids actually complete.",
+                icon: Wifi,
+                title: "Works offline",
+                description: "Garages, basements, rinks with no signal — tasks sync when you're back online.",
+              },
+              {
+                icon: Calendar,
+                title: "Knows your schedule",
+                description: "Syncs with team calendars. Lighter workouts before games, rest days when needed.",
+              },
+              {
+                icon: Sparkles,
+                title: "AI-built workouts",
+                description: "Tell it your focus and time available. Get a balanced week in seconds.",
               },
               {
                 icon: Trophy,
-                title: "Fun rewards",
-                description: "Badges and milestones keep kids motivated.",
-              },
-              {
-                icon: Target,
-                title: "Real progress",
-                description: "See who's putting in the work.",
-              },
-              {
-                icon: Users,
-                title: "Parent control",
-                description: "Full visibility. You decide what's shared.",
+                title: "Badges & milestones",
+                description: "Simple rewards for consistency. No leaderboards or comparisons — just personal progress.",
               },
               {
                 icon: Shield,
-                title: "Zero pressure",
-                description: "No rankings. No comparisons. No stress.",
+                title: "Parent-controlled",
+                description: "Parents own accounts and decide what coaches can see. Kids' data stays private.",
               },
-            ].map((outcome, i) => (
+              {
+                icon: User,
+                title: "Solo mode",
+                description: "Train on your own without a team. Build custom programs or use AI suggestions.",
+              },
+            ].map((feature, i) => (
               <div
                 key={i}
-                className="group relative rounded-2xl p-6 text-center transition-all duration-300 bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 shadow-soft hover:shadow-depth hover:-translate-y-1"
+                className="group rounded-2xl p-6 transition-all duration-300 bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 shadow-soft hover:shadow-depth hover:-translate-y-1"
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <outcome.icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-primary" strokeWidth={1.75} />
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-foreground">
-                  {outcome.title}
+                  {feature.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {outcome.description}
+                  {feature.description}
                 </p>
               </div>
             ))}
@@ -246,74 +255,77 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Safety & Privacy Section */}
+      {/* Visual Section */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success text-sm font-semibold mb-8">
-                <Shield className="w-4 h-4" />
-                Total Parent Control
-              </div>
-              
+            <div className="order-2 lg:order-1">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                Parents are always in charge.
+                The work happens where they train.
               </h2>
-              <p className="text-lg text-muted-foreground mb-10">
-                We're parents too. Every feature was designed to keep you in control 
-                of your child's data and experience.
+              <p className="text-lg text-muted-foreground mb-8">
+                Basement. Garage. Driveway. The app goes where players practice — 
+                online or off.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: UserCheck, text: "Parent-owned accounts — you manage everything" },
-                  { icon: EyeOff, text: "Nothing public — all data stays private" },
-                  { icon: Shield, text: "No leaderboards — we don't rank kids" },
-                  { icon: Users, text: "No social features — zero comparison pressure" },
-                  { icon: Lock, text: "You control visibility — decide what coaches see" },
+                  { icon: Zap, text: "Quick daily checkoffs — under 30 seconds" },
+                  { icon: Target, text: "Clear tasks — players know exactly what to do" },
+                  { icon: CheckCircle, text: "Real accountability — coaches see who's putting in the work" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-start gap-4 p-4 rounded-2xl hover:-translate-y-1 transition-transform cursor-default"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-success" />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <span className="text-lg leading-relaxed pt-2">{item.text}</span>
+                    <span className="text-base leading-relaxed">{item.text}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative flex justify-center">
+            <div className="order-1 lg:order-2 relative flex justify-center">
               <div className="relative rounded-3xl overflow-hidden shadow-depth">
                 <img 
                   src={hockeyPlayerBasement} 
-                  alt="Hockey player practicing shots in basement"
-                  className="w-[36rem] lg:w-[40rem] h-auto object-cover"
+                  alt="Hockey player practicing in basement"
+                  className="w-full max-w-lg h-auto object-cover"
                 />
-                {/* Glow effect */}
-                <div className="absolute -inset-8 -z-10 bg-success/20 blur-3xl rounded-full" />
+                <div className="absolute -inset-8 -z-10 bg-primary/10 blur-3xl rounded-full" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Social Proof / Trust Section */}
+      <section className="py-16 lg:py-20 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-lg text-muted-foreground mb-3">
+            Built by hockey parents, for hockey families.
+          </p>
+          <p className="text-base text-muted-foreground/80">
+            No venture capital. No growth hacks. Just a useful tool that respects your family's time and privacy.
+          </p>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="relative py-20 lg:py-28 overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-muted/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/30" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Ready to simplify off-ice training?
+              Start building better habits today.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Get started in minutes — it's completely free for coaches, players, and families.
+              Free for coaches, players, and families. Set up in minutes.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -323,7 +335,7 @@ const Home: React.FC = () => {
                 onClick={() => setShowGetStarted(true)}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Get Started — It's Free
+                Get Started Free
               </Button>
               <Button 
                 size="lg" 
@@ -332,14 +344,14 @@ const Home: React.FC = () => {
                 asChild
               >
                 <Link to="/demo">
-                  Watch the Demo
+                  See How It Works
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
             </div>
             
             <p className="text-sm text-muted-foreground mt-8">
-              No credit card required.
+              No credit card. No commitment.
             </p>
           </div>
         </div>
@@ -347,7 +359,6 @@ const Home: React.FC = () => {
 
       <MarketingFooter />
 
-      {/* Get Started Modal */}
       <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
