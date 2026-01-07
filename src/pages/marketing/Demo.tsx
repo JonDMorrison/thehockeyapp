@@ -20,8 +20,8 @@ import {
   Play,
   Dumbbell,
 } from "lucide-react";
-import demoCoachDashboard from "@/assets/demo-coach-dashboard.png";
-import demoPlayerToday from "@/assets/demo-player-today.png";
+import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachView";
+import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
 
 const Demo: React.FC = () => {
   const [activeView, setActiveView] = useState<"coach" | "player">("coach");
@@ -160,7 +160,9 @@ const Demo: React.FC = () => {
 
             {/* Phone Mockup */}
             <div className="flex justify-center">
-              <PhoneMockup imageSrc={demoCoachDashboard} showGlow glowColor="primary" />
+              <PhoneMockup showGlow glowColor="primary">
+                <FeatureCoachView />
+              </PhoneMockup>
             </div>
           </div>
         </div>
@@ -172,7 +174,9 @@ const Demo: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Phone Mockup */}
             <div className="flex justify-center lg:order-1 order-2">
-              <PhoneMockup imageSrc={demoPlayerToday} showGlow glowColor="success" />
+              <PhoneMockup showGlow glowColor="success">
+                <FeatureCheckoff />
+              </PhoneMockup>
             </div>
 
             {/* Content */}
