@@ -176,10 +176,8 @@ const Features: React.FC = () => {
                     <span className="text-xs sm:text-sm font-medium text-foreground">{featureLabels[i]}</span>
                   </div>
                   
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                    <span className={`bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}>
-                      {feature.title}
-                    </span>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
+                    {feature.title}
                   </h2>
                   
                   {/* Glassmorphism card for bullets */}
