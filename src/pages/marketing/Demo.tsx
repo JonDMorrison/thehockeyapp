@@ -75,10 +75,8 @@ const Demo: React.FC = () => {
             <span className="text-sm font-medium text-muted-foreground">Off-Ice Training Demo</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-            <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-              Simple for everyone.
-            </span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-foreground">
+            Simple for everyone.
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
             Coaches assign off-ice tasks. Kids check them off with fun rewards. Parents stay in control.
@@ -125,10 +123,8 @@ const Demo: React.FC = () => {
                 <span className="text-sm font-medium text-foreground">Coach Dashboard</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                  Assign tasks. See results.
-                </span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                Assign tasks. See results.
               </h2>
 
               {/* Features in glass card */}
@@ -150,10 +146,8 @@ const Demo: React.FC = () => {
 
               {/* Quote card */}
               <div className="glass-strong rounded-2xl p-6">
-                <p className="text-xl font-semibold">
-                  <span className="bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] bg-clip-text text-transparent">
-                    "Finally, I can see who's putting in the work."
-                  </span>
+                <p className="text-xl font-semibold text-foreground">
+                  "Finally, I can see who's putting in the work."
                 </p>
               </div>
             </div>
@@ -188,10 +182,8 @@ const Demo: React.FC = () => {
                 <span className="text-sm font-medium text-foreground">Player Experience</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-success via-[hsl(152,50%,45%)] to-[hsl(160,60%,40%)] bg-clip-text text-transparent">
-                  Simple tasks. Fun rewards.
-                </span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                Simple tasks. Fun rewards.
               </h2>
 
               {/* Features in glass card */}
@@ -213,10 +205,8 @@ const Demo: React.FC = () => {
 
               {/* Quote card */}
               <div className="glass-strong rounded-2xl p-6">
-                <p className="text-xl font-semibold">
-                  <span className="bg-gradient-to-r from-success to-[hsl(160,60%,40%)] bg-clip-text text-transparent">
-                    "My kids actually want to do their off-ice training now."
-                  </span>
+                <p className="text-xl font-semibold text-foreground">
+                  "My kids actually want to do their off-ice training now."
                 </p>
               </div>
             </div>
@@ -233,10 +223,8 @@ const Demo: React.FC = () => {
               <span className="text-sm font-medium text-muted-foreground">Total Parent Control</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Parents are always in charge.
-              </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+              Parents are always in charge.
             </h2>
           </div>
 
@@ -271,10 +259,8 @@ const Demo: React.FC = () => {
               <span className="text-sm font-medium text-primary">Get Started Today</span>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Ready to simplify off-ice training?
-              </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+              Ready to simplify off-ice training?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
               Free for coaches. No credit card required. Set up your team in minutes.
