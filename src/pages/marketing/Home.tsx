@@ -133,58 +133,40 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {[
               {
-                step: "1",
+                step: "01",
                 role: "Coach",
-                icon: ClipboardCheck,
                 title: "Assign the work",
                 description: "Create weekly task cards in minutes. Stickhandling reps, shooting drills, fitness work — whatever the team needs. AI helps if you want it.",
               },
               {
-                step: "2",
+                step: "02",
                 role: "Player",
-                icon: CheckCircle,
                 title: "Get it done",
                 description: "Players see today's tasks on their phone. One tap to check off. Works offline in the garage or basement. Earn badges along the way.",
               },
               {
-                step: "3",
+                step: "03",
                 role: "Parent",
-                icon: Users,
                 title: "Stay in the loop",
                 description: "Parents own the account and see everything. Control what's shared with coaches. No rankings, no pressure — just progress.",
               },
             ].map((item, i) => (
-              <div
-                key={i}
-                className="relative group"
-              >
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200/50 dark:border-gray-700/50 shadow-soft h-full transition-all duration-300 hover:shadow-depth hover:-translate-y-1">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                      {item.step}
-                    </div>
-                    <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                      {item.role}
-                    </span>
-                  </div>
-                  
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-                    <item.icon className="w-7 h-7 text-primary" strokeWidth={1.75} />
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+              <div key={i} className="text-center md:text-left">
+                <div className="mb-6">
+                  <span className="text-6xl lg:text-7xl font-bold text-muted-foreground/20">
+                    {item.step}
+                  </span>
                 </div>
-
-                {/* Arrow between cards */}
-                {i < 2 && (
-                  <div className="hidden md:flex absolute top-1/2 -right-4 lg:-right-5 transform -translate-y-1/2 z-10">
-                    <ChevronRight className="w-8 h-8 text-muted-foreground/30" />
-                  </div>
-                )}
+                
+                <span className="text-xs font-semibold text-primary uppercase tracking-widest">
+                  {item.role}
+                </span>
+                
+                <h3 className="text-2xl font-bold mt-2 mb-3">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
