@@ -139,16 +139,6 @@ const Auth: React.FC = () => {
         <div className="max-w-md mx-auto w-full">
           {/* Header */}
           <div className="text-center mb-10">
-            {/* App Logo */}
-            <div className="relative inline-block mb-6">
-              <img 
-                src={logoImage} 
-                alt="Hockey App" 
-                className="w-20 h-20 rounded-3xl shadow-lg shadow-primary/25"
-              />
-              <div className="absolute -inset-2 bg-primary/20 rounded-[28px] blur-xl -z-10 animate-pulse" />
-            </div>
-            
             <h1 className="text-3xl font-bold tracking-tight mb-2">
               {mode === "signin" ? "Welcome back" : "Join Hockey App"}
             </h1>
