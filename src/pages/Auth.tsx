@@ -135,7 +135,7 @@ const Auth: React.FC = () => {
       <div className="absolute bottom-32 right-[15%] w-16 h-16 bg-primary/15 rounded-2xl -rotate-12 blur-sm" />
       
       {/* Content */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-6 py-12">
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-6 py-12 pt-24">
         <div className="max-w-md mx-auto w-full">
           {/* Header */}
           <div className="text-center mb-10">
