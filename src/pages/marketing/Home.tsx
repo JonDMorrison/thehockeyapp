@@ -112,7 +112,7 @@ const Home: React.FC = () => {
               <p>Players know they should be doing it.</p>
               <p>Parents get tired of nagging.</p>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
-                We built a better way.
+                We built a better way to train at home.
               </p>
             </div>
           </div>
