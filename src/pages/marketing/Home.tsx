@@ -288,7 +288,7 @@ const Home: React.FC = () => {
       <section className="py-16 lg:py-20 bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-lg text-muted-foreground">
-            Built by hockey parents, for hockey families.
+            We use it with our own kids every week.
           </p>
         </div>
       </section>
