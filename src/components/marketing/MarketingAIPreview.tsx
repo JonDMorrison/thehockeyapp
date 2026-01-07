@@ -39,7 +39,7 @@ export const MarketingAIPreview: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-500" />
-            <h1 className="text-base font-bold text-foreground">AI Program Builder</h1>
+            <h1 className="text-base font-bold text-foreground">Offline Program Builder</h1>
           </div>
           <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-600 px-2 py-1 rounded-full">
             <Brain className="w-3 h-3" />
