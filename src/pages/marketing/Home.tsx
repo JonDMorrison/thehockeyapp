@@ -104,7 +104,7 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
-              The off-ice work matters. Getting it done is the hard part.
+              Hockey training should be fun, not a fight.
             </h2>
             
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
