@@ -133,42 +133,49 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {[
-              {
-                step: "01",
-                role: "Coach",
-                title: "Assign the work",
-                description: "Create weekly task cards in minutes. Stickhandling reps, shooting drills, fitness work — whatever the team needs. AI helps if you want it.",
-              },
-              {
-                step: "02",
-                role: "Player",
-                title: "Get it done",
-                description: "Players see today's tasks on their phone. One tap to check off. Works offline in the garage or basement. Earn badges along the way.",
-              },
-              {
-                step: "03",
-                role: "Parent",
-                title: "Stay in the loop",
-                description: "Parents own the account and see everything. Control what's shared with coaches. No rankings, no pressure — just progress.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="text-center md:text-left">
-                <div className="mb-6">
-                  <span className="text-6xl lg:text-7xl font-bold text-muted-foreground/20">
-                    {item.step}
+          <div className="relative">
+            {/* Connecting line - visible on desktop */}
+            <div className="hidden md:block absolute top-10 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              {[
+                {
+                  step: "01",
+                  role: "Coach",
+                  title: "Assign the work",
+                  description: "Create weekly task cards in minutes. Stickhandling reps, shooting drills, fitness work — whatever the team needs. AI helps if you want it.",
+                },
+                {
+                  step: "02",
+                  role: "Player",
+                  title: "Get it done",
+                  description: "Players see today's tasks on their phone. One tap to check off. Works offline in the garage or basement. Earn badges along the way.",
+                },
+                {
+                  step: "03",
+                  role: "Parent",
+                  title: "Stay in the loop",
+                  description: "Parents own the account and see everything. Control what's shared with coaches. No rankings, no pressure — just progress.",
+                },
+              ].map((item, i) => (
+                <div key={i} className="relative text-center md:text-left">
+                  <div className="mb-6 relative">
+                    <span className="text-6xl lg:text-7xl font-bold text-muted-foreground/20">
+                      {item.step}
+                    </span>
+                    {/* Dot connector on the line */}
+                    <div className="hidden md:block absolute top-1/2 left-1/2 md:left-8 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/40" />
+                  </div>
+                  
+                  <span className="text-xs font-semibold text-primary uppercase tracking-widest">
+                    {item.role}
                   </span>
+                  
+                  <h3 className="text-2xl font-bold mt-2 mb-3">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
-                
-                <span className="text-xs font-semibold text-primary uppercase tracking-widest">
-                  {item.role}
-                </span>
-                
-                <h3 className="text-2xl font-bold mt-2 mb-3">{item.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
