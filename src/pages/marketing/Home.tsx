@@ -64,7 +64,7 @@ const Home: React.FC = () => {
               </h1>
 
               <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Simple daily tasks. Quick checkoffs. Real accountability. 
+                Simple exercises. Quick checkoffs. Real accountability. 
                 For teams or players training on their own.
               </p>
 
