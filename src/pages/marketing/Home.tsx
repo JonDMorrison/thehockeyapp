@@ -146,8 +146,8 @@ const Home: React.FC = () => {
                 {
                   step: "02",
                   role: "Player",
-                  title: "Get it done",
-                  description: "Players see today's tasks on their phone. One tap to check off. Works offline in the garage or basement. Earn badges along the way.",
+                  title: "Do the work",
+                  description: "Players see today's tasks on their phone. Tap to check off, earn badges, and track streaks. It feels like a game — fun, quick, and gives a real sense of accomplishment.",
                 },
                 {
                   step: "03",
