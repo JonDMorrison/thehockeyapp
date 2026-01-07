@@ -10,6 +10,7 @@ import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 import logoImage from "@/assets/hockey-app-logo.png";
 import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
+import { MarketingNav } from "@/components/marketing/MarketingNav";
 
 // Helper to get the redirect path based on stored role
 const getRedirectPath = (): string => {
@@ -122,6 +123,8 @@ const Auth: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <MarketingNav />
+      
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
