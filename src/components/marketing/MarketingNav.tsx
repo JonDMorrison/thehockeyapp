@@ -13,6 +13,7 @@ export const MarketingNav: React.FC = () => {
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
     { href: "/demo", label: "Demo" },
+    { href: "/about", label: "About" },
   ];
 
   const isActive = (href: string) => location.pathname === href;

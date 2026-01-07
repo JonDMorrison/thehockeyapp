@@ -22,6 +22,7 @@ import {
   Calendar,
   User,
   ChevronRight,
+  Star,
 } from "lucide-react";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
@@ -53,7 +54,7 @@ const Home: React.FC = () => {
           <div className="absolute bottom-32 right-1/3 w-3 h-3 rounded-full bg-[hsl(var(--gradient-mid))]/20 animate-gentle-bounce" style={{ animationDelay: '2s' }} />
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-32 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
@@ -286,10 +287,53 @@ const Home: React.FC = () => {
 
       {/* Social Proof / Trust Section */}
       <section className="py-16 lg:py-20 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-lg text-muted-foreground">
-            We use it with our own kids every week.
-          </p>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <p className="text-sm font-medium text-primary uppercase tracking-wider mb-2">
+              From Our Family to Yours
+            </p>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We use it with our own kids every week.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
+              <div className="flex items-center gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-foreground mb-4">
+                "Finally, something that actually gets my kid practicing without me nagging."
+              </p>
+              <p className="text-sm text-muted-foreground">— Hockey Parent</p>
+            </div>
+            
+            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
+              <div className="flex items-center gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-foreground mb-4">
+                "My players are doing more off-ice work than ever. The accountability is huge."
+              </p>
+              <p className="text-sm text-muted-foreground">— U14 Coach</p>
+            </div>
+            
+            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
+              <div className="flex items-center gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-foreground mb-4">
+                "My daughter loves checking off tasks. It's become part of her routine."
+              </p>
+              <p className="text-sm text-muted-foreground">— Hockey Mom</p>
+            </div>
+          </div>
         </div>
       </section>
 
