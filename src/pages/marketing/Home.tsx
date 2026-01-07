@@ -110,9 +110,7 @@ const Home: React.FC = () => {
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
               <p>Coaches know what players need to do at home.</p>
               <p>Players know they should be doing it.</p>
-              <p className="font-medium text-foreground pt-2">
-                But without a simple system, it just doesn't happen consistently.
-              </p>
+              <p>Parents get tired of nagging.</p>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
                 We built a better way.
               </p>
