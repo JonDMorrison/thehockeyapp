@@ -247,13 +247,9 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                The work happens where they train.
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-8">
+                Built by hockey parents, for hockey families.
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Basement. Garage. Driveway. The app goes where players practice — 
-                online or off.
-              </p>
 
               <div className="space-y-4">
                 {[
