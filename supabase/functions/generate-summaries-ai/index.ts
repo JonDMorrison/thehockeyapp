@@ -322,15 +322,20 @@ Keep it to 2-3 sentences. Focus on team participation and effort.`;
       console.error("Error saving team summary:", teamUpsertError);
     }
 
-    // Store generation record
-    await supabaseAuth.from("ai_generations").insert({
-      team_id,
-      created_by_user_id: user.id,
-      generation_type: "summary_team",
-      input_json: { week_start, player_count: playerStats.length },
-      output_json: { team_summary: teamSummary, player_summaries: playerSummaries.length },
-      status: "accepted",
-    });
+    // Store generation record (use service role to bypass RLS)
+    try {
+      await supabase.from("ai_generations").insert({
+        team_id,
+        created_by_user_id: user.id,
+        generation_type: "summary_team",
+        input_json: { week_start, player_count: playerStats.length },
+        output_json: { team_summary: teamSummary, player_summaries: playerSummaries.length },
+        status: "accepted",
+      });
+    } catch (genError) {
+      console.error("Failed to store generation record:", genError);
+      // Non-critical, continue without failing
+    }
 
     return new Response(JSON.stringify({
       success: true,
