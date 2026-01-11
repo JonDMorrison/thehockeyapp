@@ -325,16 +325,18 @@ ${JSON.stringify(schema, null, 2)}`;
     } catch (parseError) {
       console.error("Failed to parse AI output:", parseError);
       
-      // Store failed generation
-      await supabase.from("ai_generations").insert({
-        team_id,
-        created_by_user_id: user.id,
-        generation_type: type,
-        input_json: body,
-        output_json: null,
-        status: "failed",
-        error: "Invalid JSON output from AI",
-      });
+      // Store failed generation only if we have a team_id
+      if (team_id) {
+        await supabase.from("ai_generations").insert({
+          team_id,
+          created_by_user_id: user.id,
+          generation_type: type,
+          input_json: body,
+          output_json: null,
+          status: "failed",
+          error: "Invalid JSON output from AI",
+        });
+      }
       
       return new Response(JSON.stringify({ error: "Couldn't generate a valid draft. Please try again." }), {
         status: 500,
@@ -348,16 +350,18 @@ ${JSON.stringify(schema, null, 2)}`;
     if (!isValid) {
       console.error("Validation failed for AI output");
       
-      // Store failed generation
-      await supabase.from("ai_generations").insert({
-        team_id,
-        created_by_user_id: user.id,
-        generation_type: type,
-        input_json: body,
-        output_json: outputJson,
-        status: "failed",
-        error: "Output validation failed",
-      });
+      // Store failed generation only if we have a team_id
+      if (team_id) {
+        await supabase.from("ai_generations").insert({
+          team_id,
+          created_by_user_id: user.id,
+          generation_type: type,
+          input_json: body,
+          output_json: outputJson,
+          status: "failed",
+          error: "Output validation failed",
+        });
+      }
       
       return new Response(JSON.stringify({ error: "Generated plan didn't meet requirements. Please try again." }), {
         status: 500,
@@ -365,28 +369,33 @@ ${JSON.stringify(schema, null, 2)}`;
       });
     }
 
-    // Store successful generation
-    const { data: generation, error: insertError } = await supabase
-      .from("ai_generations")
-      .insert({
-        team_id,
-        created_by_user_id: user.id,
-        generation_type: type,
-        input_json: body,
-        output_json: outputJson,
-        status: "draft",
-      })
-      .select()
-      .single();
+    // Store successful generation only if we have a team_id
+    let generationId: string | undefined;
+    if (team_id) {
+      const { data: generation, error: insertError } = await supabase
+        .from("ai_generations")
+        .insert({
+          team_id,
+          created_by_user_id: user.id,
+          generation_type: type,
+          input_json: body,
+          output_json: outputJson,
+          status: "draft",
+        })
+        .select()
+        .single();
 
-    if (insertError) {
-      console.error("Failed to store generation:", insertError);
+      if (insertError) {
+        console.error("Failed to store generation:", insertError);
+      } else {
+        generationId = generation?.id;
+      }
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
       data: outputJson,
-      generation_id: generation?.id 
+      generation_id: generationId 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
