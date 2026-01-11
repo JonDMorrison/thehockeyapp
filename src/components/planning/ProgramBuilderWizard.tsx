@@ -156,7 +156,14 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
           },
         });
 
-        if (error) throw error;
+        console.log("Generate workout response:", { data, error, weekNum });
+
+        if (error) {
+          console.error("Edge function error:", error);
+          // Extract more meaningful error message
+          const errorMessage = data?.error || error.message || "Failed to generate workout plan";
+          throw new Error(errorMessage);
+        }
         if (data?.error) throw new Error(data.error);
 
         weeks.push({
