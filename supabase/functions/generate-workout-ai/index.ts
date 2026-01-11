@@ -132,8 +132,11 @@ serve(async (req) => {
   }
 
   try {
+    console.log("generate-workout-ai: Starting request processing");
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
@@ -142,11 +145,14 @@ serve(async (req) => {
     
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.log("No authorization header provided");
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    
+    console.log("generate-workout-ai: Auth header present, getting user");
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -154,13 +160,17 @@ serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.log("generate-workout-ai: User auth failed:", userError?.message);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    
+    console.log("generate-workout-ai: User authenticated:", user.id);
 
     const body: GenerateRequest = await req.json();
+    console.log("generate-workout-ai: Request body:", JSON.stringify(body));
     const { type, team_id, player_id, date, start_date, tier, time_budget, days_per_week, focus_areas, keep_simple, schedule_events } = body;
 
     // For solo players without team_id, skip team role verification
@@ -178,11 +188,13 @@ serve(async (req) => {
         .single();
 
       if (roleError || !teamRole) {
+        console.log("generate-workout-ai: Team role check failed for team", team_id, "user", user.id, "error:", roleError?.message);
         return new Response(JSON.stringify({ error: "Not authorized for this team" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      console.log("generate-workout-ai: Team role verified:", teamRole.role);
 
       // Fetch team training preferences
       const { data: preferences } = await supabase
