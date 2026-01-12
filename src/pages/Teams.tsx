@@ -9,6 +9,7 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
+import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, Users, Shield } from "lucide-react";
 
@@ -67,10 +68,13 @@ const Teams: React.FC = () => {
   return (
     <AppShell
       header={
-        <PageHeader
-          title="Teams"
-          subtitle="Manage your teams"
-          action={
+        <div className="flex items-center justify-between w-full">
+          <PageHeader
+            title="Teams"
+            subtitle="Manage your teams"
+          />
+          <div className="flex items-center gap-2">
+            <RoleSwitcher />
             <Button
               variant="team"
               size="sm"
@@ -79,8 +83,8 @@ const Teams: React.FC = () => {
               <Plus className="w-4 h-4" />
               Create
             </Button>
-          }
-        />
+          </div>
+        </div>
       }
     >
       <PageContainer>

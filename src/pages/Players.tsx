@@ -10,6 +10,7 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
+import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, UserPlus } from "lucide-react";
 
@@ -101,10 +102,13 @@ const Players: React.FC = () => {
   return (
     <AppShell
       header={
-        <PageHeader
-          title="Players"
-          subtitle="Manage your player profiles"
-          action={
+        <div className="flex items-center justify-between w-full">
+          <PageHeader
+            title="Players"
+            subtitle="Manage your player profiles"
+          />
+          <div className="flex items-center gap-2">
+            <RoleSwitcher />
             <Button
               variant="team"
               size="sm"
@@ -113,8 +117,8 @@ const Players: React.FC = () => {
               <Plus className="w-4 h-4" />
               Add
             </Button>
-          }
-        />
+          </div>
+        </div>
       }
     >
       <PageContainer>
