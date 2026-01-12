@@ -54,6 +54,7 @@ import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { PlayerGoalWidget } from "@/components/goals";
+import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 
 interface PracticeTask {
   id: string;
@@ -777,6 +778,7 @@ const PlayerToday: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <RoleSwitcher playerId={playerId} compact />
             <Button
               variant="ghost"
               size="icon-sm"

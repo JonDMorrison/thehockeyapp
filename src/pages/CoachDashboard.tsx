@@ -15,6 +15,7 @@ import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
 import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
+import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
 import { CoachDock } from "@/components/dashboard/CoachDock";
@@ -207,6 +208,7 @@ const CoachDashboard: React.FC = () => {
             />
           </div>
           <div className="flex items-center gap-1">
+            <RoleSwitcher teamId={id} />
             <Button
               variant="ghost"
               size="icon-sm"
