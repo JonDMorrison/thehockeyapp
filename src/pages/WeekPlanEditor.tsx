@@ -549,6 +549,8 @@ const WeekPlanEditor: React.FC = () => {
       toast.success("Published!", "Practice cards created for the week.");
       setShowPublishDialog(false);
       setStatus("published");
+      // Navigate back to dashboard after publishing
+      navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
       toast.error("Failed to publish", error.message);
