@@ -402,10 +402,8 @@ const WeekPlanEditor: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-week-plan", result.weekPlanId] });
       toast.success("Saved", "Week plan saved as draft.");
-      
-      if (!isEditing) {
-        navigate(`/teams/${teamId}/builder/${result.weekPlanId}`, { replace: true });
-      }
+      // Navigate back to dashboard after saving
+      navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
       toast.error("Failed to save", error.message);
