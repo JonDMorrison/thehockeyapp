@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import { initOfflineDB } from "@/lib/offlineStorage";
-
+import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 // Marketing pages
 import Home from "./pages/marketing/Home";
 import Features from "./pages/marketing/Features";
@@ -71,16 +71,17 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner 
-          position="top-center"
-          toastOptions={{
-            className: "bg-card text-foreground border border-border shadow-medium",
-          }}
-        />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
+      <ActiveViewProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner 
+            position="top-center"
+            toastOptions={{
+              className: "bg-card text-foreground border border-border shadow-medium",
+            }}
+          />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Routes>
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
@@ -147,9 +148,10 @@ const App = () => {
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ActiveViewProvider>
     </QueryClientProvider>
   );
 };

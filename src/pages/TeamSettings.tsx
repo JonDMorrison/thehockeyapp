@@ -47,6 +47,7 @@ import { InviteAdultModal } from "@/components/team/InviteAdultModal";
 import { TeamBioSection, TeamChallengesToggle } from "@/components/team/TeamBioSection";
 import { ScheduleSyncSection } from "@/components/team/ScheduleSyncSection";
 import { TrainingPreferencesSection } from "@/components/team/TrainingPreferencesSection";
+import { JoinAsPlayerSection } from "@/components/team/JoinAsPlayerSection";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -506,6 +507,9 @@ const TeamSettings: React.FC = () => {
 
         {/* Schedule Sync */}
         <ScheduleSyncSection teamId={id!} />
+
+        {/* Join as Player - for coaches who want to train */}
+        <JoinAsPlayerSection teamId={id!} teamName={team?.name || "Team"} />
 
         {/* Adults */}
         <AppCard>

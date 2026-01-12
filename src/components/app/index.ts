@@ -6,6 +6,7 @@ export { ChecklistItem } from './ChecklistItem';
 export { EmptyState } from './EmptyState';
 export { OfflineIndicator, OfflineDot } from './OfflineIndicator';
 export { ProgressBar, ProgressRing } from './ProgressBar';
+export { RoleSwitcher } from './RoleSwitcher';
 export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonAvatar } from './Skeleton';
 export { Tag } from './Tag';
 export { toast, showToast } from './Toast';
