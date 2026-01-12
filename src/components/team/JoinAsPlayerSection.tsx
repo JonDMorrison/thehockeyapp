@@ -15,6 +15,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -22,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
-import { Dumbbell, Loader2, Check, UserPlus } from "lucide-react";
+import { Dumbbell, Loader2, Check, UserPlus, LogOut } from "lucide-react";
 
 const playerSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(50),
@@ -42,6 +52,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showSheet, setShowSheet] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [birthYear, setBirthYear] = useState(1990);
   const [shoots, setShoots] = useState<"left" | "right" | "unknown">("unknown");
@@ -64,16 +75,17 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       const playerIds = players.map((p) => p.id);
       const { data: memberships } = await supabase
         .from("team_memberships")
-        .select("player_id")
+        .select("id, player_id")
         .eq("team_id", teamId)
         .in("player_id", playerIds)
         .eq("status", "active");
 
       if (memberships && memberships.length > 0) {
-        const memberPlayerId = memberships[0].player_id;
-        const memberPlayer = players.find((p) => p.id === memberPlayerId);
+        const membership = memberships[0];
+        const memberPlayer = players.find((p) => p.id === membership.player_id);
         return {
-          playerId: memberPlayerId,
+          membershipId: membership.id,
+          playerId: membership.player_id,
           playerName: memberPlayer?.first_name || "You",
         };
       }
@@ -162,6 +174,9 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       queryClient.invalidateQueries({ queryKey: ["adult-player-membership", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
       queryClient.invalidateQueries({ queryKey: ["user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
       toast.success("Joined team!", "You're now on the roster and can participate in training.");
       setShowSheet(false);
     },
@@ -180,22 +195,86 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
     },
   });
 
-  // Already on team
+  // Leave team mutation
+  const leaveMutation = useMutation({
+    mutationFn: async () => {
+      if (!existingMembership) {
+        throw new Error("No membership found");
+      }
+
+      // Update status to 'left' instead of deleting (preserves history)
+      const { error } = await supabase
+        .from("team_memberships")
+        .update({ status: "left" })
+        .eq("id", existingMembership.membershipId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adult-player-membership", teamId] });
+      queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
+      queryClient.invalidateQueries({ queryKey: ["user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
+      toast.success("Left roster", "You've been removed from the team roster.");
+      setShowLeaveDialog(false);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to leave", error.message);
+    },
+  });
+
+  // Already on team - show leave option
   if (existingMembership) {
     return (
-      <AppCard className="border-green-500/20 bg-green-500/5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-            <Check className="w-5 h-5 text-green-600" />
+      <>
+        <AppCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <Check className="w-5 h-5 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">You're on the roster</p>
+              <p className="text-xs text-muted-foreground">
+                Participating as {existingMembership.playerName}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">You're on the roster</p>
-            <p className="text-xs text-muted-foreground">
-              Participating as {existingMembership.playerName}
-            </p>
-          </div>
-        </div>
-      </AppCard>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLeaveDialog(true)}
+            className="w-full text-muted-foreground hover:text-destructive hover:border-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Leave Roster
+          </Button>
+        </AppCard>
+
+        <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Leave team roster?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You'll be removed from {teamName}'s roster and won't receive workouts as a player.
+                Your coach access will remain unchanged. You can rejoin anytime.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => leaveMutation.mutate()}
+                disabled={leaveMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {leaveMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Leave Roster
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
 
