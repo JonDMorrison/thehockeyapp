@@ -100,6 +100,45 @@ function validateDayCard(output: any): boolean {
   return true;
 }
 
+// Normalize task output from AI to ensure required fields exist
+function normalizeTask(task: any): any {
+  const validTaskTypes = ["shooting", "conditioning", "mobility", "recovery", "prep", "other"];
+  const validShotTypes = ["wrist", "snap", "slap", "backhand", "mixed", "none"];
+  
+  // Handle "type" vs "task_type" mismatch from AI
+  const taskType = task.task_type || task.type;
+  const normalizedTaskType = validTaskTypes.includes(taskType) ? taskType : "other";
+  
+  // Default shot_type based on task type
+  let shotType = task.shot_type || "none";
+  if (!validShotTypes.includes(shotType)) {
+    shotType = normalizedTaskType === "shooting" ? "mixed" : "none";
+  }
+  
+  return {
+    task_type: normalizedTaskType,
+    label: task.label || "Task",
+    target_type: ["reps", "seconds", "minutes", "none"].includes(task.target_type) ? task.target_type : "none",
+    target_value: typeof task.target_value === "number" ? task.target_value : null,
+    shot_type: shotType,
+    shots_expected: typeof task.shots_expected === "number" ? task.shots_expected : null,
+    is_required: typeof task.is_required === "boolean" ? task.is_required : true,
+  };
+}
+
+// Normalize entire week plan output
+function normalizeWeekPlan(output: any): any {
+  if (!output || !Array.isArray(output.days)) return output;
+  
+  return {
+    ...output,
+    days: output.days.map((day: any) => ({
+      ...day,
+      tasks: Array.isArray(day.tasks) ? day.tasks.map(normalizeTask) : [],
+    })),
+  };
+}
+
 function validateWeekPlan(output: any): boolean {
   if (!output || typeof output !== "object") return false;
   if (typeof output.name !== "string") return false;
@@ -109,17 +148,9 @@ function validateWeekPlan(output: any): boolean {
   
   for (const day of output.days) {
     if (!day.date || !day.title || !Array.isArray(day.tasks)) return false;
-    
-    const validTaskTypes = ["shooting", "conditioning", "mobility", "recovery", "prep", "other"];
-    const validTargetTypes = ["reps", "seconds", "minutes", "none"];
-    const validShotTypes = ["wrist", "snap", "slap", "backhand", "mixed", "none"];
-    
+    // After normalization, tasks should be valid - just check basic structure
     for (const task of day.tasks) {
-      if (!validTaskTypes.includes(task.task_type)) return false;
       if (typeof task.label !== "string" || !task.label) return false;
-      if (!validTargetTypes.includes(task.target_type)) return false;
-      if (!validShotTypes.includes(task.shot_type)) return false;
-      if (typeof task.is_required !== "boolean") return false;
     }
   }
   
@@ -356,7 +387,11 @@ ${JSON.stringify(schema, null, 2)}`;
       });
     }
 
-    // Validate output
+    // Normalize and validate output
+    if (type === "week_plan") {
+      outputJson = normalizeWeekPlan(outputJson);
+    }
+    
     const isValid = type === "day_card" ? validateDayCard(outputJson) : validateWeekPlan(outputJson);
     
     if (!isValid) {
