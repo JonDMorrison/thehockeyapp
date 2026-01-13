@@ -28,6 +28,7 @@ import {
   Check,
   Star,
   Trophy,
+  Plus,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 
@@ -277,9 +278,15 @@ const PlayerHome: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
-            <Tag variant="neutral" size="sm">
-              {memberships?.length || 0} team{(memberships?.length || 0) !== 1 ? "s" : ""}
-            </Tag>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/join?player=${id}`)}
+              className="text-team-primary"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Join Team
+            </Button>
           </div>
 
           {memberships && memberships.length > 0 ? (
@@ -334,7 +341,11 @@ const PlayerHome: React.FC = () => {
               <EmptyState
                 icon={Users}
                 title="No teams yet"
-                description="Ask your coach for an invite link to join a team."
+                description="Join a team using an invite code from your coach."
+                action={{
+                  label: "Join a Team",
+                  onClick: () => navigate(`/join?player=${id}`),
+                }}
               />
             </AppCard>
           )}
