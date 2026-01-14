@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTodaySnapshot } from "@/hooks/useTodaySnapshot";
 import { teamPalettes } from "@/lib/themes";
+import { fireStreakConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -37,6 +38,9 @@ import {
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { format, subDays, parseISO } from "date-fns";
+
+// Milestone thresholds for celebrations
+const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
 
 interface TeamMembership {
   id: string;
@@ -229,6 +233,58 @@ const PlayerHome: React.FC = () => {
     },
     enabled: !!user && !!id && !!preferences?.active_team_id,
   });
+
+  // Track if we've already celebrated this milestone to avoid duplicate celebrations
+  const celebratedMilestoneRef = useRef<number | null>(null);
+
+  // Check for streak milestones and celebrate
+  useEffect(() => {
+    const currentStreak = streakData?.currentStreak ?? 0;
+    
+    if (currentStreak > 0) {
+      // Find if current streak hits a milestone
+      const hitMilestone = STREAK_MILESTONES.find(m => currentStreak === m);
+      
+      if (hitMilestone && celebratedMilestoneRef.current !== hitMilestone) {
+        // Check localStorage to see if we already celebrated this milestone for this player
+        const celebratedKey = `streak_celebrated_${id}_${hitMilestone}`;
+        const alreadyCelebrated = localStorage.getItem(celebratedKey);
+        
+        if (!alreadyCelebrated) {
+          // Celebrate!
+          celebratedMilestoneRef.current = hitMilestone;
+          localStorage.setItem(celebratedKey, new Date().toISOString());
+          
+          // Fire confetti
+          setTimeout(() => {
+            fireStreakConfetti(hitMilestone);
+          }, 500);
+          
+          // Show celebratory toast
+          const messages: Record<number, { title: string; description: string }> = {
+            7: { title: "🔥 One Week Streak!", description: "You're building a great habit!" },
+            14: { title: "🔥🔥 Two Week Streak!", description: "Incredible consistency!" },
+            21: { title: "🔥🔥🔥 Three Weeks!", description: "You're unstoppable!" },
+            30: { title: "🏆 One Month Streak!", description: "Legendary dedication!" },
+            60: { title: "⭐ 60 Day Streak!", description: "You're a training machine!" },
+            90: { title: "👑 90 Day Streak!", description: "Elite commitment!" },
+            100: { title: "💯 100 Day Streak!", description: "Absolutely incredible!" },
+            180: { title: "🌟 6 Month Streak!", description: "Hall of Fame worthy!" },
+            365: { title: "🎉 ONE YEAR STREAK!", description: "You are a legend!" },
+          };
+          
+          const message = messages[hitMilestone] || { 
+            title: `🔥 ${hitMilestone} Day Streak!`, 
+            description: "Keep up the amazing work!" 
+          };
+          
+          setTimeout(() => {
+            toast.success(message.title, message.description);
+          }, 800);
+        }
+      }
+    }
+  }, [streakData?.currentStreak, id]);
 
   const isLoading = playerLoading || membershipsLoading || authLoading;
 
