@@ -20,6 +20,7 @@ import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { CoachDock } from "@/components/dashboard/CoachDock";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
+import { ActiveProgramsSection } from "@/components/dashboard/ActiveProgramsSection";
 import { TeamPulseBar } from "@/components/dashboard/TeamPulseBar";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
@@ -252,6 +253,9 @@ const CoachDashboard: React.FC = () => {
           onCreateProgram={() => setShowProgramWizard(true)}
           onStartChallenge={() => setShowChallengeWizard(true)}
         />
+
+        {/* Active Programs Section */}
+        <ActiveProgramsSection teamId={id!} />
 
         {/* Team Goal Section */}
         <TeamGoalCard
