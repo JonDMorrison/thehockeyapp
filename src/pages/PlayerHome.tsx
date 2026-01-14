@@ -39,6 +39,9 @@ import {
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { NotificationBell } from "@/components/app/NotificationBell";
+import { TeamActivityFeed } from "@/components/player/TeamActivityFeed";
+import { TeammateRoster } from "@/components/player/TeammateRoster";
+import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
 import { format, subDays, parseISO } from "date-fns";
 
 // Milestone thresholds for celebrations
@@ -516,6 +519,29 @@ const PlayerHome: React.FC = () => {
             playerId={id!} 
             teamId={preferences.active_team_id} 
           />
+        )}
+
+        {/* Team Activity & Social Section */}
+        {preferences?.active_team_id && (
+          <>
+            {/* Team Activity Feed */}
+            <TeamActivityFeed
+              teamId={preferences.active_team_id}
+              currentPlayerId={id!}
+            />
+
+            {/* Weekly Leaderboard */}
+            <TeamLeaderboard
+              teamId={preferences.active_team_id}
+              currentPlayerId={id!}
+            />
+
+            {/* Teammate Roster with Badges */}
+            <TeammateRoster
+              teamId={preferences.active_team_id}
+              currentPlayerId={id!}
+            />
+          </>
         )}
 
         {/* Teams Section */}
