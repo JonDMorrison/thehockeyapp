@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserCircle, Dumbbell, ArrowRight, Sparkles, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
+import logoImage from "@/assets/hockey-app-logo.png";
 
 interface WelcomeRoleSelectProps {
   displayName?: string;
@@ -41,6 +42,13 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
 
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="max-w-lg w-full text-center">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-white border border-border shadow-lg flex items-center justify-center overflow-hidden">
+              <img src={logoImage} alt="The Hockey App" className="w-12 h-12 object-contain" />
+            </div>
+          </div>
+
           {/* Welcome badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
             <Sparkles className="w-4 h-4 text-primary" />

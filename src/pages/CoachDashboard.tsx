@@ -28,6 +28,7 @@ import { TeamGoalCard, GoalCreatorSheet, GoalFloatingAction, GoalTrophyCase } fr
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import { TeamProgressWidget } from "@/components/dashboard/TeamProgressWidget";
+import logoImage from "@/assets/hockey-app-logo.png";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -201,6 +202,9 @@ const CoachDashboard: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
+            <div className="w-8 h-8 rounded-lg bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden">
+              <img src={logoImage} alt="The Hockey App" className="w-6 h-6 object-contain" />
+            </div>
             <Avatar
               src={dashboard.team.logo_url || dashboard.team.photo_url}
               fallback={dashboard.team.name}

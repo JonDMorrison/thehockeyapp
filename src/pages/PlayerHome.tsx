@@ -44,6 +44,7 @@ import { TeammateRoster } from "@/components/player/TeammateRoster";
 import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
 import { TeamCheersFeed } from "@/components/player/TeamCheersFeed";
 import { format, subDays, parseISO } from "date-fns";
+import logoImage from "@/assets/hockey-app-logo.png";
 
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
@@ -365,6 +366,9 @@ const PlayerHome: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
+            <div className="w-8 h-8 rounded-lg bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden">
+              <img src={logoImage} alt="The Hockey App" className="w-6 h-6 object-contain" />
+            </div>
             <Avatar
               src={player.profile_photo_url}
               fallback={`${player.first_name} ${player.last_initial || ""}`}
