@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,10 +7,11 @@ import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
-import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Users, UserPlus } from "lucide-react";
+import { ChevronLeft, UserPlus } from "lucide-react";
+import { InviteParentsModal } from "@/components/team/InviteParentsModal";
+import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 
 interface Membership {
   id: string;
@@ -32,6 +33,9 @@ const TeamRoster: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteModalTab, setInviteModalTab] = useState<"add-child" | "invite">("add-child");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -101,18 +105,31 @@ const TeamRoster: React.FC = () => {
     <AppShell
       hideNav
       header={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate(`/teams/${id}`)}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <PageHeader
+              title="Roster"
+              subtitle={team?.name}
+            />
+          </div>
           <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => navigate(`/teams/${id}`)}
+            variant="team"
+            size="sm"
+            onClick={() => {
+              setInviteModalTab("add-child");
+              setShowInviteModal(true);
+            }}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <UserPlus className="w-4 h-4" />
+            Add Player
           </Button>
-          <PageHeader
-            title="Roster"
-            subtitle={team?.name}
-          />
         </div>
       }
     >
@@ -165,19 +182,27 @@ const TeamRoster: React.FC = () => {
             })}
           </div>
         ) : (
-          <AppCard>
-            <EmptyState
-              icon={Users}
-              title="No players yet"
-              description="Share the invite link with parents to build your roster."
-              action={{
-                label: "Back to Team",
-                onClick: () => navigate(`/teams/${id}`),
-              }}
-            />
-          </AppCard>
+          <AddPlayerChoice
+            onAddMyChild={() => {
+              setInviteModalTab("add-child");
+              setShowInviteModal(true);
+            }}
+            onInviteFamilies={() => {
+              setInviteModalTab("invite");
+              setShowInviteModal(true);
+            }}
+            className="mt-4"
+          />
         )}
       </PageContainer>
+
+      <InviteParentsModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        teamId={id || ""}
+        teamName={team?.name || ""}
+        initialTab={inviteModalTab}
+      />
     </AppShell>
   );
 };
