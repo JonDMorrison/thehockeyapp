@@ -166,58 +166,34 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
   if (!goal) {
     return (
       <>
-        <div className="space-y-4">
-          {/* Main CTA Card */}
-          <Card
-            className={cn(
-              'cursor-pointer transition-all hover:shadow-lg border-2 border-dashed hover:border-primary/50 overflow-hidden',
-              className
-            )}
-            onClick={() => setShowCreator(true)}
-          >
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <motion.div
-                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                >
-                  <Target className="w-7 h-7 text-primary" />
-                </motion.div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-lg text-foreground">Set a Team Goal</h3>
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Goals increase player engagement by 40%. Rally your team around a shared target!
-                  </p>
-                  <Button className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Create Goal
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Smart Suggestions */}
-          {teamStats && (
-            <SmartGoalSuggestions
-              teamStats={teamStats}
-              onSelectSuggestion={handleSuggestionSelect}
-            />
+        <Card
+          className={cn(
+            'cursor-pointer transition-all hover:shadow-lg border-2 border-dashed hover:border-primary/50 overflow-hidden',
+            className
           )}
-
-          {/* Quick Templates */}
-          <QuickGoalTemplates
-            playerCount={rosterCount}
-            lastWeekShots={teamStats?.avgShotsPerWeek}
-            onSelect={handleQuickTemplate}
-          />
-
-          {/* Impact Preview */}
-          <GoalImpactPreview playerCount={rosterCount} />
-        </div>
+          onClick={() => setShowCreator(true)}
+        >
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <motion.div
+                className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Target className="w-6 h-6 text-primary" />
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3 className="font-semibold text-foreground">Set a Team Goal</h3>
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Rally your team around a shared target
+                </p>
+              </div>
+              <Plus className="w-5 h-5 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
 
         <GoalCreatorSheet
           open={showCreator}
@@ -226,6 +202,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
           rosterCount={rosterCount}
           editGoal={editingGoal}
           prefilled={prefilledGoal}
+          teamStats={teamStats}
         />
       </>
     );
@@ -336,6 +313,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
         rosterCount={rosterCount}
         editGoal={editingGoal}
         prefilled={prefilledGoal}
+        teamStats={teamStats}
       />
 
       {/* Celebration Modal */}
