@@ -35,6 +35,7 @@ import {
   CheckCircle,
   Clock,
   Flame,
+  Target,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { format, subDays, parseISO } from "date-fns";
@@ -591,13 +592,21 @@ const PlayerHome: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/players/${id}/goals`)}
+            className="flex flex-col items-center gap-1 h-auto py-3"
+          >
+            <Target className="w-5 h-5 text-team-primary" />
+            <span className="text-xs">Goals</span>
+          </Button>
           <Button
             variant="outline"
             onClick={() => navigate(`/players/${id}/badges`)}
             className="flex flex-col items-center gap-1 h-auto py-3"
           >
-            <Trophy className="w-5 h-5 text-team-primary" />
+            <Trophy className="w-5 h-5 text-amber-500" />
             <span className="text-xs">Badges</span>
           </Button>
           <Button

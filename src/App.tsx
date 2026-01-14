@@ -42,6 +42,7 @@ import Today from "./pages/Today";
 import PlayerToday from "./pages/PlayerToday";
 import PlayerHistory from "./pages/PlayerHistory";
 import PlayerBadges from "./pages/PlayerBadges";
+import PlayerTeamGoals from "./pages/PlayerTeamGoals";
 import RosterPlayerDetail from "./pages/RosterPlayerDetail";
 import TeamProgress from "./pages/TeamProgress";
 import QuickCheckoff from "./pages/QuickCheckoff";
@@ -102,6 +103,7 @@ const App = () => {
             <Route path="/players/:id/today" element={<PlayerToday />} />
             <Route path="/players/:id/history" element={<PlayerHistory />} />
             <Route path="/players/:id/badges" element={<PlayerBadges />} />
+            <Route path="/players/:id/goals" element={<PlayerTeamGoals />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
             
             {/* Team management */}
