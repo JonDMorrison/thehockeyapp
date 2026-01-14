@@ -13,6 +13,7 @@ import {
 } from "@/lib/offlineStorage";
 import { startSyncInterval, stopSyncInterval } from "@/lib/syncEngine";
 import { OfflineDot } from "@/components/app/OfflineIndicator";
+import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/app/Toast";
@@ -448,49 +449,29 @@ const QuickCheckoff: React.FC = () => {
       </header>
 
       {/* Task list */}
-      <main className="flex-1 overflow-y-auto">
-        <ul className="divide-y divide-border">
-          {requiredTasks.map((task) => {
-            const isCompleted = localCompletions[task.id]?.completed ?? false;
-            const target = task.target_type === 'reps' && task.target_value
-              ? `${task.target_value} reps`
-              : task.target_type === 'seconds' && task.target_value
-                ? `${task.target_value}s`
-                : task.target_type === 'minutes' && task.target_value
-                  ? `${task.target_value} min`
-                  : '';
+      <main className="flex-1 overflow-y-auto p-4 space-y-3">
+        {requiredTasks.map((task) => {
+          const isCompleted = localCompletions[task.id]?.completed ?? false;
+          const target = task.target_type === 'reps' && task.target_value
+            ? `${task.target_value} reps`
+            : task.target_type === 'seconds' && task.target_value
+              ? `${task.target_value}s`
+              : task.target_type === 'minutes' && task.target_value
+                ? `${task.target_value} min`
+                : '';
 
-            return (
-              <li key={task.id}>
-                <button
-                  onClick={() => handleToggle(task.id)}
-                  className={cn(
-                    "w-full flex items-center gap-4 p-5 text-left transition-all active:scale-[0.98]",
-                    isCompleted && "bg-primary/5"
-                  )}
-                >
-                  <div className={cn(
-                    "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-colors",
-                    isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}>
-                    {isCompleted ? <Check className="w-6 h-6" /> : taskTypeIcons[task.task_type]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={cn(
-                      "font-medium text-base transition-colors",
-                      isCompleted && "text-muted-foreground line-through"
-                    )}>
-                      {task.label}
-                    </p>
-                    {target && (
-                      <p className="text-sm text-muted-foreground mt-0.5">{target}</p>
-                    )}
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+          return (
+            <WorkoutCheckItem
+              key={task.id}
+              id={task.id}
+              label={task.label}
+              target={target}
+              icon={taskTypeIcons[task.task_type]}
+              completed={isCompleted}
+              onToggle={(id) => handleToggle(id)}
+            />
+          );
+        })}
       </main>
 
       {/* Undo snackbar */}

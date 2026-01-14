@@ -12,6 +12,7 @@ import { Tag } from "@/components/app/Tag";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { EmptyState } from "@/components/app/EmptyState";
+import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -36,6 +37,10 @@ import {
   Trophy,
   User,
   Clock,
+  Target,
+  Timer,
+  Heart,
+  MoreHorizontal,
 } from "lucide-react";
 
 interface PersonalTask {
@@ -400,69 +405,45 @@ const SoloToday: React.FC = () => {
               </Button>
             </div>
             
-            {tasks.map((task) => {
-              const isCompleted = completions?.some(
-                (c) => c.personal_practice_task_id === task.id
-              );
-              
-              // Look up description from task library
-              const taskTemplate = TASK_LIBRARY.find(t => t.label === task.label);
-              const description = taskTemplate?.description;
+            <div className="space-y-3">
+              {tasks.map((task) => {
+                const isCompleted = completions?.some(
+                  (c) => c.personal_practice_task_id === task.id
+                );
+                
+                // Look up description from task library
+                const taskTemplate = TASK_LIBRARY.find(t => t.label === task.label);
+                const description = taskTemplate?.description;
 
-              return (
-                <AppCard
-                  key={task.id}
-                  className={`cursor-pointer transition-all ${
-                    isCompleted
-                      ? "bg-green-500/5 border-green-500/30"
-                      : "hover:shadow-soft"
-                  }`}
-                  onClick={() => toggleTask.mutate(task.id)}
-                >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                          isCompleted
-                            ? "bg-green-500 text-white"
-                            : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <CheckSquare className="w-5 h-5" />
-                        ) : (
-                          <Square className="w-5 h-5" />
-                        )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p
-                          className={`font-medium ${
-                            isCompleted ? "line-through text-muted-foreground" : ""
-                          }`}
-                        >
-                          {task.label}
-                        </p>
-                        {task.is_required && (
-                          <Tag variant="warning" size="sm">
-                            Required
-                          </Tag>
-                        )}
-                      </div>
-                      {task.shots_expected && (
-                        <p className="text-xs text-muted-foreground">
-                          {task.shots_expected} shots
-                        </p>
-                      )}
-                      {description && !isCompleted && (
-                        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                          {description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </AppCard>
-              );
-            })}
+                // Map task type to icon
+                const taskTypeIcons: Record<string, React.ReactNode> = {
+                  shooting: <Target className="w-6 h-6" />,
+                  conditioning: <Dumbbell className="w-6 h-6" />,
+                  mobility: <Heart className="w-6 h-6" />,
+                  recovery: <Timer className="w-6 h-6" />,
+                  prep: <Sparkles className="w-6 h-6" />,
+                  other: <MoreHorizontal className="w-6 h-6" />,
+                };
+
+                const target = task.shots_expected 
+                  ? `${task.shots_expected} shots`
+                  : task.is_required 
+                    ? "Required"
+                    : undefined;
+
+                return (
+                  <WorkoutCheckItem
+                    key={task.id}
+                    id={task.id}
+                    label={task.label}
+                    target={target}
+                    icon={taskTypeIcons[task.task_type] || taskTypeIcons.other}
+                    completed={isCompleted || false}
+                    onToggle={(id) => toggleTask.mutate(id)}
+                  />
+                );
+              })}
+            </div>
 
             {isAllDone && (
               <AppCard className="bg-green-500/10 border-green-500/30 text-center py-6">
