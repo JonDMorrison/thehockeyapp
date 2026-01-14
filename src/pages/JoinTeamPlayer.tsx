@@ -122,13 +122,31 @@ const JoinTeamPlayer: React.FC = () => {
 
       return result;
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
+      queryClient.invalidateQueries({ queryKey: ["player-memberships", selectedPlayerId] });
+      queryClient.invalidateQueries({ queryKey: ["player-preferences", selectedPlayerId] });
 
       const player = players?.find((p) => p.id === selectedPlayerId);
       setJoinedPlayerName(player?.first_name || "Player");
       setJoinSuccess(true);
+
+      // Auto-set this team as active for the player
+      if (result.team_id && selectedPlayerId) {
+        try {
+          await supabase
+            .from("player_team_preferences")
+            .upsert({
+              player_id: selectedPlayerId,
+              active_team_id: result.team_id,
+              updated_at: new Date().toISOString(),
+            });
+        } catch (e) {
+          // Non-critical, just log
+          console.log("Failed to set active team:", e);
+        }
+      }
 
       if (result.already_member) {
         toast.info("Already joined", "This player is already on the team.");
@@ -216,9 +234,9 @@ const JoinTeamPlayer: React.FC = () => {
                   variant="team"
                   size="lg"
                   className="w-full"
-                  onClick={() => navigate(`/players/${selectedPlayerId}/home`)}
+                  onClick={() => navigate(`/players/${selectedPlayerId}/today`)}
                 >
-                  Go to Player Home
+                  Go to Today's Workout
                 </Button>
                 <Button
                   variant="ghost"
