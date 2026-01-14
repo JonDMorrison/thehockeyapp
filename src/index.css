@@ -44,18 +44,18 @@
        Applied via setTeamTheme() function
        Used as accents only, never flood surfaces
        ======================================== */
-    --team-primary: 221 83% 53%;        /* Default: Toronto blue */
+    --team-primary: 24 95% 53%;         /* Fiery orange - matches logo */
     --team-secondary: 0 0% 100%;
-    --team-tertiary: 221 70% 45%;
+    --team-tertiary: 15 90% 45%;        /* Deeper orange-red */
     
     /* Computed accent colors from team palette */
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
-    /* Gradient stops for hero/CTA effects */
-    --gradient-start: 221 83% 53%;
-    --gradient-mid: 221 70% 60%;
-    --gradient-end: 200 70% 55%;
+    /* Gradient stops for hero/CTA effects - fire gradient */
+    --gradient-start: 35 95% 55%;       /* Golden amber */
+    --gradient-mid: 24 95% 53%;         /* Fiery orange */
+    --gradient-end: 12 90% 50%;         /* Red-orange flame */
     
     --secondary: 220 10% 96%;
     --secondary-foreground: 220 15% 15%;
