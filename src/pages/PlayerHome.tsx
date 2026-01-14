@@ -366,8 +366,8 @@ const PlayerHome: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center overflow-hidden">
-              <img src={logoImage} alt="The Hockey App" className="w-6 h-6 object-contain" />
+            <div className="w-8 h-8 flex items-center justify-center">
+              <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
             </div>
             <Avatar
               src={player.profile_photo_url}
