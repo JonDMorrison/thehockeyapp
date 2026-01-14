@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
+import { useTodaySnapshot } from "@/hooks/useTodaySnapshot";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -29,6 +30,9 @@ import {
   Star,
   Trophy,
   Plus,
+  Dumbbell,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 
@@ -163,6 +167,11 @@ const PlayerHome: React.FC = () => {
     (m) => m.team_id === preferences?.active_team_id
   )?.teams;
 
+  // Fetch today's workout snapshot
+  const { snapshot: todaySnapshot, isLoading: snapshotLoading } = useTodaySnapshot(
+    preferences?.active_team_id ? id! : null
+  );
+
   const isLoading = playerLoading || membershipsLoading || authLoading;
 
   if (isLoading) {
@@ -263,6 +272,75 @@ const PlayerHome: React.FC = () => {
               </div>
               <ChevronRight className="w-5 h-5 text-text-muted" />
             </div>
+          </AppCard>
+        )}
+
+        {/* Today's Workout Card */}
+        {preferences?.active_team_id && todaySnapshot?.success && (
+          <AppCard
+            className="cursor-pointer hover:shadow-medium transition-shadow relative overflow-hidden"
+            onClick={() => navigate(`/players/${id}/today`)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  todaySnapshot.has_card 
+                    ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                      ? "bg-success/10"
+                      : "bg-team-primary/10"
+                    : "bg-surface-muted"
+                }`}>
+                  {todaySnapshot.has_card ? (
+                    todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
+                      <CheckCircle className="w-5 h-5 text-success" />
+                    ) : (
+                      <Dumbbell className="w-5 h-5 text-team-primary" />
+                    )
+                  ) : (
+                    <Clock className="w-5 h-5 text-text-muted" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-text-muted uppercase font-medium">
+                    Today's Workout
+                  </p>
+                  {todaySnapshot.has_card ? (
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">
+                        {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                          ? "Completed!"
+                          : `${todaySnapshot.progress?.completed || 0}/${todaySnapshot.progress?.total_required || 0} tasks`
+                        }
+                      </p>
+                      {todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required && 
+                       (todaySnapshot.progress?.total_required ?? 0) > 0 && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary-foreground bg-team-primary rounded-full animate-pulse">
+                          {(todaySnapshot.progress?.total_required || 0) - (todaySnapshot.progress?.completed || 0)}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-text-muted">No workout today</p>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-text-muted" />
+            </div>
+            {/* Progress bar */}
+            {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
+              <div className="mt-3 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
+                      ? "bg-success"
+                      : "bg-team-primary"
+                  }`}
+                  style={{ 
+                    width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
+                  }}
+                />
+              </div>
+            )}
           </AppCard>
         )}
 
