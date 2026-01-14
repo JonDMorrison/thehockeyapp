@@ -15,6 +15,7 @@ import {
   getCompletionSnapshot,
 } from "@/lib/offlineStorage";
 import { startSyncInterval, stopSyncInterval, syncPendingEvents } from "@/lib/syncEngine";
+import { fireGoalConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -48,6 +49,7 @@ import {
   WifiOff,
   Zap,
   Settings,
+  Award,
 } from "lucide-react";
 import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
@@ -130,6 +132,7 @@ const PlayerToday: React.FC = () => {
   const [shotsInput, setShotsInput] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
+  const [isFirstWorkout, setIsFirstWorkout] = useState(false);
   
   // Local state for offline optimistic updates
   const [localCompletions, setLocalCompletions] = useState<Record<string, LocalCompletion>>({});
@@ -578,6 +581,16 @@ const PlayerToday: React.FC = () => {
 
     if (isOnline) {
       try {
+        // Check if this is the player's first completed workout (before inserting)
+        const { count: existingCompletions } = await supabase
+          .from("session_completions")
+          .select("*", { count: "exact", head: true })
+          .eq("player_id", playerId!)
+          .eq("status", "complete");
+        
+        const isFirst = (existingCompletions || 0) === 0;
+        setIsFirstWorkout(isFirst);
+
         if (sessionCompletion) {
           await supabase
             .from("session_completions")
@@ -601,7 +614,15 @@ const PlayerToday: React.FC = () => {
         
         queryClient.invalidateQueries({ queryKey: ["session-completion", practiceCard?.id, playerId] });
         setShowSuccess(true);
-        toast.success("Session complete! 🎉");
+        
+        // Fire confetti celebration!
+        fireGoalConfetti();
+        
+        if (isFirst) {
+          toast.success("First workout complete! 🏆", "Amazing start to the journey!");
+        } else {
+          toast.success("Session complete! 🎉");
+        }
         
         // Evaluate badges after session completion
         evaluateBadges();
@@ -615,7 +636,7 @@ const PlayerToday: React.FC = () => {
       setShowSuccess(true);
       toast.info("Session saved on device");
     }
-  }, [localCompletions, sessionCompletion, practiceCard?.id, playerId, isOnline, queryClient, saveLocalSnapshot]);
+  }, [localCompletions, sessionCompletion, practiceCard?.id, playerId, isOnline, queryClient, saveLocalSnapshot, evaluateBadges]);
 
   const handleShotsClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -710,16 +731,36 @@ const PlayerToday: React.FC = () => {
               background: palette ? `hsl(${palette.primary} / 0.1)` : undefined,
             }}
           >
-            <Trophy
-              className="w-12 h-12"
-              style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-            />
+            {isFirstWorkout ? (
+              <Award
+                className="w-12 h-12"
+                style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
+              />
+            ) : (
+              <Trophy
+                className="w-12 h-12"
+                style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
+              />
+            )}
           </div>
-          <h1 className="text-2xl font-bold mb-2">Great work!</h1>
+          <h1 className="text-2xl font-bold mb-2">
+            {isFirstWorkout ? "First Workout Complete! 🏆" : "Great work!"}
+          </h1>
           <p className="text-text-muted mb-2">
             {player?.first_name} completed {practiceCard.mode === "game_day" ? "game day prep" : "today's practice"}
           </p>
+          {isFirstWorkout && (
+            <p className="text-sm text-muted-foreground mb-3">
+              This is the start of something great!
+            </p>
+          )}
           <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
+            {isFirstWorkout && (
+              <Tag variant="accent" className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                <Award className="w-3 h-3" />
+                First Workout Badge
+              </Tag>
+            )}
             {practiceCard.mode === "game_day" ? (
               <Tag variant="accent">
                 <Zap className="w-3 h-3" />
@@ -735,7 +776,9 @@ const PlayerToday: React.FC = () => {
           {!isOnline && (
             <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} className="mb-4" />
           )}
-          <Button onClick={() => navigate("/today")}>Done</Button>
+          <Button onClick={() => navigate(`/players/${playerId}/home`)}>
+            Back to {teamData?.name || "Dashboard"}
+          </Button>
         </PageContainer>
       </AppShell>
     );
