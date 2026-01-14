@@ -42,6 +42,7 @@ import { NotificationBell } from "@/components/app/NotificationBell";
 import { TeamActivityFeed } from "@/components/player/TeamActivityFeed";
 import { TeammateRoster } from "@/components/player/TeammateRoster";
 import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
+import { TeamCheersFeed } from "@/components/player/TeamCheersFeed";
 import { format, subDays, parseISO } from "date-fns";
 
 // Milestone thresholds for celebrations
@@ -538,6 +539,12 @@ const PlayerHome: React.FC = () => {
 
             {/* Teammate Roster with Badges */}
             <TeammateRoster
+              teamId={preferences.active_team_id}
+              currentPlayerId={id!}
+            />
+
+            {/* Team Cheers Feed */}
+            <TeamCheersFeed
               teamId={preferences.active_team_id}
               currentPlayerId={id!}
             />
