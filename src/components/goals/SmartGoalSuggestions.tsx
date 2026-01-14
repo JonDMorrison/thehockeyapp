@@ -21,6 +21,7 @@ interface SmartGoalSuggestionsProps {
   };
   onSelectSuggestion: (suggestion: GoalSuggestion) => void;
   onDismiss?: () => void;
+  hideHeader?: boolean;
 }
 
 export interface GoalSuggestion {
@@ -36,7 +37,8 @@ export interface GoalSuggestion {
 export function SmartGoalSuggestions({ 
   teamStats, 
   onSelectSuggestion,
-  onDismiss 
+  onDismiss,
+  hideHeader = false,
 }: SmartGoalSuggestionsProps) {
   const [dismissed, setDismissed] = useState(false);
 
@@ -56,17 +58,19 @@ export function SmartGoalSuggestions({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-3"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          <h3 className="text-sm font-semibold">Smart Goal Suggestions</h3>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <h3 className="text-sm font-semibold">Smart Goal Suggestions</h3>
+          </div>
+          {onDismiss && (
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleDismiss}>
+              <X className="w-3 h-3" />
+            </Button>
+          )}
         </div>
-        {onDismiss && (
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleDismiss}>
-            <X className="w-3 h-3" />
-          </Button>
-        )}
-      </div>
+      )}
 
       <div className="grid gap-2">
         <AnimatePresence>
