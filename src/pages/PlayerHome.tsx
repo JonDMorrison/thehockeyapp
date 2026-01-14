@@ -196,40 +196,67 @@ const PlayerHome: React.FC = () => {
 
       if (error) throw error;
 
-      // Get unique completion dates
+      // Get unique completion dates sorted oldest to newest for best streak calc
       const completedDates = [...new Set(
         (completions || [])
           .filter((c) => c.completed_at)
           .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd"))
-      )].sort().reverse();
+      )].sort();
+
+      if (completedDates.length === 0) {
+        return { currentStreak: 0, bestStreak: 0 };
+      }
+
+      // Calculate best streak by iterating through all dates
+      let bestStreak = 1;
+      let tempStreak = 1;
+      
+      for (let i = 1; i < completedDates.length; i++) {
+        const prevDate = parseISO(completedDates[i - 1]);
+        const currDate = parseISO(completedDates[i]);
+        const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          tempStreak++;
+          bestStreak = Math.max(bestStreak, tempStreak);
+        } else {
+          tempStreak = 1;
+        }
+      }
 
       // Calculate current streak
-      let streak = 0;
+      let currentStreak = 0;
       const now = new Date();
       const today = format(now, "yyyy-MM-dd");
       const yesterday = format(subDays(now, 1), "yyyy-MM-dd");
 
+      // Reverse for current streak calculation (newest first)
+      const reversedDates = [...completedDates].reverse();
+
       // Start from today or yesterday
       let startOffset = 0;
-      if (completedDates.includes(today)) {
+      if (reversedDates.includes(today)) {
         startOffset = 0;
-      } else if (completedDates.includes(yesterday)) {
+      } else if (reversedDates.includes(yesterday)) {
         startOffset = 1;
       } else {
-        return { currentStreak: 0 };
+        return { currentStreak: 0, bestStreak };
       }
 
       // Count consecutive days
-      for (let i = startOffset; i < 60; i++) {
+      for (let i = startOffset; i < 365; i++) {
         const dateToCheck = format(subDays(now, i), "yyyy-MM-dd");
-        if (completedDates.includes(dateToCheck)) {
-          streak++;
+        if (reversedDates.includes(dateToCheck)) {
+          currentStreak++;
         } else {
           break;
         }
       }
 
-      return { currentStreak: streak };
+      return { 
+        currentStreak, 
+        bestStreak: Math.max(bestStreak, currentStreak) 
+      };
     },
     enabled: !!user && !!id && !!preferences?.active_team_id,
   });
@@ -347,12 +374,24 @@ const PlayerHome: React.FC = () => {
       <PageContainer>
         {/* Player Header */}
         <AppCard className="text-center relative overflow-hidden">
-          {/* Streak Badge - positioned top right */}
-          {(streakData?.currentStreak ?? 0) > 0 && (
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-              <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
-              <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
+          {/* Streak Badges - positioned top right */}
+          {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
+            <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+              {/* Current Streak */}
+              {(streakData?.currentStreak ?? 0) > 0 && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
+                  <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
+                </div>
+              )}
+              {/* Best Streak - show if greater than current or if no current streak */}
+              {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                  <Trophy className="w-3 h-3 text-amber-500" />
+                  <span className="text-xs font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
+                </div>
+              )}
             </div>
           )}
           <Avatar
