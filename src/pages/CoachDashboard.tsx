@@ -182,11 +182,6 @@ const CoachDashboard: React.FC = () => {
             <div className="w-8 h-8 flex items-center justify-center">
               <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
             </div>
-            <Avatar
-              src={dashboard.team.logo_url || dashboard.team.photo_url}
-              fallback={dashboard.team.name}
-              size="sm"
-            />
           </div>
           <div className="flex items-center gap-1">
             <RoleSwitcher teamId={id} />
