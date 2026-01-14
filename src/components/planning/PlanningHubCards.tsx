@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarPlus, CalendarRange, Sparkles, Rocket } from "lucide-react";
+import { CalendarPlus, CalendarRange, Sparkles, Rocket, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlanningHubCardsProps {
@@ -9,6 +9,7 @@ interface PlanningHubCardsProps {
   onAddWorkout: () => void;
   onPlanWeek: () => void;
   onCreateProgram: () => void;
+  onStartChallenge: () => void;
   weekPlanCount?: number;
 }
 
@@ -18,7 +19,7 @@ interface PlanningCardProps {
   icon: React.ReactNode;
   gradient: string;
   badge?: string;
-  badgeVariant?: "default" | "premium";
+  badgeVariant?: "default" | "premium" | "challenge";
   onClick: () => void;
   delay?: number;
 }
@@ -50,7 +51,7 @@ const PlanningCard: React.FC<PlanningCardProps> = ({
       )}
     >
       {/* Shimmer effect for premium badge */}
-      {badgeVariant === "premium" && (
+      {(badgeVariant === "premium" || badgeVariant === "challenge") && (
         <div className="absolute inset-0 overflow-hidden">
           <div 
             className="absolute -inset-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
@@ -67,7 +68,7 @@ const PlanningCard: React.FC<PlanningCardProps> = ({
             <span
               className={cn(
                 "px-2.5 py-1 rounded-full text-xs font-semibold",
-                badgeVariant === "premium"
+                badgeVariant === "premium" || badgeVariant === "challenge"
                   ? "bg-white/25 text-white backdrop-blur-sm"
                   : "bg-white/20 text-white/90"
               )}
@@ -91,35 +92,49 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
   onAddWorkout,
   onPlanWeek,
   onCreateProgram,
+  onStartChallenge,
   weekPlanCount = 0,
 }) => {
   return (
     <div className="space-y-3">
-      {/* Add Workout - Full width */}
-      <PlanningCard
-        title="Add Workout"
-        subtitle="One workout for one day—perfect for today or any date"
-        icon={<CalendarPlus className="w-6 h-6 text-white" />}
-        gradient="from-emerald-500 to-teal-500"
-        badge={weekPlanCount > 0 ? `${weekPlanCount} this week` : undefined}
-        onClick={onAddWorkout}
-        delay={0}
-      />
+      {/* Top row: Add Workout + 30 Day Challenge */}
+      <div className="grid grid-cols-2 gap-3">
+        <PlanningCard
+          title="Add Workout"
+          subtitle="One workout for one day"
+          icon={<CalendarPlus className="w-6 h-6 text-white" />}
+          gradient="from-emerald-500 to-teal-500"
+          badge={weekPlanCount > 0 ? `${weekPlanCount} this week` : undefined}
+          onClick={onAddWorkout}
+          delay={0}
+        />
+        
+        <PlanningCard
+          title="30 Day Challenge"
+          subtitle="Daily exercises for 30 days"
+          icon={<Flame className="w-6 h-6 text-white" />}
+          gradient="from-orange-500 to-red-500"
+          badge="🔥"
+          badgeVariant="challenge"
+          onClick={onStartChallenge}
+          delay={0.1}
+        />
+      </div>
       
-      {/* Two cards side by side */}
+      {/* Bottom row: Plan Week + Create Program */}
       <div className="grid grid-cols-2 gap-3">
         <PlanningCard
           title="Plan the Week"
-          subtitle="Set up Mon–Sun, reuse it every week"
+          subtitle="Set up Mon–Sun, reuse it"
           icon={<CalendarRange className="w-6 h-6 text-white" />}
           gradient="from-blue-500 to-indigo-500"
           onClick={onPlanWeek}
-          delay={0.1}
+          delay={0.2}
         />
         
         <PlanningCard
           title="Create a Program"
-          subtitle="AI builds 4–8 weeks of training for you"
+          subtitle="AI builds 4–8 weeks"
           icon={
             <div className="flex items-center gap-0.5">
               <Sparkles className="w-5 h-5 text-white" />
@@ -130,7 +145,7 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
           badge="AI"
           badgeVariant="premium"
           onClick={onCreateProgram}
-          delay={0.2}
+          delay={0.3}
         />
       </div>
     </div>
