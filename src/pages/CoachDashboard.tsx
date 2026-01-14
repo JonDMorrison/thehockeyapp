@@ -24,7 +24,7 @@ import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
-import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
+import { TeamGoalCard, GoalCreatorSheet, GoalFloatingAction, GoalTrophyCase } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import { TeamProgressWidget } from "@/components/dashboard/TeamProgressWidget";
@@ -253,6 +253,9 @@ const CoachDashboard: React.FC = () => {
           teamId={id!}
           rosterCount={dashboard.pulse.players_count}
         />
+
+        {/* Goal Trophy Case - shows past achievements */}
+        <GoalTrophyCase teamId={id!} compact />
 
         {/* Onboarding Progress Checklist */}
         <OnboardingProgress
