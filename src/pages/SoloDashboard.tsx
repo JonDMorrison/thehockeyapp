@@ -215,7 +215,7 @@ export default function SoloDashboard() {
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden">
                 <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
               </div>
               <UserMenu
