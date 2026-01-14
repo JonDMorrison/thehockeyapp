@@ -11,7 +11,7 @@ export const MarketingFooter: React.FC = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center overflow-hidden">
                 <HockeyAppLogo size={24} />
               </div>
               <span className="font-bold text-lg">The Hockey App</span>
