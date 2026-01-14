@@ -22,6 +22,12 @@ interface GoalCreatorSheetProps {
   teamId: string;
   rosterCount?: number;
   editGoal?: TeamGoal | null;
+  prefilled?: Partial<{
+    name: string;
+    goalType: string;
+    targetValue: number;
+    timeframe: string;
+  }> | null;
 }
 
 const goalTypes = [
@@ -37,7 +43,7 @@ const timeframes = [
   { value: 'custom', label: 'Custom Dates' },
 ] as const;
 
-export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10, editGoal }: GoalCreatorSheetProps) {
+export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10, editGoal, prefilled }: GoalCreatorSheetProps) {
   const { user } = useAuth();
   const createGoal = useCreateGoal();
   const updateGoal = useUpdateGoal();
@@ -55,7 +61,7 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
 
   const isEditing = !!editGoal;
 
-  // Populate form when editing
+  // Populate form when editing or prefilled
   useEffect(() => {
     if (editGoal && open) {
       setName(editGoal.name);
@@ -68,10 +74,15 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
       setShowLeaderboard(editGoal.show_leaderboard);
       setRewardType(editGoal.reward_type);
       setRewardDescription(editGoal.reward_description);
+    } else if (prefilled && open) {
+      if (prefilled.name) setName(prefilled.name);
+      if (prefilled.goalType) setGoalType(prefilled.goalType as typeof goalType);
+      if (prefilled.targetValue) setTargetValue(prefilled.targetValue.toString());
+      if (prefilled.timeframe) setTimeframe(prefilled.timeframe as typeof timeframe);
     } else if (!open) {
       resetForm();
     }
-  }, [editGoal, open]);
+  }, [editGoal, prefilled, open]);
 
   const getDateRange = () => {
     const today = new Date();

@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Target, Plus, Calendar, Trophy, MoreVertical, RefreshCw, Archive, Pencil } from 'lucide-react';
+import { Target, Plus, Calendar, Trophy, MoreVertical, RefreshCw, Archive, Pencil, Sparkles } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GoalThermometer } from './GoalThermometer';
 import { ContributorLeaderboard } from './ContributorLeaderboard';
 import { GoalCreatorSheet } from './GoalCreatorSheet';
+import { SmartGoalSuggestions, GoalSuggestion } from './SmartGoalSuggestions';
+import { GoalImpactPreview } from './GoalImpactPreview';
+import { QuickGoalTemplates, QuickTemplate } from './QuickGoalTemplates';
+import { GoalCelebration } from './GoalCelebration';
 import { useTeamGoal, useGoalContributions, useRefreshGoalProgress, useUpdateGoal, TeamGoal } from '@/hooks/useTeamGoal';
 import {
   DropdownMenu,
@@ -17,6 +21,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface TeamGoalCardProps {
   teamId: string;
@@ -27,10 +33,70 @@ interface TeamGoalCardProps {
 export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCardProps) {
   const [showCreator, setShowCreator] = useState(false);
   const [editingGoal, setEditingGoal] = useState<TeamGoal | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [prefilledGoal, setPrefilledGoal] = useState<Partial<{
+    name: string;
+    goalType: string;
+    targetValue: number;
+    timeframe: string;
+  }> | null>(null);
+
   const { data: goal, isLoading } = useTeamGoal(teamId);
   const { data: contributions } = useGoalContributions(goal?.id);
   const refreshProgress = useRefreshGoalProgress();
   const updateGoal = useUpdateGoal();
+
+  // Fetch team stats for smart suggestions
+  const { data: teamStats } = useQuery({
+    queryKey: ['team-goal-stats', teamId],
+    queryFn: async () => {
+      // Get last week's shot count
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      const { data: completions } = await supabase
+        .from('task_completions')
+        .select(`
+          shots_logged,
+          practice_tasks!inner(practice_cards!inner(team_id))
+        `)
+        .eq('practice_tasks.practice_cards.team_id', teamId)
+        .gte('completed_at', weekAgo.toISOString());
+
+      const totalShots = (completions || []).reduce((sum, c) => sum + (c.shots_logged || 0), 0);
+
+      // Check if last goal was achieved
+      const { data: lastGoal } = await supabase
+        .from('team_goals')
+        .select('status')
+        .eq('team_id', teamId)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      return {
+        avgShotsPerWeek: totalShots,
+        avgSessionsPerWeek: (completions || []).length,
+        playerCount: rosterCount,
+        lastGoalAchieved: lastGoal?.status === 'completed',
+      };
+    },
+    enabled: !goal, // Only fetch when no active goal
+  });
+
+  // Check for goal completion and show celebration
+  useEffect(() => {
+    if (goal?.status === 'completed') {
+      const celebratedKey = `goal_celebrated_${goal.id}`;
+      const alreadyCelebrated = localStorage.getItem(celebratedKey);
+      
+      if (!alreadyCelebrated) {
+        localStorage.setItem(celebratedKey, new Date().toISOString());
+        setShowCelebration(true);
+      }
+    }
+  }, [goal?.status, goal?.id]);
 
   const handleEdit = () => {
     if (goal) {
@@ -43,6 +109,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
     setShowCreator(open);
     if (!open) {
       setEditingGoal(null);
+      setPrefilledGoal(null);
     }
   };
 
@@ -66,6 +133,26 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
     }
   };
 
+  const handleSuggestionSelect = (suggestion: GoalSuggestion) => {
+    setPrefilledGoal({
+      name: suggestion.name,
+      goalType: suggestion.goalType,
+      targetValue: suggestion.targetValue,
+      timeframe: suggestion.timeframe,
+    });
+    setShowCreator(true);
+  };
+
+  const handleQuickTemplate = (template: QuickTemplate) => {
+    setPrefilledGoal({
+      name: template.name,
+      goalType: template.goalType,
+      targetValue: template.targetValue,
+      timeframe: template.timeframe,
+    });
+    setShowCreator(true);
+  };
+
   if (isLoading) {
     return (
       <Card className={cn('animate-pulse', className)}>
@@ -79,32 +166,66 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
   if (!goal) {
     return (
       <>
-        <Card
-          className={cn(
-            'cursor-pointer transition-all hover:shadow-lg border-dashed border-2 hover:border-primary/50',
-            className
+        <div className="space-y-4">
+          {/* Main CTA Card */}
+          <Card
+            className={cn(
+              'cursor-pointer transition-all hover:shadow-lg border-2 border-dashed hover:border-primary/50 overflow-hidden',
+              className
+            )}
+            onClick={() => setShowCreator(true)}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <motion.div
+                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <Target className="w-7 h-7 text-primary" />
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-foreground">Set a Team Goal</h3>
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Goals increase player engagement by 40%. Rally your team around a shared target!
+                  </p>
+                  <Button className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Create Goal
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Smart Suggestions */}
+          {teamStats && (
+            <SmartGoalSuggestions
+              teamStats={teamStats}
+              onSelectSuggestion={handleSuggestionSelect}
+            />
           )}
-          onClick={() => setShowCreator(true)}
-        >
-          <CardContent className="p-6 flex flex-col items-center justify-center text-center min-h-[120px]">
-            <motion.div
-              className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3"
-              whileHover={{ scale: 1.1 }}
-            >
-              <Plus className="w-6 h-6 text-primary" />
-            </motion.div>
-            <h3 className="font-semibold text-foreground">Set a Team Goal</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Motivate your team with a shared target
-            </p>
-          </CardContent>
-        </Card>
+
+          {/* Quick Templates */}
+          <QuickGoalTemplates
+            playerCount={rosterCount}
+            lastWeekShots={teamStats?.avgShotsPerWeek}
+            onSelect={handleQuickTemplate}
+          />
+
+          {/* Impact Preview */}
+          <GoalImpactPreview playerCount={rosterCount} />
+        </div>
+
         <GoalCreatorSheet
           open={showCreator}
           onOpenChange={handleSheetClose}
           teamId={teamId}
           rosterCount={rosterCount}
           editGoal={editingGoal}
+          prefilled={prefilledGoal}
         />
       </>
     );
@@ -214,6 +335,16 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
         teamId={teamId}
         rosterCount={rosterCount}
         editGoal={editingGoal}
+        prefilled={prefilledGoal}
+      />
+
+      {/* Celebration Modal */}
+      <GoalCelebration
+        open={showCelebration}
+        onOpenChange={setShowCelebration}
+        goalName={goal?.name || ''}
+        targetValue={goal?.target_value || 0}
+        goalType={goal?.goal_type || 'shots'}
       />
     </>
   );
