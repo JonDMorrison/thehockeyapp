@@ -239,6 +239,14 @@ const JoinTeamPlayer: React.FC = () => {
                   Go to Today's Workout
                 </Button>
                 <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => navigate(`/players/${selectedPlayerId}/home`)}
+                >
+                  View Dashboard
+                </Button>
+                <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
