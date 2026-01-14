@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ProgressBar } from "@/components/app/ProgressBar";
+import { TeamCheerButton } from "./TeamCheerButton";
 import {
   Users,
   Trophy,
@@ -231,33 +232,48 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
             {otherTeammates.slice(0, 5).map((teammate) => (
               <div
                 key={teammate.playerId}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => setSelectedTeammate(teammate)}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <Avatar
-                  src={teammate.photoUrl}
-                  fallback={`${teammate.firstName} ${teammate.lastInitial || ""}`}
-                  size="sm"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">
-                    {teammate.firstName} {teammate.lastInitial && `${teammate.lastInitial}.`}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {teammate.jerseyNumber && (
-                      <span className="text-xs text-muted-foreground">
-                        #{teammate.jerseyNumber}
-                      </span>
-                    )}
-                    {teammate.badgeCount > 0 && (
-                      <span className="text-xs text-amber-600 flex items-center gap-0.5">
-                        <Trophy className="w-3 h-3" />
-                        {teammate.badgeCount}
-                      </span>
-                    )}
+                <div
+                  className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                  onClick={() => setSelectedTeammate(teammate)}
+                >
+                  <Avatar
+                    src={teammate.photoUrl}
+                    fallback={`${teammate.firstName} ${teammate.lastInitial || ""}`}
+                    size="sm"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">
+                      {teammate.firstName} {teammate.lastInitial && `${teammate.lastInitial}.`}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {teammate.jerseyNumber && (
+                        <span className="text-xs text-muted-foreground">
+                          #{teammate.jerseyNumber}
+                        </span>
+                      )}
+                      {teammate.badgeCount > 0 && (
+                        <span className="text-xs text-amber-600 flex items-center gap-0.5">
+                          <Trophy className="w-3 h-3" />
+                          {teammate.badgeCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                {/* Cheer button */}
+                <TeamCheerButton
+                  fromPlayerId={currentPlayerId}
+                  toPlayerId={teammate.playerId}
+                  toPlayerName={teammate.firstName}
+                  teamId={teamId}
+                  variant="icon"
+                />
+                <ChevronRight
+                  className="w-4 h-4 text-muted-foreground cursor-pointer"
+                  onClick={() => setSelectedTeammate(teammate)}
+                />
               </div>
             ))}
 

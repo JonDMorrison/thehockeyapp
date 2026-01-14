@@ -1251,6 +1251,61 @@ export type Database = {
           },
         ]
       }
+      team_cheers: {
+        Row: {
+          cheer_type: string
+          content: string
+          created_at: string
+          from_player_id: string
+          id: string
+          is_read: boolean | null
+          team_id: string
+          to_player_id: string
+        }
+        Insert: {
+          cheer_type?: string
+          content: string
+          created_at?: string
+          from_player_id: string
+          id?: string
+          is_read?: boolean | null
+          team_id: string
+          to_player_id: string
+        }
+        Update: {
+          cheer_type?: string
+          content?: string
+          created_at?: string
+          from_player_id?: string
+          id?: string
+          is_read?: boolean | null
+          team_id?: string
+          to_player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_cheers_from_player_id_fkey"
+            columns: ["from_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_cheers_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_cheers_to_player_id_fkey"
+            columns: ["to_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_events: {
         Row: {
           created_at: string | null
