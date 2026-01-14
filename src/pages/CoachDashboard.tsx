@@ -25,7 +25,7 @@ import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
-import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
+import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -40,6 +40,7 @@ const CoachDashboard: React.FC = () => {
   const [showGameDayModal, setShowGameDayModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showProgramWizard, setShowProgramWizard] = useState(false);
+  const [showChallengeWizard, setShowChallengeWizard] = useState(false);
   const [showGoalCreator, setShowGoalCreator] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -249,6 +250,7 @@ const CoachDashboard: React.FC = () => {
           onAddWorkout={() => setShowDatePicker(true)}
           onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
           onCreateProgram={() => setShowProgramWizard(true)}
+          onStartChallenge={() => setShowChallengeWizard(true)}
         />
 
         {/* Team Goal Section */}
@@ -323,6 +325,12 @@ const CoachDashboard: React.FC = () => {
       <ProgramBuilderWizard
         open={showProgramWizard}
         onOpenChange={setShowProgramWizard}
+        teamId={id!}
+      />
+
+      <ThirtyDayChallengeWizard
+        open={showChallengeWizard}
+        onOpenChange={setShowChallengeWizard}
         teamId={id!}
       />
 
