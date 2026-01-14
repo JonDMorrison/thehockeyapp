@@ -38,6 +38,7 @@ import {
   Target,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
+import { NotificationBell } from "@/components/app/NotificationBell";
 import { format, subDays, parseISO } from "date-fns";
 
 // Milestone thresholds for celebrations
@@ -351,24 +352,27 @@ const PlayerHome: React.FC = () => {
     <AppShell
       hideNav
       header={
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => navigate("/players")}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <Avatar
-            src={player.profile_photo_url}
-            fallback={`${player.first_name} ${player.last_initial || ""}`}
-            size="sm"
-          />
-          <div className="min-w-0">
-            <h1 className="text-lg font-bold truncate">
-              {player.first_name} {player.last_initial && `${player.last_initial}.`}
-            </h1>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate("/players")}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Avatar
+              src={player.profile_photo_url}
+              fallback={`${player.first_name} ${player.last_initial || ""}`}
+              size="sm"
+            />
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold truncate">
+                {player.first_name} {player.last_initial && `${player.last_initial}.`}
+              </h1>
+            </div>
           </div>
+          <NotificationBell />
         </div>
       }
     >

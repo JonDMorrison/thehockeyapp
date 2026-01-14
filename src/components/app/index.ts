@@ -11,3 +11,4 @@ export { RoleSwitcher } from './RoleSwitcher';
 export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonAvatar } from './Skeleton';
 export { Tag } from './Tag';
 export { toast, showToast } from './Toast';
+export { NotificationBell } from './NotificationBell';
