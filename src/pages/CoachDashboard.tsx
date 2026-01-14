@@ -14,20 +14,19 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Users, CalendarPlus } from "lucide-react";
 import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
-import { TodaySnapshot } from "@/components/dashboard/TodaySnapshot";
 import { CoachDock } from "@/components/dashboard/CoachDock";
-import { ContextualNudge } from "@/components/dashboard/ContextualNudge";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
+import { TeamPulseBar } from "@/components/dashboard/TeamPulseBar";
+import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
-import { TeamGoalCard, GoalCreatorSheet, GoalFloatingAction, GoalTrophyCase } from "@/components/goals";
-import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
+import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
+import { DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
-import { TeamProgressWidget } from "@/components/dashboard/TeamProgressWidget";
 import logoImage from "@/assets/hockey-app-logo.png";
 
 const CoachDashboard: React.FC = () => {
@@ -37,6 +36,7 @@ const CoachDashboard: React.FC = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteModalTab, setInviteModalTab] = useState<"invite" | "add-child">("invite");
   const [showGameDayModal, setShowGameDayModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showProgramWizard, setShowProgramWizard] = useState(false);
@@ -106,27 +106,14 @@ const CoachDashboard: React.FC = () => {
     setIsRefreshing(false);
   };
 
-  const handlePublishCard = async () => {
-    if (!dashboard?.today?.practice_card?.card_id) return;
-
-    try {
-      const { error } = await supabase
-        .from("practice_cards")
-        .update({ published_at: new Date().toISOString() })
-        .eq("id", dashboard.today.practice_card.card_id);
-
-      if (error) throw error;
-
-      toast.success("Workout published!");
-      queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
-    } catch {
-      toast.error("Failed to publish");
-    }
-  };
-
   const handleOnboardingAction = (itemId: string) => {
     switch (itemId) {
       case "add_players":
+        setInviteModalTab("invite");
+        setShowInviteModal(true);
+        break;
+      case "add_my_child":
+        setInviteModalTab("add-child");
         setShowInviteModal(true);
         break;
       case "connect_schedule":
@@ -139,23 +126,11 @@ const CoachDashboard: React.FC = () => {
     }
   };
 
-  const handleNudgeAction = (itemId: string) => {
-    switch (itemId) {
-      case "set_preferences":
-        navigate(`/teams/${id}/settings`);
-        break;
-      case "connect_schedule":
-        navigate(`/teams/${id}/settings`);
-        break;
-      case "invite_parents":
-      case "add_players":
-        setShowInviteModal(true);
-        break;
-    }
-  };
-
   const scheduleConnected = dashboard?.upcoming && dashboard.upcoming.length > 0 || 
     dashboard?.onboarding?.checklist?.find(i => i.id === 'connect_schedule')?.done;
+
+  const hasPlayers = (dashboard?.pulse?.players_count ?? 0) > 0;
+  const onboardingComplete = dashboard?.onboarding?.checklist?.every(i => i.done);
 
   if (isLoading || authLoading) {
     return (
@@ -234,7 +209,7 @@ const CoachDashboard: React.FC = () => {
         </div>
       }
     >
-      <PageContainer className="space-y-6">
+      <PageContainer className="space-y-4">
         {/* Layer 1: Context - Date, Team, Day Type */}
         <TodayHeader
           teamName={dashboard.team.name}
@@ -244,13 +219,40 @@ const CoachDashboard: React.FC = () => {
           gameDay={dashboard.today.game_day}
         />
 
-        {/* Layer 2: Planning Hub - 3 Creative Cards */}
-        <PlanningHubCards
-          teamId={id!}
-          onAddWorkout={() => setShowDatePicker(true)}
-          onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
-          onCreateProgram={() => setShowProgramWizard(true)}
-        />
+        {/* Onboarding Progress Checklist - only if not complete */}
+        {!onboardingComplete && (
+          <OnboardingProgress
+            checklist={dashboard.onboarding.checklist}
+            playersCount={dashboard.pulse.players_count}
+            hasWorkouts={dashboard.today.practice_card.exists}
+            onAction={handleOnboardingAction}
+          />
+        )}
+
+        {/* Empty State: Add Players Choice - show when no players and onboarding not complete */}
+        {!hasPlayers && !onboardingComplete && (
+          <AddPlayerChoice
+            onAddMyChild={() => {
+              setInviteModalTab("add-child");
+              setShowInviteModal(true);
+            }}
+            onInviteFamilies={() => {
+              setInviteModalTab("invite");
+              setShowInviteModal(true);
+            }}
+          />
+        )}
+
+        {/* Primary CTA - Add Workout */}
+        <Button
+          variant="team"
+          size="lg"
+          className="w-full"
+          onClick={() => setShowDatePicker(true)}
+        >
+          <CalendarPlus className="w-5 h-5 mr-2" />
+          Add Workout
+        </Button>
 
         {/* Team Goal Section */}
         <TeamGoalCard
@@ -258,24 +260,14 @@ const CoachDashboard: React.FC = () => {
           rosterCount={dashboard.pulse.players_count}
         />
 
-        {/* Goal Trophy Case - shows past achievements */}
-        <GoalTrophyCase teamId={id!} compact />
-
-        {/* Onboarding Progress Checklist */}
-        <OnboardingProgress
-          checklist={dashboard.onboarding.checklist}
-          playersCount={dashboard.pulse.players_count}
-          hasWorkouts={dashboard.today.practice_card.exists}
-          onAction={handleOnboardingAction}
-        />
-
-        {/* Team Progress Widget */}
-        <TeamProgressWidget
-          playersCount={dashboard.pulse.players_count}
-          activeToday={dashboard.pulse.active_today_count}
-          sessionsComplete={dashboard.pulse.sessions_complete_today}
-          shotsLogged={dashboard.pulse.total_shots_today}
-        />
+        {/* Team Pulse Bar - compact stats */}
+        {hasPlayers && (
+          <TeamPulseBar
+            playersCount={dashboard.pulse.players_count}
+            activeToday={dashboard.pulse.active_today_count}
+            sessionsComplete={dashboard.pulse.sessions_complete_today}
+          />
+        )}
 
         {/* Upcoming Events with Sync */}
         {scheduleConnected && dashboard.upcoming && dashboard.upcoming.length > 0 && (
@@ -288,24 +280,13 @@ const CoachDashboard: React.FC = () => {
           />
         )}
 
-        {/* Layer 4: Navigation - Coach Dock */}
+        {/* Layer 4: Navigation - Coach Dock (3 items) */}
         <CoachDock
           playersCount={dashboard.pulse.players_count}
-          weekPlanStatus={undefined}
           activeToday={dashboard.pulse.active_today_count}
-          hasPlayers={dashboard.pulse.players_count > 0}
           onRoster={() => navigate(`/teams/${id}/roster`)}
-          onWeekPlan={() => navigate(`/teams/${id}/builder`)}
           onProgress={() => navigate(`/teams/${id}/progress`)}
-          onInvite={() => setShowInviteModal(true)}
-        />
-
-        {/* Contextual Nudge - One suggestion at a time */}
-        <ContextualNudge
-          checklist={dashboard.onboarding.checklist}
-          playersCount={dashboard.pulse.players_count}
-          scheduleConnected={!!scheduleConnected}
-          onAction={handleNudgeAction}
+          onSettings={() => navigate(`/teams/${id}/settings`)}
         />
       </PageContainer>
 
@@ -315,6 +296,7 @@ const CoachDashboard: React.FC = () => {
         onOpenChange={setShowInviteModal}
         teamId={id!}
         teamName={dashboard.team.name}
+        initialTab={inviteModalTab}
       />
 
       <GameDayModal
