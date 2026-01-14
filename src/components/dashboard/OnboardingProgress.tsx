@@ -9,7 +9,8 @@ import {
   Settings2, 
   CalendarPlus,
   Sparkles,
-  PartyPopper
+  PartyPopper,
+  Baby
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ interface ProgressStep {
   icon: React.ElementType;
   done: boolean;
   actionLabel: string;
+  actions?: { id: string; label: string; icon: React.ElementType }[];
 }
 
 export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
@@ -51,10 +53,15 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     {
       id: "add_players",
       label: "Add your players",
-      description: "Import or invite players to join your team",
+      description: "Add your own child or invite other families",
       icon: Users,
       done: playersCount > 0 || checklist.find(i => i.id === "add_players")?.done || false,
       actionLabel: "Add Players",
+      // Show two actions for adding players
+      actions: [
+        { id: "add_my_child", label: "My Child", icon: Baby },
+        { id: "add_players", label: "Invite", icon: Users },
+      ],
     },
     {
       id: "connect_schedule",
@@ -251,19 +258,42 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
                       )}
                     </div>
 
-                    {/* Action button */}
+                    {/* Action buttons */}
                     {!step.done && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-shrink-0 h-7 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAction(step.id);
-                        }}
-                      >
-                        {step.actionLabel}
-                      </Button>
+                      <div className="flex-shrink-0 flex gap-1">
+                        {step.actions ? (
+                          step.actions.map((action) => {
+                            const ActionIcon = action.icon;
+                            return (
+                              <Button
+                                key={action.id}
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs gap-1 px-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onAction(action.id);
+                                }}
+                              >
+                                <ActionIcon className="w-3 h-3" />
+                                {action.label}
+                              </Button>
+                            );
+                          })
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAction(step.id);
+                            }}
+                          >
+                            {step.actionLabel}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
