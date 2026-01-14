@@ -14,7 +14,7 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { ChevronLeft, Settings, RefreshCw, Users, CalendarPlus } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
 import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { CoachDock } from "@/components/dashboard/CoachDock";
@@ -25,7 +25,7 @@ import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
-import { DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
+import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -243,16 +243,13 @@ const CoachDashboard: React.FC = () => {
           />
         )}
 
-        {/* Primary CTA - Add Workout */}
-        <Button
-          variant="team"
-          size="lg"
-          className="w-full"
-          onClick={() => setShowDatePicker(true)}
-        >
-          <CalendarPlus className="w-5 h-5 mr-2" />
-          Add Workout
-        </Button>
+        {/* Planning Hub Cards - 3 Creative Cards */}
+        <PlanningHubCards
+          teamId={id!}
+          onAddWorkout={() => setShowDatePicker(true)}
+          onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+          onCreateProgram={() => setShowProgramWizard(true)}
+        />
 
         {/* Team Goal Section */}
         <TeamGoalCard
