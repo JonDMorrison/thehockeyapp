@@ -121,7 +121,18 @@ const PlayerNew: React.FC = () => {
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
       toast.success("Player added", `${player.first_name} has been added.`);
-      navigate(`/players/${player.id}`);
+      
+      // Check if we need to return to team join flow
+      const returnToJoin = sessionStorage.getItem("returnToJoin");
+      const pendingToken = sessionStorage.getItem("pendingJoinToken");
+      
+      if (returnToJoin && pendingToken) {
+        sessionStorage.removeItem("returnToJoin");
+        // Keep pendingJoinToken so the join flow can use it
+        navigate(`/join/${pendingToken}/player`);
+      } else {
+        navigate(`/players/${player.id}/home`);
+      }
     },
     onError: (error: Error) => {
       toast.error("Failed to add player", error.message);
@@ -344,7 +355,7 @@ const PlayerNew: React.FC = () => {
             disabled={createPlayer.isPending}
           >
             {createPlayer.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Add Player
+            Save Player
           </Button>
         </form>
       </PageContainer>
