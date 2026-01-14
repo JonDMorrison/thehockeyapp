@@ -1,25 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const HockeyIcon = ({ size = 24 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {/* Hockey stick */}
-    <path d="M4 20L16 8" />
-    <path d="M16 8L20 12L18 14" />
-    {/* Puck */}
-    <ellipse cx="8" cy="18" rx="3" ry="1.5" fill="currentColor" />
-  </svg>
-);
-
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   alt?: string;
@@ -46,18 +27,11 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
       xl: "w-16 h-16 text-lg",
     };
 
-    const iconSizes = {
-      sm: 16,
-      default: 20,
-      lg: 24,
-      xl: 32,
-    };
-
     return (
       <div
         ref={ref}
         className={cn(
-          "relative shrink-0 overflow-hidden rounded-full bg-muted",
+          "relative shrink-0 overflow-hidden bg-muted",
           sizeClasses[size],
           className
         )}
@@ -70,10 +44,6 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             className="h-full w-full object-cover"
             onError={() => setHasError(true)}
           />
-        ) : type === "team" ? (
-          <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary">
-            <HockeyIcon size={iconSizes[size]} />
-          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-team-primary/10 text-team-primary font-medium">
             {initials}
