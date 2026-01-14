@@ -21,7 +21,7 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
-import { ChecklistItem } from "@/components/app/ChecklistItem";
+import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { OfflineIndicator } from "@/components/app/OfflineIndicator";
 import { Button } from "@/components/ui/button";
@@ -838,13 +838,15 @@ const PlayerToday: React.FC = () => {
 
               return (
                 <div key={task.id} className="relative">
-                  <ChecklistItem
+                  <WorkoutCheckItem
                     id={task.id}
                     label={task.label}
                     target={
                       task.target_type !== "none" && task.target_value
                         ? `${task.target_value} ${task.target_type}`
-                        : undefined
+                        : isShooting
+                          ? `${completion?.shotsLogged || 0} shots logged`
+                          : undefined
                     }
                     icon={taskTypeIcons[task.task_type]}
                     completed={isCompleted}
@@ -853,7 +855,7 @@ const PlayerToday: React.FC = () => {
                   />
                   {isShooting && (
                     <button
-                      className="absolute right-12 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded bg-muted text-text-muted hover:bg-muted/80 transition-colors"
+                      className="absolute right-16 top-1/2 -translate-y-1/2 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShotsClick(task.id);
