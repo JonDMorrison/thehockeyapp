@@ -33,8 +33,10 @@ import {
   Dumbbell,
   CheckCircle,
   Clock,
+  Flame,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
+import { format, subDays, parseISO } from "date-fns";
 
 interface TeamMembership {
   id: string;
@@ -172,6 +174,62 @@ const PlayerHome: React.FC = () => {
     preferences?.active_team_id ? id! : null
   );
 
+  // Calculate workout streak from session completions
+  const { data: streakData } = useQuery({
+    queryKey: ["player-streak", id, preferences?.active_team_id],
+    queryFn: async () => {
+      // Get session completions for this player on the active team
+      const { data: completions, error } = await supabase
+        .from("session_completions")
+        .select(`
+          completed_at,
+          practice_cards!inner(team_id, date)
+        `)
+        .eq("player_id", id)
+        .eq("practice_cards.team_id", preferences!.active_team_id)
+        .eq("status", "complete")
+        .order("completed_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Get unique completion dates
+      const completedDates = [...new Set(
+        (completions || [])
+          .filter((c) => c.completed_at)
+          .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd"))
+      )].sort().reverse();
+
+      // Calculate current streak
+      let streak = 0;
+      const now = new Date();
+      const today = format(now, "yyyy-MM-dd");
+      const yesterday = format(subDays(now, 1), "yyyy-MM-dd");
+
+      // Start from today or yesterday
+      let startOffset = 0;
+      if (completedDates.includes(today)) {
+        startOffset = 0;
+      } else if (completedDates.includes(yesterday)) {
+        startOffset = 1;
+      } else {
+        return { currentStreak: 0 };
+      }
+
+      // Count consecutive days
+      for (let i = startOffset; i < 60; i++) {
+        const dateToCheck = format(subDays(now, i), "yyyy-MM-dd");
+        if (completedDates.includes(dateToCheck)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return { currentStreak: streak };
+    },
+    enabled: !!user && !!id && !!preferences?.active_team_id,
+  });
+
   const isLoading = playerLoading || membershipsLoading || authLoading;
 
   if (isLoading) {
@@ -232,7 +290,15 @@ const PlayerHome: React.FC = () => {
     >
       <PageContainer>
         {/* Player Header */}
-        <AppCard className="text-center">
+        <AppCard className="text-center relative overflow-hidden">
+          {/* Streak Badge - positioned top right */}
+          {(streakData?.currentStreak ?? 0) > 0 && (
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
+              <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
+            </div>
+          )}
           <Avatar
             src={player.profile_photo_url}
             fallback={`${player.first_name} ${player.last_initial || ""}`}
