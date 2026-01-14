@@ -24,8 +24,8 @@ export const MarketingNav: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-soft group-hover:shadow-md transition-shadow">
-              <HockeyAppLogo size={20} className="text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-soft group-hover:shadow-md transition-shadow overflow-hidden">
+              <HockeyAppLogo size={28} />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg sm:text-xl text-foreground leading-tight">
