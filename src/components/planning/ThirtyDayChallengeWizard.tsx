@@ -87,11 +87,9 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         throw new Error("Missing required data");
       }
 
-      // Simulate progress steps
-      for (let i = 0; i < sendingSteps.length; i++) {
-        setSendingStep(i);
-        await new Promise((r) => setTimeout(r, 600));
-      }
+      // Step 1: Creating challenge
+      setSendingStep(0);
+      await new Promise((r) => setTimeout(r, 400));
 
       // Create the program record (30 days = ~4.3 weeks)
       const { data: program, error: programError } = await supabase
@@ -114,49 +112,82 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
 
       if (programError) throw programError;
 
-      // Create practice cards for each of the 30 days
+      // Step 2: Building calendar
+      setSendingStep(1);
+      await new Promise((r) => setTimeout(r, 400));
+
+      // Get selected exercise details
+      const selectedExerciseDetails = exercises.filter((e) =>
+        selectedExercises.includes(e.id)
+      );
+
+      // Create all practice cards in one batch
+      const cardInserts = [];
       for (let dayNum = 0; dayNum < 30; dayNum++) {
         const cardDate = addDays(startDate, dayNum);
-
-        const { data: card, error: cardError } = await supabase
-          .from("practice_cards")
-          .insert({
-            team_id: teamId,
-            created_by_user_id: user.id,
-            date: format(cardDate, "yyyy-MM-dd"),
-            title: `Day ${dayNum + 1} - ${challengeName}`,
-            tier: "rep",
-            mode: "challenge",
-            notes: `Day ${dayNum + 1} of 30`,
-            published_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (cardError) throw cardError;
-
-        // Create tasks for each selected exercise
-        const selectedExerciseDetails = exercises.filter((e) =>
-          selectedExercises.includes(e.id)
-        );
-
-        const taskInserts = selectedExerciseDetails.map((exercise, index) => ({
-          practice_card_id: card.id,
-          label: exercise.label,
-          task_type: getTaskType(exercise.category),
-          sort_order: index,
-          shots_expected: exercise.category === "Shooting" ? 25 : null,
-          target_type: exercise.category === "Shooting" ? "shots" : "time",
-          target_value: exercise.category === "Shooting" ? 25 : 5,
-          is_required: true,
-        }));
-
-        const { error: tasksError } = await supabase
-          .from("practice_tasks")
-          .insert(taskInserts);
-
-        if (tasksError) throw tasksError;
+        cardInserts.push({
+          team_id: teamId,
+          created_by_user_id: user.id,
+          date: format(cardDate, "yyyy-MM-dd"),
+          title: `Day ${dayNum + 1} - ${challengeName}`,
+          tier: "rep",
+          mode: "challenge",
+          notes: `Day ${dayNum + 1} of 30`,
+          published_at: new Date().toISOString(),
+        });
       }
+
+      const { data: cards, error: cardsError } = await supabase
+        .from("practice_cards")
+        .insert(cardInserts)
+        .select("id");
+
+      if (cardsError) {
+        // Rollback: delete the program if cards fail
+        await supabase.from("training_programs").delete().eq("id", program.id);
+        throw cardsError;
+      }
+
+      // Step 3: Assigning exercises
+      setSendingStep(2);
+      await new Promise((r) => setTimeout(r, 400));
+
+      // Create tasks for all cards at once
+      const allTaskInserts: Array<{
+        practice_card_id: string;
+        label: string;
+        task_type: string;
+        sort_order: number;
+        shots_expected: number | null;
+        target_type: string;
+        target_value: number | null;
+        is_required: boolean;
+      }> = [];
+
+      cards.forEach((card) => {
+        selectedExerciseDetails.forEach((exercise, index) => {
+          allTaskInserts.push({
+            practice_card_id: card.id,
+            label: exercise.label,
+            task_type: getTaskType(exercise.category),
+            sort_order: index,
+            shots_expected: exercise.category === "Shooting" ? 25 : null,
+            target_type: exercise.category === "Shooting" ? "shots" : "time",
+            target_value: exercise.category === "Shooting" ? 25 : 5,
+            is_required: true,
+          });
+        });
+      });
+
+      const { error: tasksError } = await supabase
+        .from("practice_tasks")
+        .insert(allTaskInserts);
+
+      if (tasksError) throw tasksError;
+
+      // Step 4: Sending to players
+      setSendingStep(3);
+      await new Promise((r) => setTimeout(r, 400));
 
       return program;
     },
@@ -164,9 +195,12 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
       queryClient.invalidateQueries({ queryKey: ["training-programs", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", teamId] });
-      toast.success("Challenge sent! 🔥", "30 days of training is now live for your players.");
       fireGoalConfetti();
-      handleClose();
+      toast.success("Challenge sent! 🔥", "30 days of training is now live for your players.");
+      // Close modal after short delay so user sees completion
+      setTimeout(() => {
+        handleClose();
+      }, 500);
     },
     onError: (error: Error) => {
       console.error("Challenge creation error:", error);
@@ -472,7 +506,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
                 variant="team"
                 className="flex-1"
                 onClick={handleNext}
-                disabled={!canProceed()}
+                disabled={!canProceed() || createMutation.isPending}
               >
                 {step === "review" ? (
                   <>
