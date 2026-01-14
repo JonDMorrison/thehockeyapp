@@ -8,6 +8,7 @@ import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview"
 import { MarketingMilestonePreview } from "@/components/marketing/MarketingMilestonePreview";
 import { MarketingAIPreview } from "@/components/marketing/MarketingAIPreview";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
+import { FeatureRewards } from "@/components/marketing/features/FeatureRewards";
 import {
   CheckCircle,
   Shield,
@@ -23,6 +24,12 @@ import {
   User,
   ChevronRight,
   Star,
+  Flame,
+  Gift,
+  MessageCircle,
+  Gamepad2,
+  BarChart3,
+  Heart,
 } from "lucide-react";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
@@ -92,7 +99,7 @@ const Home: React.FC = () => {
                   glowColor="purple"
                   className="w-72 lg:w-80"
                 >
-                  <MarketingAIPreview />
+                  <MarketingAppPreview />
                 </PhoneMockup>
               </div>
             </div>
@@ -174,6 +181,364 @@ const Home: React.FC = () => {
                   <p className="text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Goals Feature Section */}
+      <section className="py-20 lg:py-28 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/50 dark:from-amber-950/10 dark:via-gray-950 dark:to-orange-950/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <Target className="w-4 h-4" />
+                Team Goals
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Chase goals together.{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                  Celebrate as a team.
+                </span>
+              </h2>
+              
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Set a collective target — 10,000 team shots this month, 500 workouts completed — and watch the thermometer rise as everyone contributes. When you hit the goal, everyone wins.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  { icon: Trophy, text: "Coaches set team-wide goals with optional rewards" },
+                  { icon: Users, text: "Every player's effort counts toward the target" },
+                  { icon: Gift, text: "Hit the goal? Pizza party, skip a drill, coach wears a costume" },
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-amber-200/50 dark:border-amber-800/30"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <span className="text-base">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative flex justify-center">
+              {/* Goal thermometer visual */}
+              <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+                <div className="text-center mb-6">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Team Goal</p>
+                  <h3 className="text-xl font-bold">10,000 Shots Challenge</h3>
+                </div>
+                
+                {/* Thermometer */}
+                <div className="relative h-48 w-16 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-500 to-orange-400 rounded-full transition-all duration-1000"
+                    style={{ height: '75%' }}
+                  />
+                  <div className="absolute -right-12 top-0 text-xs text-muted-foreground">10K</div>
+                  <div className="absolute -right-12 top-1/4 text-xs text-muted-foreground">7.5K</div>
+                  <div className="absolute -right-12 top-1/2 text-xs text-muted-foreground">5K</div>
+                  <div className="absolute -right-12 bottom-0 text-xs text-muted-foreground">0</div>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">7,524</p>
+                  <p className="text-sm text-muted-foreground">shots so far</p>
+                </div>
+
+                <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200/50 dark:border-amber-800/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <Gift className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-medium text-amber-700 dark:text-amber-400">Reward: Pizza Party! 🍕</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Streaks & Celebrations Section */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="order-2 lg:order-1 relative flex justify-center">
+              <PhoneMockup className="w-72 lg:w-80">
+                <FeatureRewards />
+              </PhoneMockup>
+            </div>
+
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <Flame className="w-4 h-4" />
+                Streaks & Badges
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Keep the fire burning.{" "}
+                <span className="text-orange-500">🔥</span>
+              </h2>
+              
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Players earn streaks for consecutive training days. Hit 7 days? Confetti explodes. Earn badges for milestones like "100 Shots" or "Perfect Week." It turns training into a game they actually want to play.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { icon: "🔥", label: "Fire Streaks", desc: "Track consecutive days" },
+                  { icon: "🏆", label: "Badges", desc: "Unlock achievements" },
+                  { icon: "🎉", label: "Celebrations", desc: "Confetti & rewards" },
+                  { icon: "📊", label: "Progress", desc: "Visual milestone tracking" },
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="p-4 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50"
+                  >
+                    <span className="text-2xl mb-2 block">{item.icon}</span>
+                    <p className="font-semibold text-sm">{item.label}</p>
+                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Game Day Mode Section */}
+      <section className="py-20 lg:py-28 bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-blue-950/10 dark:via-gray-950 dark:to-indigo-950/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <Gamepad2 className="w-4 h-4" />
+                Game Day Mode
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Game day?{" "}
+                <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+                  Rest up.
+                </span>
+              </h2>
+              
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                The app knows when it's game day — from your synced calendar or a quick coach toggle. Players get lighter tasks or rest, so they're fresh when it counts. Smart training that adapts to your schedule.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  { icon: Calendar, text: "Auto-detects games from team calendar" },
+                  { icon: Zap, text: "Lighter workouts before games, rest after" },
+                  { icon: CheckCircle, text: "Coaches can toggle game day manually" },
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-blue-200/50 dark:border-blue-800/30"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <span className="text-base">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative flex justify-center">
+              {/* Game day card visual */}
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl p-8 shadow-depth max-w-sm w-full text-white">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Gamepad2 className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-lg">Game Day</span>
+                  </div>
+                  <span className="text-2xl">🏒</span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <p className="text-sm text-white/80 mb-1">Today's Focus</p>
+                    <p className="font-semibold text-lg">Rest & Mental Prep</p>
+                  </div>
+                  
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                    <p className="text-sm text-white/80 mb-2">Quick Tasks</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                          <CheckCircle className="w-3 h-3" />
+                        </div>
+                        <span className="text-sm">Visualization (5 min)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                          <CheckCircle className="w-3 h-3" />
+                        </div>
+                        <span className="text-sm">Light stretching</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 text-center">
+                  <p className="text-white/80 text-sm">vs. Thunderbirds @ 6:00 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Cheers Section */}
+      <section className="py-20 lg:py-28">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="order-2 lg:order-1 relative flex justify-center">
+              {/* Cheers visual */}
+              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <Heart className="w-5 h-5 text-pink-500" />
+                  <h3 className="font-bold">Team Cheers</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { from: "Coach Mike", to: "Tyler", message: "Great hustle this week! 💪", time: "2h ago" },
+                    { from: "Jake", to: "Emma", message: "Nice streak! Keep it up! 🔥", time: "4h ago" },
+                    { from: "Sarah", to: "You", message: "Way to hit 100 shots! 🎯", time: "1d ago" },
+                  ].map((cheer, i) => (
+                    <div 
+                      key={i}
+                      className="p-3 rounded-xl bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border border-pink-200/50 dark:border-pink-800/30"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-medium text-pink-600 dark:text-pink-400">{cheer.from} → {cheer.to}</p>
+                        <p className="text-xs text-muted-foreground">{cheer.time}</p>
+                      </div>
+                      <p className="text-sm">{cheer.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <MessageCircle className="w-4 h-4" />
+                Team Cheers
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Teammates cheer{" "}
+                <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                  each other on.
+                </span>
+              </h2>
+              
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Players can send quick encouragement to teammates — a fist bump for completing a workout, a shoutout for hitting a streak. Build team culture even when you're not at the rink.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                {["💪 Great work!", "🔥 Keep it up!", "⭐ You rock!", "🎯 Nice shot!"].map((cheer, i) => (
+                  <span 
+                    key={i}
+                    className="px-4 py-2 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-sm font-medium"
+                  >
+                    {cheer}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Weekly Summaries Section */}
+      <section className="py-20 lg:py-28 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/50 dark:from-purple-950/10 dark:via-gray-950 dark:to-indigo-950/10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+                <BarChart3 className="w-4 h-4" />
+                AI Summaries
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+                Weekly insights,{" "}
+                <span className="bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
+                  automatically.
+                </span>
+              </h2>
+              
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                Every week, coaches get AI-generated summaries for each player. See who's crushing it, who might need encouragement, and where to focus next. No spreadsheets, no manual tracking.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  { icon: Sparkles, text: "Personalized summaries for each player" },
+                  { icon: BarChart3, text: "Completion rates and streak data" },
+                  { icon: Target, text: "Suggested focus areas for next week" },
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-purple-200/50 dark:border-purple-800/30"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <span className="text-base">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative flex justify-center">
+              {/* Summary card visual */}
+              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">Tyler's Week</p>
+                    <p className="text-xs text-muted-foreground">AI Summary</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
+                    <p className="text-sm leading-relaxed">
+                      "Tyler had an <span className="font-semibold text-purple-600 dark:text-purple-400">excellent week</span> — completed 6/7 workouts and hit a new personal best with 247 shots. His stickhandling consistency improved. Consider adding more skating drills next week."
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/30">
+                      <p className="text-lg font-bold text-green-600">86%</p>
+                      <p className="text-xs text-muted-foreground">Completion</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+                      <p className="text-lg font-bold text-orange-600">12</p>
+                      <p className="text-xs text-muted-foreground">Day Streak</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30">
+                      <p className="text-lg font-bold text-blue-600">247</p>
+                      <p className="text-xs text-muted-foreground">Shots</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -383,6 +748,7 @@ const Home: React.FC = () => {
 
       <MarketingFooter />
 
+      {/* GetStarted Modal */}
       <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
