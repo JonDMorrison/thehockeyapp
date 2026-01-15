@@ -3,12 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
+import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, Users } from "lucide-react";
 
 interface TeamCheersFeedProps {
   teamId: string;
   currentPlayerId: string;
+  onSendCheer?: () => void;
 }
 
 interface Cheer {
@@ -28,6 +30,7 @@ interface Cheer {
 export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
   teamId,
   currentPlayerId,
+  onSendCheer,
 }) => {
   const queryClient = useQueryClient();
 
@@ -123,11 +126,22 @@ export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
           <Heart className="w-4 h-4 text-pink-500" />
           Team Cheers
         </AppCardTitle>
-        <div className="text-center py-4">
+        <div className="text-center py-6">
           <Sparkles className="w-8 h-8 text-pink-500/30 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             No cheers yet. Be the first to encourage a teammate!
           </p>
+          {onSendCheer && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSendCheer}
+              className="text-pink-500 border-pink-500/30 hover:bg-pink-500/10"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Send a Cheer
+            </Button>
+          )}
         </div>
       </AppCard>
     );

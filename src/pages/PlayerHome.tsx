@@ -70,8 +70,13 @@ const PlayerHome: React.FC = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+  const teammatesRef = useRef<HTMLDivElement>(null);
 
   const [showTeamSelector, setShowTeamSelector] = useState(false);
+
+  const scrollToTeammates = () => {
+    teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -542,15 +547,18 @@ const PlayerHome: React.FC = () => {
             />
 
             {/* Teammate Roster with Badges */}
-            <TeammateRoster
-              teamId={preferences.active_team_id}
-              currentPlayerId={id!}
-            />
+            <div ref={teammatesRef}>
+              <TeammateRoster
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+              />
+            </div>
 
             {/* Team Cheers Feed */}
             <TeamCheersFeed
               teamId={preferences.active_team_id}
               currentPlayerId={id!}
+              onSendCheer={scrollToTeammates}
             />
           </>
         )}
