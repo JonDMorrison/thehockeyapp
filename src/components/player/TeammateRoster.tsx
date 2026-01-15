@@ -214,14 +214,28 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   }
 
   const otherTeammates = teammates?.filter((t) => t.playerId !== currentPlayerId) || [];
+  const [showAll, setShowAll] = useState(false);
+  const displayedTeammates = showAll ? otherTeammates : otherTeammates.slice(0, 5);
 
   return (
     <>
       <AppCard>
-        <AppCardTitle className="flex items-center gap-2 text-sm mb-3">
-          <Users className="w-4 h-4 text-team-primary" />
-          Teammates ({otherTeammates.length})
-        </AppCardTitle>
+        <div className="flex items-center justify-between mb-3">
+          <AppCardTitle className="flex items-center gap-2 text-sm">
+            <Users className="w-4 h-4 text-team-primary" />
+            Teammates ({otherTeammates.length})
+          </AppCardTitle>
+          {otherTeammates.length > 5 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-team-primary"
+              onClick={() => setShowAll(!showAll)}
+            >
+              {showAll ? "Show less" : "View all"}
+            </Button>
+          )}
+        </div>
 
         {otherTeammates.length === 0 ? (
           <p className="text-sm text-muted-foreground">
@@ -229,7 +243,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
           </p>
         ) : (
           <div className="space-y-2">
-            {otherTeammates.slice(0, 5).map((teammate) => (
+            {displayedTeammates.map((teammate) => (
               <div
                 key={teammate.playerId}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
@@ -277,11 +291,6 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
               </div>
             ))}
 
-            {otherTeammates.length > 5 && (
-              <Button variant="ghost" size="sm" className="w-full text-xs">
-                View all {otherTeammates.length} teammates
-              </Button>
-            )}
           </div>
         )}
       </AppCard>
