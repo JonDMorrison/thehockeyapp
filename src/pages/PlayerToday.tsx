@@ -50,6 +50,7 @@ import {
   Zap,
   Settings,
   Award,
+  Flame,
 } from "lucide-react";
 import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
@@ -947,23 +948,35 @@ const PlayerToday: React.FC = () => {
           )}
 
           {isSessionComplete && (
-            <AppCard
-              className="text-center"
-              style={{
-                background: palette ? `hsl(${palette.primary} / 0.05)` : undefined,
-              }}
-            >
-              <Trophy
-                className="w-8 h-8 mx-auto mb-2"
-                style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-              />
-              <p className="font-semibold">Session Complete!</p>
-              {sessionCompletion?.completed_at && (
-                <p className="text-sm text-text-muted">
-                  {format(new Date(sessionCompletion.completed_at), "h:mm a")}
-                </p>
-              )}
-            </AppCard>
+            <div className="space-y-3">
+              <AppCard
+                className="text-center"
+                style={{
+                  background: palette ? `hsl(${palette.primary} / 0.05)` : undefined,
+                }}
+              >
+                <Trophy
+                  className="w-8 h-8 mx-auto mb-2"
+                  style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
+                />
+                <p className="font-semibold">Session Complete! 🎉</p>
+                {sessionCompletion?.completed_at && (
+                  <p className="text-sm text-text-muted">
+                    Finished at {format(new Date(sessionCompletion.completed_at), "h:mm a")}
+                  </p>
+                )}
+              </AppCard>
+              
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={() => navigate(`/players/${playerId}/home`)}
+              >
+                <Flame className="w-5 h-5 mr-2" />
+                Do Bonus Training
+              </Button>
+            </div>
           )}
         </div>
       </PageContainer>
