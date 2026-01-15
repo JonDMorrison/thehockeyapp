@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { WelcomeRoleSelect } from "@/components/onboarding/WelcomeRoleSelect";
 import { Loader2 } from "lucide-react";
 import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
@@ -10,6 +11,7 @@ import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetSt
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { activeView } = useActiveView();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -25,12 +27,18 @@ const Welcome: React.FC = () => {
       // Check for teams where user is a coach
       const { data: teams } = await supabase
         .from("team_roles")
-        .select("id")
+        .select("id, team_id")
         .eq("user_id", user!.id)
         .limit(1);
 
-      // Check for players
-      const { data: players } = await supabase
+      // Check for players (owned or guarded)
+      const { data: ownedPlayers } = await supabase
+        .from("players")
+        .select("id")
+        .eq("owner_user_id", user!.id)
+        .limit(1);
+
+      const { data: guardedPlayers } = await supabase
         .from("player_guardians")
         .select("player_id")
         .eq("user_id", user!.id)
@@ -38,37 +46,67 @@ const Welcome: React.FC = () => {
 
       return {
         hasTeams: (teams?.length || 0) > 0,
-        hasPlayers: (players?.length || 0) > 0,
+        firstTeamId: teams?.[0]?.team_id || null,
+        hasPlayers: (ownedPlayers?.length || 0) > 0 || (guardedPlayers?.length || 0) > 0,
+        firstOwnedPlayerId: ownedPlayers?.[0]?.id || null,
+        firstGuardedPlayerId: guardedPlayers?.[0]?.player_id || null,
       };
     },
     enabled: !!user,
   });
 
   // If user already has data, redirect to appropriate page
-  // Also check for stored role from GetStartedModal
+  // Respect the stored activeView preference
   useEffect(() => {
     if (existingData) {
+      // First check stored role from GetStartedModal (for new signups)
+      const storedRole = getSelectedRole();
+      if (storedRole) {
+        clearSelectedRole();
+        if (storedRole === "coach") {
+          navigate("/teams/new", { replace: true });
+        } else if (storedRole === "solo") {
+          navigate("/solo/setup", { replace: true });
+        } else if (storedRole === "player") {
+          navigate("/players/new", { replace: true });
+        }
+        return;
+      }
+
+      // Respect the persisted activeView from localStorage
+      if (activeView === "coach" && existingData.hasTeams) {
+        if (existingData.firstTeamId) {
+          navigate(`/teams/${existingData.firstTeamId}`, { replace: true });
+        } else {
+          navigate("/teams", { replace: true });
+        }
+        return;
+      }
+
+      if (activeView === "player" && existingData.firstOwnedPlayerId) {
+        navigate(`/players/${existingData.firstOwnedPlayerId}/home`, { replace: true });
+        return;
+      }
+
+      if (activeView === "parent" && existingData.hasPlayers) {
+        const playerId = existingData.firstOwnedPlayerId || existingData.firstGuardedPlayerId;
+        if (playerId) {
+          navigate(`/players/${playerId}/today`, { replace: true });
+        } else {
+          navigate("/players", { replace: true });
+        }
+        return;
+      }
+
+      // No stored activeView or doesn't match available roles - use default logic
       if (existingData.hasTeams) {
         navigate("/teams", { replace: true });
       } else if (existingData.hasPlayers) {
         navigate("/players", { replace: true });
-      } else {
-        // No existing data - check if there's a stored role from the modal
-        const storedRole = getSelectedRole();
-        if (storedRole) {
-          clearSelectedRole();
-          if (storedRole === "coach") {
-            navigate("/teams/new", { replace: true });
-          } else if (storedRole === "solo") {
-            navigate("/solo/setup", { replace: true });
-          } else if (storedRole === "player") {
-            navigate("/players/new", { replace: true });
-          }
-        }
-        // Otherwise, stay on welcome to show role selection
       }
+      // Otherwise stay on welcome to show role selection
     }
-  }, [existingData, navigate]);
+  }, [existingData, activeView, navigate]);
 
   if (authLoading || checkingData) {
     return (
