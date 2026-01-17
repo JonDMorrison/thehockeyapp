@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { InviteFriendModal } from "@/components/player/InviteFriendModal";
 import { SoloUpcomingEvents } from "@/components/player/SoloUpcomingEvents";
+import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 import { UserMenu } from "@/components/app/UserMenu";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -416,6 +417,15 @@ export default function SoloDashboard() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Join a Team Section */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-medium text-muted-foreground">Teams</h3>
+            </div>
+            <SoloJoinTeamSection playerId={playerId!} variant="card" />
           </div>
 
           {/* Schedule Widget */}
