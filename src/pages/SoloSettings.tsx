@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronLeft, User, Calendar, Bell, Shield } from "lucide-react";
+import { ChevronLeft, User, Calendar, Bell, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SoloScheduleSyncSection } from "@/components/player/SoloScheduleSyncSection";
-
+import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 export default function SoloSettings() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
@@ -88,6 +88,15 @@ export default function SoloSettings() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Join Team Section */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Teams
+          </h2>
+          <SoloJoinTeamSection playerId={playerId!} variant="section" />
         </section>
 
         {/* Schedule Section */}
