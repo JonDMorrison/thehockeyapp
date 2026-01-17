@@ -15,6 +15,7 @@ import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
 import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
+import { z } from "zod";
 import { RoleSwitcher } from "@/components/app/RoleSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { CoachDock } from "@/components/dashboard/CoachDock";
@@ -80,6 +81,27 @@ const CoachDashboard: React.FC = () => {
     },
     onError: () => {
       toast.error("Failed to sync schedule");
+    },
+  });
+
+  // Update team name mutation
+  const updateTeamNameMutation = useMutation({
+    mutationFn: async (newName: string) => {
+      const validated = z.string().trim().min(1).max(100).parse(newName);
+      const { error } = await supabase
+        .from("teams")
+        .update({ name: validated })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
+      queryClient.invalidateQueries({ queryKey: ["team", id] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      toast.success("Team name updated");
+    },
+    onError: () => {
+      toast.error("Failed to update team name");
     },
   });
   
@@ -214,6 +236,8 @@ const CoachDashboard: React.FC = () => {
           date={dashboard.today.date}
           mode={dashboard.today.mode}
           gameDay={dashboard.today.game_day}
+          onUpdateTeamName={(newName) => updateTeamNameMutation.mutateAsync(newName)}
+          isUpdating={updateTeamNameMutation.isPending}
         />
 
         {/* Onboarding Progress Checklist - only if not complete */}
