@@ -42,6 +42,7 @@ import {
   Trash2,
   Upload,
   Camera,
+  AlertTriangle,
 } from "lucide-react";
 import { InviteAdultModal } from "@/components/team/InviteAdultModal";
 import { TeamBioSection, TeamChallengesToggle } from "@/components/team/TeamBioSection";
@@ -86,6 +87,8 @@ const TeamSettings: React.FC = () => {
   const [roleToRemove, setRoleToRemove] = useState<TeamRole | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -275,6 +278,25 @@ const TeamSettings: React.FC = () => {
     },
     onError: (error: Error) => {
       toast.error("Failed to revoke", error.message);
+    },
+  });
+
+  // Delete team
+  const deleteTeam = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("teams")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Team deleted", "Your team has been permanently deleted.");
+      navigate("/teams", { replace: true });
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to delete", error.message);
     },
   });
 
@@ -613,6 +635,37 @@ const TeamSettings: React.FC = () => {
             )}
           </div>
         </AppCard>
+        {/* Danger Zone - Head Coach Only */}
+        {isHeadCoach && (
+          <AppCard className="border-destructive/30 bg-destructive/5">
+            <AppCardTitle className="text-lg flex items-center gap-2 text-destructive mb-1">
+              <AlertTriangle className="w-4 h-4" />
+              Danger Zone
+            </AppCardTitle>
+            <AppCardDescription className="mb-4">
+              Irreversible actions
+            </AppCardDescription>
+
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium text-foreground">Delete Team</p>
+                  <p className="text-sm text-text-muted">
+                    Permanently delete this team and all associated data including players, practice cards, and progress history. This action cannot be undone.
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </AppCard>
+        )}
       </PageContainer>
 
       {/* Invite Adult Modal */}
@@ -644,6 +697,61 @@ const TeamSettings: React.FC = () => {
             >
               {removeRole.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Team Confirmation */}
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => {
+          setShowDeleteConfirm(open);
+          if (!open) setDeleteConfirmText("");
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Team Permanently
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>
+                This will permanently delete <strong>{team?.name}</strong> and all associated data:
+              </p>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li>All players and their memberships</li>
+                <li>Practice cards and task completions</li>
+                <li>Team goals and progress history</li>
+                <li>Week plans and training programs</li>
+              </ul>
+              <p className="font-medium text-destructive">
+                This action cannot be undone.
+              </p>
+              <div className="pt-2">
+                <Label htmlFor="confirm-delete" className="text-xs text-text-muted">
+                  Type the team name to confirm:
+                </Label>
+                <Input
+                  id="confirm-delete"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={team?.name}
+                  className="mt-1"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTeam.mutate()}
+              disabled={deleteConfirmText !== team?.name || deleteTeam.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+            >
+              {deleteTeam.isPending && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+              Delete Forever
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
