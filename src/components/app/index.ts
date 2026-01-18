@@ -12,7 +12,23 @@ export { PageTransition, SmartPageTransition, useNavigationDirection } from './P
 export { ProgressBar, ProgressRing } from './ProgressBar';
 export { PullToRefresh } from './PullToRefresh';
 export { RoleSwitcher } from './RoleSwitcher';
-export { Skeleton, SkeletonCard, SkeletonListItem, SkeletonAvatar } from './Skeleton';
+export { 
+  Skeleton, 
+  SkeletonCard, 
+  SkeletonListItem, 
+  SkeletonAvatar,
+  SkeletonTeamCard,
+  SkeletonHeroCard,
+  SkeletonStatBar,
+  SkeletonEventsList,
+  SkeletonActivityFeed,
+  SkeletonLeaderboard,
+  SkeletonRoster,
+  SkeletonProgramCard,
+  SkeletonGoalCard,
+  SkeletonDashboardHeader,
+  SkeletonQuickStats,
+} from './Skeleton';
 export { SwipeBackGesture, useSwipeBack } from './SwipeBackGesture';
 export { Tag } from './Tag';
 export { toast, showToast } from './Toast';

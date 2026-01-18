@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
 import { Tag } from "@/components/app/Tag";
+import { SkeletonRoster } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -200,17 +201,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   });
 
   if (isLoading) {
-    return (
-      <AppCard>
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 w-24 bg-muted rounded" />
-          <div className="space-y-2">
-            <div className="h-12 bg-muted rounded" />
-            <div className="h-12 bg-muted rounded" />
-          </div>
-        </div>
-      </AppCard>
-    );
+    return <SkeletonRoster />;
   }
 
   const otherTeammates = teammates?.filter((t) => t.playerId !== currentPlayerId) || [];

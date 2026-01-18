@@ -8,7 +8,7 @@ import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SkeletonCard } from "@/components/app/Skeleton";
+import { SkeletonTeamCard } from "@/components/app/Skeleton";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
@@ -64,8 +64,8 @@ const Teams: React.FC = () => {
     return (
       <AppShell>
         <PageContainer>
-          <SkeletonCard />
-          <SkeletonCard />
+          <SkeletonTeamCard />
+          <SkeletonTeamCard />
         </PageContainer>
       </AppShell>
     );
@@ -97,8 +97,8 @@ const Teams: React.FC = () => {
         <PageContainer>
           {isLoading ? (
             <div className="space-y-3">
-              <SkeletonCard />
-              <SkeletonCard />
+              <SkeletonTeamCard />
+              <SkeletonTeamCard />
             </div>
           ) : teams && teams.length > 0 ? (
             <div className="space-y-3">

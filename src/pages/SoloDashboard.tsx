@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonDashboardHeader, SkeletonQuickStats, SkeletonHeroCard } from "@/components/app/Skeleton";
 import { cn } from "@/lib/utils";
 import { InviteFriendModal } from "@/components/player/InviteFriendModal";
 import { SoloUpcomingEvents } from "@/components/player/SoloUpcomingEvents";
@@ -150,19 +150,9 @@ export default function SoloDashboard() {
     return (
       <AppShell>
         <div className="p-4 space-y-6">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-14 w-14 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Skeleton className="aspect-square rounded-2xl" />
-            <Skeleton className="aspect-square rounded-2xl" />
-            <Skeleton className="aspect-square rounded-2xl" />
-          </div>
-          <Skeleton className="h-24 w-full rounded-xl" />
+          <SkeletonDashboardHeader />
+          <SkeletonQuickStats />
+          <SkeletonHeroCard />
         </div>
       </AppShell>
     );

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
+import { SkeletonActivityFeed } from "@/components/app/Skeleton";
 import { format } from "date-fns";
 import { CheckCircle, Flame, Activity } from "lucide-react";
 
@@ -87,18 +88,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
   });
 
   if (isLoading) {
-    return (
-      <AppCard>
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 w-32 bg-muted rounded" />
-          <div className="flex gap-2">
-            <div className="w-10 h-10 rounded-full bg-muted" />
-            <div className="w-10 h-10 rounded-full bg-muted" />
-            <div className="w-10 h-10 rounded-full bg-muted" />
-          </div>
-        </div>
-      </AppCard>
-    );
+    return <SkeletonActivityFeed />;
   }
 
   const completedCount = activities?.length || 0;
