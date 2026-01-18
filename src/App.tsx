@@ -2,11 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
+import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
 
 // Marketing pages - loaded eagerly for fast landing page
 import Home from "./pages/marketing/Home";
@@ -65,12 +67,120 @@ const SoloSettings = lazy(() => import("./pages/SoloSettings"));
 
 const queryClient = new QueryClient();
 
-// Simple loading fallback
+// Simple loading fallback with animation
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-  </div>
+  <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="min-h-screen flex items-center justify-center bg-background"
+  >
+    <motion.div 
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.1 }}
+      className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" 
+    />
+  </motion.div>
 );
+
+// Animated routes wrapper
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  // Determine if this is a marketing page (no swipe back)
+  const isMarketingPage = ["/", "/features", "/demo", "/about", "/privacy", "/terms"].includes(location.pathname);
+  
+  return (
+    <SwipeBackGesture enabled={!isMarketingPage}>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 380, 
+            damping: 35,
+            opacity: { duration: 0.15 }
+          }}
+          className="flex-1 flex flex-col min-h-screen"
+        >
+          <Routes location={location}>
+            {/* Marketing pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/demo" element={<Demo />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            
+            {/* Auth */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/welcome" element={<Welcome />} />
+            
+            {/* Player management */}
+            <Route path="/players" element={<Players />} />
+            <Route path="/players/new" element={<PlayerNew />} />
+            <Route path="/players/:id" element={<PlayerProfile />} />
+            <Route path="/players/:id/home" element={<PlayerHome />} />
+            <Route path="/players/:id/today" element={<PlayerToday />} />
+            <Route path="/players/:id/history" element={<PlayerHistory />} />
+            <Route path="/players/:id/badges" element={<PlayerBadges />} />
+            <Route path="/players/:id/goals" element={<PlayerTeamGoals />} />
+            <Route path="/guardian/join/:token" element={<GuardianJoin />} />
+            
+            {/* Team management */}
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/new" element={<TeamNew />} />
+            <Route path="/teams/:id" element={<CoachDashboard />} />
+            <Route path="/teams/:id/assign" element={<QuickAssign />} />
+            <Route path="/teams/:id/coach" element={<CoachDashboard />} />
+            <Route path="/teams/:id/settings" element={<TeamSettings />} />
+            <Route path="/teams/:id/roster" element={<TeamRoster />} />
+            <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
+            <Route path="/teams/:id/practice" element={<TeamPractice />} />
+            <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/practice/:cardId" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
+            <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
+            <Route path="/teams/:id/builder/new" element={<WeekPlannerNew />} />
+            <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
+            <Route path="/teams/:id/progress" element={<TeamProgress />} />
+            
+            {/* Join flows */}
+            <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
+            <Route path="/join" element={<JoinTeamSearch />} />
+            <Route path="/join/:token" element={<JoinTeam />} />
+            <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
+            
+            {/* Solo training */}
+            <Route path="/solo/setup" element={<SoloSetup />} />
+            <Route path="/solo/dashboard/:playerId" element={<SoloDashboard />} />
+            <Route path="/solo/today/:playerId" element={<SoloToday />} />
+            <Route path="/solo/badges/:playerId" element={<SoloBadges />} />
+            <Route path="/solo/planning/:playerId" element={<SoloPlanningHub />} />
+            <Route path="/solo/workout/:playerId" element={<SoloWorkoutBuilder />} />
+            <Route path="/solo/week-planner/:playerId" element={<SoloWeekPlanner />} />
+            <Route path="/solo/program/:playerId" element={<SoloProgramBuilder />} />
+            <Route path="/solo/try/:token" element={<SoloTryWorkout />} />
+            <Route path="/solo/settings/:playerId" element={<SoloSettings />} />
+            
+            {/* Other */}
+            <Route path="/today" element={<Today />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/quick-checkoff" element={<QuickCheckoff />} />
+            <Route path="/settings/widgets" element={<WidgetSettings />} />
+            
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+    </SwipeBackGesture>
+  );
+};
 
 const App = () => {
   // Apply stored team theme and initialize offline DB on mount
@@ -92,75 +202,7 @@ const App = () => {
           />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Marketing pages */}
-                <Route path="/" element={<Home />} />
-                <Route path="/features" element={<Features />} />
-                <Route path="/demo" element={<Demo />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                
-                {/* Auth */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/welcome" element={<Welcome />} />
-                
-                {/* Player management */}
-                <Route path="/players" element={<Players />} />
-                <Route path="/players/new" element={<PlayerNew />} />
-                <Route path="/players/:id" element={<PlayerProfile />} />
-                <Route path="/players/:id/home" element={<PlayerHome />} />
-                <Route path="/players/:id/today" element={<PlayerToday />} />
-                <Route path="/players/:id/history" element={<PlayerHistory />} />
-                <Route path="/players/:id/badges" element={<PlayerBadges />} />
-                <Route path="/players/:id/goals" element={<PlayerTeamGoals />} />
-                <Route path="/guardian/join/:token" element={<GuardianJoin />} />
-                
-                {/* Team management */}
-                <Route path="/teams" element={<Teams />} />
-                <Route path="/teams/new" element={<TeamNew />} />
-                <Route path="/teams/:id" element={<CoachDashboard />} />
-                <Route path="/teams/:id/assign" element={<QuickAssign />} />
-                <Route path="/teams/:id/coach" element={<CoachDashboard />} /> {/* Legacy route */}
-                <Route path="/teams/:id/settings" element={<TeamSettings />} />
-                <Route path="/teams/:id/roster" element={<TeamRoster />} />
-                <Route path="/teams/:teamId/roster/:playerId" element={<RosterPlayerDetail />} />
-                <Route path="/teams/:id/practice" element={<TeamPractice />} />
-                <Route path="/teams/:id/practice/new" element={<PracticeCardEditor />} />
-                <Route path="/teams/:id/practice/:cardId" element={<PracticeCardEditor />} />
-                <Route path="/teams/:id/practice/:cardId/edit" element={<PracticeCardEditor />} />
-                <Route path="/teams/:id/builder" element={<WorkoutBuilder />} />
-                <Route path="/teams/:id/builder/new" element={<WeekPlannerNew />} />
-                <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
-                <Route path="/teams/:id/progress" element={<TeamProgress />} />
-                
-                {/* Join flows */}
-                <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
-                <Route path="/join" element={<JoinTeamSearch />} />
-                <Route path="/join/:token" element={<JoinTeam />} />
-                <Route path="/join/:token/player" element={<JoinTeamPlayer />} />
-                
-                {/* Solo training */}
-                <Route path="/solo/setup" element={<SoloSetup />} />
-                <Route path="/solo/dashboard/:playerId" element={<SoloDashboard />} />
-                <Route path="/solo/today/:playerId" element={<SoloToday />} />
-                <Route path="/solo/badges/:playerId" element={<SoloBadges />} />
-                <Route path="/solo/planning/:playerId" element={<SoloPlanningHub />} />
-                <Route path="/solo/workout/:playerId" element={<SoloWorkoutBuilder />} />
-                <Route path="/solo/week-planner/:playerId" element={<SoloWeekPlanner />} />
-                <Route path="/solo/program/:playerId" element={<SoloProgramBuilder />} />
-                <Route path="/solo/try/:token" element={<SoloTryWorkout />} />
-                <Route path="/solo/settings/:playerId" element={<SoloSettings />} />
-                
-                {/* Other */}
-                <Route path="/today" element={<Today />} />
-                <Route path="/templates" element={<Templates />} />
-                <Route path="/quick-checkoff" element={<QuickCheckoff />} />
-                <Route path="/settings/widgets" element={<WidgetSettings />} />
-                
-                {/* Catch-all */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AnimatedRoutes />
             </Suspense>
           </BrowserRouter>
         </TooltipProvider>
