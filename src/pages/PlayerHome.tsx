@@ -13,7 +13,7 @@ import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppC
 import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SkeletonCard } from "@/components/app/Skeleton";
+import { SkeletonDashboardHeader, SkeletonHeroCard, SkeletonActivityFeed, SkeletonLeaderboard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -338,9 +338,11 @@ const PlayerHome: React.FC = () => {
   if (isLoading) {
     return (
       <AppShell hideNav>
-        <PageContainer>
-          <SkeletonCard />
-          <SkeletonCard />
+        <PageContainer className="space-y-4">
+          <SkeletonDashboardHeader />
+          <SkeletonHeroCard />
+          <SkeletonActivityFeed />
+          <SkeletonLeaderboard />
         </PageContainer>
       </AppShell>
     );

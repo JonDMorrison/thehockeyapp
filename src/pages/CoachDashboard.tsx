@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SkeletonCard } from "@/components/app/Skeleton";
+import { SkeletonStatBar, SkeletonHeroCard, SkeletonEventsList, SkeletonProgramCard } from "@/components/app/Skeleton";
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
@@ -166,9 +166,10 @@ const CoachDashboard: React.FC = () => {
     return (
       <AppShell hideNav>
         <PageContainer className="space-y-4">
-          <SkeletonCard className="h-20" />
-          <SkeletonCard className="h-32" />
-          <SkeletonCard className="h-24" />
+          <SkeletonStatBar />
+          <SkeletonHeroCard />
+          <SkeletonEventsList />
+          <SkeletonProgramCard />
         </PageContainer>
       </AppShell>
     );

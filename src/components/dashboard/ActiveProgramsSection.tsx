@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { format, differenceInDays, isAfter, isBefore, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard } from "@/components/app/AppCard";
+import { SkeletonProgramCard } from "@/components/app/Skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Calendar, Flame, Users, CheckCircle2, ChevronRight } from "lucide-react";
@@ -170,14 +171,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
   const isLoading = programsLoading || challengesLoading;
 
   if (isLoading) {
-    return (
-      <AppCard>
-        <div className="animate-pulse space-y-3">
-          <div className="h-5 bg-muted rounded w-32" />
-          <div className="h-20 bg-muted rounded" />
-        </div>
-      </AppCard>
-    );
+    return <SkeletonProgramCard />;
   }
 
   if (activePrograms.length === 0) {

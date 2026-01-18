@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
+import { SkeletonLeaderboard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { startOfWeek, endOfWeek, format } from "date-fns";
 import { Trophy, Target, Medal, Crown, Flame } from "lucide-react";
@@ -153,18 +154,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <AppCard>
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 w-32 bg-muted rounded" />
-          <div className="space-y-2">
-            <div className="h-10 bg-muted rounded" />
-            <div className="h-10 bg-muted rounded" />
-            <div className="h-10 bg-muted rounded" />
-          </div>
-        </div>
-      </AppCard>
-    );
+    return <SkeletonLeaderboard />;
   }
 
   const hasData = leaderboard && leaderboard.length > 0;
