@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
@@ -10,6 +10,7 @@ import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
+import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, Users, Shield } from "lucide-react";
 
@@ -21,6 +22,7 @@ const roleLabels: Record<string, string> = {
 
 const Teams: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -28,6 +30,10 @@ const Teams: React.FC = () => {
       navigate("/auth", { replace: true });
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["teams", user?.id] });
+  }, [queryClient, user?.id]);
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ["teams", user?.id],
@@ -87,72 +93,74 @@ const Teams: React.FC = () => {
         </div>
       }
     >
-      <PageContainer>
-        {isLoading ? (
-          <div className="space-y-3">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : teams && teams.length > 0 ? (
-          <div className="space-y-3">
-            {teams.map((teamRole) => {
-              const team = teamRole.teams as {
-                id: string;
-                name: string;
-                season_label: string | null;
-                team_photo_url: string | null;
-                team_logo_url: string | null;
-                palette_id: string;
-              } | null;
+      <PullToRefresh onRefresh={handleRefresh} isRefreshing={isLoading}>
+        <PageContainer>
+          {isLoading ? (
+            <div className="space-y-3">
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : teams && teams.length > 0 ? (
+            <div className="space-y-3">
+              {teams.map((teamRole) => {
+                const team = teamRole.teams as {
+                  id: string;
+                  name: string;
+                  season_label: string | null;
+                  team_photo_url: string | null;
+                  team_logo_url: string | null;
+                  palette_id: string;
+                } | null;
 
-              if (!team) return null;
+                if (!team) return null;
 
-              return (
-                <AppCard
-                  key={team.id}
-                  className="cursor-pointer hover:shadow-medium transition-shadow"
-                  onClick={() => navigate(`/teams/${team.id}`)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={team.team_logo_url || team.team_photo_url}
-                      fallback={team.name}
-                      size="lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{team.name}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {team.season_label && (
-                          <Tag variant="neutral" size="sm">
-                            {team.season_label}
+                return (
+                  <AppCard
+                    key={team.id}
+                    className="cursor-pointer hover:shadow-medium transition-shadow"
+                    onClick={() => navigate(`/teams/${team.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={team.team_logo_url || team.team_photo_url}
+                        fallback={team.name}
+                        size="lg"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate">{team.name}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {team.season_label && (
+                            <Tag variant="neutral" size="sm">
+                              {team.season_label}
+                            </Tag>
+                          )}
+                          <Tag variant="accent" size="sm">
+                            <Shield className="w-3 h-3" />
+                            {roleLabels[teamRole.role] || teamRole.role}
                           </Tag>
-                        )}
-                        <Tag variant="accent" size="sm">
-                          <Shield className="w-3 h-3" />
-                          {roleLabels[teamRole.role] || teamRole.role}
-                        </Tag>
+                        </div>
                       </div>
+                      <ChevronRight className="w-5 h-5 text-text-muted" />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-text-muted" />
-                  </div>
-                </AppCard>
-              );
-            })}
-          </div>
-        ) : (
-          <AppCard>
-            <EmptyState
-              icon={Users}
-              title="No teams yet"
-              description="Create your first team to start managing practices and player development."
-              action={{
-                label: "Create Team",
-                onClick: () => navigate("/teams/new"),
-              }}
-            />
-          </AppCard>
-        )}
-      </PageContainer>
+                  </AppCard>
+                );
+              })}
+            </div>
+          ) : (
+            <AppCard>
+              <EmptyState
+                icon={Users}
+                title="No teams yet"
+                description="Create your first team to start managing practices and player development."
+                action={{
+                  label: "Create Team",
+                  onClick: () => navigate("/teams/new"),
+                }}
+              />
+            </AppCard>
+          )}
+        </PageContainer>
+      </PullToRefresh>
     </AppShell>
   );
 };
