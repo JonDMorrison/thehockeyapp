@@ -9,7 +9,7 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
-import { RoleSwitcher } from "@/components/app/RoleSwitcher";
+import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, Users, Shield } from "lucide-react";
 
@@ -74,7 +74,7 @@ const Teams: React.FC = () => {
             subtitle="Manage your teams"
           />
           <div className="flex items-center gap-2">
-            <RoleSwitcher />
+            <ContextSwitcher />
             <Button
               variant="team"
               size="sm"

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useOffline } from "@/hooks/useOffline";
 import { teamPalettes } from "@/lib/themes";
@@ -57,7 +58,7 @@ import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { PlayerGoalWidget } from "@/components/goals";
-import { RoleSwitcher } from "@/components/app/RoleSwitcher";
+import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 
 interface PracticeTask {
   id: string;
@@ -124,6 +125,7 @@ const PlayerToday: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const { isOnline, status: offlineStatus, pendingCount, triggerSync } = useOffline();
   const { evaluate: evaluateBadges, newBadges, dismissAllBadges } = useBadgeEvaluation(playerId);
@@ -358,12 +360,16 @@ const PlayerToday: React.FC = () => {
     enabled: !!practiceCard?.id && !!playerId && isOnline,
   });
 
-  // Apply team theme
+  // Apply team theme and persist context
   useEffect(() => {
     if (teamData?.palette_id) {
       setTeamTheme(teamData.palette_id);
     }
-  }, [teamData?.palette_id, setTeamTheme]);
+    if (playerId) {
+      setActiveView("parent");
+      setActivePlayerId(playerId);
+    }
+  }, [teamData?.palette_id, setTeamTheme, playerId, setActiveView, setActivePlayerId]);
 
   const tasks = useMemo(() => {
     if (!practiceCard?.practice_tasks) return [];
@@ -822,7 +828,7 @@ const PlayerToday: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <RoleSwitcher playerId={playerId} compact />
+            <ContextSwitcher currentPlayerId={playerId} compact />
             <Button
               variant="ghost"
               size="icon-sm"

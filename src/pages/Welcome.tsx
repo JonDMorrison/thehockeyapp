@@ -11,7 +11,7 @@ import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetSt
 const Welcome: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const { activeView } = useActiveView();
+  const { activeView, activeTeamId, activePlayerId } = useActiveView();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -29,25 +29,34 @@ const Welcome: React.FC = () => {
         .from("team_roles")
         .select("id, team_id")
         .eq("user_id", user!.id)
-        .limit(1);
+        .limit(10);
 
       // Check for players (owned or guarded)
       const { data: ownedPlayers } = await supabase
         .from("players")
         .select("id")
         .eq("owner_user_id", user!.id)
-        .limit(1);
+        .limit(10);
 
       const { data: guardedPlayers } = await supabase
         .from("player_guardians")
         .select("player_id")
         .eq("user_id", user!.id)
-        .limit(1);
+        .limit(10);
+
+      // Validate persisted IDs still exist
+      const teamIds = teams?.map(t => t.team_id) || [];
+      const playerIds = [
+        ...(ownedPlayers?.map(p => p.id) || []),
+        ...(guardedPlayers?.map(p => p.player_id) || []),
+      ];
 
       return {
-        hasTeams: (teams?.length || 0) > 0,
-        firstTeamId: teams?.[0]?.team_id || null,
-        hasPlayers: (ownedPlayers?.length || 0) > 0 || (guardedPlayers?.length || 0) > 0,
+        hasTeams: teamIds.length > 0,
+        teamIds,
+        firstTeamId: teamIds[0] || null,
+        hasPlayers: playerIds.length > 0,
+        playerIds,
         firstOwnedPlayerId: ownedPlayers?.[0]?.id || null,
         firstGuardedPlayerId: guardedPlayers?.[0]?.player_id || null,
       };
@@ -56,7 +65,7 @@ const Welcome: React.FC = () => {
   });
 
   // If user already has data, redirect to appropriate page
-  // Respect the stored activeView preference
+  // Respect the stored activeView and entity preferences
   useEffect(() => {
     if (existingData) {
       // First check stored role from GetStartedModal (for new signups)
@@ -73,10 +82,15 @@ const Welcome: React.FC = () => {
         return;
       }
 
-      // Respect the persisted activeView from localStorage
+      // Try to restore to last used context
       if (activeView === "coach" && existingData.hasTeams) {
-        if (existingData.firstTeamId) {
-          navigate(`/teams/${existingData.firstTeamId}`, { replace: true });
+        // Use persisted team if valid, otherwise first team
+        const targetTeamId = activeTeamId && existingData.teamIds.includes(activeTeamId)
+          ? activeTeamId
+          : existingData.firstTeamId;
+        
+        if (targetTeamId) {
+          navigate(`/teams/${targetTeamId}`, { replace: true });
         } else {
           navigate("/teams", { replace: true });
         }
@@ -84,14 +98,23 @@ const Welcome: React.FC = () => {
       }
 
       if (activeView === "player" && existingData.firstOwnedPlayerId) {
-        navigate(`/players/${existingData.firstOwnedPlayerId}/home`, { replace: true });
+        // Use persisted player if valid
+        const targetPlayerId = activePlayerId && existingData.playerIds.includes(activePlayerId)
+          ? activePlayerId
+          : existingData.firstOwnedPlayerId;
+        
+        navigate(`/players/${targetPlayerId}/home`, { replace: true });
         return;
       }
 
       if (activeView === "parent" && existingData.hasPlayers) {
-        const playerId = existingData.firstOwnedPlayerId || existingData.firstGuardedPlayerId;
-        if (playerId) {
-          navigate(`/players/${playerId}/today`, { replace: true });
+        // Use persisted player if valid
+        const targetPlayerId = activePlayerId && existingData.playerIds.includes(activePlayerId)
+          ? activePlayerId
+          : existingData.firstOwnedPlayerId || existingData.firstGuardedPlayerId;
+        
+        if (targetPlayerId) {
+          navigate(`/players/${targetPlayerId}/today`, { replace: true });
         } else {
           navigate("/players", { replace: true });
         }
@@ -100,13 +123,29 @@ const Welcome: React.FC = () => {
 
       // No stored activeView or doesn't match available roles - use default logic
       if (existingData.hasTeams) {
-        navigate("/teams", { replace: true });
+        const targetTeamId = activeTeamId && existingData.teamIds.includes(activeTeamId)
+          ? activeTeamId
+          : existingData.firstTeamId;
+        
+        if (targetTeamId) {
+          navigate(`/teams/${targetTeamId}`, { replace: true });
+        } else {
+          navigate("/teams", { replace: true });
+        }
       } else if (existingData.hasPlayers) {
-        navigate("/players", { replace: true });
+        const targetPlayerId = activePlayerId && existingData.playerIds.includes(activePlayerId)
+          ? activePlayerId
+          : existingData.firstOwnedPlayerId || existingData.firstGuardedPlayerId;
+        
+        if (targetPlayerId) {
+          navigate(`/players/${targetPlayerId}/home`, { replace: true });
+        } else {
+          navigate("/players", { replace: true });
+        }
       }
       // Otherwise stay on welcome to show role selection
     }
-  }, [existingData, activeView, navigate]);
+  }, [existingData, activeView, activeTeamId, activePlayerId, navigate]);
 
   if (authLoading || checkingData) {
     return (

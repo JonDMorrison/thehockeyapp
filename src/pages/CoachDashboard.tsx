@@ -4,6 +4,7 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTeamDashboard } from "@/hooks/useTeamDashboard";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
 import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
 import { z } from "zod";
-import { RoleSwitcher } from "@/components/app/RoleSwitcher";
+import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { CoachDock } from "@/components/dashboard/CoachDock";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
@@ -36,6 +37,7 @@ const CoachDashboard: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActiveTeamId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteModalTab, setInviteModalTab] = useState<"invite" | "add-child">("invite");
@@ -117,12 +119,16 @@ const CoachDashboard: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Apply team theme
+  // Apply team theme and persist context
   useEffect(() => {
     if (dashboard?.team?.palette_id) {
       setTeamTheme(dashboard.team.palette_id);
     }
-  }, [dashboard?.team?.palette_id, setTeamTheme]);
+    if (id) {
+      setActiveView("coach");
+      setActiveTeamId(id);
+    }
+  }, [dashboard?.team?.palette_id, setTeamTheme, id, setActiveView, setActiveTeamId]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -206,7 +212,7 @@ const CoachDashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <RoleSwitcher teamId={id} />
+            <ContextSwitcher currentTeamId={id} />
             <Button
               variant="ghost"
               size="icon-sm"

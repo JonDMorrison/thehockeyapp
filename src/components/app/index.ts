@@ -3,6 +3,7 @@ export { AppCard, AppCardTitle, AppCardDescription } from './AppCard';
 export { AppShell, PageContainer, PageHeader } from './AppShell';
 export { Avatar } from './Avatar';
 export { ChecklistItem } from './ChecklistItem';
+export { ContextSwitcher } from './ContextSwitcher';
 export { WorkoutCheckItem } from './WorkoutCheckItem';
 export { EmptyState } from './EmptyState';
 export { OfflineIndicator, OfflineDot } from './OfflineIndicator';
