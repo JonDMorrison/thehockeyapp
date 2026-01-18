@@ -8,17 +8,34 @@ interface ActiveViewContextType {
   setActiveView: (view: UserRole) => void;
   /** Check if a specific view is active */
   isViewActive: (view: UserRole) => boolean;
+  /** Currently active team ID */
+  activeTeamId: string | null;
+  /** Set the active team */
+  setActiveTeamId: (teamId: string | null) => void;
+  /** Currently active player ID */
+  activePlayerId: string | null;
+  /** Set the active player */
+  setActivePlayerId: (playerId: string | null) => void;
 }
 
 const ActiveViewContext = createContext<ActiveViewContextType | undefined>(undefined);
 
 const STORAGE_KEY = "hockey-app-active-view";
+const TEAM_STORAGE_KEY = "hockey-app-active-team";
+const PLAYER_STORAGE_KEY = "hockey-app-active-player";
 
 export function ActiveViewProvider({ children }: { children: React.ReactNode }) {
   const [activeView, setActiveViewState] = useState<UserRole | null>(() => {
-    // Load from localStorage on initial mount
     const stored = localStorage.getItem(STORAGE_KEY);
     return (stored as UserRole) || null;
+  });
+
+  const [activeTeamId, setActiveTeamIdState] = useState<string | null>(() => {
+    return localStorage.getItem(TEAM_STORAGE_KEY);
+  });
+
+  const [activePlayerId, setActivePlayerIdState] = useState<string | null>(() => {
+    return localStorage.getItem(PLAYER_STORAGE_KEY);
   });
 
   const setActiveView = useCallback((view: UserRole) => {
@@ -26,12 +43,30 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
     localStorage.setItem(STORAGE_KEY, view);
   }, []);
 
+  const setActiveTeamId = useCallback((teamId: string | null) => {
+    setActiveTeamIdState(teamId);
+    if (teamId) {
+      localStorage.setItem(TEAM_STORAGE_KEY, teamId);
+    } else {
+      localStorage.removeItem(TEAM_STORAGE_KEY);
+    }
+  }, []);
+
+  const setActivePlayerId = useCallback((playerId: string | null) => {
+    setActivePlayerIdState(playerId);
+    if (playerId) {
+      localStorage.setItem(PLAYER_STORAGE_KEY, playerId);
+    } else {
+      localStorage.removeItem(PLAYER_STORAGE_KEY);
+    }
+  }, []);
+
   const isViewActive = useCallback(
     (view: UserRole) => activeView === view,
     [activeView]
   );
 
-  // Sync to localStorage whenever activeView changes
+  // Sync to localStorage whenever values change
   useEffect(() => {
     if (activeView) {
       localStorage.setItem(STORAGE_KEY, activeView);
@@ -44,6 +79,10 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
         activeView,
         setActiveView,
         isViewActive,
+        activeTeamId,
+        setActiveTeamId,
+        activePlayerId,
+        setActivePlayerId,
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { useTodaySnapshot } from "@/hooks/useTodaySnapshot";
 import { teamPalettes } from "@/lib/themes";
@@ -43,6 +44,7 @@ import { TeamActivityFeed } from "@/components/player/TeamActivityFeed";
 import { TeammateRoster } from "@/components/player/TeammateRoster";
 import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
 import { TeamCheersFeed } from "@/components/player/TeamCheersFeed";
+import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { format, subDays, parseISO } from "date-fns";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -69,6 +71,7 @@ const PlayerHome: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const teammatesRef = useRef<HTMLDivElement>(null);
 
@@ -146,7 +149,7 @@ const PlayerHome: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Apply active team theme
+  // Apply active team theme and persist context
   useEffect(() => {
     if (preferences?.active_team_id && memberships) {
       const activeTeam = memberships.find(
@@ -156,7 +159,12 @@ const PlayerHome: React.FC = () => {
         setTeamTheme(activeTeam.palette_id);
       }
     }
-  }, [preferences, memberships, setTeamTheme]);
+    // Persist player context
+    if (id) {
+      setActiveView("parent");
+      setActivePlayerId(id);
+    }
+  }, [preferences, memberships, setTeamTheme, id, setActiveView, setActivePlayerId]);
 
   // Update active team
   const updateActiveTeam = useMutation({
@@ -385,7 +393,10 @@ const PlayerHome: React.FC = () => {
               </h1>
             </div>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-1">
+            <ContextSwitcher currentPlayerId={id} compact />
+            <NotificationBell />
+          </div>
         </div>
       }
     >

@@ -17,6 +17,7 @@ import { InviteFriendModal } from "@/components/player/InviteFriendModal";
 import { SoloUpcomingEvents } from "@/components/player/SoloUpcomingEvents";
 import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 import { UserMenu } from "@/components/app/UserMenu";
+import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import logoImage from "@/assets/hockey-app-logo.png";
 
 // Map database icon names to Lucide components
@@ -241,8 +242,9 @@ export default function SoloDashboard() {
               </div>
             </div>
             
-            {/* Streak */}
+            {/* Context Switcher & Streak */}
             <div className="flex items-center gap-2">
+              <ContextSwitcher currentPlayerId={playerId} compact />
               {streak.current_streak > 0 && (
                 <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-2 rounded-full">
                   <Flame className="h-4 w-4" />
