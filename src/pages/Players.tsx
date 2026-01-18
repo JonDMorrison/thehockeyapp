@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { teamPalettes } from "@/lib/themes";
@@ -11,6 +11,7 @@ import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
+import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, UserPlus } from "lucide-react";
 
@@ -26,6 +27,7 @@ interface ActiveTeam {
 
 const Players: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
 
   // Redirect if not authenticated
@@ -43,6 +45,10 @@ const Players: React.FC = () => {
       navigate(`/join/${pendingToken}/player`);
     }
   }, [isAuthenticated, navigate]);
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
+  }, [queryClient, user?.id]);
 
   const { data: players, isLoading } = useQuery({
     queryKey: ["players-with-teams", user?.id],
@@ -121,89 +127,91 @@ const Players: React.FC = () => {
         </div>
       }
     >
-      <PageContainer>
-        {isLoading ? (
-          <div className="space-y-3">
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : players && players.length > 0 ? (
-          <div className="space-y-3">
-            {players.map((player) => {
-              const isOwner = player.player_guardians?.some(
-                (pg: { guardian_role: string }) => pg.guardian_role === "owner"
-              );
-              const activeTeam = player.activeTeam as ActiveTeam | null;
-              const palette = activeTeam?.palette_id
-                ? teamPalettes.find((p) => p.id === activeTeam.palette_id)
-                : null;
+      <PullToRefresh onRefresh={handleRefresh} isRefreshing={isLoading}>
+        <PageContainer>
+          {isLoading ? (
+            <div className="space-y-3">
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : players && players.length > 0 ? (
+            <div className="space-y-3">
+              {players.map((player) => {
+                const isOwner = player.player_guardians?.some(
+                  (pg: { guardian_role: string }) => pg.guardian_role === "owner"
+                );
+                const activeTeam = player.activeTeam as ActiveTeam | null;
+                const palette = activeTeam?.palette_id
+                  ? teamPalettes.find((p) => p.id === activeTeam.palette_id)
+                  : null;
 
-              return (
-                <AppCard
-                  key={player.id}
-                  className="cursor-pointer hover:shadow-medium transition-shadow"
-                  onClick={() => navigate(`/players/${player.id}/home`)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar
-                        src={player.profile_photo_url}
-                        fallback={`${player.first_name} ${player.last_initial || ""}`}
-                        size="lg"
-                      />
-                      {palette && (
-                        <div
-                          className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-card"
-                          style={{ backgroundColor: `hsl(${palette.primary})` }}
+                return (
+                  <AppCard
+                    key={player.id}
+                    className="cursor-pointer hover:shadow-medium transition-shadow"
+                    onClick={() => navigate(`/players/${player.id}/home`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Avatar
+                          src={player.profile_photo_url}
+                          fallback={`${player.first_name} ${player.last_initial || ""}`}
+                          size="lg"
                         />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold">
-                        {player.first_name} {player.last_initial && `${player.last_initial}.`}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {activeTeam ? (
-                          <Tag variant="accent" size="sm">
-                            {activeTeam.name}
-                          </Tag>
-                        ) : (
-                          <Tag variant="neutral" size="sm">
-                            Born {player.birth_year}
-                          </Tag>
-                        )}
-                        {player.jersey_number && (
-                          <Tag variant="tier" size="sm">
-                            #{player.jersey_number}
-                          </Tag>
-                        )}
-                        {!isOwner && (
-                          <Tag variant="neutral" size="sm">
-                            Guardian
-                          </Tag>
+                        {palette && (
+                          <div
+                            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-card"
+                            style={{ backgroundColor: `hsl(${palette.primary})` }}
+                          />
                         )}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold">
+                          {player.first_name} {player.last_initial && `${player.last_initial}.`}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {activeTeam ? (
+                            <Tag variant="accent" size="sm">
+                              {activeTeam.name}
+                            </Tag>
+                          ) : (
+                            <Tag variant="neutral" size="sm">
+                              Born {player.birth_year}
+                            </Tag>
+                          )}
+                          {player.jersey_number && (
+                            <Tag variant="tier" size="sm">
+                              #{player.jersey_number}
+                            </Tag>
+                          )}
+                          {!isOwner && (
+                            <Tag variant="neutral" size="sm">
+                              Guardian
+                            </Tag>
+                          )}
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-text-muted" />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-text-muted" />
-                  </div>
-                </AppCard>
-              );
-            })}
-          </div>
-        ) : (
-          <AppCard>
-            <EmptyState
-              icon={UserPlus}
-              title="No players yet"
-              description="Add your first player to start tracking their training and development."
-              action={{
-                label: "Add Player",
-                onClick: () => navigate("/players/new"),
-              }}
-            />
-          </AppCard>
-        )}
-      </PageContainer>
+                  </AppCard>
+                );
+              })}
+            </div>
+          ) : (
+            <AppCard>
+              <EmptyState
+                icon={UserPlus}
+                title="No players yet"
+                description="Add your first player to start tracking their training and development."
+                action={{
+                  label: "Add Player",
+                  onClick: () => navigate("/players/new"),
+                }}
+              />
+            </AppCard>
+          )}
+        </PageContainer>
+      </PullToRefresh>
     </AppShell>
   );
 };
