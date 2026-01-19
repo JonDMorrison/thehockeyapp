@@ -114,7 +114,7 @@ const Welcome: React.FC = () => {
           : existingData.firstOwnedPlayerId || existingData.firstGuardedPlayerId;
         
         if (targetPlayerId) {
-          navigate(`/players/${targetPlayerId}/today`, { replace: true });
+          navigate(`/players/${targetPlayerId}/home`, { replace: true });
         } else {
           navigate("/players", { replace: true });
         }
