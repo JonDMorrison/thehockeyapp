@@ -83,6 +83,7 @@ const TeamPractice: React.FC = () => {
 
   const isLoading = teamLoading || cardsLoading || authLoading;
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -92,6 +93,11 @@ const TeamPractice: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   const todayStr = format(new Date(), "yyyy-MM-dd");

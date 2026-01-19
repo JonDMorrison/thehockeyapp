@@ -574,6 +574,7 @@ const WeekPlanEditor: React.FC = () => {
     setEditingDay(day);
   };
 
+  // Show loading state while auth or data is loading
   if (planLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -583,6 +584,11 @@ const WeekPlanEditor: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   const daysWithTasks = days.filter((d) => d.tasks.length > 0).length;

@@ -263,6 +263,7 @@ const TeamProgress: React.FC = () => {
   const activeThisWeek = playerStats.filter((p) => p.thisWeekSessions > 0).length;
   const avgSessionsPerPlayer = playerStats.length > 0 ? (totalSessions / playerStats.length).toFixed(1) : "0";
 
+  // Show loading state while auth or data is loading
   if (teamLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -272,6 +273,11 @@ const TeamProgress: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   const renderPlayerRow = (player: PlayerStats, rank: number, metric: "sessions" | "badges" | "streak" | "week") => {

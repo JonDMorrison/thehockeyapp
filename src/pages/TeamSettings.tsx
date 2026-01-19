@@ -303,6 +303,7 @@ const TeamSettings: React.FC = () => {
   const selectedPalette = teamPalettes.find((p) => p.id === paletteId);
   const teamRoles = (team?.team_roles || []) as TeamRole[];
 
+  // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -312,6 +313,11 @@ const TeamSettings: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

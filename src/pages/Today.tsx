@@ -263,6 +263,7 @@ const Today: React.FC = () => {
   const isLoading = playersLoading || authLoading;
   const palette = teamData ? teamPalettes.find((p) => p.id === teamData.palette_id) : null;
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell>
@@ -272,6 +273,11 @@ const Today: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!players || players.length === 0) {

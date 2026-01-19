@@ -162,6 +162,7 @@ const CoachDashboard: React.FC = () => {
   const hasPlayers = (dashboard?.pulse?.players_count ?? 0) > 0;
   const onboardingComplete = dashboard?.onboarding?.checklist?.every(i => i.done);
 
+  // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -173,6 +174,11 @@ const CoachDashboard: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!dashboard) {

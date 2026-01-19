@@ -123,6 +123,24 @@ const TeamNew: React.FC = () => {
 
   const selectedPalette = teamPalettes.find((p) => p.id === formData.palette_id);
 
+  // Show loading state while auth is checking
+  if (authLoading) {
+    return (
+      <AppShell hideNav>
+        <PageContainer>
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <AppShell
       hideNav

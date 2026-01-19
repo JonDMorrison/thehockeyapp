@@ -400,12 +400,18 @@ const QuickCheckoff: React.FC = () => {
     );
   }
 
+  // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Zap className="w-8 h-8 text-primary animate-pulse" />
       </div>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!practiceCard) {
