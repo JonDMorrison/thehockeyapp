@@ -81,6 +81,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   currentPlayerId,
 }) => {
   const [selectedTeammate, setSelectedTeammate] = useState<Teammate | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   // Fetch teammates with badge counts
   const { data: teammates, isLoading } = useQuery({
@@ -205,7 +206,6 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   }
 
   const otherTeammates = teammates?.filter((t) => t.playerId !== currentPlayerId) || [];
-  const [showAll, setShowAll] = useState(false);
   const displayedTeammates = showAll ? otherTeammates : otherTeammates.slice(0, 5);
 
   return (
