@@ -390,15 +390,18 @@ const PlayerHome: React.FC = () => {
             <div className="w-8 h-8 flex items-center justify-center">
               <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
             </div>
-            <Avatar
-              src={player.profile_photo_url}
-              fallback={`${player.first_name} ${player.last_initial || ""}`}
-              size="sm"
-            />
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold truncate">
-                {player.first_name} {player.last_initial && `${player.last_initial}.`}
-              </h1>
+            {/* Only show player info in header on mobile */}
+            <div className="md:hidden flex items-center gap-3">
+              <Avatar
+                src={player.profile_photo_url}
+                fallback={`${player.first_name} ${player.last_initial || ""}`}
+                size="sm"
+              />
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold truncate">
+                  {player.first_name} {player.last_initial && `${player.last_initial}.`}
+                </h1>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -411,10 +414,22 @@ const PlayerHome: React.FC = () => {
       <PageContainer className="pb-6">
         {/* Desktop Layout */}
         <div className="hidden md:block">
-          {/* Compact Stats Bar - No redundant player info */}
-          {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0 || activeTeam) && (
-            <div className="flex items-center justify-between mb-6 px-1">
+          {/* Hero Header with Player Info and Stats */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Avatar
+                src={player.profile_photo_url}
+                fallback={`${player.first_name} ${player.last_initial || ""}`}
+                size="lg"
+              />
               <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold">
+                  {player.first_name} {player.last_initial && `${player.last_initial}.`}
+                </h2>
+                <Tag variant="neutral">Born {player.birth_year}</Tag>
+                {player.jersey_number && (
+                  <Tag variant="tier">#{player.jersey_number}</Tag>
+                )}
                 {activeTeam && (
                   <Tag 
                     variant="accent" 
@@ -424,31 +439,27 @@ const PlayerHome: React.FC = () => {
                     {activeTeam.name}
                   </Tag>
                 )}
-                <Tag variant="neutral">Born {player.birth_year}</Tag>
-                {player.jersey_number && (
-                  <Tag variant="tier">#{player.jersey_number}</Tag>
+              </div>
+            </div>
+            
+            {/* Streak Stats */}
+            {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
+              <div className="flex items-center gap-3">
+                {(streakData?.currentStreak ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-semibold text-orange-600">{streakData?.currentStreak} day streak</span>
+                  </div>
+                )}
+                {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <Trophy className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
+                  </div>
                 )}
               </div>
-              
-              {/* Streak Stats */}
-              {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
-                <div className="flex items-center gap-3">
-                  {(streakData?.currentStreak ?? 0) > 0 && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                      <Flame className="w-4 h-4 text-orange-500" />
-                      <span className="text-sm font-semibold text-orange-600">{streakData?.currentStreak} day streak</span>
-                    </div>
-                  )}
-                  {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                      <Trophy className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Desktop Grid Layout - 2 column for better balance */}
           <div className="grid grid-cols-12 gap-6">
