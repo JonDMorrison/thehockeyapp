@@ -466,10 +466,10 @@ const PlayerHome: React.FC = () => {
             </div>
           </AppCard>
 
-          {/* Desktop Grid Layout */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* Left Column - Main Content */}
-            <div className="col-span-2 space-y-6">
+          {/* Desktop Grid Layout - 2 column for better balance */}
+          <div className="grid grid-cols-12 gap-6">
+            {/* Main Column - Primary Content */}
+            <div className="col-span-8 space-y-6">
               {/* Today's Workout - Prominent */}
               {preferences?.active_team_id && todaySnapshot?.success && (
                 <AppCard
@@ -496,41 +496,43 @@ const PlayerHome: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm text-text-muted font-medium">Today's Workout</p>
+                        <h3 className="font-semibold text-lg">Today's Workout</h3>
                         {todaySnapshot.has_card ? (
-                          <div className="flex items-center gap-2">
-                            <p className="text-lg font-semibold">
-                              {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                                ? "Completed! 🎉"
-                                : `${todaySnapshot.progress?.completed || 0} of ${todaySnapshot.progress?.total_required || 0} tasks done`
-                              }
-                            </p>
-                          </div>
+                          <p className="text-sm text-text-muted">
+                            {todaySnapshot.progress?.completed}/{todaySnapshot.progress?.total_required} tasks complete
+                          </p>
                         ) : (
-                          <p className="text-lg font-semibold text-text-muted">Rest day</p>
+                          <p className="text-sm text-text-muted">
+                            {todaySnapshot.mode === "gameday" ? "Game Day - Rest up!" : "No workout scheduled"}
+                          </p>
                         )}
                       </div>
                     </div>
-                    <Button variant="default" size="sm">
-                      {todaySnapshot.has_card && todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required ? "Continue" : "View"}
-                      <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
+                    <ChevronRight className="w-5 h-5 text-text-muted" />
                   </div>
                   {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-                    <div className="mt-4 h-2 bg-surface-muted rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
-                            ? "bg-success"
-                            : "bg-team-primary"
-                        }`}
-                        style={{ 
-                          width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
-                        }}
-                      />
+                    <div className="mt-4">
+                      <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-team-primary transition-all duration-500"
+                          style={{
+                            width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
                     </div>
                   )}
                 </AppCard>
+              )}
+
+              {/* Teammates Section - Moved to main content for prominence */}
+              {preferences?.active_team_id && (
+                <div ref={teammatesRef}>
+                  <TeammateRoster
+                    teamId={preferences.active_team_id}
+                    currentPlayerId={id!}
+                  />
+                </div>
               )}
 
               {/* Weekly Summary */}
@@ -550,8 +552,8 @@ const PlayerHome: React.FC = () => {
               )}
             </div>
 
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
+            {/* Right Sidebar - Secondary Content */}
+            <div className="col-span-4 space-y-6">
               {/* Quick Actions */}
               <AppCard>
                 <AppCardTitle>Quick Actions</AppCardTitle>
@@ -597,16 +599,6 @@ const PlayerHome: React.FC = () => {
                   teamId={preferences.active_team_id}
                   currentPlayerId={id!}
                 />
-              )}
-
-              {/* Teammate Roster */}
-              {preferences?.active_team_id && (
-                <div ref={teammatesRef}>
-                  <TeammateRoster
-                    teamId={preferences.active_team_id}
-                    currentPlayerId={id!}
-                  />
-                </div>
               )}
 
               {/* Teams List */}
