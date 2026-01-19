@@ -408,291 +408,519 @@ const PlayerHome: React.FC = () => {
         </div>
       }
     >
-      <PageContainer>
-        {/* Player Header */}
-        <AppCard className="text-center relative overflow-hidden">
-          {/* Streak Badges - positioned top right */}
-          {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
-            <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-              {/* Current Streak */}
-              {(streakData?.currentStreak ?? 0) > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
-                  <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
-                </div>
-              )}
-              {/* Best Streak - show if greater than current or if no current streak */}
-              {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                  <Trophy className="w-3 h-3 text-amber-500" />
-                  <span className="text-xs font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
-                </div>
-              )}
-            </div>
-          )}
-          <Avatar
-            src={player.profile_photo_url}
-            fallback={`${player.first_name} ${player.last_initial || ""}`}
-            size="xl"
-            className="mx-auto mb-4"
-          />
-          <h2 className="text-xl font-bold">
-            {player.first_name} {player.last_initial && `${player.last_initial}.`}
-          </h2>
-          <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-            <Tag variant="neutral">Born {player.birth_year}</Tag>
-            {player.jersey_number && (
-              <Tag variant="tier">#{player.jersey_number}</Tag>
-            )}
-          </div>
-        </AppCard>
-
-        {/* Active Team */}
-        {memberships && memberships.length > 0 && (
-          <AppCard
-            className="cursor-pointer hover:shadow-medium transition-shadow"
-            onClick={() => setShowTeamSelector(true)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center">
-                  <Star className="w-5 h-5 text-team-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted uppercase font-medium">
-                    Active Team
-                  </p>
-                  <p className="font-semibold">
-                    {activeTeam?.name || "Not set"}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-text-muted" />
-            </div>
-          </AppCard>
-        )}
-
-        {/* Today's Workout Card */}
-        {preferences?.active_team_id && todaySnapshot?.success && (
-          <AppCard
-            className="cursor-pointer hover:shadow-medium transition-shadow relative overflow-hidden"
-            onClick={() => navigate(`/players/${id}/today`)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  todaySnapshot.has_card 
-                    ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                      ? "bg-success/10"
-                      : "bg-team-primary/10"
-                    : "bg-surface-muted"
-                }`}>
-                  {todaySnapshot.has_card ? (
-                    todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
-                      <CheckCircle className="w-5 h-5 text-success" />
-                    ) : (
-                      <Dumbbell className="w-5 h-5 text-team-primary" />
-                    )
-                  ) : (
-                    <Clock className="w-5 h-5 text-text-muted" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-text-muted uppercase font-medium">
-                    Today's Workout
-                  </p>
-                  {todaySnapshot.has_card ? (
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold">
-                        {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                          ? "Completed!"
-                          : `${todaySnapshot.progress?.completed || 0}/${todaySnapshot.progress?.total_required || 0} tasks`
-                        }
-                      </p>
-                      {todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required && 
-                       (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary-foreground bg-team-primary rounded-full animate-pulse">
-                          {(todaySnapshot.progress?.total_required || 0) - (todaySnapshot.progress?.completed || 0)}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-text-muted">No workout today</p>
-                  )}
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-text-muted" />
-            </div>
-            {/* Progress bar */}
-            {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-              <div className="mt-3 h-1.5 bg-surface-muted rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
-                      ? "bg-success"
-                      : "bg-team-primary"
-                  }`}
-                  style={{ 
-                    width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
-                  }}
+      <PageContainer className="pb-6">
+        {/* Desktop Layout */}
+        <div className="hidden md:block">
+          {/* Hero Header with Stats */}
+          <AppCard className="mb-6 relative overflow-hidden">
+            <div className="flex items-start gap-6">
+              {/* Player Info */}
+              <div className="flex items-center gap-4">
+                <Avatar
+                  src={player.profile_photo_url}
+                  fallback={`${player.first_name} ${player.last_initial || ""}`}
+                  size="xl"
                 />
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    {player.first_name} {player.last_initial && `${player.last_initial}.`}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Tag variant="neutral">Born {player.birth_year}</Tag>
+                    {player.jersey_number && (
+                      <Tag variant="tier">#{player.jersey_number}</Tag>
+                    )}
+                    {activeTeam && (
+                      <Tag 
+                        variant="accent" 
+                        className="cursor-pointer hover:opacity-80"
+                        onClick={() => setShowTeamSelector(true)}
+                      >
+                        {activeTeam.name}
+                      </Tag>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Streak Stats - Desktop */}
+              {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
+                <div className="ml-auto flex items-center gap-4">
+                  {(streakData?.currentStreak ?? 0) > 0 && (
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <span className="text-lg font-bold text-orange-600">{streakData?.currentStreak}</span>
+                        <span className="text-sm text-orange-600/70 ml-1">day streak</span>
+                      </div>
+                    </div>
+                  )}
+                  {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <Trophy className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </AppCard>
+
+          {/* Desktop Grid Layout */}
+          <div className="grid grid-cols-3 gap-6">
+            {/* Left Column - Main Content */}
+            <div className="col-span-2 space-y-6">
+              {/* Today's Workout - Prominent */}
+              {preferences?.active_team_id && todaySnapshot?.success && (
+                <AppCard
+                  className="cursor-pointer hover:shadow-medium transition-shadow"
+                  onClick={() => navigate(`/players/${id}/today`)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        todaySnapshot.has_card 
+                          ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                            ? "bg-success/10"
+                            : "bg-team-primary/10"
+                          : "bg-surface-muted"
+                      }`}>
+                        {todaySnapshot.has_card ? (
+                          todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
+                            <CheckCircle className="w-6 h-6 text-success" />
+                          ) : (
+                            <Dumbbell className="w-6 h-6 text-team-primary" />
+                          )
+                        ) : (
+                          <Clock className="w-6 h-6 text-text-muted" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-muted font-medium">Today's Workout</p>
+                        {todaySnapshot.has_card ? (
+                          <div className="flex items-center gap-2">
+                            <p className="text-lg font-semibold">
+                              {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                                ? "Completed! 🎉"
+                                : `${todaySnapshot.progress?.completed || 0} of ${todaySnapshot.progress?.total_required || 0} tasks done`
+                              }
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-lg font-semibold text-text-muted">Rest day</p>
+                        )}
+                      </div>
+                    </div>
+                    <Button variant="default" size="sm">
+                      {todaySnapshot.has_card && todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required ? "Continue" : "View"}
+                      <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                  {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
+                    <div className="mt-4 h-2 bg-surface-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
+                            ? "bg-success"
+                            : "bg-team-primary"
+                        }`}
+                        style={{ 
+                          width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
+                        }}
+                      />
+                    </div>
+                  )}
+                </AppCard>
+              )}
+
+              {/* Weekly Summary */}
+              {preferences?.active_team_id && (
+                <WeeklySummaryCard 
+                  playerId={id!} 
+                  teamId={preferences.active_team_id} 
+                />
+              )}
+
+              {/* Team Activity Feed */}
+              {preferences?.active_team_id && (
+                <TeamActivityFeed
+                  teamId={preferences.active_team_id}
+                  currentPlayerId={id!}
+                />
+              )}
+            </div>
+
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <AppCard>
+                <AppCardTitle>Quick Actions</AppCardTitle>
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/players/${id}/goals`)}
+                    className="flex flex-col items-center gap-2 h-auto py-4"
+                  >
+                    <Target className="w-5 h-5 text-team-primary" />
+                    <span className="text-sm">Goals</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/players/${id}/badges`)}
+                    className="flex flex-col items-center gap-2 h-auto py-4"
+                  >
+                    <Trophy className="w-5 h-5 text-amber-500" />
+                    <span className="text-sm">Badges</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/players/${id}`)}
+                    className="flex flex-col items-center gap-2 h-auto py-4"
+                  >
+                    <User className="w-5 h-5 text-text-muted" />
+                    <span className="text-sm">Profile</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/players")}
+                    className="flex flex-col items-center gap-2 h-auto py-4"
+                  >
+                    <Users className="w-5 h-5 text-text-muted" />
+                    <span className="text-sm">Switch</span>
+                  </Button>
+                </div>
+              </AppCard>
+
+              {/* Weekly Leaderboard */}
+              {preferences?.active_team_id && (
+                <TeamLeaderboard
+                  teamId={preferences.active_team_id}
+                  currentPlayerId={id!}
+                />
+              )}
+
+              {/* Teammate Roster */}
+              {preferences?.active_team_id && (
+                <div ref={teammatesRef}>
+                  <TeammateRoster
+                    teamId={preferences.active_team_id}
+                    currentPlayerId={id!}
+                  />
+                </div>
+              )}
+
+              {/* Teams List */}
+              {memberships && memberships.length > 0 && (
+                <AppCard>
+                  <div className="flex items-center justify-between mb-4">
+                    <AppCardTitle>Teams</AppCardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/join?player=${id}`)}
+                      className="text-team-primary -mr-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {memberships.map((membership) => {
+                      const team = membership.teams;
+                      if (!team) return null;
+                      const isActive = team.id === preferences?.active_team_id;
+                      return (
+                        <div
+                          key={membership.id}
+                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-surface-muted transition-colors ${isActive ? 'bg-team-primary/5' : ''}`}
+                          onClick={() => navigate(`/teams/${team.id}`)}
+                        >
+                          <Avatar
+                            src={team.team_logo_url || team.team_photo_url}
+                            fallback={team.name}
+                            size="sm"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate text-sm">{team.name}</p>
+                          </div>
+                          {isActive && (
+                            <div className="w-2 h-2 rounded-full bg-team-primary" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </AppCard>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout - Keep existing stacked layout */}
+        <div className="md:hidden space-y-4">
+          {/* Player Header - Mobile only */}
+          <AppCard className="text-center relative overflow-hidden">
+            {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
+              <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+                {(streakData?.currentStreak ?? 0) > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
+                    <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
+                {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                    <Trophy className="w-3 h-3 text-amber-500" />
+                    <span className="text-xs font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
+                  </div>
+                )}
               </div>
             )}
+            <Avatar
+              src={player.profile_photo_url}
+              fallback={`${player.first_name} ${player.last_initial || ""}`}
+              size="xl"
+              className="mx-auto mb-4"
+            />
+            <h2 className="text-xl font-bold">
+              {player.first_name} {player.last_initial && `${player.last_initial}.`}
+            </h2>
+            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
+              <Tag variant="neutral">Born {player.birth_year}</Tag>
+              {player.jersey_number && (
+                <Tag variant="tier">#{player.jersey_number}</Tag>
+              )}
+            </div>
           </AppCard>
-        )}
 
-        {/* Weekly Summary */}
-        {preferences?.active_team_id && (
-          <WeeklySummaryCard 
-            playerId={id!} 
-            teamId={preferences.active_team_id} 
-          />
-        )}
+          {/* Active Team - Mobile */}
+          {memberships && memberships.length > 0 && (
+            <AppCard
+              className="cursor-pointer hover:shadow-medium transition-shadow"
+              onClick={() => setShowTeamSelector(true)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center">
+                    <Star className="w-5 h-5 text-team-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-muted uppercase font-medium">Active Team</p>
+                    <p className="font-semibold">{activeTeam?.name || "Not set"}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-text-muted" />
+              </div>
+            </AppCard>
+          )}
 
-        {/* Team Activity & Social Section */}
-        {preferences?.active_team_id && (
-          <>
-            {/* Team Activity Feed */}
-            <TeamActivityFeed
-              teamId={preferences.active_team_id}
-              currentPlayerId={id!}
+          {/* Today's Workout Card - Mobile */}
+          {preferences?.active_team_id && todaySnapshot?.success && (
+            <AppCard
+              className="cursor-pointer hover:shadow-medium transition-shadow"
+              onClick={() => navigate(`/players/${id}/today`)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    todaySnapshot.has_card 
+                      ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                        ? "bg-success/10"
+                        : "bg-team-primary/10"
+                      : "bg-surface-muted"
+                  }`}>
+                    {todaySnapshot.has_card ? (
+                      todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
+                        <CheckCircle className="w-5 h-5 text-success" />
+                      ) : (
+                        <Dumbbell className="w-5 h-5 text-team-primary" />
+                      )
+                    ) : (
+                      <Clock className="w-5 h-5 text-text-muted" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-text-muted uppercase font-medium">Today's Workout</p>
+                    {todaySnapshot.has_card ? (
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">
+                          {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
+                            ? "Completed!"
+                            : `${todaySnapshot.progress?.completed || 0}/${todaySnapshot.progress?.total_required || 0} tasks`
+                          }
+                        </p>
+                        {todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required && 
+                         (todaySnapshot.progress?.total_required ?? 0) > 0 && (
+                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary-foreground bg-team-primary rounded-full animate-pulse">
+                            {(todaySnapshot.progress?.total_required || 0) - (todaySnapshot.progress?.completed || 0)}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-text-muted">No workout today</p>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-text-muted" />
+              </div>
+              {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
+                <div className="mt-3 h-1.5 bg-surface-muted rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
+                        ? "bg-success"
+                        : "bg-team-primary"
+                    }`}
+                    style={{ 
+                      width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
+                    }}
+                  />
+                </div>
+              )}
+            </AppCard>
+          )}
+
+          {/* Weekly Summary - Mobile */}
+          {preferences?.active_team_id && (
+            <WeeklySummaryCard 
+              playerId={id!} 
+              teamId={preferences.active_team_id} 
             />
+          )}
 
-            {/* Weekly Leaderboard */}
-            <TeamLeaderboard
-              teamId={preferences.active_team_id}
-              currentPlayerId={id!}
-            />
-
-            {/* Teammate Roster with Badges */}
-            <div ref={teammatesRef}>
-              <TeammateRoster
+          {/* Team Activity & Social - Mobile */}
+          {preferences?.active_team_id && (
+            <>
+              <TeamActivityFeed
                 teamId={preferences.active_team_id}
                 currentPlayerId={id!}
               />
+              <TeamLeaderboard
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+              />
+              <div ref={teammatesRef}>
+                <TeammateRoster
+                  teamId={preferences.active_team_id}
+                  currentPlayerId={id!}
+                />
+              </div>
+              <TeamCheersFeed
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+                onSendCheer={scrollToTeammates}
+              />
+            </>
+          )}
+
+          {/* Teams Section - Mobile */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/join?player=${id}`)}
+                className="text-team-primary"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Join Team
+              </Button>
             </div>
 
-            {/* Team Cheers Feed */}
-            <TeamCheersFeed
-              teamId={preferences.active_team_id}
-              currentPlayerId={id!}
-              onSendCheer={scrollToTeammates}
-            />
-          </>
-        )}
+            {memberships && memberships.length > 0 ? (
+              <div className="space-y-3">
+                {memberships.map((membership) => {
+                  const team = membership.teams;
+                  if (!team) return null;
 
-        {/* Teams Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/join?player=${id}`)}
-              className="text-team-primary"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              Join Team
-            </Button>
-          </div>
+                  const palette = teamPalettes.find((p) => p.id === team.palette_id);
+                  const isActive = team.id === preferences?.active_team_id;
 
-          {memberships && memberships.length > 0 ? (
-            <div className="space-y-3">
-              {memberships.map((membership) => {
-                const team = membership.teams;
-                if (!team) return null;
-
-                const palette = teamPalettes.find((p) => p.id === team.palette_id);
-                const isActive = team.id === preferences?.active_team_id;
-
-                return (
-                  <AppCard
-                    key={membership.id}
-                    className="cursor-pointer hover:shadow-medium transition-shadow"
-                    style={{
-                      background: palette
-                        ? `linear-gradient(135deg, hsl(${palette.primary} / 0.05), transparent)`
-                        : undefined,
-                    }}
-                    onClick={() => navigate(`/teams/${team.id}`)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={team.team_logo_url || team.team_photo_url}
-                        fallback={team.name}
-                        size="lg"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold truncate">{team.name}</p>
-                          {isActive && (
-                            <Tag variant="accent" size="sm">
-                              Active
-                            </Tag>
+                  return (
+                    <AppCard
+                      key={membership.id}
+                      className="cursor-pointer hover:shadow-medium transition-shadow"
+                      style={{
+                        background: palette
+                          ? `linear-gradient(135deg, hsl(${palette.primary} / 0.05), transparent)`
+                          : undefined,
+                      }}
+                      onClick={() => navigate(`/teams/${team.id}`)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={team.team_logo_url || team.team_photo_url}
+                          fallback={team.name}
+                          size="lg"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold truncate">{team.name}</p>
+                            {isActive && (
+                              <Tag variant="accent" size="sm">Active</Tag>
+                            )}
+                          </div>
+                          {team.season_label && (
+                            <p className="text-sm text-text-muted">{team.season_label}</p>
                           )}
                         </div>
-                        {team.season_label && (
-                          <p className="text-sm text-text-muted">
-                            {team.season_label}
-                          </p>
-                        )}
+                        <ChevronRight className="w-5 h-5 text-text-muted" />
                       </div>
-                      <ChevronRight className="w-5 h-5 text-text-muted" />
-                    </div>
-                  </AppCard>
-                );
-              })}
-            </div>
-          ) : (
-            <AppCard>
-              <EmptyState
-                icon={Users}
-                title="No teams yet"
-                description="Join a team using an invite code from your coach."
-                action={{
-                  label: "Join a Team",
-                  onClick: () => navigate(`/join?player=${id}`),
-                }}
-              />
-            </AppCard>
-          )}
-        </div>
+                    </AppCard>
+                  );
+                })}
+              </div>
+            ) : (
+              <AppCard>
+                <EmptyState
+                  icon={Users}
+                  title="No teams yet"
+                  description="Join a team using an invite code from your coach."
+                  action={{
+                    label: "Join a Team",
+                    onClick: () => navigate(`/join?player=${id}`),
+                  }}
+                />
+              </AppCard>
+            )}
+          </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-4 gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/players/${id}/goals`)}
-            className="flex flex-col items-center gap-1 h-auto py-3"
-          >
-            <Target className="w-5 h-5 text-team-primary" />
-            <span className="text-xs">Goals</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/players/${id}/badges`)}
-            className="flex flex-col items-center gap-1 h-auto py-3"
-          >
-            <Trophy className="w-5 h-5 text-amber-500" />
-            <span className="text-xs">Badges</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/players/${id}`)}
-            className="flex flex-col items-center gap-1 h-auto py-3"
-          >
-            <User className="w-5 h-5 text-text-muted" />
-            <span className="text-xs">Profile</span>
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/players")}
-            className="flex flex-col items-center gap-1 h-auto py-3"
-          >
-            <Users className="w-5 h-5 text-text-muted" />
-            <span className="text-xs">Switch</span>
-          </Button>
+          {/* Quick Actions - Mobile */}
+          <div className="grid grid-cols-4 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/players/${id}/goals`)}
+              className="flex flex-col items-center gap-1 h-auto py-3"
+            >
+              <Target className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">Goals</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/players/${id}/badges`)}
+              className="flex flex-col items-center gap-1 h-auto py-3"
+            >
+              <Trophy className="w-5 h-5 text-amber-500" />
+              <span className="text-xs">Badges</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/players/${id}`)}
+              className="flex flex-col items-center gap-1 h-auto py-3"
+            >
+              <User className="w-5 h-5 text-text-muted" />
+              <span className="text-xs">Profile</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/players")}
+              className="flex flex-col items-center gap-1 h-auto py-3"
+            >
+              <Users className="w-5 h-5 text-text-muted" />
+              <span className="text-xs">Switch</span>
+            </Button>
+          </div>
         </div>
       </PageContainer>
 
