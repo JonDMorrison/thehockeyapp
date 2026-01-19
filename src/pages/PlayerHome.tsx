@@ -411,48 +411,32 @@ const PlayerHome: React.FC = () => {
       <PageContainer className="pb-6">
         {/* Desktop Layout */}
         <div className="hidden md:block">
-          {/* Hero Header with Stats */}
-          <AppCard className="mb-6 relative overflow-hidden">
-            <div className="flex items-start gap-6">
-              {/* Player Info */}
-              <div className="flex items-center gap-4">
-                <Avatar
-                  src={player.profile_photo_url}
-                  fallback={`${player.first_name} ${player.last_initial || ""}`}
-                  size="xl"
-                />
-                <div>
-                  <h2 className="text-2xl font-bold">
-                    {player.first_name} {player.last_initial && `${player.last_initial}.`}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Tag variant="neutral">Born {player.birth_year}</Tag>
-                    {player.jersey_number && (
-                      <Tag variant="tier">#{player.jersey_number}</Tag>
-                    )}
-                    {activeTeam && (
-                      <Tag 
-                        variant="accent" 
-                        className="cursor-pointer hover:opacity-80"
-                        onClick={() => setShowTeamSelector(true)}
-                      >
-                        {activeTeam.name}
-                      </Tag>
-                    )}
-                  </div>
-                </div>
+          {/* Compact Stats Bar - No redundant player info */}
+          {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0 || activeTeam) && (
+            <div className="flex items-center justify-between mb-6 px-1">
+              <div className="flex items-center gap-3">
+                {activeTeam && (
+                  <Tag 
+                    variant="accent" 
+                    className="cursor-pointer hover:opacity-80"
+                    onClick={() => setShowTeamSelector(true)}
+                  >
+                    {activeTeam.name}
+                  </Tag>
+                )}
+                <Tag variant="neutral">Born {player.birth_year}</Tag>
+                {player.jersey_number && (
+                  <Tag variant="tier">#{player.jersey_number}</Tag>
+                )}
               </div>
               
-              {/* Streak Stats - Desktop */}
+              {/* Streak Stats */}
               {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
-                <div className="ml-auto flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {(streakData?.currentStreak ?? 0) > 0 && (
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                      <Flame className="w-5 h-5 text-orange-500" />
-                      <div>
-                        <span className="text-lg font-bold text-orange-600">{streakData?.currentStreak}</span>
-                        <span className="text-sm text-orange-600/70 ml-1">day streak</span>
-                      </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm font-semibold text-orange-600">{streakData?.currentStreak} day streak</span>
                     </div>
                   )}
                   {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
@@ -464,7 +448,7 @@ const PlayerHome: React.FC = () => {
                 </div>
               )}
             </div>
-          </AppCard>
+          )}
 
           {/* Desktop Grid Layout - 2 column for better balance */}
           <div className="grid grid-cols-12 gap-6">
