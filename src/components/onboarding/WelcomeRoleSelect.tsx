@@ -43,10 +43,9 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="max-w-lg w-full text-center">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 flex items-center justify-center">
-              <img src={logoImage} alt="The Hockey App" className="w-16 h-16 object-contain" />
-            </div>
+          <div className="flex flex-col items-center gap-2 mb-6">
+            <img src={logoImage} alt="The Hockey App" className="w-16 h-16 object-contain" />
+            <span className="font-bold text-xl text-foreground">The Hockey App</span>
           </div>
 
           {/* Welcome badge */}
