@@ -81,11 +81,31 @@ const PlayerHome: React.FC = () => {
     teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Redirect to auth if not authenticated (but only after auth has loaded)
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth", { replace: true });
     }
   }, [authLoading, isAuthenticated, navigate]);
+
+  // Wait for auth before proceeding
+  if (authLoading) {
+    return (
+      <AppShell hideNav>
+        <PageContainer className="space-y-4">
+          <SkeletonDashboardHeader />
+          <SkeletonHeroCard />
+          <SkeletonActivityFeed />
+          <SkeletonLeaderboard />
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
+  // Redirect happens in useEffect, but render nothing while redirecting
+  if (!isAuthenticated) {
+    return null;
+  }
 
   // Fetch player
   const { data: player, isLoading: playerLoading } = useQuery({
@@ -333,7 +353,8 @@ const PlayerHome: React.FC = () => {
     }
   }, [streakData?.currentStreak, id]);
 
-  const isLoading = playerLoading || membershipsLoading || authLoading;
+  // Note: authLoading is already handled above with early return
+  const isLoading = playerLoading || membershipsLoading;
 
   if (isLoading) {
     return (
