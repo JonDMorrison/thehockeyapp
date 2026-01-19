@@ -186,7 +186,14 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
 
       <div className="space-y-3">
         {activePrograms.map((program) => (
-          <AppCard key={program.id} className="p-4">
+          <AppCard 
+            key={program.id} 
+            className="p-4 cursor-pointer hover:bg-accent/50 transition-colors active:scale-[0.99]"
+            onClick={() => {
+              // Navigate to team practice page - challenges and programs show in the card list
+              navigate(`/teams/${teamId}/practice`);
+            }}
+          >
             <div className="space-y-3">
               {/* Header row */}
               <div className="flex items-start justify-between gap-3">
@@ -216,17 +223,9 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
                   </div>
                 </div>
 
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="shrink-0"
-                  onClick={() => {
-                    // Future: navigate to program detail page
-                    // navigate(`/teams/${teamId}/programs/${program.id}`);
-                  }}
-                >
+                <div className="shrink-0 text-muted-foreground">
                   <ChevronRight className="w-4 h-4" />
-                </Button>
+                </div>
               </div>
 
               {/* Progress bar */}
