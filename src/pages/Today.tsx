@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { Loader2 } from "lucide-react";
 
 /**
  * Today route - redirects to the appropriate player home page
- * This acts as a smart redirect that finds the user's player and sends them to their dashboard
+ * Uses the persisted activePlayerId from context, or finds the first available player
  */
 const Today: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { activePlayerId } = useActiveView();
 
   // Redirect to auth if not authenticated
   useEffect(() => {
@@ -20,7 +22,14 @@ const Today: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Fetch players the user owns or is guardian of
+  // If we already have an active player stored, redirect immediately
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && activePlayerId) {
+      navigate(`/players/${activePlayerId}/home`, { replace: true });
+    }
+  }, [authLoading, isAuthenticated, activePlayerId, navigate]);
+
+  // Fetch players only if we don't have an active player stored
   const { data: players, isLoading: playersLoading } = useQuery({
     queryKey: ["my-players-redirect"],
     queryFn: async () => {
@@ -46,21 +55,19 @@ const Today: React.FC = () => {
       if (guardError) throw guardError;
       return guardianships?.map(g => ({ id: g.player_id })) || [];
     },
-    enabled: !!user,
+    enabled: !!user && !activePlayerId, // Only fetch if no stored player
   });
 
-  // Redirect once we have the data
+  // Redirect once we have the data (fallback when no stored player)
   useEffect(() => {
-    if (!playersLoading && players) {
+    if (!activePlayerId && !playersLoading && players) {
       if (players.length > 0) {
-        // Redirect to the first player's home
         navigate(`/players/${players[0].id}/home`, { replace: true });
       } else {
-        // No players - send to players list to create one
         navigate("/players", { replace: true });
       }
     }
-  }, [players, playersLoading, navigate]);
+  }, [players, playersLoading, activePlayerId, navigate]);
 
   // Show loading spinner while determining redirect
   return (
