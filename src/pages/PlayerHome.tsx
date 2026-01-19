@@ -74,6 +74,7 @@ const PlayerHome: React.FC = () => {
   const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const teammatesRef = useRef<HTMLDivElement>(null);
+  const celebratedMilestoneRef = useRef<number | null>(null);
 
   const [showTeamSelector, setShowTeamSelector] = useState(false);
 
@@ -81,33 +82,7 @@ const PlayerHome: React.FC = () => {
     teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Redirect to auth if not authenticated (but only after auth has loaded)
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate("/auth", { replace: true });
-    }
-  }, [authLoading, isAuthenticated, navigate]);
-
-  // Wait for auth before proceeding
-  if (authLoading) {
-    return (
-      <AppShell hideNav>
-        <PageContainer className="space-y-4">
-          <SkeletonDashboardHeader />
-          <SkeletonHeroCard />
-          <SkeletonActivityFeed />
-          <SkeletonLeaderboard />
-        </PageContainer>
-      </AppShell>
-    );
-  }
-
-  // Redirect happens in useEffect, but render nothing while redirecting
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // Fetch player
+  // Fetch player - ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   const { data: player, isLoading: playerLoading } = useQuery({
     queryKey: ["player", id],
     queryFn: async () => {
@@ -167,46 +142,6 @@ const PlayerHome: React.FC = () => {
       return data;
     },
     enabled: !!user && !!id,
-  });
-
-  // Apply active team theme and persist context
-  useEffect(() => {
-    if (preferences?.active_team_id && memberships) {
-      const activeTeam = memberships.find(
-        (m) => m.team_id === preferences.active_team_id
-      )?.teams;
-      if (activeTeam?.palette_id) {
-        setTeamTheme(activeTeam.palette_id);
-      }
-    }
-    // Persist player context
-    if (id) {
-      setActiveView("parent");
-      setActivePlayerId(id);
-    }
-  }, [preferences, memberships, setTeamTheme, id, setActiveView, setActivePlayerId]);
-
-  // Update active team
-  const updateActiveTeam = useMutation({
-    mutationFn: async (teamId: string) => {
-      const { error } = await supabase
-        .from("player_team_preferences")
-        .upsert({
-          player_id: id,
-          active_team_id: teamId,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["player-preferences", id] });
-      toast.success("Active team updated", "Theme and workouts will reflect this team.");
-      setShowTeamSelector(false);
-    },
-    onError: (error: Error) => {
-      toast.error("Failed to update", error.message);
-    },
   });
 
   const activeTeam = memberships?.find(
@@ -301,8 +236,52 @@ const PlayerHome: React.FC = () => {
     enabled: !!user && !!id && !!preferences?.active_team_id,
   });
 
-  // Track if we've already celebrated this milestone to avoid duplicate celebrations
-  const celebratedMilestoneRef = useRef<number | null>(null);
+  // Update active team mutation
+  const updateActiveTeam = useMutation({
+    mutationFn: async (teamId: string) => {
+      const { error } = await supabase
+        .from("player_team_preferences")
+        .upsert({
+          player_id: id,
+          active_team_id: teamId,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["player-preferences", id] });
+      toast.success("Active team updated", "Theme and workouts will reflect this team.");
+      setShowTeamSelector(false);
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to update", error.message);
+    },
+  });
+
+  // Redirect to auth if not authenticated (but only after auth has loaded)
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // Apply active team theme and persist context
+  useEffect(() => {
+    if (preferences?.active_team_id && memberships) {
+      const activeTeam = memberships.find(
+        (m) => m.team_id === preferences.active_team_id
+      )?.teams;
+      if (activeTeam?.palette_id) {
+        setTeamTheme(activeTeam.palette_id);
+      }
+    }
+    // Persist player context
+    if (id) {
+      setActiveView("parent");
+      setActivePlayerId(id);
+    }
+  }, [preferences, memberships, setTeamTheme, id, setActiveView, setActivePlayerId]);
 
   // Check for streak milestones and celebrate
   useEffect(() => {
@@ -353,9 +332,10 @@ const PlayerHome: React.FC = () => {
     }
   }, [streakData?.currentStreak, id]);
 
-  // Note: authLoading is already handled above with early return
-  const isLoading = playerLoading || membershipsLoading;
+  // Combined loading state - check after all hooks are called
+  const isLoading = authLoading || playerLoading || membershipsLoading;
 
+  // Show loading skeleton while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -367,6 +347,11 @@ const PlayerHome: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!player) {
