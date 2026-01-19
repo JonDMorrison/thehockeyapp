@@ -207,8 +207,9 @@ export default function SoloDashboard() {
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center">
+              <div className="flex items-center gap-2">
                 <img src={logoImage} alt="The Hockey App" className="w-10 h-10 object-contain" />
+                <span className="font-semibold text-foreground hidden sm:inline">The Hockey App</span>
               </div>
               <UserMenu
                 avatarUrl={player.photo_url}
