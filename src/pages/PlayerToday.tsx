@@ -59,6 +59,7 @@ import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { PlayerGoalWidget } from "@/components/goals";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
+import { SessionCelebration } from "@/components/player/SessionCelebration";
 
 interface PracticeTask {
   id: string;
@@ -737,61 +738,26 @@ const PlayerToday: React.FC = () => {
   if (showSuccess) {
     return (
       <AppShell hideNav>
-        <PageContainer className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-          <div
-            className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
-            style={{
-              background: palette ? `hsl(${palette.primary} / 0.1)` : undefined,
-            }}
-          >
-            {isFirstWorkout ? (
-              <Award
-                className="w-12 h-12"
-                style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-              />
-            ) : (
-              <Trophy
-                className="w-12 h-12"
-                style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-              />
-            )}
-          </div>
-          <h1 className="text-2xl font-bold mb-2">
-            {isFirstWorkout ? "First Workout Complete! 🏆" : "Great work!"}
-          </h1>
-          <p className="text-text-muted mb-2">
-            {player?.first_name} completed {practiceCard.mode === "game_day" ? "game day prep" : "today's practice"}
-          </p>
-          {isFirstWorkout && (
-            <p className="text-sm text-muted-foreground mb-3">
-              This is the start of something great!
-            </p>
-          )}
-          <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
-            {isFirstWorkout && (
-              <Tag variant="accent" className="bg-amber-500/20 text-amber-600 border-amber-500/30">
-                <Award className="w-3 h-3" />
-                First Workout Badge
-              </Tag>
-            )}
-            {practiceCard.mode === "game_day" ? (
-              <Tag variant="accent">
-                <Zap className="w-3 h-3" />
-                Game Day
-              </Tag>
-            ) : (
-              <Tag variant="tier">{tierLabels[practiceCard.tier]}</Tag>
-            )}
-            {totalShots > 0 && (
-              <Tag variant="accent">{totalShots} shots</Tag>
-            )}
-          </div>
+        <PageContainer>
+          <SessionCelebration
+            playerName={player?.first_name || ''}
+            isFirstWorkout={isFirstWorkout}
+            practiceTitle={practiceCard.title || undefined}
+            isGameDay={practiceCard.mode === 'game_day'}
+            tier={practiceCard.tier}
+            totalShots={totalShots}
+            tasksCompleted={completedCount}
+            totalTasks={tasks.length}
+            completedAt={sessionCompletion?.completed_at || undefined}
+            teamName={teamData?.name}
+            onContinue={() => navigate(`/players/${playerId}/home`)}
+            onBonusTraining={() => navigate(`/players/${playerId}/home`)}
+          />
           {!isOnline && (
-            <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} className="mb-4" />
+            <div className="flex justify-center mt-4">
+              <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} />
+            </div>
           )}
-          <Button onClick={() => navigate(`/players/${playerId}/home`)}>
-            Back to {teamData?.name || "Dashboard"}
-          </Button>
         </PageContainer>
       </AppShell>
     );
