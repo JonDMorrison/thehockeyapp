@@ -208,36 +208,55 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
 // Hook to manage walkthrough state
 export const usePlanningWalkthrough = (teamId: string) => {
   const storageKey = `planning-walkthrough-seen-${teamId}`;
+  
+  // Check localStorage synchronously on initial render
+  const [hasSeenWalkthrough] = useState(() => {
+    try {
+      return localStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  });
+  
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(hasSeenWalkthrough);
 
   useEffect(() => {
-    // Check if user has seen the walkthrough for this team
-    const hasSeen = localStorage.getItem(storageKey);
-    if (!hasSeen) {
+    // Only show walkthrough if user hasn't seen it before
+    if (!hasSeenWalkthrough && teamId) {
       // Small delay to let the page render first
       const timer = setTimeout(() => {
         setShowWalkthrough(true);
+        setIsReady(true);
       }, 800);
       return () => clearTimeout(timer);
     }
-    setIsReady(true);
-  }, [storageKey]);
+  }, [hasSeenWalkthrough, teamId]);
 
   const completeWalkthrough = () => {
-    localStorage.setItem(storageKey, "true");
+    try {
+      localStorage.setItem(storageKey, "true");
+    } catch (e) {
+      console.warn("Could not save walkthrough state to localStorage");
+    }
     setShowWalkthrough(false);
-    setIsReady(true);
   };
 
   const skipWalkthrough = () => {
-    localStorage.setItem(storageKey, "true");
+    try {
+      localStorage.setItem(storageKey, "true");
+    } catch (e) {
+      console.warn("Could not save walkthrough state to localStorage");
+    }
     setShowWalkthrough(false);
-    setIsReady(true);
   };
 
   const resetWalkthrough = () => {
-    localStorage.removeItem(storageKey);
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      console.warn("Could not reset walkthrough state in localStorage");
+    }
     setShowWalkthrough(true);
   };
 
