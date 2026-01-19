@@ -2246,6 +2246,10 @@ export type Database = {
         Args: { team_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      is_teammate_of_user: {
+        Args: { p_player_id: string; p_user_id: string }
+        Returns: boolean
+      }
       join_team_with_invite: {
         Args: { invite_token: string; p_player_id: string }
         Returns: Json
@@ -2257,6 +2261,10 @@ export type Database = {
         Returns: Json
       }
       regenerate_team_invite: { Args: { p_team_id: string }; Returns: Json }
+      user_has_player_on_team: {
+        Args: { p_team_id: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
