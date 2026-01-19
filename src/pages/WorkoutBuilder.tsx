@@ -110,6 +110,7 @@ const WorkoutBuilder: React.FC = () => {
 
   const isLoading = teamLoading || plansLoading || authLoading;
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -119,6 +120,11 @@ const WorkoutBuilder: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

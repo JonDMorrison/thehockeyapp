@@ -90,6 +90,7 @@ const TeamRoster: React.FC = () => {
     enabled: !!user && !!id,
   });
 
+  // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -99,6 +100,11 @@ const TeamRoster: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

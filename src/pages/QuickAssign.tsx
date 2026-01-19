@@ -454,6 +454,7 @@ const QuickAssign: React.FC = () => {
     },
   });
 
+  // Show loading state while auth or data is loading
   if (teamLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -463,6 +464,11 @@ const QuickAssign: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

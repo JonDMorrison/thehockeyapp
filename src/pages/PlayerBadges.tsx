@@ -142,6 +142,7 @@ const PlayerBadges: React.FC = () => {
   const earnedBadges = challenges?.filter((c) => badgeMap.has(c.id)) || [];
   const inProgress = challenges?.filter((c) => !badgeMap.has(c.id)) || [];
 
+  // Show loading state while auth or data is loading
   if (challengesLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -151,6 +152,11 @@ const PlayerBadges: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

@@ -60,6 +60,7 @@ const Teams: React.FC = () => {
     enabled: !!user,
   });
 
+  // Show loading state while auth is checking
   if (authLoading) {
     return (
       <AppShell>
@@ -69,6 +70,11 @@ const Teams: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

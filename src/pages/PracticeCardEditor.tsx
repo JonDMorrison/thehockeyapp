@@ -352,6 +352,7 @@ const PracticeCardEditor: React.FC = () => {
     toast.success("Draft applied", "Review and edit before publishing.");
   };
 
+  // Show loading state while auth or data is loading
   if (cardLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -361,6 +362,11 @@ const PracticeCardEditor: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

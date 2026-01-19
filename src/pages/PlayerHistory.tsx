@@ -149,6 +149,7 @@ const PlayerHistory: React.FC = () => {
   const palette = teamData ? teamPalettes.find((p) => p.id === teamData.palette_id) : null;
   const isLoading = authLoading || historyLoading;
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -158,6 +159,11 @@ const PlayerHistory: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (

@@ -147,7 +147,10 @@ const Welcome: React.FC = () => {
     }
   }, [existingData, activeView, activeTeamId, activePlayerId, navigate]);
 
-  if (authLoading || checkingData) {
+  // Show loading state for auth, data checking, or when redirect is pending
+  const isRedirecting = existingData?.hasTeams || existingData?.hasPlayers;
+  
+  if (authLoading || checkingData || isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -155,12 +158,8 @@ const Welcome: React.FC = () => {
     );
   }
 
-  // Show role selection for new users
-  if (!existingData?.hasTeams && !existingData?.hasPlayers) {
-    return <WelcomeRoleSelect displayName={user?.user_metadata?.display_name} />;
-  }
-
-  return null;
+  // Show role selection for new users (no teams and no players)
+  return <WelcomeRoleSelect displayName={user?.user_metadata?.display_name} />;
 };
 
 export default Welcome;

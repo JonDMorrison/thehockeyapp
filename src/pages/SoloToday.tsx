@@ -282,6 +282,7 @@ const SoloToday: React.FC = () => {
 
   const isLoading = playerLoading || cardLoading || authLoading;
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -291,6 +292,11 @@ const SoloToday: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!player) {

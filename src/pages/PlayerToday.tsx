@@ -687,6 +687,7 @@ const PlayerToday: React.FC = () => {
     );
   }
 
+  // Show loading state while auth or data is loading
   if (isLoading) {
     return (
       <AppShell hideNav>
@@ -696,6 +697,11 @@ const PlayerToday: React.FC = () => {
         </PageContainer>
       </AppShell>
     );
+  }
+
+  // If not authenticated, render nothing while redirect happens
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (!practiceCard) {
