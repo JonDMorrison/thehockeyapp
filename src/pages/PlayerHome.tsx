@@ -387,8 +387,9 @@ const PlayerHome: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="w-8 h-8 flex items-center justify-center">
+            <div className="flex items-center gap-2">
               <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
+              <span className="font-semibold text-foreground hidden sm:inline">The Hockey App</span>
             </div>
             {/* Only show player info in header on mobile */}
             <div className="md:hidden flex items-center gap-3">
