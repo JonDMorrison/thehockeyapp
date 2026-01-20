@@ -672,7 +672,7 @@ const PlayerHome: React.FC = () => {
           {memberships && memberships.length > 0 && (
             <AppCard
               className="cursor-pointer hover:shadow-medium transition-shadow"
-              onClick={() => setShowTeamSelector(true)}
+              onClick={() => preferences?.active_team_id && navigate(`/teams/${preferences.active_team_id}/roster`)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
