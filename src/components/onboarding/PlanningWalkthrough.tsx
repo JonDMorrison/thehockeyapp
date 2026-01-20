@@ -209,31 +209,41 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
 export const usePlanningWalkthrough = (teamId: string) => {
   const storageKey = `planning-walkthrough-seen-${teamId}`;
   
-  // Check localStorage synchronously on initial render
-  const [hasSeenWalkthrough] = useState(() => {
-    try {
-      return localStorage.getItem(storageKey) === "true";
-    } catch {
-      return false;
-    }
-  });
-  
   const [showWalkthrough, setShowWalkthrough] = useState(false);
-  const [isReady, setIsReady] = useState(hasSeenWalkthrough);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Only show walkthrough if user hasn't seen it before
-    if (!hasSeenWalkthrough && teamId) {
-      // Small delay to let the page render first
+    // Don't do anything until we have a valid teamId
+    if (!teamId) {
+      setIsReady(false);
+      return;
+    }
+
+    // Check localStorage with the current teamId
+    const key = `planning-walkthrough-seen-${teamId}`;
+    let hasSeenIt = false;
+    try {
+      hasSeenIt = localStorage.getItem(key) === "true";
+    } catch {
+      hasSeenIt = false;
+    }
+
+    if (hasSeenIt) {
+      // User has already seen the walkthrough for this team
+      setShowWalkthrough(false);
+      setIsReady(true);
+    } else {
+      // First time - show walkthrough after a small delay
       const timer = setTimeout(() => {
         setShowWalkthrough(true);
         setIsReady(true);
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [hasSeenWalkthrough, teamId]);
+  }, [teamId]);
 
   const completeWalkthrough = () => {
+    if (!teamId) return;
     try {
       localStorage.setItem(storageKey, "true");
     } catch (e) {
@@ -243,6 +253,7 @@ export const usePlanningWalkthrough = (teamId: string) => {
   };
 
   const skipWalkthrough = () => {
+    if (!teamId) return;
     try {
       localStorage.setItem(storageKey, "true");
     } catch (e) {
@@ -252,6 +263,7 @@ export const usePlanningWalkthrough = (teamId: string) => {
   };
 
   const resetWalkthrough = () => {
+    if (!teamId) return;
     try {
       localStorage.removeItem(storageKey);
     } catch (e) {
