@@ -34,7 +34,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/app/Toast";
 import { SkeletonListItem } from "@/components/app/Skeleton";
-import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users } from "lucide-react";
+import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2 } from "lucide-react";
 
 const childSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(50),
@@ -500,9 +500,46 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Share Button - Uses native share on mobile, falls back to copy */}
+                  <Button
+                    variant="team"
+                    className="w-full"
+                    onClick={async () => {
+                      const shareText = `Join ${teamName} on The Hockey App!\n\nTeam Code: ${invite.short_code}\n\nOr use this link: ${inviteLink}`;
+                      
+                      // Check if native share is available (mobile)
+                      if (navigator.share) {
+                        try {
+                          await navigator.share({
+                            title: `Join ${teamName}`,
+                            text: shareText,
+                            url: inviteLink || undefined,
+                          });
+                          toast.success("Shared!", "Invite sent successfully.");
+                        } catch (err) {
+                          // User cancelled or share failed - ignore AbortError
+                          if ((err as Error).name !== "AbortError") {
+                            // Fall back to copy
+                            await navigator.clipboard.writeText(shareText);
+                            toast.success("Copied!", "Message copied to clipboard.");
+                          }
+                        }
+                      } else {
+                        // Desktop fallback - copy to clipboard
+                        await navigator.clipboard.writeText(shareText);
+                        setCopied(true);
+                        toast.success("Copied!", "Message copied to clipboard.");
+                        setTimeout(() => setCopied(false), 2000);
+                      }
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share Invite
+                  </Button>
+
                   <div className="p-3 rounded-lg bg-muted">
                     <p className="text-xs text-muted-foreground mb-2">
-                      Quick message to copy for TeamSnap/email:
+                      Or copy a ready-to-send message:
                     </p>
                     <Button
                       variant="secondary"
@@ -511,7 +548,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       onClick={handleCopyWithMessage}
                     >
                       <Copy className="w-3 h-3" />
-                      Copy with Message
+                      Copy Message
                     </Button>
                   </div>
 
