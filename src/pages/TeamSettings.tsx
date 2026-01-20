@@ -481,12 +481,48 @@ const TeamSettings: React.FC = () => {
               </Label>
               <Select value={paletteId} onValueChange={setPaletteId}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {selectedPalette && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1">
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${selectedPalette.primary})` }}
+                          />
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${selectedPalette.secondary})` }}
+                          />
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${selectedPalette.tertiary})` }}
+                          />
+                        </div>
+                        <span>{selectedPalette.displayName}</span>
+                      </div>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {teamPalettes.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.displayName}
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1">
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${p.primary})` }}
+                          />
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${p.secondary})` }}
+                          />
+                          <div
+                            className="w-4 h-4 rounded-full border border-background shadow-sm"
+                            style={{ backgroundColor: `hsl(${p.tertiary})` }}
+                          />
+                        </div>
+                        <span>{p.displayName}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
