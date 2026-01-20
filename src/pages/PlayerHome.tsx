@@ -607,7 +607,7 @@ const PlayerHome: React.FC = () => {
                         <div
                           key={membership.id}
                           className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-surface-muted transition-colors ${isActive ? 'bg-team-primary/5' : ''}`}
-                          onClick={() => navigate(`/teams/${team.id}`)}
+                          onClick={() => navigate(`/teams/${team.id}/roster`)}
                         >
                           <Avatar
                             src={team.team_logo_url || team.team_photo_url}
@@ -821,7 +821,7 @@ const PlayerHome: React.FC = () => {
                           ? `linear-gradient(135deg, hsl(${palette.primary} / 0.05), transparent)`
                           : undefined,
                       }}
-                      onClick={() => navigate(`/teams/${team.id}`)}
+                      onClick={() => navigate(`/teams/${team.id}/roster`)}
                     >
                       <div className="flex items-center gap-3">
                         <Avatar
