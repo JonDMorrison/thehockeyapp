@@ -352,8 +352,12 @@ const PlayerToday: React.FC = () => {
 
       if (error) throw error;
       
+      // Always update localSessionStatus based on server data (or reset if no data)
       if (data) {
         setLocalSessionStatus(data.status as 'none' | 'partial' | 'complete');
+      } else {
+        // No session completion for this card yet - reset to 'none'
+        setLocalSessionStatus('none');
       }
       
       return data as SessionCompletion | null;
