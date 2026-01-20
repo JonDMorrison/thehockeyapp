@@ -449,10 +449,35 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Short Code - Large & Easy to Read */}
+                  {invite.short_code && (
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Team Code (say it at the rink)</p>
+                      <p className="text-2xl font-bold font-mono tracking-wider text-primary">
+                        {invite.short_code}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mt-2"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(invite.short_code);
+                          setCopied(true);
+                          toast.success("Code copied");
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                      >
+                        {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+                        Copy Code
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Full Link */}
                   <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                     <div className="flex items-center gap-2 mb-2">
                       <LinkIcon className="w-4 h-4 text-green-600" />
-                      <p className="text-sm font-medium text-green-700 dark:text-green-400">Active Invite Link</p>
+                      <p className="text-sm font-medium text-green-700 dark:text-green-400">Invite Link</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                       <Calendar className="w-3 h-3" />
@@ -498,7 +523,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       className="text-destructive hover:bg-destructive/10"
                     >
                       <RefreshCw className="w-4 h-4" />
-                      Regenerate Link
+                      Regenerate
                     </Button>
                     <Button variant="team" onClick={() => onOpenChange(false)}>
                       Done
