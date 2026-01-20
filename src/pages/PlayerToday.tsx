@@ -950,13 +950,11 @@ const PlayerToday: React.FC = () => {
               </AppCard>
               
               <Button
-                variant="outline"
                 className="w-full"
                 size="lg"
                 onClick={() => navigate(`/players/${playerId}/home`)}
               >
-                <Flame className="w-5 h-5 mr-2" />
-                Do Bonus Training
+                Done
               </Button>
             </div>
           )}
