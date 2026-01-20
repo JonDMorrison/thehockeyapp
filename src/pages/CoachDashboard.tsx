@@ -23,6 +23,7 @@ import { CoachDock } from "@/components/dashboard/CoachDock";
 import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { ActiveProgramsSection } from "@/components/dashboard/ActiveProgramsSection";
+import { AssignedWorkoutsSection } from "@/components/dashboard/AssignedWorkoutsSection";
 import { TeamPulseBar } from "@/components/dashboard/TeamPulseBar";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
@@ -289,6 +290,9 @@ const CoachDashboard: React.FC = () => {
 
         {/* Active Programs Section */}
         <ActiveProgramsSection teamId={id!} />
+
+        {/* Assigned Workouts Section */}
+        <AssignedWorkoutsSection teamId={id!} />
 
         {/* Team Goal Section */}
         <TeamGoalCard
