@@ -24,6 +24,7 @@ import { OnboardingProgress } from "@/components/dashboard/OnboardingProgress";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { ActiveProgramsSection } from "@/components/dashboard/ActiveProgramsSection";
 import { AssignedWorkoutsSection } from "@/components/dashboard/AssignedWorkoutsSection";
+import { CoachCheersSection } from "@/components/dashboard/CoachCheersSection";
 import { TeamPulseBar } from "@/components/dashboard/TeamPulseBar";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
@@ -299,6 +300,9 @@ const CoachDashboard: React.FC = () => {
           teamId={id!}
           rosterCount={dashboard.pulse.players_count}
         />
+
+        {/* Team Cheers Section */}
+        {hasPlayers && <CoachCheersSection teamId={id!} />}
 
         {/* Team Pulse Bar - compact stats */}
         {hasPlayers && (
