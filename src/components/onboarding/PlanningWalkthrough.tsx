@@ -14,23 +14,16 @@ interface WalkthroughStep {
 
 const steps: WalkthroughStep[] = [
   {
-    id: "import-roster",
-    title: "Import Your Roster",
-    description: "Add your players quickly—type names manually or import from a spreadsheet. Each player gets their own profile to track progress.",
-    icon: <Users className="w-6 h-6" />,
+    id: "welcome",
+    title: "Welcome to Your Dashboard",
+    description: "This is your command center. From here you'll create workouts, track your players' progress, and keep everyone motivated. Let's show you around.",
+    icon: <Sparkles className="w-6 h-6" />,
     gradient: "from-amber-500 to-orange-500",
   },
   {
-    id: "sync-calendar",
-    title: "Sync Your Calendar",
-    description: "Connect your team's schedule from TeamSnap, SportsEngine, or any iCal link. Games and practices appear automatically—no double entry.",
-    icon: <CalendarSync className="w-6 h-6" />,
-    gradient: "from-cyan-500 to-blue-500",
-  },
-  {
     id: "add-workout",
-    title: "Add a Single Workout",
-    description: "Need something quick for today or a specific date? This creates one workout that players can check off. Great for game days or one-off drills.",
+    title: "Create Your First Workout",
+    description: "Start here—add a workout for today or any date. Pick the drills, set shot counts, and your players will see it instantly. Takes just a minute.",
     icon: <CalendarPlus className="w-6 h-6" />,
     gradient: "from-emerald-500 to-teal-500",
   },
@@ -49,18 +42,18 @@ const steps: WalkthroughStep[] = [
     gradient: "from-purple-500 to-pink-500",
   },
   {
-    id: "monitor-activity",
-    title: "Monitor Player Activity",
-    description: "See who's training and who needs a nudge. Track completion rates, shot counts, and streaks—all in real time as players check off tasks.",
-    icon: <BarChart3 className="w-6 h-6" />,
-    gradient: "from-rose-500 to-red-500",
+    id: "invite-players",
+    title: "Invite Players & Families",
+    description: "Share your team code with players and parents. They'll join in seconds, see assigned workouts, and start checking off tasks right away.",
+    icon: <Users className="w-6 h-6" />,
+    gradient: "from-cyan-500 to-blue-500",
   },
   {
-    id: "share-families",
-    title: "Share with Families",
-    description: "Invite parents and guardians so they can see their child's progress and help with check-offs. Everyone stays in the loop, no extra apps needed.",
-    icon: <Share2 className="w-6 h-6" />,
-    gradient: "from-violet-500 to-purple-500",
+    id: "track-progress",
+    title: "Track Progress",
+    description: "See who's training and who needs encouragement. Connect your team calendar to auto-detect game days, and watch completion rates in real time.",
+    icon: <BarChart3 className="w-6 h-6" />,
+    gradient: "from-rose-500 to-red-500",
   },
 ];
 
