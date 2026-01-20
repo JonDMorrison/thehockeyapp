@@ -389,20 +389,7 @@ const PlayerHome: React.FC = () => {
             </Button>
             <div className="flex items-center gap-2">
               <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
-              <span className="font-semibold text-foreground hidden sm:inline">The Hockey App</span>
-            </div>
-            {/* Only show player info in header on mobile */}
-            <div className="md:hidden flex items-center gap-3">
-              <Avatar
-                src={player.profile_photo_url}
-                fallback={`${player.first_name} ${player.last_initial || ""}`}
-                size="sm"
-              />
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold truncate">
-                  {player.first_name} {player.last_initial && `${player.last_initial}.`}
-                </h1>
-              </div>
+              <span className="font-semibold text-foreground">The Hockey App</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
