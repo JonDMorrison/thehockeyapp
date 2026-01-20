@@ -44,6 +44,7 @@ import { TeamActivityFeed } from "@/components/player/TeamActivityFeed";
 import { TeammateRoster } from "@/components/player/TeammateRoster";
 import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
 import { TeamCheersFeed } from "@/components/player/TeamCheersFeed";
+import { UpcomingWorkouts } from "@/components/player/UpcomingWorkouts";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { format, subDays, parseISO } from "date-fns";
 import logoImage from "@/assets/hockey-app-logo.png";
@@ -508,6 +509,9 @@ const PlayerHome: React.FC = () => {
                 </AppCard>
               )}
 
+              {/* Upcoming Workouts - All Teams */}
+              <UpcomingWorkouts playerId={id!} />
+
               {/* Teammates Section - Moved to main content for prominence */}
               {preferences?.active_team_id && (
                 <div ref={teammatesRef}>
@@ -754,6 +758,9 @@ const PlayerHome: React.FC = () => {
               )}
             </AppCard>
           )}
+
+          {/* Upcoming Workouts - All Teams - Mobile */}
+          <UpcomingWorkouts playerId={id!} compact />
 
           {/* Weekly Summary - Mobile */}
           {preferences?.active_team_id && (
