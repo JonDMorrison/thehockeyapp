@@ -48,6 +48,7 @@ import { UpcomingWorkouts } from "@/components/player/UpcomingWorkouts";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { format, subDays, parseISO } from "date-fns";
 import logoImage from "@/assets/hockey-app-logo.png";
+import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
@@ -796,21 +797,10 @@ const PlayerHome: React.FC = () => {
           )}
 
           {/* Teams Section - Mobile */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/join?player=${id}`)}
-                className="text-team-primary"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Join Team
-              </Button>
-            </div>
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
 
-            {memberships && memberships.length > 0 ? (
+            {memberships && memberships.length > 0 && (
               <div className="space-y-3">
                 {memberships.map((membership) => {
                   const team = membership.teams;
@@ -853,19 +843,10 @@ const PlayerHome: React.FC = () => {
                   );
                 })}
               </div>
-            ) : (
-              <AppCard>
-                <EmptyState
-                  icon={Users}
-                  title="No teams yet"
-                  description="Join a team using an invite code from your coach."
-                  action={{
-                    label: "Join a Team",
-                    onClick: () => navigate(`/join?player=${id}`),
-                  }}
-                />
-              </AppCard>
             )}
+
+            {/* Join Team Card - Always visible */}
+            <JoinTeamCard playerId={id!} />
           </div>
 
           {/* Quick Actions - Mobile */}

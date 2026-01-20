@@ -1516,6 +1516,7 @@ export type Database = {
           created_by_user_id: string
           expires_at: string
           id: string
+          short_code: string | null
           status: string | null
           team_id: string
           token: string
@@ -1525,6 +1526,7 @@ export type Database = {
           created_by_user_id: string
           expires_at: string
           id?: string
+          short_code?: string | null
           status?: string | null
           team_id: string
           token: string
@@ -1534,6 +1536,7 @@ export type Database = {
           created_by_user_id?: string
           expires_at?: string
           id?: string
+          short_code?: string | null
           status?: string | null
           team_id?: string
           token?: string
@@ -2216,6 +2219,7 @@ export type Database = {
         Args: { p_player_id: string }
         Returns: Json
       }
+      generate_team_short_code: { Args: { p_team_id: string }; Returns: string }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
       get_team_dashboard_snapshot: {
         Args: { p_team_id: string }
@@ -2255,6 +2259,10 @@ export type Database = {
         Returns: Json
       }
       preview_team_by_invite: { Args: { invite_token: string }; Returns: Json }
+      preview_team_by_short_code: {
+        Args: { p_short_code: string }
+        Returns: Json
+      }
       redeem_guardian_invite: { Args: { invite_token: string }; Returns: Json }
       redeem_team_adult_invite: {
         Args: { invite_token: string }

@@ -50,17 +50,37 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
 
     setIsValidating(true);
     try {
-      // Check if the invite code is valid
+      const code = inviteCode.trim().toUpperCase();
+      
+      // Try short code first (format: TEAM-1234)
+      const { data: shortCodeResult } = await supabase.rpc(
+        "preview_team_by_short_code",
+        { p_short_code: code }
+      );
+
+      const shortCodeData = shortCodeResult as {
+        success: boolean;
+        invite_token?: string;
+        error?: string;
+      } | null;
+
+      if (shortCodeData?.success && shortCodeData.invite_token) {
+        // Navigate with the full token from the short code lookup
+        navigate(`/join/${shortCodeData.invite_token}?playerId=${playerId}`);
+        return;
+      }
+
+      // Fall back to full token lookup
       const { data: invite, error } = await supabase
         .from("team_invites")
-        .select("id, team_id, status, expires_at, teams(name)")
-        .eq("token", inviteCode.trim())
+        .select("id, team_id, token, status, expires_at, teams(name)")
+        .eq("token", code)
         .single();
 
       if (error || !invite) {
         toast({
           title: "Invalid code",
-          description: "That invite code wasn't found. Check with your coach.",
+          description: "That code wasn't found. Check with your coach.",
           variant: "destructive",
         });
         return;
@@ -85,7 +105,7 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
       }
 
       // Navigate to the join flow with player pre-selected
-      navigate(`/join/${inviteCode.trim()}?playerId=${playerId}`);
+      navigate(`/join/${invite.token}?playerId=${playerId}`);
     } catch (err) {
       toast({
         title: "Error",
@@ -119,10 +139,10 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
             {showInput ? (
               <div className="mt-3 flex gap-2">
                 <Input
-                  placeholder="Enter invite code"
+                  placeholder="TEAM-0000"
                   value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
-                  className="text-sm h-9"
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  className="text-sm h-9 font-mono uppercase"
                   onKeyDown={(e) => e.key === "Enter" && handleValidateCode()}
                 />
                 <Button
@@ -222,10 +242,10 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
         </p>
         <div className="flex gap-2">
           <Input
-            placeholder="Enter invite code"
+            placeholder="TEAM-0000"
             value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-            className="text-sm"
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            className="text-sm font-mono uppercase"
             onKeyDown={(e) => e.key === "Enter" && handleValidateCode()}
           />
           <Button onClick={handleValidateCode} disabled={isValidating}>
