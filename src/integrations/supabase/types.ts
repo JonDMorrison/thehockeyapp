@@ -1256,7 +1256,8 @@ export type Database = {
           cheer_type: string
           content: string
           created_at: string
-          from_player_id: string
+          from_player_id: string | null
+          from_user_id: string | null
           id: string
           is_read: boolean | null
           team_id: string
@@ -1266,7 +1267,8 @@ export type Database = {
           cheer_type?: string
           content: string
           created_at?: string
-          from_player_id: string
+          from_player_id?: string | null
+          from_user_id?: string | null
           id?: string
           is_read?: boolean | null
           team_id: string
@@ -1276,7 +1278,8 @@ export type Database = {
           cheer_type?: string
           content?: string
           created_at?: string
-          from_player_id?: string
+          from_player_id?: string | null
+          from_user_id?: string | null
           id?: string
           is_read?: boolean | null
           team_id?: string

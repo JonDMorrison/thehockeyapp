@@ -12,12 +12,24 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/components/app/Toast";
-import { Heart, Send, Sparkles, MessageCircle, ChevronDown } from "lucide-react";
+import { Heart, Send, Sparkles, MessageCircle, ChevronDown, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface CoachCheersSectionProps {
   teamId: string;
 }
+
+type SenderOption = {
+  type: "coach";
+  userId: string;
+  displayName: string;
+} | {
+  type: "player";
+  playerId: string;
+  firstName: string;
+  lastInitial: string;
+  photoUrl?: string | null;
+};
 
 const QUICK_EMOJIS = ["🔥", "💪", "⭐", "🏒", "👏", "🎯", "💯", "🚀"];
 
@@ -27,7 +39,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-  const [selectedSender, setSelectedSender] = useState<string | null>(null);
+  const [selectedSender, setSelectedSender] = useState<SenderOption | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [showSenderPicker, setShowSenderPicker] = useState(false);
@@ -72,6 +84,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
           cheer_type,
           content,
           created_at,
+          from_player_id,
+          from_user_id,
           from_player:from_player_id(id, first_name, last_initial, profile_photo_url),
           to_player:to_player_id(id, first_name, last_initial)
         `)
@@ -80,7 +94,26 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
         .limit(5);
 
       if (error) throw error;
-      return data;
+      
+      // Fetch coach profiles for cheers sent by coaches
+      const coachUserIds = data?.filter(c => c.from_user_id && !c.from_player_id).map(c => c.from_user_id) || [];
+      let coachProfiles: Record<string, string> = {};
+      
+      if (coachUserIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, display_name")
+          .in("user_id", coachUserIds);
+        
+        profiles?.forEach(p => {
+          if (p.user_id) coachProfiles[p.user_id] = p.display_name || "Coach";
+        });
+      }
+      
+      return data?.map(cheer => ({
+        ...cheer,
+        coachName: cheer.from_user_id ? coachProfiles[cheer.from_user_id] : null,
+      }));
     },
     enabled: !!teamId,
   });
@@ -128,30 +161,62 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
     enabled: !!user,
   });
 
-  // Default to first coach player if no sender selected
-  const currentSender = selectedSender 
-    ? coachPlayers?.find(p => p.id === selectedSender) 
-    : coachPlayers?.[0];
+  // Build sender options: Coach first, then player profiles
+  const senderOptions: SenderOption[] = React.useMemo(() => {
+    const options: SenderOption[] = [];
+    
+    // Always add Coach option
+    if (user) {
+      options.push({
+        type: "coach",
+        userId: user.id,
+        displayName: coachProfile?.display_name || "Coach",
+      });
+    }
+    
+    // Add player profiles
+    coachPlayers?.forEach(player => {
+      options.push({
+        type: "player",
+        playerId: player.id,
+        firstName: player.first_name,
+        lastInitial: player.last_initial || "",
+        photoUrl: player.profile_photo_url,
+      });
+    });
+    
+    return options;
+  }, [user, coachProfile, coachPlayers]);
+
+  // Default to Coach identity
+  const currentSender = selectedSender || senderOptions[0];
 
   const sendCheer = useMutation({
     mutationFn: async ({
-      fromPlayerId,
       toPlayerId,
       content,
       type,
     }: {
-      fromPlayerId: string;
       toPlayerId: string;
       content: string;
       type: "emoji" | "message";
     }) => {
-      const { error } = await supabase.from("team_cheers").insert({
+      if (!currentSender) throw new Error("No sender selected");
+      
+      const insertData: any = {
         team_id: teamId,
-        from_player_id: fromPlayerId,
         to_player_id: toPlayerId,
         cheer_type: type,
         content,
-      });
+      };
+      
+      if (currentSender.type === "coach") {
+        insertData.from_user_id = currentSender.userId;
+      } else {
+        insertData.from_player_id = currentSender.playerId;
+      }
+      
+      const { error } = await supabase.from("team_cheers").insert(insertData);
 
       if (error) throw error;
     },
@@ -169,19 +234,21 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
 
   const handleSendCheer = (toPlayerId: string, content: string, type: "emoji" | "message") => {
     if (!currentSender) {
-      toast.error("No player linked", "Add a player to your account to send cheers");
+      toast.error("Select a sender", "Choose who to send the cheer from");
       return;
     }
-    sendCheer.mutate({
-      fromPlayerId: currentSender.id,
-      toPlayerId,
-      content,
-      type,
-    });
+    sendCheer.mutate({ toPlayerId, content, type });
   };
 
   const selectedPlayerData = roster?.find((p) => p.playerId === selectedPlayer);
-  const hasMultipleSenders = coachPlayers && coachPlayers.length > 1;
+  const hasMultipleSenders = senderOptions.length > 1;
+
+  const getSenderDisplay = (sender: SenderOption) => {
+    if (sender.type === "coach") {
+      return sender.displayName;
+    }
+    return `${sender.firstName} ${sender.lastInitial}`;
+  };
 
   return (
     <AppCard>
@@ -200,55 +267,81 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
           <PopoverContent className="w-72 p-3" align="end">
             {!selectedPlayer ? (
               <div className="space-y-2">
-                {/* Sender selection - only show if coach has multiple players */}
-                {hasMultipleSenders && (
-                  <div className="mb-3 pb-3 border-b">
-                    <p className="text-xs text-muted-foreground mb-1.5">Sending as:</p>
-                    {showSenderPicker ? (
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {coachPlayers?.map((player) => (
-                          <Button
-                            key={player.id}
-                            variant={selectedSender === player.id || (!selectedSender && player.id === coachPlayers[0]?.id) ? "secondary" : "ghost"}
-                            className="w-full justify-start h-auto py-1.5"
-                            onClick={() => {
-                              setSelectedSender(player.id);
-                              setShowSenderPicker(false);
-                            }}
-                          >
-                            <Avatar
-                              src={player.profile_photo_url}
-                              fallback={player.first_name}
-                            size="sm"
-                            />
-                            <span className="ml-2 text-xs">
-                              {player.first_name} {player.last_initial}
+                {/* Sender selection */}
+                <div className="mb-3 pb-3 border-b">
+                  <p className="text-xs text-muted-foreground mb-1.5">Sending as:</p>
+                  {showSenderPicker ? (
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {senderOptions.map((option, idx) => (
+                        <Button
+                          key={option.type === "coach" ? "coach" : option.playerId}
+                          variant={currentSender === option ? "secondary" : "ghost"}
+                          className="w-full justify-start h-auto py-1.5"
+                          onClick={() => {
+                            setSelectedSender(option);
+                            setShowSenderPicker(false);
+                          }}
+                        >
+                          {option.type === "coach" ? (
+                            <>
+                              <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
+                                <Shield className="w-3 h-3 text-team-primary" />
+                              </div>
+                              <span className="ml-2 text-xs font-medium">
+                                {option.displayName}
+                                <span className="text-muted-foreground ml-1">(Coach)</span>
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Avatar
+                                src={option.photoUrl}
+                                fallback={option.firstName}
+                                size="sm"
+                              />
+                              <span className="ml-2 text-xs">
+                                {option.firstName} {option.lastInitial}
+                              </span>
+                            </>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-between h-auto py-1.5"
+                      onClick={() => setShowSenderPicker(true)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {currentSender?.type === "coach" ? (
+                          <>
+                            <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
+                              <Shield className="w-3 h-3 text-team-primary" />
+                            </div>
+                            <span className="text-xs">
+                              {currentSender.displayName}
+                              {hasMultipleSenders && <span className="text-muted-foreground ml-1">(Coach)</span>}
                             </span>
-                          </Button>
-                        ))}
+                          </>
+                        ) : currentSender?.type === "player" ? (
+                          <>
+                            <Avatar
+                              src={currentSender.photoUrl}
+                              fallback={currentSender.firstName}
+                              size="sm"
+                            />
+                            <span className="text-xs">
+                              {currentSender.firstName} {currentSender.lastInitial}
+                            </span>
+                          </>
+                        ) : null}
                       </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full justify-between h-auto py-1.5"
-                        onClick={() => setShowSenderPicker(true)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Avatar
-                            src={currentSender?.profile_photo_url}
-                            fallback={currentSender?.first_name || "?"}
-                            size="sm"
-                          />
-                          <span className="text-xs">
-                            {currentSender?.first_name} {currentSender?.last_initial}
-                          </span>
-                        </div>
-                        <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                    )}
-                  </div>
-                )}
+                      {hasMultipleSenders && <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+                    </Button>
+                  )}
+                </div>
                 
                 <p className="text-sm font-medium mb-2">Send a cheer to:</p>
                 <div className="max-h-48 overflow-y-auto space-y-1">
@@ -290,7 +383,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                 {/* Show who is sending */}
                 {currentSender && (
                   <p className="text-xs text-muted-foreground">
-                    From: {currentSender.first_name} {currentSender.last_initial}
+                    From: {getSenderDisplay(currentSender)}
+                    {currentSender.type === "coach" && " (Coach)"}
                   </p>
                 )}
 
@@ -345,41 +439,55 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
       {/* Recent cheers feed */}
       {recentCheers && recentCheers.length > 0 ? (
         <div className="space-y-2">
-          {recentCheers.map((cheer) => (
-            <div
-              key={cheer.id}
-              className="flex items-start gap-2 p-2 rounded-lg bg-muted/30"
-            >
-              <Avatar
-                src={(cheer.from_player as any)?.profile_photo_url}
-                fallback={(cheer.from_player as any)?.first_name || "?"}
-                size="sm"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-1 flex-wrap text-xs">
-                  <span className="font-medium">
-                    {(cheer.from_player as any)?.first_name}
-                  </span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className="font-medium">
-                    {(cheer.to_player as any)?.first_name}
-                  </span>
+          {recentCheers.map((cheer) => {
+            const isFromCoach = cheer.from_user_id && !cheer.from_player_id;
+            const senderName = isFromCoach 
+              ? cheer.coachName 
+              : (cheer.from_player as any)?.first_name;
+            
+            return (
+              <div
+                key={cheer.id}
+                className="flex items-start gap-2 p-2 rounded-lg bg-muted/30"
+              >
+                {isFromCoach ? (
+                  <div className="w-8 h-8 rounded-full bg-team-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-4 h-4 text-team-primary" />
+                  </div>
+                ) : (
+                  <Avatar
+                    src={(cheer.from_player as any)?.profile_photo_url}
+                    fallback={(cheer.from_player as any)?.first_name || "?"}
+                    size="sm"
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-1 flex-wrap text-xs">
+                    <span className="font-medium">
+                      {senderName}
+                      {isFromCoach && <span className="text-muted-foreground ml-1">(Coach)</span>}
+                    </span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="font-medium">
+                      {(cheer.to_player as any)?.first_name}
+                    </span>
+                  </div>
+                  <div className="mt-0.5">
+                    {cheer.cheer_type === "emoji" ? (
+                      <span className="text-xl">{cheer.content}</span>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic truncate">
+                        "{cheer.content}"
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    {formatDistanceToNow(new Date(cheer.created_at), { addSuffix: true })}
+                  </p>
                 </div>
-                <div className="mt-0.5">
-                  {cheer.cheer_type === "emoji" ? (
-                    <span className="text-xl">{cheer.content}</span>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic truncate">
-                      "{cheer.content}"
-                    </p>
-                  )}
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {formatDistanceToNow(new Date(cheer.created_at), { addSuffix: true })}
-                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-4 text-center">
