@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/components/app/Toast";
-import { Heart, Send, Sparkles, MessageCircle } from "lucide-react";
+import { Heart, Send, Sparkles, MessageCircle, ChevronDown } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface CoachCheersSectionProps {
@@ -27,8 +27,10 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [selectedSender, setSelectedSender] = useState<string | null>(null);
   const [customMessage, setCustomMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [showSenderPicker, setShowSenderPicker] = useState(false);
 
   // Fetch roster for sending cheers
   const { data: roster } = useQuery({
@@ -96,6 +98,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
           id,
           first_name,
           last_initial,
+          profile_photo_url,
           team_memberships!inner(team_id, status)
         `)
         .eq("owner_user_id", user.id)
@@ -107,6 +110,28 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
     },
     enabled: !!user && !!teamId,
   });
+
+  // Get coach's display name from profile
+  const { data: coachProfile } = useQuery({
+    queryKey: ["coach-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Default to first coach player if no sender selected
+  const currentSender = selectedSender 
+    ? coachPlayers?.find(p => p.id === selectedSender) 
+    : coachPlayers?.[0];
 
   const sendCheer = useMutation({
     mutationFn: async ({
@@ -143,14 +168,12 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
   });
 
   const handleSendCheer = (toPlayerId: string, content: string, type: "emoji" | "message") => {
-    // Use the first coach player as the sender, or show an error
-    const fromPlayer = coachPlayers?.[0];
-    if (!fromPlayer) {
+    if (!currentSender) {
       toast.error("No player linked", "Add a player to your account to send cheers");
       return;
     }
     sendCheer.mutate({
-      fromPlayerId: fromPlayer.id,
+      fromPlayerId: currentSender.id,
       toPlayerId,
       content,
       type,
@@ -158,6 +181,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
   };
 
   const selectedPlayerData = roster?.find((p) => p.playerId === selectedPlayer);
+  const hasMultipleSenders = coachPlayers && coachPlayers.length > 1;
 
   return (
     <AppCard>
@@ -176,6 +200,56 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
           <PopoverContent className="w-72 p-3" align="end">
             {!selectedPlayer ? (
               <div className="space-y-2">
+                {/* Sender selection - only show if coach has multiple players */}
+                {hasMultipleSenders && (
+                  <div className="mb-3 pb-3 border-b">
+                    <p className="text-xs text-muted-foreground mb-1.5">Sending as:</p>
+                    {showSenderPicker ? (
+                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                        {coachPlayers?.map((player) => (
+                          <Button
+                            key={player.id}
+                            variant={selectedSender === player.id || (!selectedSender && player.id === coachPlayers[0]?.id) ? "secondary" : "ghost"}
+                            className="w-full justify-start h-auto py-1.5"
+                            onClick={() => {
+                              setSelectedSender(player.id);
+                              setShowSenderPicker(false);
+                            }}
+                          >
+                            <Avatar
+                              src={player.profile_photo_url}
+                              fallback={player.first_name}
+                            size="sm"
+                            />
+                            <span className="ml-2 text-xs">
+                              {player.first_name} {player.last_initial}
+                            </span>
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-between h-auto py-1.5"
+                        onClick={() => setShowSenderPicker(true)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Avatar
+                            src={currentSender?.profile_photo_url}
+                            fallback={currentSender?.first_name || "?"}
+                            size="sm"
+                          />
+                          <span className="text-xs">
+                            {currentSender?.first_name} {currentSender?.last_initial}
+                          </span>
+                        </div>
+                        <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
                 <p className="text-sm font-medium mb-2">Send a cheer to:</p>
                 <div className="max-h-48 overflow-y-auto space-y-1">
                   {roster?.map((player) => (
@@ -212,6 +286,13 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                     To: {selectedPlayerData?.firstName}
                   </span>
                 </div>
+
+                {/* Show who is sending */}
+                {currentSender && (
+                  <p className="text-xs text-muted-foreground">
+                    From: {currentSender.first_name} {currentSender.last_initial}
+                  </p>
+                )}
 
                 {/* Quick emoji buttons */}
                 <div className="grid grid-cols-4 gap-2">
