@@ -249,6 +249,7 @@ const CoachDashboard: React.FC = () => {
         <TodayHeader
           teamName={dashboard.team.name}
           seasonLabel={dashboard.team.season_label}
+          teamLogoUrl={dashboard.team.logo_url}
           date={dashboard.today.date}
           mode={dashboard.today.mode}
           gameDay={dashboard.today.game_day}
