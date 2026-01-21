@@ -5,6 +5,7 @@ import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
 import { Tag } from "@/components/app/Tag";
 import { SkeletonRoster } from "@/components/app/Skeleton";
+import { BadgeIcon } from "@/components/app/BadgeIcon";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -14,22 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { TeamCheerButton } from "./TeamCheerButton";
-import {
-  Users,
-  Trophy,
-  Flame,
-  Target,
-  Medal,
-  CheckCircle,
-  Calendar,
-  Star,
-  Award,
-  Zap,
-  Shield,
-  Crown,
-  Brain,
-  ChevronRight,
-} from "lucide-react";
+import { Users, Trophy, Target, ChevronRight } from "lucide-react";
 
 interface TeammateRosterProps {
   teamId: string;
@@ -61,20 +47,6 @@ interface ChallengeProgress {
   targetValue: number;
 }
 
-const iconMap: Record<string, React.ReactNode> = {
-  target: <Target className="w-5 h-5" />,
-  flame: <Flame className="w-5 h-5" />,
-  trophy: <Trophy className="w-5 h-5" />,
-  medal: <Medal className="w-5 h-5" />,
-  "check-circle": <CheckCircle className="w-5 h-5" />,
-  calendar: <Calendar className="w-5 h-5" />,
-  star: <Star className="w-5 h-5" />,
-  award: <Award className="w-5 h-5" />,
-  zap: <Zap className="w-5 h-5" />,
-  shield: <Shield className="w-5 h-5" />,
-  crown: <Crown className="w-5 h-5" />,
-  brain: <Brain className="w-5 h-5" />,
-};
 
 export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   teamId,
@@ -321,11 +293,15 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
                   {selectedBadges.map((badge) => (
                     <div
                       key={badge.id}
-                      className="text-center p-3 rounded-lg bg-gradient-to-br from-team-primary/10 to-team-secondary/5"
+                      className="text-center p-3 rounded-xl hover:bg-accent/50 transition-colors"
                     >
-                      <div className="w-10 h-10 rounded-full bg-team-primary/20 flex items-center justify-center mx-auto mb-2 text-team-primary">
-                        {iconMap[badge.badgeIcon] || <Trophy className="w-5 h-5" />}
-                      </div>
+                      <BadgeIcon
+                        badgeIcon={badge.badgeIcon}
+                        earned
+                        size="sm"
+                        className="mx-auto mb-2"
+                        animate={false}
+                      />
                       <p className="text-xs font-medium line-clamp-2">{badge.name}</p>
                     </div>
                   ))}
@@ -348,9 +324,12 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
                     );
                     return (
                       <div key={progress.challengeId} className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground shrink-0">
-                          {iconMap[progress.badgeIcon] || <Target className="w-4 h-4" />}
-                        </div>
+                        <BadgeIcon
+                          badgeIcon={progress.badgeIcon}
+                          earned={false}
+                          size="xs"
+                          animate={false}
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{progress.name}</p>
                           <ProgressBar value={percentage} className="h-1.5" />
