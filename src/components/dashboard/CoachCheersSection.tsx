@@ -23,6 +23,7 @@ type SenderOption = {
   type: "coach";
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
 } | {
   type: "player";
   playerId: string;
@@ -97,22 +98,28 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
       
       // Fetch coach profiles for cheers sent by coaches
       const coachUserIds = data?.filter(c => c.from_user_id && !c.from_player_id).map(c => c.from_user_id) || [];
-      let coachProfiles: Record<string, string> = {};
+      let coachProfiles: Record<string, { name: string; avatarUrl: string | null }> = {};
       
       if (coachUserIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("user_id, display_name")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", coachUserIds);
         
         profiles?.forEach(p => {
-          if (p.user_id) coachProfiles[p.user_id] = p.display_name || "Coach";
+          if (p.user_id) {
+            coachProfiles[p.user_id] = {
+              name: p.display_name || "Coach",
+              avatarUrl: p.avatar_url || null,
+            };
+          }
         });
       }
       
       return data?.map(cheer => ({
         ...cheer,
-        coachName: cheer.from_user_id ? coachProfiles[cheer.from_user_id] : null,
+        coachName: cheer.from_user_id ? coachProfiles[cheer.from_user_id]?.name : null,
+        coachAvatarUrl: cheer.from_user_id ? coachProfiles[cheer.from_user_id]?.avatarUrl : null,
       }));
     },
     enabled: !!teamId,
@@ -144,14 +151,14 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
     enabled: !!user && !!teamId,
   });
 
-  // Get coach's display name from profile
+  // Get coach's profile including avatar
   const { data: coachProfile } = useQuery({
     queryKey: ["coach-profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, avatar_url")
         .eq("user_id", user.id)
         .single();
       
@@ -171,6 +178,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
         type: "coach",
         userId: user.id,
         displayName: coachProfile?.display_name || "Coach",
+        avatarUrl: coachProfile?.avatar_url,
       });
     }
     
@@ -284,9 +292,17 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                         >
                           {option.type === "coach" ? (
                             <>
-                              <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
-                                <Shield className="w-3 h-3 text-team-primary" />
-                              </div>
+                              {option.avatarUrl ? (
+                                <Avatar
+                                  src={option.avatarUrl}
+                                  fallback={option.displayName}
+                                  size="sm"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
+                                  <Shield className="w-3 h-3 text-team-primary" />
+                                </div>
+                              )}
                               <span className="ml-2 text-xs font-medium">
                                 {option.displayName}
                                 <span className="text-muted-foreground ml-1">(Coach)</span>
@@ -317,9 +333,17 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                       <div className="flex items-center gap-2">
                         {currentSender?.type === "coach" ? (
                           <>
-                            <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
-                              <Shield className="w-3 h-3 text-team-primary" />
-                            </div>
+                            {currentSender.avatarUrl ? (
+                              <Avatar
+                                src={currentSender.avatarUrl}
+                                fallback={currentSender.displayName}
+                                size="sm"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
+                                <Shield className="w-3 h-3 text-team-primary" />
+                              </div>
+                            )}
                             <span className="text-xs">
                               {currentSender.displayName}
                               {hasMultipleSenders && <span className="text-muted-foreground ml-1">(Coach)</span>}
@@ -451,9 +475,17 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                 className="flex items-start gap-2 p-2 rounded-lg bg-muted/30"
               >
                 {isFromCoach ? (
-                  <div className="w-8 h-8 rounded-full bg-team-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-4 h-4 text-team-primary" />
-                  </div>
+                  cheer.coachAvatarUrl ? (
+                    <Avatar
+                      src={cheer.coachAvatarUrl}
+                      fallback={cheer.coachName || "Coach"}
+                      size="sm"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-team-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 text-team-primary" />
+                    </div>
+                  )
                 ) : (
                   <Avatar
                     src={(cheer.from_player as any)?.profile_photo_url}
