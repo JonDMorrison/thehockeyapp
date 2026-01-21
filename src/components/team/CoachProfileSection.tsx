@@ -107,10 +107,14 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
         .from("team-media")
         .getPublicUrl(filePath);
 
+      // Use upsert to handle case where profile doesn't exist yet
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ avatar_url: urlData.publicUrl } as any)
-        .eq("user_id", user.id);
+        .upsert({ 
+          user_id: user.id,
+          avatar_url: urlData.publicUrl,
+          email: user.email 
+        } as any, { onConflict: 'user_id' });
 
       if (updateError) throw updateError;
 
@@ -129,21 +133,23 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
       
-      const updateData: Record<string, any> = {
+      const profileData: Record<string, any> = {
+        user_id: user.id,
+        email: user.email,
         display_name: displayName.trim() || null,
       };
       
       // Only include coach fields if user is a coach
       if (isCoach) {
-        updateData.coach_why = coachWhy.trim() || null;
-        updateData.coach_love = coachLove.trim() || null;
-        updateData.coach_memory = coachMemory.trim() || null;
+        profileData.coach_why = coachWhy.trim() || null;
+        profileData.coach_love = coachLove.trim() || null;
+        profileData.coach_memory = coachMemory.trim() || null;
       }
       
+      // Use upsert to create profile if it doesn't exist
       const { error } = await supabase
         .from("profiles")
-        .update(updateData as any)
-        .eq("user_id", user.id);
+        .upsert(profileData as any, { onConflict: 'user_id' });
 
       if (error) throw error;
     },
