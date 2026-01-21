@@ -8,23 +8,10 @@ import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
+import { BadgeIcon } from "@/components/app/BadgeIcon";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  Trophy,
-  Target,
-  Flame,
-  Medal,
-  CheckCircle,
-  Calendar,
-  Star,
-  Award,
-  Zap,
-  Shield,
-  Crown,
-  Brain,
-  Lock,
-} from "lucide-react";
+import { ChevronLeft, Trophy, Target } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Challenge {
   id: string;
@@ -46,21 +33,6 @@ interface PlayerBadge {
   challenge_id: string;
   awarded_at: string;
 }
-
-const iconMap: Record<string, React.ReactNode> = {
-  target: <Target className="w-6 h-6" />,
-  flame: <Flame className="w-6 h-6" />,
-  trophy: <Trophy className="w-6 h-6" />,
-  medal: <Medal className="w-6 h-6" />,
-  "check-circle": <CheckCircle className="w-6 h-6" />,
-  calendar: <Calendar className="w-6 h-6" />,
-  star: <Star className="w-6 h-6" />,
-  award: <Award className="w-6 h-6" />,
-  zap: <Zap className="w-6 h-6" />,
-  shield: <Shield className="w-6 h-6" />,
-  crown: <Crown className="w-6 h-6" />,
-  brain: <Brain className="w-6 h-6" />,
-};
 
 const PlayerBadges: React.FC = () => {
   const { id: playerId } = useParams<{ id: string }>();
@@ -180,11 +152,17 @@ const PlayerBadges: React.FC = () => {
     >
       <PageContainer>
         {/* Summary */}
-        <AppCard className="text-center">
-          <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-3">
-            <Trophy className="w-8 h-8 text-team-primary" />
-          </div>
-          <h2 className="text-2xl font-bold">{earnedBadges.length}</h2>
+        <AppCard className="text-center bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 border-amber-500/20">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200 }}
+          >
+            <BadgeIcon badgeIcon="trophy" size="lg" className="mx-auto mb-3" />
+          </motion.div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+            {earnedBadges.length}
+          </h2>
           <p className="text-text-muted">
             badge{earnedBadges.length !== 1 ? "s" : ""} earned
           </p>
@@ -194,23 +172,28 @@ const PlayerBadges: React.FC = () => {
         {earnedBadges.length > 0 && (
           <div>
             <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
+              <Trophy className="w-4 h-4 text-amber-500" />
               Earned
             </AppCardTitle>
             <div className="grid grid-cols-3 gap-3">
-              {earnedBadges.map((challenge) => (
-                <AppCard
+              {earnedBadges.map((challenge, index) => (
+                <motion.div
                   key={challenge.id}
-                  className="text-center p-4"
-                  style={{
-                    background: "linear-gradient(135deg, hsl(var(--team-primary) / 0.1), hsl(var(--team-secondary) / 0.05))",
-                  }}
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: index * 0.05, type: "spring", stiffness: 200 }}
                 >
-                  <div className="w-12 h-12 rounded-full bg-team-primary/20 flex items-center justify-center mx-auto mb-2 text-team-primary">
-                    {iconMap[challenge.badge_icon] || <Trophy className="w-6 h-6" />}
-                  </div>
-                  <p className="text-xs font-semibold line-clamp-2">{challenge.name}</p>
-                </AppCard>
+                  <AppCard className="text-center p-4 hover:shadow-lg transition-shadow">
+                    <BadgeIcon
+                      badgeIcon={challenge.badge_icon}
+                      earned
+                      size="md"
+                      className="mx-auto mb-2"
+                      animate={false}
+                    />
+                    <p className="text-xs font-semibold line-clamp-2">{challenge.name}</p>
+                  </AppCard>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -224,7 +207,7 @@ const PlayerBadges: React.FC = () => {
               In Progress
             </AppCardTitle>
             <div className="space-y-3">
-              {inProgress.map((challenge) => {
+              {inProgress.map((challenge, index) => {
                 const prog = progressMap.get(challenge.id);
                 const currentValue = prog?.current_value || 0;
                 const percentage = Math.min(
@@ -233,25 +216,35 @@ const PlayerBadges: React.FC = () => {
                 );
 
                 return (
-                  <AppCard key={challenge.id}>
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-text-muted shrink-0">
-                        {iconMap[challenge.badge_icon] || <Lock className="w-5 h-5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{challenge.name}</p>
-                        <p className="text-xs text-text-muted mb-2">
-                          {challenge.description}
-                        </p>
-                        <div className="space-y-1">
-                          <ProgressBar value={percentage} />
-                          <p className="text-xs text-text-muted text-right">
-                            {currentValue.toLocaleString()} / {challenge.target_value.toLocaleString()}
+                  <motion.div
+                    key={challenge.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                  >
+                    <AppCard className="hover:bg-accent/30 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <BadgeIcon
+                          badgeIcon={challenge.badge_icon}
+                          earned={false}
+                          size="sm"
+                          animate={false}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{challenge.name}</p>
+                          <p className="text-xs text-text-muted mb-2">
+                            {challenge.description}
                           </p>
+                          <div className="space-y-1">
+                            <ProgressBar value={percentage} />
+                            <p className="text-xs text-text-muted text-right">
+                              {currentValue.toLocaleString()} / {challenge.target_value.toLocaleString()}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </AppCard>
+                    </AppCard>
+                  </motion.div>
                 );
               })}
             </div>
