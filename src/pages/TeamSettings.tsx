@@ -51,6 +51,7 @@ import { ScheduleSyncSection } from "@/components/team/ScheduleSyncSection";
 import { TrainingPreferencesSection } from "@/components/team/TrainingPreferencesSection";
 import { JoinAsPlayerSection } from "@/components/team/JoinAsPlayerSection";
 import { AddChildSection } from "@/components/team/AddChildSection";
+import { CoachProfileSection } from "@/components/team/CoachProfileSection";
 
 const roleLabels: Record<string, string> = {
   head_coach: "Head Coach",
@@ -641,6 +642,9 @@ const TeamSettings: React.FC = () => {
             </div>
           </div>
         </AppCard>
+
+        {/* Coach Profile Section */}
+        <CoachProfileSection teamId={id} />
 
         {/* Team Bio Section */}
         <TeamBioSection
