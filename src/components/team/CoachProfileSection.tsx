@@ -66,7 +66,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
     }
   }, [profile]);
 
-  // Track changes
+  // Track changes - allow saving even if no profile exists yet
   useEffect(() => {
     if (profile) {
       const changed = 
@@ -75,8 +75,12 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
         coachLove !== (profile.coach_love || "") ||
         coachMemory !== (profile.coach_memory || "");
       setHasChanges(changed);
+    } else if (!isLoading) {
+      // No profile yet - any content means we have changes to save
+      const hasContent = displayName.trim() || coachWhy.trim() || coachLove.trim() || coachMemory.trim();
+      setHasChanges(!!hasContent);
     }
-  }, [displayName, coachWhy, coachLove, coachMemory, profile]);
+  }, [displayName, coachWhy, coachLove, coachMemory, profile, isLoading]);
 
   // Upload avatar
   const uploadAvatar = async (file: File) => {
