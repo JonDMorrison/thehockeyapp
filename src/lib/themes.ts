@@ -117,12 +117,38 @@ export const teamPalettes: TeamPalette[] = [
   },
 ];
 
-export const getTeamPalette = (id: string): TeamPalette => {
+// Custom palette option
+export const CUSTOM_PALETTE_ID = "custom";
+
+export const customPaletteOption: TeamPalette = {
+  id: CUSTOM_PALETTE_ID,
+  displayName: "Custom",
+  primary: "221 83% 53%",
+  secondary: "0 0% 100%",
+  tertiary: "221 70% 45%",
+};
+
+export interface CustomColors {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+}
+
+export const getTeamPalette = (id: string, customColors?: CustomColors | null): TeamPalette => {
+  if (id === CUSTOM_PALETTE_ID && customColors) {
+    return {
+      id: CUSTOM_PALETTE_ID,
+      displayName: "Custom",
+      primary: customColors.primary,
+      secondary: customColors.secondary,
+      tertiary: customColors.tertiary,
+    };
+  }
   return teamPalettes.find(p => p.id === id) || teamPalettes[0];
 };
 
-export const applyTeamTheme = (paletteId: string): void => {
-  const palette = getTeamPalette(paletteId);
+export const applyTeamTheme = (paletteId: string, customColors?: CustomColors | null): void => {
+  const palette = getTeamPalette(paletteId, customColors);
   const root = document.documentElement;
   
   root.style.setProperty('--team-primary', palette.primary);
@@ -131,8 +157,23 @@ export const applyTeamTheme = (paletteId: string): void => {
   
   // Persist selection
   localStorage.setItem('selected-team-theme', paletteId);
+  if (paletteId === CUSTOM_PALETTE_ID && customColors) {
+    localStorage.setItem('custom-team-colors', JSON.stringify(customColors));
+  }
 };
 
 export const getStoredTeamTheme = (): string => {
   return localStorage.getItem('selected-team-theme') || 'toronto';
+};
+
+export const getStoredCustomColors = (): CustomColors | null => {
+  const stored = localStorage.getItem('custom-team-colors');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  }
+  return null;
 };
