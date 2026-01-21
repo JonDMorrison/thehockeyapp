@@ -96,6 +96,7 @@ const TeamSettings: React.FC = () => {
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -157,9 +158,10 @@ const TeamSettings: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Initialize form values
+  // Initialize form values - only once when team data first loads
   useEffect(() => {
-    if (team) {
+    if (team && !initializedRef.current) {
+      initializedRef.current = true;
       setName(team.name);
       setSeasonLabel(team.season_label || "");
       setPaletteId(team.palette_id);
@@ -178,7 +180,7 @@ const TeamSettings: React.FC = () => {
         setTeamTheme(team.palette_id);
       }
     }
-  }, [team, setTeamTheme]);
+  }, [team]);
 
   const currentUserRole = team?.team_roles?.find(
     (r: TeamRole) => r.user_id === user?.id
