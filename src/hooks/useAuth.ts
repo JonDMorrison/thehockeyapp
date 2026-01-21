@@ -23,6 +23,30 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      // Ignore SIGNED_OUT events if we still have a valid session in storage
+      // This prevents spurious logouts when tabs regain focus
+      if (event === 'SIGNED_OUT' && !session) {
+        // Double-check storage before accepting logout
+        supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+          if (currentSession) {
+            // Session still valid, ignore the SIGNED_OUT event
+            setAuthState({
+              user: currentSession.user,
+              session: currentSession,
+              loading: false,
+            });
+          } else {
+            // Truly logged out
+            setAuthState({
+              user: null,
+              session: null,
+              loading: false,
+            });
+          }
+        });
+        return;
+      }
+      
       // Only update state after initial session check completes
       // This prevents race condition where listener fires before getSession
       if (initialSessionChecked.current) {
