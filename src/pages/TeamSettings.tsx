@@ -5,7 +5,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
-import { teamPalettes } from "@/lib/themes";
+import { teamPalettes, CUSTOM_PALETTE_ID, customPaletteOption, getTeamPalette, CustomColors } from "@/lib/themes";
+import { ColorPickerPopover } from "@/components/team/ColorPickerPopover";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -82,6 +83,9 @@ const TeamSettings: React.FC = () => {
   const [name, setName] = useState("");
   const [seasonLabel, setSeasonLabel] = useState("");
   const [paletteId, setPaletteId] = useState("toronto");
+  const [customPrimary, setCustomPrimary] = useState("221 83% 53%");
+  const [customSecondary, setCustomSecondary] = useState("0 0% 100%");
+  const [customTertiary, setCustomTertiary] = useState("221 70% 45%");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [roleToRemove, setRoleToRemove] = useState<TeamRole | null>(null);
@@ -159,7 +163,20 @@ const TeamSettings: React.FC = () => {
       setName(team.name);
       setSeasonLabel(team.season_label || "");
       setPaletteId(team.palette_id);
-      setTeamTheme(team.palette_id);
+      // Load custom colors if available
+      if (team.custom_primary) setCustomPrimary(team.custom_primary);
+      if (team.custom_secondary) setCustomSecondary(team.custom_secondary);
+      if (team.custom_tertiary) setCustomTertiary(team.custom_tertiary);
+      // Apply theme with custom colors if custom palette
+      if (team.palette_id === CUSTOM_PALETTE_ID && team.custom_primary) {
+        setTeamTheme(team.palette_id, {
+          primary: team.custom_primary,
+          secondary: team.custom_secondary || "0 0% 100%",
+          tertiary: team.custom_tertiary || "221 70% 45%",
+        });
+      } else {
+        setTeamTheme(team.palette_id);
+      }
     }
   }, [team, setTeamTheme]);
 
@@ -173,13 +190,22 @@ const TeamSettings: React.FC = () => {
     mutationFn: async () => {
       const validated = teamInfoSchema.parse({ name, season_label: seasonLabel });
       
+      const updateData: Record<string, any> = {
+        name: validated.name,
+        season_label: validated.season_label || null,
+        palette_id: paletteId,
+      };
+      
+      // Include custom colors if using custom palette
+      if (paletteId === CUSTOM_PALETTE_ID) {
+        updateData.custom_primary = customPrimary;
+        updateData.custom_secondary = customSecondary;
+        updateData.custom_tertiary = customTertiary;
+      }
+      
       const { error } = await supabase
         .from("teams")
-        .update({
-          name: validated.name,
-          season_label: validated.season_label || null,
-          palette_id: paletteId,
-        })
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;
@@ -187,7 +213,15 @@ const TeamSettings: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", id] });
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      setTeamTheme(paletteId);
+      if (paletteId === CUSTOM_PALETTE_ID) {
+        setTeamTheme(paletteId, {
+          primary: customPrimary,
+          secondary: customSecondary,
+          tertiary: customTertiary,
+        });
+      } else {
+        setTeamTheme(paletteId);
+      }
       toast.success("Saved", "Team settings updated.");
     },
     onError: (error: Error) => {
@@ -300,7 +334,10 @@ const TeamSettings: React.FC = () => {
     },
   });
 
-  const selectedPalette = teamPalettes.find((p) => p.id === paletteId);
+  // Get the selected palette - for custom, use custom colors
+  const selectedPalette = paletteId === CUSTOM_PALETTE_ID 
+    ? getTeamPalette(CUSTOM_PALETTE_ID, { primary: customPrimary, secondary: customSecondary, tertiary: customTertiary })
+    : teamPalettes.find((p) => p.id === paletteId);
   const teamRoles = (team?.team_roles || []) as TeamRole[];
 
   // Show loading state while auth or data is loading
@@ -474,7 +511,7 @@ const TeamSettings: React.FC = () => {
             </div>
 
             {/* Palette Selection */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 <Palette className="w-4 h-4 text-text-muted" />
                 Team Colors
@@ -504,6 +541,27 @@ const TeamSettings: React.FC = () => {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
+                  {/* Custom option first */}
+                  <SelectItem value={CUSTOM_PALETTE_ID}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex -space-x-1">
+                        <div
+                          className="w-4 h-4 rounded-full border border-background shadow-sm"
+                          style={{ backgroundColor: `hsl(${customPrimary})` }}
+                        />
+                        <div
+                          className="w-4 h-4 rounded-full border border-background shadow-sm"
+                          style={{ backgroundColor: `hsl(${customSecondary})` }}
+                        />
+                        <div
+                          className="w-4 h-4 rounded-full border border-background shadow-sm"
+                          style={{ backgroundColor: `hsl(${customTertiary})` }}
+                        />
+                      </div>
+                      <span>Custom</span>
+                    </div>
+                  </SelectItem>
+                  {/* Preset palettes */}
                   {teamPalettes.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       <div className="flex items-center gap-2">
@@ -528,6 +586,31 @@ const TeamSettings: React.FC = () => {
                 </SelectContent>
               </Select>
 
+              {/* Custom Color Pickers - shown when custom is selected */}
+              {paletteId === CUSTOM_PALETTE_ID && (
+                <div className="p-4 rounded-lg bg-surface-muted space-y-3">
+                  <p className="text-sm font-medium text-text-muted">Pick your colors:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <ColorPickerPopover
+                      label="Primary"
+                      value={customPrimary}
+                      onChange={setCustomPrimary}
+                    />
+                    <ColorPickerPopover
+                      label="Secondary"
+                      value={customSecondary}
+                      onChange={setCustomSecondary}
+                    />
+                    <ColorPickerPopover
+                      label="Tertiary"
+                      value={customTertiary}
+                      onChange={setCustomTertiary}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Preview swatches */}
               {selectedPalette && (
                 <div className="flex items-center gap-2 mt-2">
                   <div
