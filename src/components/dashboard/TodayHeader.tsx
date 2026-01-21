@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 interface TodayHeaderProps {
   teamName: string;
   seasonLabel?: string | null;
+  teamLogoUrl?: string | null;
   date: string;
   mode: "normal" | "game_day";
   gameDay: {
@@ -21,6 +22,7 @@ interface TodayHeaderProps {
 export const TodayHeader: React.FC<TodayHeaderProps> = ({
   teamName,
   seasonLabel,
+  teamLogoUrl,
   date,
   mode,
   gameDay,
@@ -142,20 +144,29 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
             </Button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 group">
-            <h1 className="text-lg font-bold text-foreground">{teamName}</h1>
-            {seasonLabel && (
-              <span className="text-sm text-text-muted">· {seasonLabel}</span>
+          <div className="flex items-center gap-3 group">
+            {teamLogoUrl && (
+              <img 
+                src={teamLogoUrl} 
+                alt={`${teamName} logo`}
+                className="w-10 h-10 object-contain rounded-lg border border-border bg-background"
+              />
             )}
-            {onUpdateTeamName && (
-              <button
-                onClick={() => setIsEditing(true)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
-                aria-label="Edit team name"
-              >
-                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            )}
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-lg font-bold text-foreground">{teamName}</h1>
+              {seasonLabel && (
+                <span className="text-sm text-text-muted">· {seasonLabel}</span>
+              )}
+              {onUpdateTeamName && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
+                  aria-label="Edit team name"
+                >
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
