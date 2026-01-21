@@ -13,6 +13,8 @@ import { User, Camera, Loader2, Heart, Trophy, MessageCircle } from "lucide-reac
 
 interface CoachProfileSectionProps {
   teamId?: string;
+  /** Whether this user has coach roles - controls showing coach bio questions */
+  isCoach?: boolean;
 }
 
 interface ProfileData {
@@ -27,7 +29,10 @@ interface ProfileData {
   updated_at?: string | null;
 }
 
-export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId: _teamId }) => {
+export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ 
+  teamId: _teamId,
+  isCoach = true 
+}) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,14 +129,20 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
       
+      const updateData: Record<string, any> = {
+        display_name: displayName.trim() || null,
+      };
+      
+      // Only include coach fields if user is a coach
+      if (isCoach) {
+        updateData.coach_why = coachWhy.trim() || null;
+        updateData.coach_love = coachLove.trim() || null;
+        updateData.coach_memory = coachMemory.trim() || null;
+      }
+      
       const { error } = await supabase
         .from("profiles")
-        .update({
-          display_name: displayName.trim() || null,
-          coach_why: coachWhy.trim() || null,
-          coach_love: coachLove.trim() || null,
-          coach_memory: coachMemory.trim() || null,
-        } as any)
+        .update(updateData as any)
         .eq("user_id", user.id);
 
       if (error) throw error;
@@ -167,10 +178,10 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
     <AppCard>
       <AppCardTitle className="flex items-center gap-2 mb-1">
         <User className="w-4 h-4 text-team-primary" />
-        My Coach Profile
+        My Profile
       </AppCardTitle>
       <AppCardDescription className="mb-4">
-        Share a bit about yourself with your team
+        {isCoach ? "Your photo and bio visible to your team" : "Your profile information"}
       </AppCardDescription>
 
       <div className="space-y-6">
@@ -179,7 +190,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
           <div className="relative group">
             <Avatar
               src={profile?.avatar_url}
-              fallback={displayName || profile?.email || "C"}
+              fallback={displayName || profile?.email || "U"}
               size="xl"
             />
             <button
@@ -210,78 +221,88 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ teamId
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Coach Smith"
+              placeholder={isCoach ? "Coach Smith" : "Your name"}
               maxLength={50}
             />
             <p className="text-xs text-muted-foreground">
-              This is how players and parents will see you
+              {isCoach 
+                ? "This is how players and parents will see you" 
+                : "This is how others will see you"}
             </p>
           </div>
         </div>
 
-        {/* Coach Questions */}
-        <div className="space-y-4 pt-4 border-t">
-          <p className="text-sm font-medium text-foreground">
-            Help your team get to know you better
-          </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="coachWhy" className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-pink-500" />
-              Why do you coach?
-            </Label>
-            <Textarea
-              id="coachWhy"
-              value={coachWhy}
-              onChange={(e) => setCoachWhy(e.target.value)}
-              placeholder="I love seeing kids develop their skills and confidence..."
-              rows={2}
-              maxLength={300}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {coachWhy.length}/300
+        {/* Coach Questions - Only show for coaches */}
+        {isCoach && (
+          <div className="space-y-4 pt-4 border-t">
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-team-primary" />
+              <p className="text-sm font-medium text-foreground">
+                Coach Bio
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Help your team get to know you better
             </p>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="coachLove" className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4 text-blue-500" />
-              What do you love about coaching?
-            </Label>
-            <Textarea
-              id="coachLove"
-              value={coachLove}
-              onChange={(e) => setCoachLove(e.target.value)}
-              placeholder="The energy at practice, watching breakthroughs happen..."
-              rows={2}
-              maxLength={300}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {coachLove.length}/300
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="coachWhy" className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-pink-500" />
+                Why do you coach?
+              </Label>
+              <Textarea
+                id="coachWhy"
+                value={coachWhy}
+                onChange={(e) => setCoachWhy(e.target.value)}
+                placeholder="I love seeing kids develop their skills and confidence..."
+                rows={2}
+                maxLength={300}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {coachWhy.length}/300
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="coachMemory" className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              What's your best hockey memory?
-            </Label>
-            <Textarea
-              id="coachMemory"
-              value={coachMemory}
-              onChange={(e) => setCoachMemory(e.target.value)}
-              placeholder="Scoring my first goal, winning provincials, a great team moment..."
-              rows={2}
-              maxLength={300}
-              className="resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {coachMemory.length}/300
-            </p>
+            <div className="space-y-2">
+              <Label htmlFor="coachLove" className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-blue-500" />
+                What do you love about coaching?
+              </Label>
+              <Textarea
+                id="coachLove"
+                value={coachLove}
+                onChange={(e) => setCoachLove(e.target.value)}
+                placeholder="The energy at practice, watching breakthroughs happen..."
+                rows={2}
+                maxLength={300}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {coachLove.length}/300
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coachMemory" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" />
+                What's your best hockey memory?
+              </Label>
+              <Textarea
+                id="coachMemory"
+                value={coachMemory}
+                onChange={(e) => setCoachMemory(e.target.value)}
+                placeholder="Scoring my first goal, winning provincials, a great team moment..."
+                rows={2}
+                maxLength={300}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {coachMemory.length}/300
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Save Button */}
         <Button

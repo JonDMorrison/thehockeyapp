@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ChevronRight, User, Shield, Bell, CreditCard, HelpCircle, LogOut, Loader2 } from "lucide-react";
+import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
@@ -67,7 +67,7 @@ export default function Settings() {
 
   const header = (
     <div className="px-5 py-4 border-b border-border bg-background">
-      <h1 className="text-xl font-semibold">Settings</h1>
+      <h1 className="text-xl font-semibold">Account & Profile</h1>
     </div>
   );
 
@@ -121,8 +121,10 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Coach Profile Section - Only show for coaches */}
-        {isCoach && <CoachProfileSection />}
+        {/* Profile Section - Photo, Name, and Coach Bio (if coach) */}
+        <section>
+          <CoachProfileSection isCoach={isCoach} />
+        </section>
 
         {/* Preferences Section */}
         <section>
@@ -159,7 +161,7 @@ export default function Settings() {
               onClick={() => window.open("https://thehockeyapp.lovable.app/about", "_blank")}
             />
             <SettingsRow 
-              icon={CreditCard} 
+              icon={FileText} 
               label="Terms & Privacy" 
               onClick={() => navigate("/terms")}
             />
