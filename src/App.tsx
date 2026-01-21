@@ -64,6 +64,7 @@ const SoloWeekPlanner = lazy(() => import("./pages/SoloWeekPlanner"));
 const SoloProgramBuilder = lazy(() => import("./pages/SoloProgramBuilder"));
 const SoloTryWorkout = lazy(() => import("./pages/SoloTryWorkout"));
 const SoloSettings = lazy(() => import("./pages/SoloSettings"));
+const Settings = lazy(() => import("./pages/Settings"));
 
 const queryClient = new QueryClient();
 
@@ -171,6 +172,7 @@ const AnimatedRoutes = () => {
             <Route path="/today" element={<Today />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/quick-checkoff" element={<QuickCheckoff />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/settings/widgets" element={<WidgetSettings />} />
             
             {/* Catch-all */}
