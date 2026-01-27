@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -12,7 +13,6 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
-  Calendar,
   Target,
   Heart,
   Trophy,
@@ -34,6 +34,12 @@ const RosterPlayerDetail: React.FC = () => {
   const { teamId, playerId } = useParams<{ teamId: string; playerId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { activeView, activePlayerId } = useActiveView();
+
+  // Context-aware back navigation - go to roster, which will handle its own back navigation
+  const handleBack = () => {
+    navigate(`/teams/${teamId}/roster`);
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -172,7 +178,7 @@ const RosterPlayerDetail: React.FC = () => {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => navigate(`/teams/${teamId}/roster`)}
+            onClick={handleBack}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>

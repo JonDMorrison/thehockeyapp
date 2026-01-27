@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -33,9 +34,21 @@ const TeamRoster: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { activeView, activePlayerId } = useActiveView();
   
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteModalTab, setInviteModalTab] = useState<"add-child" | "invite">("add-child");
+
+  // Context-aware back navigation
+  const handleBack = () => {
+    if (activeView === "coach") {
+      navigate(`/teams/${id}`);
+    } else if (activePlayerId) {
+      navigate(`/players/${activePlayerId}/home`);
+    } else {
+      navigate("/today");
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -116,7 +129,7 @@ const TeamRoster: React.FC = () => {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => navigate(`/teams/${id}`)}
+              onClick={handleBack}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
