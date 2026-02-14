@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { logger } from "@/core";
 import { format, addWeeks, startOfWeek, addDays } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -156,10 +157,10 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
           },
         });
 
-        console.log("Generate workout response:", { data, error, weekNum });
+        logger.debug("Generate workout response", { data, error, weekNum });
 
         if (error) {
-          console.error("Edge function error:", error);
+          logger.error("Edge function error", { error });
           // Extract more meaningful error message
           const errorMessage = data?.error || error.message || "Failed to generate workout plan";
           throw new Error(errorMessage);
@@ -185,7 +186,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       fireGoalConfetti();
     },
     onError: (error: Error) => {
-      console.error("Program generation error:", error);
+      logger.error("Program generation error", { error });
       toast.error("Generation failed", error.message);
       setStep("goals");
     },
@@ -282,7 +283,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       handleClose();
     },
     onError: (error: Error) => {
-      console.error("Apply program error:", error);
+      logger.error("Apply program error", { error });
       toast.error("Failed to save", error.message);
     },
   });

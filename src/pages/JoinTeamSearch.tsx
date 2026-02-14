@@ -60,7 +60,7 @@ const JoinTeamSearch: React.FC = () => {
       if (error) throw error;
 
       // Transform to include token
-      return (data || []).map((team: any) => ({
+      return (data || []).map((team: { id: string; name: string; season_label: string | null; team_logo_url: string | null; team_photo_url: string | null; palette_id: string; team_invites: Array<{ token: string }> }) => ({
         id: team.id,
         name: team.name,
         season_label: team.season_label,

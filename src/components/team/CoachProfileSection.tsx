@@ -114,15 +114,15 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
           user_id: user.id,
           avatar_url: urlData.publicUrl,
           email: user.email 
-        } as any, { onConflict: 'user_id' });
+        } as { user_id: string; avatar_url: string; email: string | undefined }, { onConflict: 'user_id' });
 
       if (updateError) throw updateError;
 
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       queryClient.invalidateQueries({ queryKey: ["coach-profile"] });
       toast.success("Photo updated!");
-    } catch (error: any) {
-      toast.error("Upload failed", error.message);
+    } catch (error: unknown) {
+      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setUploading(false);
     }

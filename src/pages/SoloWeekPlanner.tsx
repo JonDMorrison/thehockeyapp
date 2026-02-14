@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { logger } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -180,7 +181,7 @@ export default function SoloWeekPlanner() {
       navigate(`/solo/dashboard/${playerId}`);
     },
     onError: (error: Error) => {
-      console.error("Save error:", error);
+      logger.error("Save error", { error });
       toast.error("Failed to save plan");
     },
   });

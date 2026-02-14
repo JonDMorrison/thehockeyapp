@@ -1,4 +1,5 @@
 import * as React from "react";
+import { logger } from "@/core";
 import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -155,11 +156,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       });
 
       onPhotoUploaded?.(publicUrl);
-    } catch (error: any) {
-      console.error('Photo upload error:', error);
+    } catch (error: unknown) {
+      logger.error('Photo upload error', { error });
       toast({
         title: "Upload failed",
-        description: error.message || "Could not upload photo",
+        description: error instanceof Error ? error.message : "Could not upload photo",
         variant: "destructive",
       });
     } finally {

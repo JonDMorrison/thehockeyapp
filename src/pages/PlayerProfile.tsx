@@ -292,8 +292,8 @@ const PlayerProfile: React.FC = () => {
 
       queryClient.invalidateQueries({ queryKey: ["player", id] });
       toast.success("Photo updated", "Your profile photo has been updated.");
-    } catch (error: any) {
-      toast.error("Upload failed", error.message);
+    } catch (error: unknown) {
+      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {

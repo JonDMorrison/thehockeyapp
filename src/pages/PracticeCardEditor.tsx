@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { AIGeneratedDraft, AIGeneratedTask } from "@/core";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -157,7 +158,7 @@ const PracticeCardEditor: React.FC = () => {
       setIsPublished(!!existingCard.published_at);
       setIsLocked(!!existingCard.locked);
       setTasks(
-        existingCard.tasks.map((t: any) => ({
+        existingCard.tasks.map((t: { id: string; sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean; coach_notes: string | null }) => ({
           id: t.id,
           sort_order: t.sort_order,
           task_type: t.task_type,
@@ -329,14 +330,14 @@ const PracticeCardEditor: React.FC = () => {
 
   const cardDate = parseISO(isEditing && existingCard ? existingCard.date : dateParam);
 
-  const handleAIDraftApply = (data: any) => {
+  const handleAIDraftApply = (data: AIGeneratedDraft) => {
     // Apply AI-generated data to the form
     if (data.title) setTitle(data.title);
     if (data.notes) setNotes(data.notes);
     if (data.tier) setTier(data.tier);
     if (data.tasks && Array.isArray(data.tasks)) {
       setTasks(
-        data.tasks.map((t: any, idx: number) => ({
+        data.tasks.map((t: AIGeneratedTask, idx: number) => ({
           sort_order: idx,
           task_type: t.task_type || "other",
           label: t.label || "",

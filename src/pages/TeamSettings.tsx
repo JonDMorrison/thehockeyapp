@@ -272,8 +272,8 @@ const TeamSettings: React.FC = () => {
 
       queryClient.invalidateQueries({ queryKey: ["team", id] });
       toast.success("Uploaded", `Team ${type} updated.`);
-    } catch (error: any) {
-      toast.error("Upload failed", error.message);
+    } catch (error: unknown) {
+      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setUploading(false);
     }

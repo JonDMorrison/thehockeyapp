@@ -305,7 +305,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
 
                 <div className="space-y-2">
                   <Label>Shoots</Label>
-                  <Select value={shoots} onValueChange={(v: any) => setShoots(v)}>
+                  <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

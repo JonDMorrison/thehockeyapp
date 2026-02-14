@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { AIGeneratedDraft, AIGeneratedTask, AIGeneratedDay } from "@/core";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -84,7 +85,7 @@ const WeekPlanEditor: React.FC = () => {
 
   const isEditing = !!planId && planId !== "new";
   const templateId = searchParams.get("template");
-  const aiDraft = (location.state as any)?.aiDraft;
+  const aiDraft = (location.state as { aiDraft?: AIGeneratedDraft })?.aiDraft;
 
   // Form state
   const [name, setName] = useState("");
@@ -150,12 +151,12 @@ const WeekPlanEditor: React.FC = () => {
 
       return {
         plan: plan as WeekPlan,
-        days: daysData.map((d: any) => ({
+        days: daysData.map((d: { id: string; date: string; title: string | null; notes: string | null; team_week_plan_tasks: Array<{ sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean }> }) => ({
           id: d.id,
           date: d.date,
           title: d.title || "",
           notes: d.notes || "",
-          tasks: (d.team_week_plan_tasks || []).sort((a: any, b: any) => a.sort_order - b.sort_order),
+          tasks: (d.team_week_plan_tasks || []).sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order),
         })),
       };
     },
@@ -256,13 +257,13 @@ const WeekPlanEditor: React.FC = () => {
       for (let i = 0; i < 7; i++) {
         const date = format(addDays(start, i), "yyyy-MM-dd");
         const dayOfWeek = (i + 1) % 7; // Monday = 1, Sunday = 0
-        const templateDay = template.days.find((d: any) => d.day_of_week === dayOfWeek);
+        const templateDay = template.days.find((d: { day_of_week: number }) => d.day_of_week === dayOfWeek);
         
         newDays.push({
           date,
           title: templateDay?.title || "",
           notes: templateDay?.notes || "",
-          tasks: templateDay?.workout_template_tasks?.map((t: any, idx: number) => ({
+          tasks: templateDay?.workout_template_tasks?.map((t: { task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean }, idx: number) => ({
             sort_order: idx,
             task_type: t.task_type,
             label: t.label,
@@ -287,11 +288,11 @@ const WeekPlanEditor: React.FC = () => {
       if (aiDraft.start_date) setStartDate(aiDraft.start_date);
       
       if (aiDraft.days && Array.isArray(aiDraft.days)) {
-        const newDays: PlanDay[] = aiDraft.days.map((d: any) => ({
+        const newDays: PlanDay[] = aiDraft.days.map((d: AIGeneratedDay) => ({
           date: d.date,
           title: d.title || "",
           notes: d.notes || "",
-          tasks: (d.tasks || []).map((t: any, idx: number) => ({
+          tasks: (d.tasks || []).map((t: AIGeneratedTask, idx: number) => ({
             sort_order: idx,
             task_type: t.task_type || "other",
             label: t.label || "",

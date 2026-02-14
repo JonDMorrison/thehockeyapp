@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from "@/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy, Check, Share2, X, Gift, Calendar, Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,7 +68,7 @@ export function InviteFriendModal({
       const baseUrl = window.location.origin;
       setInviteLink(`${baseUrl}/solo/try/${token}`);
     } catch (err) {
-      console.error('Error creating invite:', err);
+      logger.error('Error creating invite', { err });
       toast.error("Couldn't create invite link");
       setSelectedType(null);
     } finally {
