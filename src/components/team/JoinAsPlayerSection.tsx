@@ -161,9 +161,11 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
         });
 
       if (membershipError) {
-        // Check if it's a duplicate
         if (membershipError.code === "23505") {
           throw new Error("You're already on this team's roster");
+        }
+        if (membershipError.message?.includes("team_plan_player_cap_reached")) {
+          throw new Error("This team's plan covers up to 24 players. Ask the head coach to remove a player or upgrade.");
         }
         throw membershipError;
       }

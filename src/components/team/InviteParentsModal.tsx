@@ -201,6 +201,9 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         if (membershipError.code === "23505") {
           throw new Error("This child is already on the team");
         }
+        if (membershipError.message?.includes("team_plan_player_cap_reached")) {
+          throw new Error("This team's plan covers up to 24 players. Ask the head coach to remove a player or upgrade.");
+        }
         throw membershipError;
       }
 
