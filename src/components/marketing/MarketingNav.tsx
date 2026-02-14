@@ -12,6 +12,7 @@ export const MarketingNav: React.FC = () => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
+    { href: "/pricing", label: "Pricing" },
     { href: "/demo", label: "How It Works" },
     { href: "/about", label: "About" },
   ];
