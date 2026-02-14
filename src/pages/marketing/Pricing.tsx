@@ -107,7 +107,7 @@ const Pricing: React.FC = () => {
                 className="w-full bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
-                Start 7-Day Free Trial
+                Get Started Free
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <p className="text-xs text-text-muted text-center mt-3">
@@ -336,12 +336,9 @@ const Pricing: React.FC = () => {
               className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
               onClick={() => setShowGetStarted(true)}
             >
-              Start Your 7-Day Free Trial
+              Get Started Free
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-            <p className="text-sm text-text-muted mt-3">
-              Credit card required. Cancel anytime.
-            </p>
           </div>
         </div>
       </section>
