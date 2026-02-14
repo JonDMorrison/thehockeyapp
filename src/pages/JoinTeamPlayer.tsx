@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { logger } from "@/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,7 +145,7 @@ const JoinTeamPlayer: React.FC = () => {
             });
         } catch (e) {
           // Non-critical, just log
-          console.log("Failed to set active team:", e);
+          logger.debug("Failed to set active team", { error: e });
         }
       }
 

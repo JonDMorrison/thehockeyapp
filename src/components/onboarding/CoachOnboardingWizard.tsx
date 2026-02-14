@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { logger } from "@/core";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,7 +92,7 @@ export function CoachOnboardingWizard({
       setIsCompleted(true);
     },
     onError: (error) => {
-      console.error("Error saving preferences:", error);
+      logger.error("Error saving preferences", { error });
       toast.error("Failed to save preferences");
     },
   });

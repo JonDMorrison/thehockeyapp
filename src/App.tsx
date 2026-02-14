@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
+import { logger } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
@@ -188,7 +189,7 @@ const App = () => {
   // Apply stored team theme and initialize offline DB on mount
   useEffect(() => {
     applyTeamTheme(getStoredTeamTheme());
-    initOfflineDB().catch(console.error);
+    initOfflineDB().catch((err) => logger.error("Failed to init offline DB", { err }));
   }, []);
 
   return (

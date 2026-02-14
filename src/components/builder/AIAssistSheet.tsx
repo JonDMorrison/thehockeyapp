@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { logger } from "@/core";
+import type { AIGeneratedDraft } from "@/core";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -42,8 +44,9 @@ interface AIAssistSheetProps {
   mode: "day_card" | "week_plan";
   date?: string; // for day_card
   startDate?: string; // for week_plan
-  onApply: (data: any) => void;
+  onApply: (data: AIGeneratedDraft) => void;
 }
+
 
 interface GeneratedTask {
   task_type: string;
@@ -118,7 +121,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
         throw new Error("Your session has expired. Please sign in again.");
       }
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         type: mode,
         team_id: teamId,
         tier,
@@ -154,7 +157,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
       toast.success("Draft generated!", "Review and apply when ready.");
     },
     onError: (error: Error) => {
-      console.error("AI generation error:", error);
+      logger.error("AI generation error", { error });
       const isAuthError = error.message?.includes("session") || error.message?.includes("sign in");
       toast.error(
         isAuthError ? "Session Expired" : "Generation failed", 

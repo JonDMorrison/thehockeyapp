@@ -160,7 +160,7 @@ export default function SoloTryWorkout() {
                 {/* Task Preview */}
                 {workout.tasks && workout.tasks.length > 0 && (
                   <div className="space-y-2 mb-4">
-                    {workout.tasks.slice(0, 3).map((task: any) => (
+                    {workout.tasks.slice(0, 3).map((task: { id: string; label: string; task_type: string }) => (
                       <div 
                         key={task.id}
                         className="flex items-center gap-2 text-sm text-muted-foreground"

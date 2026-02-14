@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { logger } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -166,7 +167,7 @@ export default function SoloProgramBuilder() {
       fireGoalConfetti();
     },
     onError: (error: Error) => {
-      console.error("Program generation error:", error);
+      logger.error("Program generation error", { error });
       toast.error("Generation failed: " + error.message);
       setStep("goals");
     },
@@ -241,7 +242,7 @@ export default function SoloProgramBuilder() {
       navigate(`/solo/dashboard/${playerId}`);
     },
     onError: (error: Error) => {
-      console.error("Apply program error:", error);
+      logger.error("Apply program error", { error });
       toast.error("Failed to save: " + error.message);
     },
   });

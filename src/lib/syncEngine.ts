@@ -1,6 +1,7 @@
 /**
  * Sync Engine - Handles syncing offline events to the server
  */
+import { logger } from "@/core";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -148,7 +149,7 @@ export async function syncPendingEvents(): Promise<{ synced: number; failed: num
 
     return { synced, failed };
   } catch (err) {
-    console.error('Sync error:', err);
+    logger.error('Sync error', { err });
     notifyListeners('error', 0);
     return { synced, failed };
   } finally {

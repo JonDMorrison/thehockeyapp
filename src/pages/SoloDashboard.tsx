@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Challenge } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -481,19 +482,19 @@ export default function SoloDashboard() {
             <div className="space-y-3">
               {BADGE_CATEGORIES.map((category) => {
                 // Get badges for this category
-                const categoryBadges = badges?.all.filter((c: any) => 
+                const categoryBadges = badges?.all.filter((c: Challenge) => 
                   category.metricTypes.includes(c.metric_type)
                 ) || [];
                 
                 // Get earned badges in this category
-                const earnedInCategory = categoryBadges.filter((c: any) =>
-                  badges?.earned.find((e: any) => e.challenge_id === c.id)
+                const earnedInCategory = categoryBadges.filter((c: Challenge) =>
+                  badges?.earned.find((e: { challenge_id: string }) => e.challenge_id === c.id)
                 );
                 
                 // Get next badge to earn (lowest target not yet earned)
                 const unearnedBadges = categoryBadges
-                  .filter((c: any) => !badges?.earned.find((e: any) => e.challenge_id === c.id))
-                  .sort((a: any, b: any) => a.target_value - b.target_value);
+                  .filter((c: Challenge) => !badges?.earned.find((e: { challenge_id: string }) => e.challenge_id === c.id))
+                  .sort((a: Challenge, b: Challenge) => a.target_value - b.target_value);
                 
                 const nextBadge = unearnedBadges[0];
                 const IconComponent = nextBadge ? BADGE_ICONS[nextBadge.badge_icon] || Star : Star;

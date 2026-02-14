@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { logger } from "@/core";
 import { format, addDays } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -203,7 +204,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       }, 500);
     },
     onError: (error: Error) => {
-      console.error("Challenge creation error:", error);
+      logger.error("Challenge creation error", { error });
       toast.error("Failed to create challenge", error.message);
       setStep("review");
     },

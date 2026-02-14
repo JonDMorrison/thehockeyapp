@@ -25,7 +25,7 @@ interface GameDayModalProps {
 }
 
 // Default game day tasks template
-const DEFAULT_GAME_DAY_TASKS = [
+const DEFAULT_GAME_DAY_TASKS: Array<{ sort_order: number; task_type: string; label: string; target_type: string; target_value: number; shot_type: string; shots_expected: number | null; is_required: boolean }> = [
   {
     sort_order: 0,
     task_type: "prep",

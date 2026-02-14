@@ -114,13 +114,13 @@ export function useUserRoles(): UserRoleInfo {
 
   const isLoading = authLoading || coachLoading || guardianLoading || ownPlayerLoading;
 
-  const coachTeams = (coachRoles || []).map((r: any) => ({
+  const coachTeams = (coachRoles || []).map((r: { team_id: string; role: string; teams: { id: string; name: string } | null }) => ({
     teamId: r.team_id,
     teamName: r.teams?.name || "Unknown Team",
     role: r.role,
   }));
 
-  const guardedPlayers = (guardianRoles || []).map((r: any) => ({
+  const guardedPlayers = (guardianRoles || []).map((r: { player_id: string; guardian_role: string; players: { id: string; first_name: string; last_initial: string | null } | null }) => ({
     playerId: r.player_id,
     playerName: `${r.players?.first_name || "Unknown"} ${r.players?.last_initial || ""}`.trim(),
     guardianRole: r.guardian_role,

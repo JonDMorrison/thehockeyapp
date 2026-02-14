@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { logger } from "@/core";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, CalendarPlus, CalendarRange, Sparkles, Users, CalendarSync, BarChart3, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -240,7 +241,7 @@ export const usePlanningWalkthrough = (teamId: string) => {
     try {
       localStorage.setItem(storageKey, "true");
     } catch (e) {
-      console.warn("Could not save walkthrough state to localStorage");
+      logger.warn("Could not save walkthrough state to localStorage");
     }
     setShowWalkthrough(false);
   };
@@ -250,7 +251,7 @@ export const usePlanningWalkthrough = (teamId: string) => {
     try {
       localStorage.setItem(storageKey, "true");
     } catch (e) {
-      console.warn("Could not save walkthrough state to localStorage");
+      logger.warn("Could not save walkthrough state to localStorage");
     }
     setShowWalkthrough(false);
   };
@@ -260,7 +261,7 @@ export const usePlanningWalkthrough = (teamId: string) => {
     try {
       localStorage.removeItem(storageKey);
     } catch (e) {
-      console.warn("Could not reset walkthrough state in localStorage");
+      logger.warn("Could not reset walkthrough state in localStorage");
     }
     setShowWalkthrough(true);
   };

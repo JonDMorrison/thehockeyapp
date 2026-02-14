@@ -3,12 +3,13 @@ import { useEffect } from "react";
 import { AppShell, PageContainer, EmptyState } from "@/components/app";
 import { Button } from "@/components/ui/button";
 import { Home, AlertCircle } from "lucide-react";
+import { logger } from "@/core";
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    logger.warn("404: Non-existent route accessed", { path: location.pathname });
   }, [location.pathname]);
 
   return (

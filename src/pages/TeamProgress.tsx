@@ -190,7 +190,7 @@ const TeamProgress: React.FC = () => {
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
     return memberships.map((m) => {
-      const player = m.players as any;
+      const player = m.players as { id: string; first_name: string; last_initial: string | null; jersey_number: string | null; profile_photo_url: string | null } | null;
       if (!player) return null;
 
       const playerCompletions = completions.filter((c) => c.player_id === m.player_id);
@@ -242,7 +242,7 @@ const TeamProgress: React.FC = () => {
         thisWeekSessions,
         streak,
         lastActive,
-        badges: playerBadges.map((b: any) => ({
+        badges: playerBadges.map((b: { challenges: { name: string; badge_icon: string } | null; awarded_at: string | null }) => ({
           name: b.challenges?.name || "Badge",
           icon: b.challenges?.badge_icon || "award",
           awardedAt: b.awarded_at,
