@@ -39,10 +39,16 @@ serve(async (req) => {
     const adminUserId = userData.user.id;
     const adminEmail = userData.user.email?.toLowerCase() ?? "";
 
-    // Check super admin via env var
-    const allowedEmails = (Deno.env.get("SUPER_ADMIN_EMAILS") ?? "")
+    // Check super admin via admin_config table (single source of truth)
+    const { data: configRow } = await supabaseAdmin
+      .from("admin_config")
+      .select("value")
+      .eq("key", "super_admin_emails")
+      .maybeSingle();
+
+    const allowedEmails = (configRow?.value ?? "")
       .split(",")
-      .map((e) => e.trim().toLowerCase())
+      .map((e: string) => e.trim().toLowerCase())
       .filter(Boolean);
 
     if (!allowedEmails.includes(adminEmail)) {
