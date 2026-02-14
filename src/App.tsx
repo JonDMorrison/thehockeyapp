@@ -16,6 +16,7 @@ import Home from "./pages/marketing/Home";
 
 // Lazy load all other pages for faster initial load
 const Features = lazy(() => import("./pages/marketing/Features"));
+const Pricing = lazy(() => import("./pages/marketing/Pricing"));
 const Demo = lazy(() => import("./pages/marketing/Demo"));
 const About = lazy(() => import("./pages/About"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -91,7 +92,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   
   // Determine if this is a marketing page (no swipe back)
-  const isMarketingPage = ["/", "/features", "/demo", "/about", "/privacy", "/terms"].includes(location.pathname);
+  const isMarketingPage = ["/", "/features", "/pricing", "/demo", "/about", "/privacy", "/terms"].includes(location.pathname);
   
   return (
     <SwipeBackGesture enabled={!isMarketingPage}>
@@ -113,6 +114,7 @@ const AnimatedRoutes = () => {
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
