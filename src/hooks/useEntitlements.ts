@@ -54,7 +54,8 @@ export function useEntitlements() {
 
   const isPro =
     (subscription?.plan === "pro" && subscription?.status === "active") ||
-    (subscription?.plan === "pro" && subscription?.status === "comped" && subscription?.source === "comp");
+    (subscription?.plan === "pro" && subscription?.status === "comped" && subscription?.source === "comp") ||
+    (subscription?.plan === "pro" && subscription?.status === "trialing");
 
   const isComped = subscription?.source === "comp" && subscription?.status === "comped";
 

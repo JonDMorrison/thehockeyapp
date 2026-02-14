@@ -5,7 +5,7 @@
  * Client-side: this module provides typed helpers for UI gating.
  */
 
-export type Plan = "free" | "pro";
+export type Plan = "free" | "pro" | "team";
 
 export type EntitlementKey =
   | "can_view_full_history"
@@ -44,8 +44,9 @@ export function hasEntitlement(
 /** Get the plan display label */
 export function getPlanLabel(plan: Plan): string {
   const labels: Record<Plan, string> = {
-    free: "Free",
-    pro: "Pro",
+    free: "Getting Started",
+    pro: "Parent Pro",
+    team: "Team Plan",
   };
   return labels[plan] ?? plan;
 }

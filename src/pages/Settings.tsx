@@ -28,6 +28,19 @@ export default function Settings() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
 
+  // Check team coverage
+  const { data: teamCoverage } = useQuery({
+    queryKey: ["team-coverage", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_team_coverage_for_user", { p_user_id: user!.id });
+      if (error) return null;
+      return data?.[0] as { team_id: string; team_name: string; status: string; current_period_end: string } | null;
+    },
+    enabled: !!user,
+  });
+
+  const isTeamCovered = !!teamCoverage;
+
   // Show toast on checkout return
   useEffect(() => {
     const checkout = searchParams.get("checkout");
@@ -185,32 +198,43 @@ export default function Settings() {
             {/* Current Plan */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {isPro && <Crown className="h-5 w-5 text-amber-500" />}
+                {(isPro || isTeamCovered) && <Crown className="h-5 w-5 text-amber-500" />}
                 <div>
                   <p className="font-medium text-foreground">
-                    {isComped ? "Complimentary Pro" : `${getPlanLabel(plan)} Plan`}
+                    {isTeamCovered
+                      ? "Covered by Team Plan"
+                      : isComped
+                        ? "Complimentary Pro"
+                        : isPro
+                          ? `${getPlanLabel(plan)} Plan`
+                          : "Getting Started"}
                   </p>
-                  {isComped && subscription?.current_period_end && (
+                  {isTeamCovered && teamCoverage && (
+                    <p className="text-xs text-muted-foreground">
+                      {teamCoverage.team_name} · Until {new Date(teamCoverage.current_period_end).toLocaleDateString()}
+                    </p>
+                  )}
+                  {isComped && !isTeamCovered && subscription?.current_period_end && (
                     <p className="text-xs text-muted-foreground">
                       Access until {new Date(subscription.current_period_end).toLocaleDateString()}
                     </p>
                   )}
-                  {isPro && !isComped && subscription?.current_period_end && (
+                  {isPro && !isComped && !isTeamCovered && subscription?.current_period_end && (
                     <p className="text-xs text-muted-foreground">
                       Renews {new Date(subscription.current_period_end).toLocaleDateString()}
                     </p>
                   )}
                 </div>
               </div>
-              {isPro && (
+              {(isPro || isTeamCovered) && (
                 <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
-                  {isComped ? "Comp" : "Active"}
+                  {isTeamCovered ? "Team" : isComped ? "Comp" : "Active"}
                 </span>
               )}
             </div>
 
-            {/* Pro Features List */}
-            {!isPro && (
+            {/* Upgrade prompt for non-pro users */}
+            {!isPro && !isTeamCovered && (
               <div className="space-y-2 border-t border-border pt-3">
                 <p className="text-xs font-medium text-muted-foreground">Start your 7-day free trial, then $15/mo. Cancel anytime.</p>
                 <p className="text-[11px] text-muted-foreground/70">Credit card required. You won't be charged during the trial.</p>
@@ -255,6 +279,8 @@ export default function Settings() {
                   )}
                   Manage Subscription
                 </Button>
+              ) : isTeamCovered ? (
+                null
               ) : (
                 <Button
                   size="sm"

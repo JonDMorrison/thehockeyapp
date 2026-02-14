@@ -137,7 +137,7 @@ export interface TeamGoal {
 /** Placeholder — no billing integration yet */
 export interface Subscription {
   userId: string;
-  plan: "free" | "starter" | "pro";
+  plan: "free" | "pro" | "team";
   status: "active" | "canceled" | "past_due";
   expiresAt: string | null;
 }

@@ -42,6 +42,13 @@ serve(async (req) => {
   if (cadPriceId) proPriceIds.push(cadPriceId);
   if (usdPriceId) proPriceIds.push(usdPriceId);
 
+  // Team plan price IDs
+  const teamPriceIds: string[] = [];
+  const teamCadPriceId = Deno.env.get("STRIPE_TEAM_PRICE_ID_CAD_LIVE");
+  const teamUsdPriceId = Deno.env.get("STRIPE_TEAM_PRICE_ID_USD_LIVE");
+  if (teamCadPriceId) teamPriceIds.push(teamCadPriceId);
+  if (teamUsdPriceId) teamPriceIds.push(teamUsdPriceId);
+
   if (proPriceIds.length === 0) {
     log("error", "No Pro price IDs configured (STRIPE_PRO_PRICE_ID_CAD_LIVE / USD_LIVE)");
     return new Response("Price IDs not configured", { status: 500 });
