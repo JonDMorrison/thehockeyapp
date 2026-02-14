@@ -30,6 +30,7 @@ import {
   Gamepad2,
   BarChart3,
   Heart,
+  DollarSign,
 } from "lucide-react";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
 
@@ -65,15 +66,15 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
-                Off-ice training{" "}
+                Stop nagging.{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  that gets done
+                  Start building discipline.
                 </span>
               </h1>
 
               <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Simple exercises. Quick checkoffs. Real accountability. 
-                For teams or players training on their own.
+                Structured off-ice training your child follows on their own. 
+                You stay in control. Coaches stay aligned. Kids take ownership.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -82,13 +83,12 @@ const Home: React.FC = () => {
                   className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
                   onClick={() => setShowGetStarted(true)}
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Get Started Free
+                  Start Your 7-Day Free Trial
                 </Button>
               </div>
               
               <p className="text-sm text-muted-foreground mt-6">
-                Free for coaches, players, and families.
+                Credit card required. Cancel anytime.
               </p>
             </div>
 
@@ -112,15 +112,15 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
-              Hockey training should be fun, not a fight.
+              You shouldn't have to be the enforcer.
             </h2>
             
             <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-              <p>Coaches know what players need to do at home.</p>
-              <p>Players know they should be doing it.</p>
-              <p>Parents get tired of nagging.</p>
+              <p>Your child's coach assigns off-ice work. Your child knows they should do it.</p>
+              <p>But every night, you're the one reminding, pushing, arguing.</p>
+              <p>It creates tension at home — and it doesn't have to.</p>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
-                We built a better way to train at home.
+                We built the structure so you don't have to.
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
               How it works
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three roles. One simple flow. Everyone stays on the same page.
+              Three roles. One clear system. Everyone knows what's expected.
             </p>
           </div>
 
@@ -147,21 +147,21 @@ const Home: React.FC = () => {
               {[
                 {
                   step: "01",
-                  role: "Coach",
-                  title: "Assign the work",
-                  description: "Create weekly task cards in minutes. Stickhandling reps, shooting drills, fitness work — whatever the team needs. AI helps if you want it.",
+                  role: "Parent",
+                  title: "Stay in control",
+                  description: "You own the account. You see everything your child is assigned and completing. You decide what's shared with the coach. Full visibility, zero guesswork.",
                 },
                 {
                   step: "02",
                   role: "Player",
-                  title: "Do the work",
-                  description: "Players see today's tasks on their phone. Tap to check off, earn badges, and track streaks. It feels like a game — fun, quick, and gives a real sense of accomplishment.",
+                  title: "Own the routine",
+                  description: "Your child opens the app, sees today's tasks, and checks them off. It takes minutes. They build consistency on their own — no reminders needed.",
                 },
                 {
                   step: "03",
-                  role: "Parent",
-                  title: "Stay in the loop",
-                  description: "Parents own the account and see everything. Control what's shared with coaches. No rankings, no pressure — just progress.",
+                  role: "Coach",
+                  title: "Assign and track",
+                  description: "Coaches create simple weekly task cards in minutes. They see who's participating without rankings or pressure. Everyone stays aligned.",
                 },
               ].map((item, i) => (
                 <div key={i} className="relative text-center md:text-left">
@@ -197,21 +197,21 @@ const Home: React.FC = () => {
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Chase goals together.{" "}
+                Build shared accountability.{" "}
                 <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
-                  Celebrate as a team.
+                  Raise the standard together.
                 </span>
               </h2>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Set a collective target — 10,000 team shots this month, 500 workouts completed — and watch the thermometer rise as everyone contributes. When you hit the goal, everyone wins.
+                Set a collective target — 10,000 team shots this month, 500 workouts completed — and watch the team rise to meet it. Every player's effort counts. When the team commits, the culture shifts.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: Trophy, text: "Coaches set team-wide goals with optional rewards" },
-                  { icon: Users, text: "Every player's effort counts toward the target" },
-                  { icon: Gift, text: "Hit the goal? Pizza party, skip a drill, coach wears a costume" },
+                  { icon: Trophy, text: "Coaches set team-wide goals with clear targets" },
+                  { icon: Users, text: "Every player's effort contributes to the team standard" },
+                  { icon: Gift, text: "Optional rewards when the team hits the mark" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -254,8 +254,8 @@ const Home: React.FC = () => {
 
                 <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200/50 dark:border-amber-800/30">
                   <div className="flex items-center justify-center gap-2">
-                    <Gift className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-medium text-amber-700 dark:text-amber-400">Reward: Pizza Party! 🍕</span>
+                    <Trophy className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-medium text-amber-700 dark:text-amber-400">75% — almost there</span>
                   </div>
                 </div>
               </div>
@@ -264,7 +264,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Streaks & Celebrations Section */}
+      {/* Consistency & Recognition Section (was Streaks & Badges) */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -277,30 +277,34 @@ const Home: React.FC = () => {
             <div className="order-1 lg:order-2">
               <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <Flame className="w-4 h-4" />
-                Streaks & Badges
+                Consistency & Recognition
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Keep the fire burning.{" "}
-                <span className="text-orange-500">🔥</span>
+                Consistency builds{" "}
+                <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                  confidence.
+                </span>
               </h2>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Players earn streaks for consecutive training days. Hit 7 days? Confetti explodes. Earn badges for milestones like "100 Shots" or "Perfect Week." It turns training into a game they actually want to play.
+                Players build streaks by showing up day after day. They earn badges for milestones like completing a full week or hitting 100 shots. No public rankings. No comparisons. Just personal progress they can feel proud of.
               </p>
 
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: "🔥", label: "Fire Streaks", desc: "Track consecutive days" },
-                  { icon: "🏆", label: "Badges", desc: "Unlock achievements" },
-                  { icon: "🎉", label: "Celebrations", desc: "Confetti & rewards" },
-                  { icon: "📊", label: "Progress", desc: "Visual milestone tracking" },
+                  { icon: Flame, label: "Daily Streaks", desc: "Track consecutive days" },
+                  { icon: Trophy, label: "Milestone Badges", desc: "Recognize real effort" },
+                  { icon: CheckCircle, label: "Personal Progress", desc: "No public comparisons" },
+                  { icon: Target, label: "Visible Growth", desc: "Kids see their own gains" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
                     className="p-4 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50"
                   >
-                    <span className="text-2xl mb-2 block">{item.icon}</span>
+                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center mb-2">
+                      <item.icon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
                     <p className="font-semibold text-sm">{item.label}</p>
                     <p className="text-xs text-muted-foreground">{item.desc}</p>
                   </div>
@@ -317,26 +321,26 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
               <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
-                <Gamepad2 className="w-4 h-4" />
+                <Calendar className="w-4 h-4" />
                 Game Day Mode
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
                 Game day?{" "}
                 <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
-                  Rest up.
+                  Smart rest.
                 </span>
               </h2>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                The app knows when it's game day — from your synced calendar or a quick coach toggle. Players get lighter tasks or rest, so they're fresh when it counts. Smart training that adapts to your schedule.
+                The app detects game days from your synced calendar or a coach toggle. Players get lighter tasks or full rest, so they're fresh when it matters. Load management built into the routine.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: Calendar, text: "Auto-detects games from team calendar" },
-                  { icon: Zap, text: "Lighter workouts before games, rest after" },
-                  { icon: CheckCircle, text: "Coaches can toggle game day manually" },
+                  { icon: Calendar, text: "Auto-detects games from your team calendar" },
+                  { icon: Zap, text: "Lighter preparation before games, recovery after" },
+                  { icon: CheckCircle, text: "Coaches can toggle game day manually anytime" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -357,7 +361,7 @@ const Home: React.FC = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                      <Gamepad2 className="w-5 h-5" />
+                      <Calendar className="w-5 h-5" />
                     </div>
                     <span className="font-bold text-lg">Game Day</span>
                   </div>
@@ -371,7 +375,7 @@ const Home: React.FC = () => {
                   </div>
                   
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                    <p className="text-sm text-white/80 mb-2">Quick Tasks</p>
+                    <p className="text-sm text-white/80 mb-2">Light Tasks Only</p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
@@ -398,7 +402,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Team Cheers Section */}
+      {/* Team Encouragement Section (was Team Cheers) */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -407,14 +411,14 @@ const Home: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
                 <div className="flex items-center gap-2 mb-4">
                   <Heart className="w-5 h-5 text-pink-500" />
-                  <h3 className="font-bold">Team Cheers</h3>
+                  <h3 className="font-bold">Team Encouragement</h3>
                 </div>
                 
                 <div className="space-y-3">
                   {[
-                    { from: "Coach Mike", to: "Tyler", message: "Great hustle this week! 💪", time: "2h ago" },
-                    { from: "Jake", to: "Emma", message: "Nice streak! Keep it up! 🔥", time: "4h ago" },
-                    { from: "Sarah", to: "You", message: "Way to hit 100 shots! 🎯", time: "1d ago" },
+                    { from: "Coach Mike", to: "Tyler", message: "Strong week, Tyler. Keep showing up.", time: "2h ago" },
+                    { from: "Jake", to: "Emma", message: "Nice consistency this week.", time: "4h ago" },
+                    { from: "Sarah", to: "You", message: "Way to hit your milestone.", time: "1d ago" },
                   ].map((cheer, i) => (
                     <div 
                       key={i}
@@ -434,22 +438,22 @@ const Home: React.FC = () => {
             <div className="order-1 lg:order-2">
               <div className="inline-flex items-center gap-2 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <MessageCircle className="w-4 h-4" />
-                Team Cheers
+                Team Culture
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Teammates cheer{" "}
+                Positive culture,{" "}
                 <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                  each other on.
+                  built in.
                 </span>
               </h2>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Players can send quick encouragement to teammates — a fist bump for completing a workout, a shoutout for hitting a streak. Build team culture even when you're not at the rink.
+                Teammates and coaches can send quick encouragement — a note for completing a workout, a word for hitting a milestone. It builds connection without pressure or public comparison.
               </p>
 
               <div className="flex flex-wrap gap-3">
-                {["💪 Great work!", "🔥 Keep it up!", "⭐ You rock!", "🎯 Nice shot!"].map((cheer, i) => (
+                {["Great work this week", "Keep it going", "Strong effort", "Nice consistency"].map((cheer, i) => (
                   <span 
                     key={i}
                     className="px-4 py-2 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-sm font-medium"
@@ -463,32 +467,32 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* AI Weekly Summaries Section */}
+      {/* Weekly Clarity Section (was AI Summaries) */}
       <section className="py-20 lg:py-28 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/50 dark:from-purple-950/10 dark:via-gray-950 dark:to-indigo-950/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
               <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <BarChart3 className="w-4 h-4" />
-                AI Summaries
+                Weekly Summaries
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Weekly insights,{" "}
+                Know when to encourage.{" "}
                 <span className="bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
-                  automatically.
+                  Know when to ease up.
                 </span>
               </h2>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Every week, coaches get AI-generated summaries for each player. See who's crushing it, who might need encouragement, and where to focus next. No spreadsheets, no manual tracking.
+                Every week, parents and coaches receive a clear summary for each player. See what was completed, where consistency was strong, and where to adjust. No spreadsheets. No guessing.
               </p>
 
               <div className="space-y-4">
                 {[
-                  { icon: Sparkles, text: "Personalized summaries for each player" },
-                  { icon: BarChart3, text: "Completion rates and streak data" },
-                  { icon: Target, text: "Suggested focus areas for next week" },
+                  { icon: BarChart3, text: "Clear completion rates and consistency data" },
+                  { icon: Target, text: "Suggested focus areas for the coming week" },
+                  { icon: Sparkles, text: "Personalized insights generated automatically" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -508,18 +512,18 @@ const Home: React.FC = () => {
               <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
+                    <BarChart3 className="w-4 h-4 text-white" />
                   </div>
                   <div>
                     <p className="font-bold text-sm">Tyler's Week</p>
-                    <p className="text-xs text-muted-foreground">AI Summary</p>
+                    <p className="text-xs text-muted-foreground">Weekly Summary</p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
                     <p className="text-sm leading-relaxed">
-                      "Tyler had an <span className="font-semibold text-purple-600 dark:text-purple-400">excellent week</span> — completed 6/7 workouts and hit a new personal best with 247 shots. His stickhandling consistency improved. Consider adding more skating drills next week."
+                      "Tyler had a <span className="font-semibold text-purple-600 dark:text-purple-400">strong week</span> — completed 6 of 7 workouts and hit a personal best with 247 shots. Stickhandling consistency improved. Consider adding more skating drills next week."
                     </p>
                   </div>
                   
@@ -552,7 +556,7 @@ const Home: React.FC = () => {
               Built for how hockey families actually live
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Simple features that fit into busy schedules.
+              Practical features that fit into busy schedules.
             </p>
           </div>
 
@@ -566,27 +570,27 @@ const Home: React.FC = () => {
               {
                 icon: Calendar,
                 title: "Knows your schedule",
-                description: "Syncs with team calendars. Lighter workouts before games, rest days when needed.",
+                description: "Syncs with team calendars. Adjusts training load around games and rest days.",
               },
               {
                 icon: Sparkles,
-                title: "AI-built workouts",
-                description: "Tell it your focus and time available. Get a balanced week in seconds.",
+                title: "Smart workout creation",
+                description: "Tell it your focus and time available. Get a balanced week built automatically.",
               },
               {
                 icon: Trophy,
-                title: "Badges & milestones",
-                description: "Simple rewards for consistency. No leaderboards or comparisons — just personal progress.",
+                title: "Milestone recognition",
+                description: "Effort-based rewards for consistency. No leaderboards or comparisons — just personal progress.",
               },
               {
                 icon: Shield,
                 title: "Parent-controlled",
-                description: "Parents own accounts and decide what coaches can see. Kids' data stays private.",
+                description: "Parents own accounts and decide what coaches can see. Your child's data stays private.",
               },
               {
                 icon: User,
                 title: "Solo mode",
-                description: "Train on your own without a team. Build custom programs or use AI suggestions.",
+                description: "Train independently without a team. Build custom programs or use smart suggestions.",
               },
             ].map((feature, i) => (
               <div
@@ -619,9 +623,9 @@ const Home: React.FC = () => {
 
               <div className="space-y-4">
                 {[
-                  { icon: Zap, text: "Quick daily checkoffs — under 30 seconds" },
-                  { icon: Target, text: "Clear tasks — players know exactly what to do" },
-                  { icon: CheckCircle, text: "Real accountability — coaches see who's putting in the work" },
+                  { icon: Zap, text: "Daily checkoffs in under 30 seconds" },
+                  { icon: Target, text: "Clear tasks — your child knows exactly what to do" },
+                  { icon: CheckCircle, text: "Real accountability — without the arguments" },
                 ].map((item, i) => (
                   <div 
                     key={i} 
@@ -650,54 +654,39 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof / Trust Section */}
+      {/* Pricing Anchor Section */}
       <section className="py-16 lg:py-20 bg-muted/30">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <p className="text-sm font-medium text-primary uppercase tracking-wider mb-2">
-              From Our Family to Yours
-            </p>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We use it with our own kids every week.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
-              <div className="flex items-center gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-foreground mb-4">
-                "Finally, something that actually gets my kid practicing without me nagging."
-              </p>
-              <p className="text-sm text-muted-foreground">— Hockey Parent</p>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <DollarSign className="w-4 h-4" />
+              Simple Pricing
             </div>
             
-            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
-              <div className="flex items-center gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-foreground mb-4">
-                "My players are doing more off-ice work than ever. The accountability is huge."
-              </p>
-              <p className="text-sm text-muted-foreground">— U14 Coach</p>
-            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Less than one private lesson.
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+              For $15/month, your child gets:
+            </p>
             
-            <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
-              <div className="flex items-center gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-foreground mb-4">
-                "My daughter loves checking off tasks. It's become part of her routine."
-              </p>
-              <p className="text-sm text-muted-foreground">— Hockey Mom</p>
+            <div className="grid sm:grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+              {[
+                "Structured weekly training",
+                "Built-in accountability",
+                "Progress tracking",
+                "Full parent visibility",
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 text-left">
+                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-sm font-medium">{item}</span>
+                </div>
+              ))}
             </div>
+
+            <p className="text-sm text-muted-foreground">
+              Try one week free. Then $15/month. Cancel anytime.
+            </p>
           </div>
         </div>
       </section>
@@ -711,10 +700,10 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Start building better habits today.
+              Start building consistent habits at home.
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Free for coaches, players, and families. Set up in minutes.
+              Give your child the structure to train on their own. See the difference in one week.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -723,8 +712,7 @@ const Home: React.FC = () => {
                 className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
                 onClick={() => setShowGetStarted(true)}
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Get Started Free
+                Start Your 7-Day Free Trial
               </Button>
               <Button 
                 size="lg" 
@@ -740,7 +728,7 @@ const Home: React.FC = () => {
             </div>
             
             <p className="text-sm text-muted-foreground mt-8">
-              No credit card. No commitment.
+              Credit card required. Cancel anytime.
             </p>
           </div>
         </div>

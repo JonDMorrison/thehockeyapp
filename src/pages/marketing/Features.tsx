@@ -28,12 +28,12 @@ const Features: React.FC = () => {
   const features = [
     {
       icon: ClipboardList,
-      title: "Simple tasks. No confusion.",
+      title: "Clear expectations at home.",
       bullets: [
-        "Coach creates off-ice assignments",
-        "Easy for any age to understand",
-        "Clear daily expectations",
-        "Works offline everywhere",
+        "Coach assigns structured off-ice tasks",
+        "Simple enough for any age to follow",
+        "Your child knows exactly what to do each day",
+        "Works offline — garage, basement, anywhere",
       ],
       Preview: FeatureTaskCard,
       glowColor: "primary" as const,
@@ -41,12 +41,12 @@ const Features: React.FC = () => {
     },
     {
       icon: CheckCircle,
-      title: "One tap. Done.",
+      title: "Ownership in seconds.",
       bullets: [
-        "Kids check off tasks in seconds",
-        "Parents can help verify",
-        "No complicated tracking",
-        "Completion is automatic",
+        "Your child checks off tasks independently",
+        "Parents can verify if needed",
+        "No complicated tracking or data entry",
+        "Builds a daily habit loop naturally",
       ],
       Preview: FeatureCheckoff,
       glowColor: "success" as const,
@@ -54,12 +54,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Trophy,
-      title: "Fun rewards that motivate.",
+      title: "Consistency gets recognized.",
       bullets: [
-        "Earn badges for consistency",
-        "Celebrate milestones",
-        "No public leaderboards",
-        "Positive reinforcement only",
+        "Earn badges for showing up day after day",
+        "Milestones mark real progress",
+        "No public leaderboards or rankings",
+        "Effort-based recognition builds confidence",
       ],
       Preview: FeatureRewards,
       glowColor: "orange" as const,
@@ -67,12 +67,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Sparkles,
-      title: "Build tasks in minutes.",
+      title: "Coaches build it. Families benefit.",
       bullets: [
-        "Simple task builder for coaches",
-        "AI can help draft ideas",
-        "Copy from templates",
-        "Customize per week",
+        "Simple task builder takes minutes",
+        "Smart suggestions help draft balanced weeks",
+        "Copy from templates or customize freely",
+        "Parents see what's assigned automatically",
       ],
       Preview: FeatureBuilder,
       glowColor: "purple" as const,
@@ -80,12 +80,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Users,
-      title: "Coaches see who's doing the work.",
+      title: "Participation visibility.",
       bullets: [
-        "Team completion dashboard",
-        "See who checked off today",
-        "No individual rankings",
-        "Celebrate participation",
+        "Coaches see who completed today's tasks",
+        "Team-wide completion at a glance",
+        "No individual rankings or comparisons",
+        "Encourages participation, not competition",
       ],
       Preview: FeatureCoachView,
       glowColor: "cyan" as const,
@@ -93,12 +93,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Shield,
-      title: "Total parent control.",
+      title: "Parents own the account. Period.",
       bullets: [
-        "Parents own the account",
+        "You control your child's account entirely",
         "Nothing is ever public",
-        "No social features",
-        "You decide what's shared",
+        "No social features or external sharing",
+        "You decide what coaches can see",
       ],
       Preview: FeaturePrivacy,
       glowColor: "success" as const,
@@ -107,11 +107,11 @@ const Features: React.FC = () => {
   ];
 
   const featureLabels = [
-    "Simple Task Cards",
+    "Structured Tasks",
     "Quick Checkoff",
-    "Fun Rewards",
-    "Easy Task Builder",
-    "Coach Visibility",
+    "Positive Reinforcement",
+    "Coach Task Builder",
+    "Participation Tracking",
     "Parent Control",
   ];
 
@@ -141,17 +141,16 @@ const Features: React.FC = () => {
             {/* Floating badge */}
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-soft mb-6">
               <Dumbbell className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-medium text-muted-foreground">Off-Ice Training Made Simple</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground">Off-Ice Training for Hockey Families</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6 px-2">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                Everything you need. Nothing you don't.
+                Everything your hockey family needs. Nothing extra.
               </span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-              Simple tools for coaches to assign off-ice tasks, fun rewards to keep kids motivated, 
-              and complete control for parents.
+              Simple structure. Real accountability. Zero pressure.
             </p>
           </div>
         </div>
@@ -226,11 +225,11 @@ const Features: React.FC = () => {
           <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-depth p-6 sm:p-10 md:p-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               <span className="bg-gradient-to-r from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)] bg-clip-text text-transparent">
-                See it in action
+                See how it works.
               </span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-10 max-w-2xl mx-auto">
-              Watch how coaches assign off-ice tasks and how families track completion.
+              Try one week of structured training. Then decide.
             </p>
             <Button 
               size="lg" 
