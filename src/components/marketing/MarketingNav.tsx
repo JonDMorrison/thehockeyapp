@@ -12,7 +12,7 @@ export const MarketingNav: React.FC = () => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
-    { href: "/demo", label: "Demo" },
+    { href: "/demo", label: "How It Works" },
     { href: "/about", label: "About" },
   ];
 
@@ -31,7 +31,7 @@ export const MarketingNav: React.FC = () => {
               <span className="font-bold text-lg sm:text-xl text-foreground leading-tight">
                 The Hockey App
               </span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">Off-Ice Training</span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">Off-Ice Training for Families</span>
             </div>
           </Link>
 

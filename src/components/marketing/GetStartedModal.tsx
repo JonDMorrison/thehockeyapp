@@ -34,7 +34,7 @@ const options: {
     role: "coach",
     title: "I'm a Coach",
     subtitle: "Start a Team",
-    description: "Create practice plans and track your team's progress",
+    description: "Assign off-ice tasks and track team participation",
     icon: Users,
     color: "primary",
     bgClass: "bg-primary/10",
@@ -46,7 +46,7 @@ const options: {
     role: "player",
     title: "I'm a Player",
     subtitle: "Join My Team",
-    description: "Your coach invited you to train together",
+    description: "Your coach invited you — join your team's training",
     icon: UserCircle,
     directHref: "/join", // Join flow doesn't need auth first
     color: "success",
@@ -59,7 +59,7 @@ const options: {
     role: "solo",
     title: "I'm a Player",
     subtitle: "Train On My Own",
-    description: "Build your own training plan without a team",
+    description: "Build your own structured training independently",
     icon: Dumbbell,
     color: "orange",
     bgClass: "bg-orange-500/10",
@@ -106,7 +106,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 pb-4">
             <DialogTitle className="text-xl text-center">
-              How would you like to get started?
+              How will you use The Hockey App?
             </DialogTitle>
           </DialogHeader>
 
@@ -136,7 +136,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
           <div className="px-6 py-4 bg-muted/50 border-t border-border">
             <p className="text-xs text-muted-foreground text-center">
-              Free for everyone. No credit card required.
+              7-day free trial. Credit card required. Cancel anytime.
             </p>
           </div>
         </DialogContent>

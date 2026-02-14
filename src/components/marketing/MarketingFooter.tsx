@@ -17,8 +17,8 @@ export const MarketingFooter: React.FC = () => {
               <span className="font-bold text-lg">The Hockey App</span>
             </div>
             <p className="text-background/70 max-w-sm mb-6">
-              Off-ice training made simple. Coaches assign, kids complete, 
-              parents stay in control.
+              Structured off-ice training your child follows on their own. 
+              You stay in control.
             </p>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-sm text-background/60">
