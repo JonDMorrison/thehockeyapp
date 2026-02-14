@@ -1903,6 +1903,53 @@ export type Database = {
           },
         ]
       }
+      team_subscriptions: {
+        Row: {
+          created_at: string
+          created_by_user_id: string
+          current_period_end: string | null
+          id: string
+          max_players: number
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id: string
+          current_period_end?: string | null
+          id?: string
+          max_players?: number
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string
+          current_period_end?: string | null
+          id?: string
+          max_players?: number
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_subscriptions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_training_preferences: {
         Row: {
           allowed_task_types: string[] | null
@@ -2452,6 +2499,15 @@ export type Database = {
         Returns: Json
       }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
+      get_team_coverage_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          current_period_end: string
+          status: string
+          team_id: string
+          team_name: string
+        }[]
+      }
       get_team_dashboard_snapshot: {
         Args: { p_team_id: string }
         Returns: Json
