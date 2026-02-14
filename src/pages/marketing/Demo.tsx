@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { Button } from "@/components/ui/button";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
-import { AppleButton } from "@/components/ui/apple-button";
 import {
   ArrowRight,
   Users,
@@ -25,6 +26,7 @@ import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff
 
 const Demo: React.FC = () => {
   const [activeView, setActiveView] = useState<"coach" | "player">("coach");
+  const [showGetStarted, setShowGetStarted] = useState(false);
 
   const coachFeatures = [
     { icon: ClipboardList, text: "Assign simple tasks", description: "Create off-ice assignments in minutes" },
@@ -247,49 +249,44 @@ const Demo: React.FC = () => {
 
       {/* Final CTA */}
       <section className="relative py-24 lg:py-32 overflow-hidden">
-        {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Glass card */}
           <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-gray-200/50 shadow-depth p-10 md:p-14">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 mb-6">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Get Started Today</span>
-            </div>
-
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
               Ready to simplify off-ice training?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Free to get started. No credit card required. Set up your team in minutes.
+              Free to get started. Set up your team in minutes.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <AppleButton size="lg" asChild>
-                {(
-                  <Link to="/auth">
-                    <Users className="w-5 h-5" />
-                    I'm a Coach
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                )}
-              </AppleButton>
-              <AppleButton variant="outline" size="lg" asChild>
-                {(
-                  <Link to="/join">
-                    <UserCircle className="w-5 h-5" />
-                    I'm a Player
-                  </Link>
-                )}
-              </AppleButton>
+              <Button
+                size="lg"
+                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                onClick={() => setShowGetStarted(true)}
+              >
+                Get Started For Free
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl"
+                asChild
+              >
+                <Link to="/pricing">
+                  View Pricing
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       <MarketingFooter />
+      <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
 };

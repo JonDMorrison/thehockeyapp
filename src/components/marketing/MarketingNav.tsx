@@ -64,7 +64,7 @@ export const MarketingNav: React.FC = () => {
               className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft" 
               asChild
             >
-              <Link to="/auth">Get Started Free</Link>
+              <Link to="/auth">Get Started For Free</Link>
             </Button>
           </div>
 
@@ -109,7 +109,7 @@ export const MarketingNav: React.FC = () => {
                 className="w-full bg-primary hover:bg-primary/90" 
                 asChild
               >
-                <Link to="/auth">Get Started Free</Link>
+                <Link to="/auth">Get Started For Free</Link>
               </Button>
             </div>
           </div>

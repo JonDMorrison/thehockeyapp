@@ -37,8 +37,8 @@ export const MarketingFooter: React.FC = () => {
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-background/70">
               <li><Link to="/features" className="hover:text-background transition-colors">Features</Link></li>
-              <li><Link to="/demo" className="hover:text-background transition-colors">Demo</Link></li>
-              <li><Link to="/auth" className="hover:text-background transition-colors">Sign Up</Link></li>
+              <li><Link to="/demo" className="hover:text-background transition-colors">How It Works</Link></li>
+              <li><Link to="/pricing" className="hover:text-background transition-colors">Pricing</Link></li>
             </ul>
           </div>
 
