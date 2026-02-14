@@ -1,37 +1,60 @@
 /**
- * Feature gating scaffold.
- * No billing integration yet — all features unlocked.
+ * Entitlement & subscription layer.
+ *
+ * Server-side: `has_entitlement(user_id, key)` RPC + gates in RPCs.
+ * Client-side: this module provides typed helpers for UI gating.
  */
 
-export type Plan = "free" | "starter" | "pro";
+export type Plan = "free" | "pro";
 
-export type Feature =
-  | "ai_assist"
-  | "advanced_analytics"
-  | "unlimited_programs"
-  | "custom_branding"
-  | "export_data"
-  | "weekly_summaries"
-  | "schedule_sync"
-  | "team_goals";
+export type EntitlementKey =
+  | "can_view_full_history"
+  | "can_access_programs"
+  | "can_view_snapshot"
+  | "can_receive_ai_summary"
+  | "can_export_reports";
 
-/**
- * Check if a plan has access to a feature.
- * Currently returns true for everything (no paywall active).
- */
-export function hasEntitlement(_plan: Plan, _feature: Feature): boolean {
-  // All features unlocked during pre-monetization phase
-  return true;
+/** Entitlements row shape from the DB */
+export interface Entitlements {
+  can_view_full_history: boolean;
+  can_access_programs: boolean;
+  can_view_snapshot: boolean;
+  can_receive_ai_summary: boolean;
+  can_export_reports: boolean;
 }
 
-/**
- * Get the plan display label.
- */
+/** Default (free-tier) entitlements */
+export const FREE_ENTITLEMENTS: Entitlements = {
+  can_view_full_history: false,
+  can_access_programs: false,
+  can_view_snapshot: false,
+  can_receive_ai_summary: false,
+  can_export_reports: false,
+};
+
+/** Check a single entitlement from a loaded entitlements object */
+export function hasEntitlement(
+  entitlements: Entitlements | null | undefined,
+  key: EntitlementKey
+): boolean {
+  if (!entitlements) return false;
+  return entitlements[key] === true;
+}
+
+/** Get the plan display label */
 export function getPlanLabel(plan: Plan): string {
   const labels: Record<Plan, string> = {
     free: "Free",
-    starter: "Starter",
     pro: "Pro",
   };
-  return labels[plan];
+  return labels[plan] ?? plan;
 }
+
+/** Feature descriptions for upgrade prompts */
+export const FEATURE_LABELS: Record<EntitlementKey, string> = {
+  can_view_full_history: "Full Workout History",
+  can_access_programs: "Structured Programs",
+  can_view_snapshot: "Development Snapshot",
+  can_receive_ai_summary: "AI Weekly Summaries",
+  can_export_reports: "Export Reports",
+};
