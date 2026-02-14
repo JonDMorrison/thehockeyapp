@@ -95,10 +95,10 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 text-center">
             <DialogTitle className="text-xl">
-              Get started — it's free
+              Start free. Choose your role.
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Choose your role. You'll only pay if and when it makes sense for you.
+              Coaches use it free. Parents start with a 7-day trial. Teams can cover everyone.
             </p>
           </DialogHeader>
 

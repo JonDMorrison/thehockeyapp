@@ -53,9 +53,13 @@ const Home: React.FC = () => {
                 </span>
               </h1>
 
-              <p className="text-xl text-text-secondary font-medium mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Structured off-ice training your child follows on their own. 
                 You stay in control. Coaches stay aligned. Kids take ownership.
+              </p>
+
+              <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
+                Parents start with a 7-day free trial. Teams can cover families.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
