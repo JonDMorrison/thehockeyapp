@@ -8,14 +8,18 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/**
- * stripe-webhook
- *
- * Webhook-only architecture for subscription management.
- * - Verifies Stripe signature (NOT JWT — webhooks come from Stripe, not users)
- * - Idempotent: upserts by user_id, ignores duplicate events
- * - Updates both `subscriptions` and `entitlements` tables
- */
+/** Structured log helper — always includes event context */
+function log(
+  level: "info" | "warn" | "error",
+  msg: string,
+  ctx: Record<string, unknown> = {}
+) {
+  const entry = { level, msg, ts: new Date().toISOString(), ...ctx };
+  if (level === "error") console.error(JSON.stringify(entry));
+  else if (level === "warn") console.warn(JSON.stringify(entry));
+  else console.log(JSON.stringify(entry));
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,12 +29,27 @@ serve(async (req) => {
     apiVersion: "2025-08-27.basil",
   });
 
+  // ─── Env validation ───
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET not configured");
+    log("error", "STRIPE_WEBHOOK_SECRET not configured");
     return new Response("Webhook secret not configured", { status: 500 });
   }
 
+  const proPriceIds: string[] = [];
+  const cadPriceId = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
+  const usdPriceId = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
+  if (cadPriceId) proPriceIds.push(cadPriceId);
+  if (usdPriceId) proPriceIds.push(usdPriceId);
+
+  if (proPriceIds.length === 0) {
+    log("error", "No Pro price IDs configured (STRIPE_PRO_PRICE_ID_CAD_LIVE / USD_LIVE)");
+    return new Response("Price IDs not configured", { status: 500 });
+  }
+
+  const allowTrials = Deno.env.get("ALLOW_TRIALS") === "true";
+
+  // ─── Signature verification (unchanged) ───
   const signature = req.headers.get("stripe-signature");
   if (!signature) {
     return new Response("No signature", { status: 400 });
@@ -42,7 +61,9 @@ serve(async (req) => {
   try {
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
+    log("error", "Webhook signature verification failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return new Response(`Webhook Error: ${err instanceof Error ? err.message : "Unknown"}`, {
       status: 400,
     });
@@ -52,6 +73,8 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
+
+  const eventCtx = { eventId: event.id, eventType: event.type };
 
   // Only handle relevant events
   const relevantEvents = [
@@ -71,8 +94,12 @@ serve(async (req) => {
   // ─── Handle checkout.session.completed ───
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    console.log(`Checkout completed: session=${session.id}, customer=${session.customer}, subscription=${session.subscription}`);
-    // Subscription events will follow automatically from Stripe, so just acknowledge
+    log("info", "Checkout completed", {
+      ...eventCtx,
+      sessionId: session.id,
+      customer: session.customer,
+      subscription: session.subscription,
+    });
     return new Response(JSON.stringify({ received: true, type: "checkout.session.completed" }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -82,9 +109,13 @@ serve(async (req) => {
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as Stripe.Invoice;
     const customerId = invoice.customer as string;
-    console.error(`Payment failed: invoice=${invoice.id}, customer=${customerId}, attempt=${invoice.attempt_count}`);
+    log("error", "Payment failed", {
+      ...eventCtx,
+      invoiceId: invoice.id,
+      customerId,
+      attemptCount: invoice.attempt_count,
+    });
 
-    // Resolve user and create a notification
     const customer = await stripe.customers.retrieve(customerId);
     if (!customer.deleted && "email" in customer && customer.email) {
       const { data: profile } = await supabase
@@ -97,7 +128,8 @@ serve(async (req) => {
         await supabase.from("notifications").insert({
           user_id: profile.user_id,
           title: "Payment Failed",
-          message: "Your subscription payment failed. Please update your payment method to keep your Pro features.",
+          message:
+            "Your subscription payment failed. Please update your payment method to keep your Pro features.",
           notification_type: "payment_failed",
         });
       }
@@ -115,13 +147,12 @@ serve(async (req) => {
   // Resolve customer email → user_id
   const customer = await stripe.customers.retrieve(customerId);
   if (customer.deleted || !("email" in customer) || !customer.email) {
-    console.error("Customer deleted or no email:", customerId);
+    log("error", "Customer deleted or no email", { ...eventCtx, customerId });
     return new Response(JSON.stringify({ received: true, error: "no_email" }), {
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Find user by email
   const { data: profile, error: profileErr } = await supabase
     .from("profiles")
     .select("user_id")
@@ -129,20 +160,22 @@ serve(async (req) => {
     .maybeSingle();
 
   if (profileErr || !profile) {
-    console.error("No profile found for email:", customer.email, profileErr);
+    log("error", "No profile found for email", { ...eventCtx, email: customer.email, profileErr });
     return new Response(JSON.stringify({ received: true, error: "no_user" }), {
       headers: { "Content-Type": "application/json" },
     });
   }
 
   const userId = profile.user_id;
+  const subCtx = { ...eventCtx, userId, customerId, subscriptionId: subscription.id };
 
-  // Map Stripe status → our status
+  // ─── Status mapping ───
   const mapStatus = (s: string): string => {
     switch (s) {
       case "active":
-      case "trialing":
         return "active";
+      case "trialing":
+        return "trialing";
       case "past_due":
         return "past_due";
       case "canceled":
@@ -155,10 +188,36 @@ serve(async (req) => {
   };
 
   const status = mapStatus(subscription.status);
-  const plan = status === "active" ? "pro" : "free";
+
+  // ─── Plan mapping: validate against known Pro price IDs ───
+  const subscriptionPriceIds = (subscription.items?.data || []).map(
+    (item: { price: { id: string } }) => item.price.id
+  );
+  const matchesProPrice = subscriptionPriceIds.some((pid: string) => proPriceIds.includes(pid));
+
+  if (!matchesProPrice && (status === "active" || status === "trialing")) {
+    log("warn", "Active subscription does not match any known Pro price ID", {
+      ...subCtx,
+      subscriptionPriceIds,
+      configuredProPriceIds: proPriceIds,
+    });
+  }
+
+  // Determine plan: must match price AND have valid status
+  let plan: string;
+  if (!matchesProPrice) {
+    plan = "free";
+  } else if (status === "active") {
+    plan = "pro";
+  } else if (status === "trialing") {
+    plan = allowTrials ? "pro" : "free";
+  } else {
+    plan = "free";
+  }
+
   const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
-  // ─── Upsert subscriptions table (idempotent) ───
+  // ─── Upsert subscriptions table ───
   const { error: subErr } = await supabase
     .from("subscriptions")
     .upsert(
@@ -175,10 +234,17 @@ serve(async (req) => {
     );
 
   if (subErr) {
-    console.error("Failed to upsert subscription:", subErr);
+    log("error", "Failed to upsert subscription — returning 500 for Stripe retry", {
+      ...subCtx,
+      dbError: subErr,
+    });
+    return new Response(
+      JSON.stringify({ error: "db_subscription_upsert_failed", eventId: event.id }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 
-  // ─── Upsert entitlements table (idempotent) ───
+  // ─── Upsert entitlements table (only if subscription upsert succeeded) ───
   const isPro = plan === "pro";
   const { error: entErr } = await supabase
     .from("entitlements")
@@ -196,12 +262,20 @@ serve(async (req) => {
     );
 
   if (entErr) {
-    console.error("Failed to upsert entitlements:", entErr);
+    log("error", "Failed to upsert entitlements — returning 500 for Stripe retry", {
+      ...subCtx,
+      dbError: entErr,
+    });
+    return new Response(
+      JSON.stringify({ error: "db_entitlements_upsert_failed", eventId: event.id }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 
-  console.log(`Webhook processed: ${event.type} for user ${userId}, plan=${plan}, status=${status}`);
+  log("info", "Webhook processed successfully", { ...subCtx, plan, status });
 
-  return new Response(JSON.stringify({ received: true, user_id: userId, plan, status }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({ received: true, eventId: event.id, user_id: userId, plan, status }),
+    { headers: { "Content-Type": "application/json" } }
+  );
 });

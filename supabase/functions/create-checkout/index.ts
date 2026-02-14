@@ -8,15 +8,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PRO_PRICE_ID = "price_1T0l39LsjdKDiHIb0H0gu9y4";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // JWT validation in code
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -49,6 +46,22 @@ serve(async (req) => {
       });
     }
 
+    // ─── Resolve currency-specific price ID ───
+    const body = await req.json().catch(() => ({}));
+    const preferredCurrency = (body.preferred_currency || "CAD").toUpperCase();
+
+    const priceIdCad = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
+    const priceIdUsd = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
+
+    if (!priceIdCad) {
+      throw new Error("STRIPE_PRO_PRICE_ID_CAD_LIVE is not configured");
+    }
+    if (!priceIdUsd) {
+      throw new Error("STRIPE_PRO_PRICE_ID_USD_LIVE is not configured");
+    }
+
+    const priceId = preferredCurrency === "USD" ? priceIdUsd : priceIdCad;
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
       apiVersion: "2025-08-27.basil",
     });
@@ -65,7 +78,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: PRO_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/settings?checkout=success`,
       cancel_url: `${origin}/settings?checkout=cancelled`,
