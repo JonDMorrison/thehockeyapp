@@ -881,6 +881,7 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           email: string | null
+          has_used_trial: boolean
           updated_at: string | null
           user_id: string
         }
@@ -892,6 +893,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           email?: string | null
+          has_used_trial?: boolean
           updated_at?: string | null
           user_id: string
         }
@@ -903,6 +905,7 @@ export type Database = {
           created_at?: string | null
           display_name?: string | null
           email?: string | null
+          has_used_trial?: boolean
           updated_at?: string | null
           user_id?: string
         }

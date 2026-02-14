@@ -326,6 +326,19 @@ serve(async (req) => {
     );
   }
 
+  // ─── Mark trial as used (idempotent) ───
+  if (status === "trialing" && matchesProPrice) {
+    const { error: trialErr } = await supabase
+      .from("profiles")
+      .update({ has_used_trial: true })
+      .eq("user_id", userId);
+
+    if (trialErr) {
+      log("warn", "Failed to set has_used_trial flag", { ...subCtx, dbError: trialErr });
+      // Non-fatal: trial already started, don't block webhook
+    }
+  }
+
   log("info", "Webhook processed successfully", { ...subCtx, plan, status });
 
   return new Response(
