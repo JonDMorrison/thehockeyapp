@@ -106,10 +106,9 @@ export default {
         subtle: "var(--shadow-subtle)",
         medium: "var(--shadow-medium)",
         elevated: "var(--shadow-elevated)",
-        soft: "0 10px 40px -10px rgba(0, 0, 0, 0.1)",
-        depth: "0 20px 60px -15px rgba(0, 0, 0, 0.15)",
-        glow: "0 0 40px -10px hsl(var(--primary) / 0.3)",
-        "glow-lg": "0 0 60px -10px hsl(var(--primary) / 0.4)",
+        soft: "0 6px 20px -4px rgba(0, 0, 0, 0.08)",
+        depth: "0 10px 30px -8px rgba(0, 0, 0, 0.1)",
+        glow: "0 6px 20px -4px rgba(0, 0, 0, 0.08)",
       },
       spacing: {
         "safe-top": "var(--safe-area-top)",

@@ -42,37 +42,18 @@ const Home: React.FC = () => {
       <MarketingNav />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16">
-        {/* Background effects */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 -left-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-          <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-[hsl(var(--gradient-end))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
-          <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-[hsl(var(--gradient-mid))]/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '2s' }} />
-          
-          <div 
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
-              backgroundSize: '60px 60px',
-            }}
-          />
-
-          <div className="absolute top-32 right-1/4 w-4 h-4 rounded-full bg-primary/20 animate-gentle-bounce" />
-          <div className="absolute top-64 left-1/4 w-6 h-6 rounded-lg bg-[hsl(var(--gradient-end))]/20 animate-float" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-32 right-1/3 w-3 h-3 rounded-full bg-[hsl(var(--gradient-mid))]/20 animate-gentle-bounce" style={{ animationDelay: '2s' }} />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-32 relative">
+      <section className="relative pt-16 bg-[hsl(0,0%,98%)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05]">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
                 Stop nagging.{" "}
-                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] via-[hsl(var(--gradient-mid))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
+                <span className="text-primary">
                   Start building discipline.
                 </span>
               </h1>
 
-              <p className="text-xl text-muted-foreground mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-xl text-text-secondary font-medium mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Structured off-ice training your child follows on their own. 
                 You stay in control. Coaches stay aligned. Kids take ownership.
               </p>
@@ -80,14 +61,14 @@ const Home: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
+                  className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                   onClick={() => setShowGetStarted(true)}
                 >
                   Start Your 7-Day Free Trial
                 </Button>
               </div>
               
-              <p className="text-sm text-muted-foreground mt-6">
+              <p className="text-sm text-text-muted mt-2">
                 Credit card required. Cancel anytime.
               </p>
             </div>
@@ -95,8 +76,7 @@ const Home: React.FC = () => {
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative">
                 <PhoneMockup 
-                  showGlow
-                  glowColor="purple"
+                  showGlow={false}
                   className="w-72 lg:w-80"
                 >
                   <MarketingAppPreview />
@@ -108,18 +88,18 @@ const Home: React.FC = () => {
       </section>
 
       {/* The Problem Section */}
-      <section className="py-20 lg:py-28 bg-gradient-to-b from-white via-blue-50/30 to-white dark:from-gray-950 dark:via-blue-950/10 dark:to-gray-950">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10">
+          <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
               You shouldn't have to be the enforcer.
             </h2>
             
-            <div className="space-y-5 text-lg text-muted-foreground max-w-2xl mx-auto">
+            <div className="space-y-5 text-lg text-text-secondary max-w-2xl mx-auto">
               <p>Your child's coach assigns off-ice work. Your child knows they should do it.</p>
               <p>But every night, you're the one reminding, pushing, arguing.</p>
               <p>It creates tension at home — and it doesn't have to.</p>
-              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent pt-4">
+              <p className="text-2xl sm:text-3xl font-bold text-primary pt-4">
                 We built the structure so you don't have to.
               </p>
             </div>
@@ -128,7 +108,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 lg:py-28">
+      <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
@@ -187,23 +167,23 @@ const Home: React.FC = () => {
       </section>
 
       {/* Team Goals Feature Section */}
-      <section className="py-20 lg:py-28 bg-gradient-to-br from-amber-50/50 via-white to-orange-50/50 dark:from-amber-950/10 dark:via-gray-950 dark:to-orange-950/10">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <Target className="w-4 h-4" />
                 Team Goals
               </div>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Build shared accountability.{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                <span className="text-primary">
                   Raise the standard together.
                 </span>
               </h2>
               
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
                 Set a collective target — 10,000 team shots this month, 500 workouts completed — and watch the team rise to meet it. Every player's effort counts. When the team commits, the culture shifts.
               </p>
 
@@ -215,10 +195,10 @@ const Home: React.FC = () => {
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-amber-200/50 dark:border-amber-800/30"
+                    className="flex items-center gap-4 p-3 rounded-xl bg-card border border-border"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-primary" />
                     </div>
                     <span className="text-base">{item.text}</span>
                   </div>
@@ -228,34 +208,34 @@ const Home: React.FC = () => {
 
             <div className="relative flex justify-center">
               {/* Goal thermometer visual */}
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+              <div className="bg-card rounded-2xl p-8 shadow-subtle border border-border max-w-sm w-full">
                 <div className="text-center mb-6">
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Team Goal</p>
-                  <h3 className="text-xl font-bold">10,000 Shots Challenge</h3>
+                  <p className="text-sm font-medium text-text-muted mb-1">Team Goal</p>
+                  <h3 className="text-xl font-bold text-foreground">10,000 Shots Challenge</h3>
                 </div>
                 
                 {/* Thermometer */}
                 <div className="relative h-48 w-16 mx-auto mb-6">
-                  <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-full" />
+                  <div className="absolute inset-0 bg-muted rounded-full" />
                   <div 
-                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-500 to-orange-400 rounded-full transition-all duration-1000"
+                    className="absolute bottom-0 left-0 right-0 bg-primary rounded-full transition-all duration-1000"
                     style={{ height: '75%' }}
                   />
-                  <div className="absolute -right-12 top-0 text-xs text-muted-foreground">10K</div>
-                  <div className="absolute -right-12 top-1/4 text-xs text-muted-foreground">7.5K</div>
-                  <div className="absolute -right-12 top-1/2 text-xs text-muted-foreground">5K</div>
-                  <div className="absolute -right-12 bottom-0 text-xs text-muted-foreground">0</div>
+                  <div className="absolute -right-12 top-0 text-xs text-text-muted">10K</div>
+                  <div className="absolute -right-12 top-1/4 text-xs text-text-muted">7.5K</div>
+                  <div className="absolute -right-12 top-1/2 text-xs text-text-muted">5K</div>
+                  <div className="absolute -right-12 bottom-0 text-xs text-text-muted">0</div>
                 </div>
 
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">7,524</p>
-                  <p className="text-sm text-muted-foreground">shots so far</p>
+                  <p className="text-3xl font-bold text-primary">7,524</p>
+                  <p className="text-sm text-text-muted">shots so far</p>
                 </div>
 
-                <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200/50 dark:border-amber-800/30">
+                <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/10">
                   <div className="flex items-center justify-center gap-2">
-                    <Trophy className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-medium text-amber-700 dark:text-amber-400">75% — almost there</span>
+                    <Trophy className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">75% — almost there</span>
                   </div>
                 </div>
               </div>
@@ -265,7 +245,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Consistency & Recognition Section (was Streaks & Badges) */}
-      <section className="py-20 lg:py-28">
+      <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1 relative flex justify-center">
@@ -275,19 +255,19 @@ const Home: React.FC = () => {
             </div>
 
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <Flame className="w-4 h-4" />
                 Consistency & Recognition
               </div>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Consistency builds{" "}
-                <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                <span className="text-primary">
                   confidence.
                 </span>
               </h2>
               
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
                 Players build streaks by showing up day after day. They earn badges for milestones like completing a full week or hitting 100 shots. No public rankings. No comparisons. Just personal progress they can feel proud of.
               </p>
 
@@ -300,13 +280,13 @@ const Home: React.FC = () => {
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="p-4 rounded-xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50"
+                    className="p-4 rounded-xl bg-card border border-border"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center mb-2">
-                      <item.icon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                      <item.icon className="w-4 h-4 text-primary" />
                     </div>
                     <p className="font-semibold text-sm">{item.label}</p>
-                    <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    <p className="text-xs text-text-muted">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -316,23 +296,23 @@ const Home: React.FC = () => {
       </section>
 
       {/* Game Day Mode Section */}
-      <section className="py-20 lg:py-28 bg-gradient-to-br from-blue-50/50 via-white to-indigo-50/50 dark:from-blue-950/10 dark:via-gray-950 dark:to-indigo-950/10">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-[hsl(213,100%,25%)]/10 text-[hsl(213,100%,25%)] px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <Calendar className="w-4 h-4" />
                 Game Day Mode
               </div>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Game day?{" "}
-                <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+                <span className="text-[hsl(213,100%,25%)]">
                   Smart rest.
                 </span>
               </h2>
               
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
                 The app detects game days from your synced calendar or a coach toggle. Players get lighter tasks or full rest, so they're fresh when it matters. Load management built into the routine.
               </p>
 
@@ -344,10 +324,10 @@ const Home: React.FC = () => {
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-blue-200/50 dark:border-blue-800/30"
+                    className="flex items-center gap-4 p-3 rounded-xl bg-card border border-border"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(213,100%,25%)]/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-[hsl(213,100%,25%)]" />
                     </div>
                     <span className="text-base">{item.text}</span>
                   </div>
@@ -357,7 +337,7 @@ const Home: React.FC = () => {
 
             <div className="relative flex justify-center">
               {/* Game day card visual */}
-              <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl p-8 shadow-depth max-w-sm w-full text-white">
+              <div className="bg-[hsl(213,100%,25%)] rounded-2xl p-8 shadow-subtle max-w-sm w-full text-white">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
@@ -403,14 +383,14 @@ const Home: React.FC = () => {
       </section>
 
       {/* Team Encouragement Section (was Team Cheers) */}
-      <section className="py-20 lg:py-28">
+      <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1 relative flex justify-center">
               {/* Cheers visual */}
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+              <div className="bg-card rounded-2xl p-6 shadow-subtle border border-border max-w-sm w-full">
                 <div className="flex items-center gap-2 mb-4">
-                  <Heart className="w-5 h-5 text-pink-500" />
+                  <Heart className="w-5 h-5 text-primary" />
                   <h3 className="font-bold">Team Encouragement</h3>
                 </div>
                 
@@ -422,11 +402,11 @@ const Home: React.FC = () => {
                   ].map((cheer, i) => (
                     <div 
                       key={i}
-                      className="p-3 rounded-xl bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 border border-pink-200/50 dark:border-pink-800/30"
+                      className="p-3 rounded-xl bg-muted/50 border border-border"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-medium text-pink-600 dark:text-pink-400">{cheer.from} → {cheer.to}</p>
-                        <p className="text-xs text-muted-foreground">{cheer.time}</p>
+                        <p className="text-xs font-medium text-primary">{cheer.from} → {cheer.to}</p>
+                        <p className="text-xs text-text-muted">{cheer.time}</p>
                       </div>
                       <p className="text-sm">{cheer.message}</p>
                     </div>
@@ -436,19 +416,19 @@ const Home: React.FC = () => {
             </div>
 
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <MessageCircle className="w-4 h-4" />
                 Team Culture
               </div>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Positive culture,{" "}
-                <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                <span className="text-primary">
                   built in.
                 </span>
               </h2>
               
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
                 Teammates and coaches can send quick encouragement — a note for completing a workout, a word for hitting a milestone. It builds connection without pressure or public comparison.
               </p>
 
@@ -456,7 +436,7 @@ const Home: React.FC = () => {
                 {["Great work this week", "Keep it going", "Strong effort", "Nice consistency"].map((cheer, i) => (
                   <span 
                     key={i}
-                    className="px-4 py-2 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 text-sm font-medium"
+                    className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium"
                   >
                     {cheer}
                   </span>
@@ -468,23 +448,23 @@ const Home: React.FC = () => {
       </section>
 
       {/* Weekly Clarity Section (was AI Summaries) */}
-      <section className="py-20 lg:py-28 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/50 dark:from-purple-950/10 dark:via-gray-950 dark:to-indigo-950/10">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-3 py-1 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-[hsl(213,100%,25%)]/10 text-[hsl(213,100%,25%)] px-3 py-1 rounded-full text-sm font-medium mb-6">
                 <BarChart3 className="w-4 h-4" />
                 Weekly Summaries
               </div>
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Know when to encourage.{" "}
-                <span className="bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
+                <span className="text-[hsl(213,100%,25%)]">
                   Know when to ease up.
                 </span>
               </h2>
               
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
                 Every week, parents and coaches receive a clear summary for each player. See what was completed, where consistency was strong, and where to adjust. No spreadsheets. No guessing.
               </p>
 
@@ -496,10 +476,10 @@ const Home: React.FC = () => {
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-4 p-3 rounded-xl bg-white/80 dark:bg-gray-900/60 border border-purple-200/50 dark:border-purple-800/30"
+                    className="flex items-center gap-4 p-3 rounded-xl bg-card border border-border"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <div className="w-10 h-10 rounded-xl bg-[hsl(213,100%,25%)]/10 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-[hsl(213,100%,25%)]" />
                     </div>
                     <span className="text-base">{item.text}</span>
                   </div>
@@ -509,36 +489,36 @@ const Home: React.FC = () => {
 
             <div className="relative flex justify-center">
               {/* Summary card visual */}
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-depth border border-gray-200/50 dark:border-gray-700/50 max-w-sm w-full">
+              <div className="bg-card rounded-2xl p-6 shadow-subtle border border-border max-w-sm w-full">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-[hsl(213,100%,25%)] flex items-center justify-center">
                     <BarChart3 className="w-4 h-4 text-white" />
                   </div>
                   <div>
                     <p className="font-bold text-sm">Tyler's Week</p>
-                    <p className="text-xs text-muted-foreground">Weekly Summary</p>
+                    <p className="text-xs text-text-muted">Weekly Summary</p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
-                    <p className="text-sm leading-relaxed">
-                      "Tyler had a <span className="font-semibold text-purple-600 dark:text-purple-400">strong week</span> — completed 6 of 7 workouts and hit a personal best with 247 shots. Stickhandling consistency improved. Consider adding more skating drills next week."
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <p className="text-sm leading-relaxed text-text-secondary">
+                      "Tyler had a <span className="font-semibold text-foreground">strong week</span> — completed 6 of 7 workouts and hit a personal best with 247 shots. Stickhandling consistency improved. Consider adding more skating drills next week."
                     </p>
                   </div>
                   
                   <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/30">
-                      <p className="text-lg font-bold text-green-600">86%</p>
-                      <p className="text-xs text-muted-foreground">Completion</p>
+                    <div className="p-2 rounded-lg bg-success/5">
+                      <p className="text-lg font-bold text-success">86%</p>
+                      <p className="text-xs text-text-muted">Completion</p>
                     </div>
-                    <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-950/30">
-                      <p className="text-lg font-bold text-orange-600">12</p>
-                      <p className="text-xs text-muted-foreground">Day Streak</p>
+                    <div className="p-2 rounded-lg bg-primary/5">
+                      <p className="text-lg font-bold text-primary">12</p>
+                      <p className="text-xs text-text-muted">Day Streak</p>
                     </div>
-                    <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/30">
-                      <p className="text-lg font-bold text-blue-600">247</p>
-                      <p className="text-xs text-muted-foreground">Shots</p>
+                    <div className="p-2 rounded-lg bg-[hsl(213,100%,25%)]/5">
+                      <p className="text-lg font-bold text-[hsl(213,100%,25%)]">247</p>
+                      <p className="text-xs text-text-muted">Shots</p>
                     </div>
                   </div>
                 </div>
@@ -549,13 +529,13 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Grid Section */}
-      <section className="py-20 lg:py-28 bg-muted/30">
+      <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Built for how hockey families actually live
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-text-secondary max-w-2xl mx-auto">
               Practical features that fit into busy schedules.
             </p>
           </div>
@@ -595,7 +575,7 @@ const Home: React.FC = () => {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="group rounded-2xl p-6 transition-all duration-300 bg-white dark:bg-gray-900 border border-gray-200/50 dark:border-gray-700/50 shadow-soft hover:shadow-depth hover:-translate-y-1"
+                className="group rounded-xl p-6 transition-all duration-200 bg-card border border-border shadow-subtle hover:shadow-medium"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-primary" strokeWidth={1.75} />
@@ -603,7 +583,7 @@ const Home: React.FC = () => {
                 <h3 className="text-lg font-semibold mb-2 text-foreground">
                   {feature.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-text-muted">
                   {feature.description}
                 </p>
               </div>
@@ -613,11 +593,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Visual Section */}
-      <section className="py-20 lg:py-28">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-8">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-8 text-foreground">
                 Built by hockey parents, for hockey families.
               </h2>
 
@@ -629,7 +609,7 @@ const Home: React.FC = () => {
                 ].map((item, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/60 dark:bg-gray-900/60 border border-gray-200/50 dark:border-gray-700/50"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
                   >
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <item.icon className="w-5 h-5 text-primary" />
@@ -641,13 +621,12 @@ const Home: React.FC = () => {
             </div>
 
             <div className="order-1 lg:order-2 relative flex justify-center">
-              <div className="relative rounded-3xl overflow-hidden shadow-depth">
+              <div className="relative rounded-2xl overflow-hidden shadow-subtle">
                 <img 
                   src={hockeyPlayerBasement} 
                   alt="Hockey player practicing in basement"
                   className="w-full max-w-lg h-auto object-cover"
                 />
-                <div className="absolute -inset-8 -z-10 bg-primary/10 blur-3xl rounded-full" />
               </div>
             </div>
           </div>
@@ -655,18 +634,18 @@ const Home: React.FC = () => {
       </section>
 
       {/* Pricing Anchor Section */}
-      <section className="py-16 lg:py-20 bg-muted/30">
+      <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft text-center">
+          <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
               <DollarSign className="w-4 h-4" />
               Simple Pricing
             </div>
             
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
               Less than one private lesson.
             </h2>
-            <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
+            <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
               For $15/month, your child gets:
             </p>
             
@@ -684,7 +663,7 @@ const Home: React.FC = () => {
               ))}
             </div>
 
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-text-muted">
               Try one week free. Then $15/month. Cancel anytime.
             </p>
           </div>
@@ -692,24 +671,20 @@ const Home: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/30" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-gray-200/50 dark:border-gray-700/50 shadow-soft">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+          <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Start building consistent habits at home.
             </h2>
-            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+            <p className="text-lg text-text-secondary mb-10 max-w-2xl mx-auto">
               Give your child the structure to train on their own. See the difference in one week.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-base px-10 bg-primary hover:bg-primary/90 transition-colors shadow-soft text-white"
+                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
                 Start Your 7-Day Free Trial
@@ -717,7 +692,7 @@ const Home: React.FC = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="text-base px-8 border-2 border-gray-300 dark:border-gray-700 hover:border-primary transition-colors"
+                className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
                 asChild
               >
                 <Link to="/demo">
@@ -727,7 +702,7 @@ const Home: React.FC = () => {
               </Button>
             </div>
             
-            <p className="text-sm text-muted-foreground mt-8">
+            <p className="text-sm text-text-muted mt-8">
               Credit card required. Cancel anytime.
             </p>
           </div>
