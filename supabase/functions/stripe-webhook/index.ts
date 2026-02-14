@@ -53,11 +53,13 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // Only handle subscription-related events
+  // Only handle relevant events
   const relevantEvents = [
     "customer.subscription.created",
     "customer.subscription.updated",
     "customer.subscription.deleted",
+    "checkout.session.completed",
+    "invoice.payment_failed",
   ];
 
   if (!relevantEvents.includes(event.type)) {
@@ -66,6 +68,47 @@ serve(async (req) => {
     });
   }
 
+  // ─── Handle checkout.session.completed ───
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    console.log(`Checkout completed: session=${session.id}, customer=${session.customer}, subscription=${session.subscription}`);
+    // Subscription events will follow automatically from Stripe, so just acknowledge
+    return new Response(JSON.stringify({ received: true, type: "checkout.session.completed" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // ─── Handle invoice.payment_failed ───
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    const customerId = invoice.customer as string;
+    console.error(`Payment failed: invoice=${invoice.id}, customer=${customerId}, attempt=${invoice.attempt_count}`);
+
+    // Resolve user and create a notification
+    const customer = await stripe.customers.retrieve(customerId);
+    if (!customer.deleted && "email" in customer && customer.email) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("email", customer.email)
+        .maybeSingle();
+
+      if (profile) {
+        await supabase.from("notifications").insert({
+          user_id: profile.user_id,
+          title: "Payment Failed",
+          message: "Your subscription payment failed. Please update your payment method to keep your Pro features.",
+          notification_type: "payment_failed",
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true, type: "invoice.payment_failed" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // ─── Subscription events ───
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
