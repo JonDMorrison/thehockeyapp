@@ -37,24 +37,24 @@ const options = [
     id: "coach",
     role: "coach" as SelectedRole,
     title: "I'm a Coach",
-    description: "Create a team. Assign off-ice work. Free to get started.",
+    description: "Create your team and assign off-ice workouts — always free. Upgrade to a Team Plan ($500/yr) to cover your entire roster.",
     icon: Users,
-    buttonLabel: "Create Free Coach Account",
+    buttonLabel: "Start Coaching — Free",
     buttonVariant: "default" as const,
-    smallText: null as string | null,
+    smallText: "No credit card required.",
     directHref: null as string | null,
     iconBgClass: "bg-gradient-to-br from-primary to-[hsl(221,70%,60%)]",
     hoverClass: "hover:border-primary/50",
   },
   {
     id: "parent",
-    role: "solo" as SelectedRole, // parents go through solo/setup then upgrade
+    role: "solo" as SelectedRole,
     title: "I'm a Parent",
-    description: "Help your child build consistent habits at home.",
+    description: "Build consistent off-ice habits at home. 7-day free trial, then $15/mo. If your team has a plan, you're already covered.",
     icon: Dumbbell,
-    buttonLabel: "Start Free 7-Day Trial",
+    buttonLabel: "Start 7-Day Free Trial",
     buttonVariant: "default" as const,
-    smallText: "Credit card required. Cancel anytime.",
+    smallText: "Credit card required · Cancel anytime",
     directHref: null,
     iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
     hoverClass: "hover:border-orange-500/50",
@@ -63,7 +63,7 @@ const options = [
     id: "player-team",
     role: "player" as SelectedRole,
     title: "I'm Joining a Team",
-    description: "I already have a team invite.",
+    description: "Your coach invited you. If your team has a plan, everything is included — no extra cost.",
     icon: UserCircle,
     buttonLabel: "Join My Team",
     buttonVariant: "outline" as const,
@@ -93,13 +93,16 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-4">
-            <DialogTitle className="text-xl text-center">
-              How will you use The Hockey App?
+          <DialogHeader className="p-6 pb-2 text-center">
+            <DialogTitle className="text-xl">
+              Get started — it's free
             </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Choose your role. You'll only pay if and when it makes sense for you.
+            </p>
           </DialogHeader>
 
-          <div className="px-4 pb-6 space-y-4">
+          <div className="px-4 pb-4 space-y-4">
             {options.map((option) => {
               const Icon = option.icon;
               return (
@@ -134,7 +137,12 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
                       {option.smallText}
                     </p>
                   )}
-                </div>
+
+
+            <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
+              No surprises. No hidden fees. Cancel anytime.
+            </p>
+          </div>
               );
             })}
           </div>
