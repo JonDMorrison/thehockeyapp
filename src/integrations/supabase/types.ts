@@ -232,6 +232,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_comp_grants: {
+        Row: {
+          created_at: string
+          created_by: string
+          days: number
+          email: string
+          id: string
+          reason: string
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          days?: number
+          email: string
+          id?: string
+          reason: string
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          days?: number
+          email?: string
+          id?: string
+          reason?: string
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          tag?: string
+        }
+        Relationships: []
+      }
       personal_practice_cards: {
         Row: {
           created_at: string | null
@@ -1211,10 +1247,17 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          comp_granted_at: string | null
+          comp_granted_by: string | null
+          comp_reason: string | null
+          comp_tag: string | null
           created_at: string
           current_period_end: string | null
           id: string
           plan: string
+          revoked_at: string | null
+          revoked_by: string | null
+          source: string
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -1222,10 +1265,17 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          comp_granted_at?: string | null
+          comp_granted_by?: string | null
+          comp_reason?: string | null
+          comp_tag?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
           plan?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source?: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1233,10 +1283,17 @@ export type Database = {
           user_id: string
         }
         Update: {
+          comp_granted_at?: string | null
+          comp_granted_by?: string | null
+          comp_reason?: string | null
+          comp_tag?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
           plan?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source?: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -2300,6 +2357,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      am_i_admin: { Args: never; Returns: boolean }
       apply_offline_event: {
         Args: {
           p_event_type: string
@@ -2332,10 +2390,47 @@ export type Database = {
         Returns: Json
       }
       generate_team_short_code: { Args: { p_team_id: string }; Returns: string }
+      get_comp_admin_list: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: {
+          comp_granted_at: string
+          comp_granted_by: string
+          comp_reason: string
+          comp_tag: string
+          current_period_end: string
+          display_name: string
+          email: string
+          plan: string
+          revoked_at: string
+          revoked_by: string
+          source: string
+          status: string
+          user_id: string
+        }[]
+      }
+      get_comp_stats: {
+        Args: never
+        Returns: {
+          active_comp_count: number
+          grants_last_7d: number
+          pending_count: number
+        }[]
+      }
       get_development_snapshot: { Args: { p_player_id: string }; Returns: Json }
       get_history_summary: {
         Args: { p_days?: number; p_player_id: string }
         Returns: Json
+      }
+      get_pending_comp_grants: {
+        Args: never
+        Returns: {
+          created_at: string
+          days: number
+          email: string
+          id: string
+          reason: string
+          tag: string
+        }[]
       }
       get_player_development_snapshot: {
         Args: { p_player_id: string }
@@ -2380,6 +2475,7 @@ export type Database = {
         Returns: boolean
       }
       is_pro: { Args: { p_user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_team_adult: {
         Args: { team_uuid: string; user_uuid: string }
         Returns: boolean
