@@ -148,6 +148,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          notification_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          notification_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          notification_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -2286,6 +2310,14 @@ export type Database = {
       calculate_goal_progress: { Args: { p_goal_id: string }; Returns: Json }
       calculate_solo_streak: { Args: { p_player_id: string }; Returns: Json }
       check_and_enable_game_days: { Args: never; Returns: undefined }
+      check_notification_rate_limit: {
+        Args: {
+          p_notification_type: string
+          p_user_id: string
+          p_window_hours?: number
+        }
+        Returns: boolean
+      }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
         Returns: Json
@@ -2309,6 +2341,17 @@ export type Database = {
       get_today_snapshot: { Args: { p_player_id: string }; Returns: Json }
       has_entitlement: {
         Args: { p_key: string; p_user_id: string }
+        Returns: boolean
+      }
+      insert_notification_with_log: {
+        Args: {
+          p_idempotency_key: string
+          p_message: string
+          p_metadata?: Json
+          p_notification_type: string
+          p_title: string
+          p_user_id: string
+        }
         Returns: boolean
       }
       is_guardian_of_team_player: {
