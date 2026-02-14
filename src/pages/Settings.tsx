@@ -207,7 +207,8 @@ export default function Settings() {
             {/* Pro Features List */}
             {!isPro && (
               <div className="space-y-2 border-t border-border pt-3">
-                <p className="text-xs font-medium text-muted-foreground">Unlock with Pro ($15/mo):</p>
+                <p className="text-xs font-medium text-muted-foreground">Start your 7-day free trial, then $15/mo. Cancel anytime.</p>
+                <p className="text-[11px] text-muted-foreground/70">Credit card required. You won't be charged during the trial.</p>
                 {(Object.entries(FEATURE_LABELS) as [EntitlementKey, string][]).map(([, label]) => (
                   <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="h-3.5 w-3.5 text-primary" />
@@ -246,7 +247,7 @@ export default function Settings() {
                   ) : (
                     <Crown className="h-4 w-4 mr-2" />
                   )}
-                  Upgrade to Pro
+                  Start Free Trial
                 </Button>
               )}
             </div>

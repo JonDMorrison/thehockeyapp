@@ -53,12 +53,8 @@ serve(async (req) => {
     const priceIdCad = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
     const priceIdUsd = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
 
-    if (!priceIdCad) {
-      throw new Error("STRIPE_PRO_PRICE_ID_CAD_LIVE is not configured");
-    }
-    if (!priceIdUsd) {
-      throw new Error("STRIPE_PRO_PRICE_ID_USD_LIVE is not configured");
-    }
+    if (!priceIdCad) throw new Error("STRIPE_PRO_PRICE_ID_CAD_LIVE is not configured");
+    if (!priceIdUsd) throw new Error("STRIPE_PRO_PRICE_ID_USD_LIVE is not configured");
 
     const priceId = preferredCurrency === "USD" ? priceIdUsd : priceIdCad;
 
@@ -73,9 +69,22 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
+    // ─── Check trial eligibility ───
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("has_used_trial")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const hasUsedTrial = profile?.has_used_trial ?? false;
+
     const origin = req.headers.get("origin") || "https://thehockeyapp.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       client_reference_id: user.id,
@@ -84,7 +93,14 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/settings?checkout=success`,
       cancel_url: `${origin}/settings?checkout=cancelled`,
-    });
+    };
+
+    // Grant 7-day trial only if user hasn't used one before
+    if (!hasUsedTrial) {
+      sessionParams.subscription_data = { trial_period_days: 7 };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
