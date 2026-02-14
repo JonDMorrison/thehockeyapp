@@ -201,23 +201,34 @@ const Features: React.FC = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-card rounded-2xl border border-border shadow-subtle p-6 sm:p-10 md:p-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
-              See how it works.
+              Ready to simplify off-ice training?
             </h2>
             <p className="text-base sm:text-lg text-text-secondary mb-6 sm:mb-10 max-w-2xl mx-auto">
               Try one week of structured training. Then decide.
             </p>
-            <Button 
-              size="lg" 
-              asChild
-              className="bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
-            >
-              {(
-                <Link to="/demo">
-                  View the demo
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                asChild
+              >
+                <Link to="/auth">
+                  Get Started For Free
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                 </Link>
-              )}
-            </Button>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-primary text-primary hover:bg-primary/5 transition-colors h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl"
+                asChild
+              >
+                <Link to="/demo">
+                  See How It Works
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

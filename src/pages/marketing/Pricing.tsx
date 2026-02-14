@@ -355,7 +355,7 @@ const Pricing: React.FC = () => {
               className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
               onClick={() => setShowGetStarted(true)}
             >
-              Get Started Free
+              Get Started For Free
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
