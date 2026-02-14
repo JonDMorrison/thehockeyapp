@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -29,24 +30,24 @@ const comparisonRows: { feature: string; parent: boolean | string; team: boolean
 /* ── FAQ ── */
 const faqs = [
   {
-    q: "Do coaches need to pay?",
-    a: "No. Coaches can create a team, assign workouts, and track participation at no cost. Coaching tools are always free.",
+    q: "What if my team already has a Team Plan?",
+    a: "You're covered. If your coach purchased a Team Plan, every family on the roster gets full Pro access automatically — no individual subscription needed.",
   },
   {
-    q: "Do parents pay if the team has a plan?",
-    a: "No. If your team's coach has purchased a Team Plan, every family on that roster gets full Pro access — no individual subscription needed.",
+    q: "What if I already pay for Parent Pro and my team upgrades?",
+    a: "We'll notify you on your Settings page. You can cancel your individual subscription since you're already covered by the team — no double charging.",
   },
   {
-    q: "What happens after the 7-day trial?",
-    a: "You'll be billed $15/month. You can cancel anytime from your account settings — no questions asked, no lock-in.",
+    q: "Are coaches free?",
+    a: "Yes. Coaches can create a team, assign workouts, and track participation at no cost. Coaching tools are always free.",
   },
   {
-    q: "What if I cancel?",
-    a: "You keep full access until the end of your billing period. After that, you'll still be able to see daily tasks, but Pro features like full history and AI summaries will be limited.",
+    q: "Do parents have to pay to join a team?",
+    a: "No. Parents can join a team and see daily tasks for free. Pro features like full history, AI summaries, and structured programs require a Parent Pro subscription — unless the team has a Team Plan.",
   },
   {
-    q: "What if I'm paying individually AND my team buys a plan?",
-    a: "We'll let you know on your Settings page. You can cancel your individual subscription since you're already covered by the team — no double charging required.",
+    q: "Can I use the app without a team?",
+    a: "Yes. Parents can sign up independently, start a 7-day free trial, and build training habits at home — no team required.",
   },
 ];
 
@@ -146,9 +147,9 @@ const Pricing: React.FC = () => {
                   "Covers up to 24 players",
                   "Every family gets full Pro access",
                   "Coach purchaser gets Pro access too",
+                  "AI weekly summaries for entire roster",
+                  "Full-season tracking and reports",
                   "Saves families $2,500+ collectively",
-                  "No per-family charges",
-                  "Annual billing — no surprises",
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
@@ -376,14 +377,27 @@ const Pricing: React.FC = () => {
             <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
               Get started free. Teams can cover families. Otherwise parents upgrade after a 7-day trial.
             </p>
-            <Button
-              size="lg"
-              className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
-              onClick={() => setShowGetStarted(true)}
-            >
-              Get Started For Free
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                size="lg"
+                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                onClick={() => setShowGetStarted(true)}
+              >
+                Get Started For Free
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl"
+                asChild
+              >
+                <Link to="/demo">
+                  See How It Works
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
