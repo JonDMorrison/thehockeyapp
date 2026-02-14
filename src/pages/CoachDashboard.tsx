@@ -262,7 +262,7 @@ const CoachDashboard: React.FC = () => {
           <OnboardingProgress
             checklist={dashboard.onboarding.checklist}
             playersCount={dashboard.pulse.players_count}
-            hasWorkouts={dashboard.today.practice_card.exists}
+            hasWorkouts={dashboard.today.practice_card?.exists ?? false}
             onAction={handleOnboardingAction}
           />
         )}
