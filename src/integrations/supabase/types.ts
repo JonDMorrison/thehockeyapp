@@ -2483,6 +2483,7 @@ export type Database = {
         Args: { p_days?: number; p_player_id: string }
         Returns: Json
       }
+      get_my_access_debug: { Args: never; Returns: Json }
       get_pending_comp_grants: {
         Args: never
         Returns: {
@@ -2514,6 +2515,7 @@ export type Database = {
       }
       get_today_plan: { Args: { p_player_id: string }; Returns: Json }
       get_today_snapshot: { Args: { p_player_id: string }; Returns: Json }
+      get_user_access_debug: { Args: { p_user_id: string }; Returns: Json }
       has_active_individual_pro: {
         Args: { p_user_id: string }
         Returns: boolean

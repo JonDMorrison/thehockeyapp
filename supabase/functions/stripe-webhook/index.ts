@@ -241,40 +241,116 @@ serve(async (req) => {
       });
     }
 
-    // Refresh entitlements for all users on this team
+    // ─── Refresh entitlements for all users on this team (hardened) ───
+    const MAX_ENTITLEMENT_UPDATES = 200;
+    const refreshStart = Date.now();
+    const teamId = existingTeamSub.team_id;
+
     const { data: teamMembers } = await supabase
       .from("team_memberships")
       .select("player_id, players(owner_user_id)")
-      .eq("team_id", existingTeamSub.team_id)
+      .eq("team_id", teamId)
       .eq("status", "active");
 
+    // Also include guardians of team players
+    const distinctUserIds = new Set<string>();
     if (teamMembers) {
-      const userIds = new Set<string>();
+      const playerIds: string[] = [];
       for (const m of teamMembers) {
         const ownerUserId = (m.players as unknown as { owner_user_id: string })?.owner_user_id;
-        if (ownerUserId) userIds.add(ownerUserId);
+        if (ownerUserId) distinctUserIds.add(ownerUserId);
+        playerIds.push(m.player_id);
       }
-
-      const isActive = teamStatus === "active";
-      for (const uid of userIds) {
-        await supabase
-          .from("entitlements")
-          .upsert(
-            {
-              user_id: uid,
-              can_view_full_history: isActive,
-              can_access_programs: isActive,
-              can_view_snapshot: isActive,
-              can_receive_ai_summary: isActive,
-              can_export_reports: isActive,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id" }
-          );
+      // Fetch guardians for all team players
+      if (playerIds.length > 0) {
+        const { data: guardians } = await supabase
+          .from("player_guardians")
+          .select("user_id")
+          .in("player_id", playerIds);
+        if (guardians) {
+          for (const g of guardians) distinctUserIds.add(g.user_id);
+        }
       }
     }
 
-    log("info", "Team subscription webhook processed", { ...eventCtx, teamId: existingTeamSub.team_id, status: teamStatus });
+    const affectedUsersCount = distinctUserIds.size;
+
+    if (affectedUsersCount > MAX_ENTITLEMENT_UPDATES) {
+      log("warn", "Team entitlement refresh exceeds hard cap", {
+        ...eventCtx, teamId, affectedUsersCount, cap: MAX_ENTITLEMENT_UPDATES,
+      });
+      return new Response(JSON.stringify({ received: true, partial: true, affectedUsersCount }), {
+        status: 200, headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const isActive = teamStatus === "active";
+    const desiredEntitlements = {
+      can_view_full_history: isActive,
+      can_access_programs: isActive,
+      can_view_snapshot: isActive,
+      can_receive_ai_summary: isActive,
+      can_export_reports: isActive,
+    };
+
+    // Fetch current entitlements for these users to skip no-op updates
+    const userIdArray = Array.from(distinctUserIds);
+    let updatedCount = 0;
+
+    if (userIdArray.length > 0) {
+      const { data: currentEntitlements } = await supabase
+        .from("entitlements")
+        .select("user_id, can_view_full_history, can_access_programs, can_view_snapshot, can_receive_ai_summary, can_export_reports")
+        .in("user_id", userIdArray);
+
+      const currentMap = new Map<string, typeof desiredEntitlements>();
+      if (currentEntitlements) {
+        for (const e of currentEntitlements) {
+          currentMap.set(e.user_id, {
+            can_view_full_history: e.can_view_full_history,
+            can_access_programs: e.can_access_programs,
+            can_view_snapshot: e.can_view_snapshot,
+            can_receive_ai_summary: e.can_receive_ai_summary,
+            can_export_reports: e.can_export_reports,
+          });
+        }
+      }
+
+      const needsUpdate: string[] = [];
+      for (const uid of userIdArray) {
+        const cur = currentMap.get(uid);
+        if (!cur ||
+            cur.can_view_full_history !== desiredEntitlements.can_view_full_history ||
+            cur.can_access_programs !== desiredEntitlements.can_access_programs ||
+            cur.can_view_snapshot !== desiredEntitlements.can_view_snapshot ||
+            cur.can_receive_ai_summary !== desiredEntitlements.can_receive_ai_summary ||
+            cur.can_export_reports !== desiredEntitlements.can_export_reports) {
+          needsUpdate.push(uid);
+        }
+      }
+
+      // Batch upsert only changed users
+      for (const uid of needsUpdate) {
+        const { error: entErr } = await supabase
+          .from("entitlements")
+          .upsert({
+            user_id: uid,
+            ...desiredEntitlements,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+
+        if (entErr) {
+          log("error", "Failed to update entitlement for team member", { ...eventCtx, teamId, userId: uid, dbError: entErr });
+        } else {
+          updatedCount++;
+        }
+      }
+    }
+
+    const elapsedMs = Date.now() - refreshStart;
+    log("info", "Team subscription webhook processed", {
+      ...eventCtx, teamId, status: teamStatus, affectedUsersCount, updatedCount, elapsedMs,
+    });
     return new Response(JSON.stringify({ received: true, type: "team_subscription", teamId: existingTeamSub.team_id }), {
       headers: { "Content-Type": "application/json" },
     });
