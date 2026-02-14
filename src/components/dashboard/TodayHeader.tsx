@@ -33,10 +33,11 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   const [editedName, setEditedName] = useState(teamName);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const dateObj = new Date(date);
-  const formattedDate = format(dateObj, "EEE, MMM d").toUpperCase();
+  const dateObj = date ? new Date(date) : new Date();
+  const isValidDate = !isNaN(dateObj.getTime());
+  const formattedDate = isValidDate ? format(dateObj, "EEE, MMM d").toUpperCase() : format(new Date(), "EEE, MMM d").toUpperCase();
 
-  const isGameDay = mode === "game_day" || gameDay.enabled;
+  const isGameDay = mode === "game_day" || (gameDay?.enabled ?? false);
 
   // Format game time if available
   const gameTime = gameDay.event_time 
