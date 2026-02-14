@@ -1,5 +1,6 @@
 export { logger } from "./logger";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { assertDefined, isDefined, requireUser, requireActivePlayer, requireActiveTeam } from "./nullSafety";
 export { hasEntitlement, getPlanLabel } from "./entitlements";
 export {
   canEditTeam,

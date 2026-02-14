@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
-import { logger } from "@/core";
+import { logger, ErrorBoundary } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
@@ -193,24 +193,26 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ActiveViewProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner 
-            position="top-center"
-            toastOptions={{
-              className: "bg-card text-foreground border border-border shadow-medium",
-            }}
-          />
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Suspense fallback={<PageLoader />}>
-              <AnimatedRoutes />
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ActiveViewProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ActiveViewProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner 
+              position="top-center"
+              toastOptions={{
+                className: "bg-card text-foreground border border-border shadow-medium",
+              }}
+            />
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Suspense fallback={<PageLoader />}>
+                <AnimatedRoutes />
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ActiveViewProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 
