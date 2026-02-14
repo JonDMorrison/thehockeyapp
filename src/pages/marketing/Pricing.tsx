@@ -175,22 +175,6 @@ const Pricing: React.FC = () => {
         </div>
       </section>
 
-      {/* Value Anchor */}
-      <section className="py-16 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-card rounded-2xl border border-border shadow-subtle p-8 md:p-10">
-            <p className="text-sm font-medium text-primary mb-3 uppercase tracking-wide">
-              Put it in perspective
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-              Less than one private lesson.
-            </h2>
-            <p className="text-text-secondary text-lg leading-relaxed max-w-xl mx-auto">
-              A single private skating lesson costs $80–$150. For $15/month, your child gets daily structured training, accountability, and progress tracking — every single day.
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Savings Math Block */}
       <section className="py-16 bg-background">
