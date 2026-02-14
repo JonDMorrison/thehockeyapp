@@ -17,20 +17,13 @@ export default function SoloTryWorkout() {
   const { data: invite, isLoading, error } = useQuery({
     queryKey: ['solo-invite', token],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: invite, error: inviteError } = await supabase
         .from('solo_referral_invites')
         .select(`
           *,
           referrer:players!solo_referral_invites_referrer_player_id_fkey(
             first_name,
             last_initial
-          ),
-          workout:personal_practice_cards(
-            id,
-            title,
-            date,
-            tier,
-            tasks:personal_practice_tasks(id, label, task_type)
           ),
           plan:personal_training_plans(
             id,
@@ -43,8 +36,27 @@ export default function SoloTryWorkout() {
         .eq('token', token!)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (inviteError) throw inviteError;
+
+      // Fetch workout card separately (no FK relationship)
+      let workout: { id: string; title: string | null; date: string; tier: string | null; tasks: { id: string; label: string; task_type: string }[] } | null = null;
+      if (invite.workout_card_id) {
+        const { data: card } = await supabase
+          .from('personal_practice_cards')
+          .select('id, title, date, tier')
+          .eq('id', invite.workout_card_id)
+          .maybeSingle();
+        if (card) {
+          const { data: tasks } = await supabase
+            .from('personal_practice_tasks')
+            .select('id, label, task_type')
+            .eq('personal_practice_card_id', card.id)
+            .order('sort_order');
+          workout = { ...card, tasks: tasks || [] };
+        }
+      }
+
+      return { ...invite, workout };
     },
     enabled: !!token,
   });
