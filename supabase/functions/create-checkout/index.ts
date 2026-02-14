@@ -46,17 +46,31 @@ serve(async (req) => {
       });
     }
 
-    // ─── Resolve currency-specific price ID ───
     const body = await req.json().catch(() => ({}));
+    const purchaseType: string = body.purchase_type || "parent_pro";
     const preferredCurrency = (body.preferred_currency || "CAD").toUpperCase();
+    const teamId: string | null = body.team_id || null;
 
-    const priceIdCad = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
-    const priceIdUsd = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
+    // ─── Resolve price ID based on purchase type ───
+    let priceId: string;
 
-    if (!priceIdCad) throw new Error("STRIPE_PRO_PRICE_ID_CAD_LIVE is not configured");
-    if (!priceIdUsd) throw new Error("STRIPE_PRO_PRICE_ID_USD_LIVE is not configured");
-
-    const priceId = preferredCurrency === "USD" ? priceIdUsd : priceIdCad;
+    if (purchaseType === "team_plan") {
+      if (!teamId) {
+        return new Response(JSON.stringify({ error: "team_id is required for team_plan" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const cadId = Deno.env.get("STRIPE_TEAM_PRICE_ID_CAD_LIVE");
+      const usdId = Deno.env.get("STRIPE_TEAM_PRICE_ID_USD_LIVE");
+      if (!cadId || !usdId) throw new Error("Team plan price IDs not configured");
+      priceId = preferredCurrency === "USD" ? usdId : cadId;
+    } else {
+      const cadId = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
+      const usdId = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
+      if (!cadId || !usdId) throw new Error("Pro price IDs not configured");
+      priceId = preferredCurrency === "USD" ? usdId : cadId;
+    }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
       apiVersion: "2025-08-27.basil",
@@ -69,35 +83,38 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // ─── Check trial eligibility ───
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-    const { data: profile } = await serviceClient
-      .from("profiles")
-      .select("has_used_trial")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    const hasUsedTrial = profile?.has_used_trial ?? false;
-
     const origin = req.headers.get("origin") || "https://thehockeyapp.lovable.app";
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       client_reference_id: user.id,
-      metadata: { user_id: user.id },
+      metadata: {
+        user_id: user.id,
+        purchase_type: purchaseType,
+        ...(teamId ? { team_id: teamId } : {}),
+      },
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${origin}/settings?checkout=success`,
       cancel_url: `${origin}/settings?checkout=cancelled`,
     };
 
-    // Grant 7-day trial only if user hasn't used one before
-    if (!hasUsedTrial) {
-      sessionParams.subscription_data = { trial_period_days: 7 };
+    // Trial only for parent_pro, never for team_plan
+    if (purchaseType === "parent_pro") {
+      const serviceClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+      const { data: profile } = await serviceClient
+        .from("profiles")
+        .select("has_used_trial")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!(profile?.has_used_trial ?? false)) {
+        sessionParams.subscription_data = { trial_period_days: 7 };
+      }
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

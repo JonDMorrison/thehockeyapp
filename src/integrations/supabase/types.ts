@@ -2514,10 +2514,16 @@ export type Database = {
       }
       get_today_plan: { Args: { p_player_id: string }; Returns: Json }
       get_today_snapshot: { Args: { p_player_id: string }; Returns: Json }
+      has_active_individual_pro: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      has_active_team_plan: { Args: { p_team_id: string }; Returns: boolean }
       has_entitlement: {
         Args: { p_key: string; p_user_id: string }
         Returns: boolean
       }
+      has_full_access: { Args: { p_user_id: string }; Returns: boolean }
       insert_notification_with_log: {
         Args: {
           p_idempotency_key: string
@@ -2578,6 +2584,7 @@ export type Database = {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
       }
+      user_is_team_covered: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

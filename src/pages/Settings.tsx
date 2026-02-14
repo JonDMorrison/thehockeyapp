@@ -11,6 +11,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachProfileSection } from "@/components/team/CoachProfileSection";
+import { CollisionBanner } from "@/components/settings/CollisionBanner";
 import { toast } from "@/components/app/Toast";
 
 interface ProfileData {
@@ -54,11 +55,16 @@ export default function Settings() {
     }
   }, [searchParams]);
 
+  // Detect collision: user has individual pro AND team coverage
+  const hasCollision = isPro && !isComped && isTeamCovered;
+
   const handleUpgrade = async () => {
     if (!user) return;
     setCheckoutLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { purchase_type: "parent_pro" },
+      });
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, "_blank");
@@ -195,6 +201,13 @@ export default function Settings() {
             Subscription
           </h2>
           <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+            {/* Collision warning: individual pro + team coverage */}
+            {hasCollision && (
+              <CollisionBanner
+                onManageSubscription={handleManageSubscription}
+                portalLoading={portalLoading}
+              />
+            )}
             {/* Current Plan */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

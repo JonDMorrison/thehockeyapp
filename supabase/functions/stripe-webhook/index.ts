@@ -8,12 +8,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-/** Structured log helper — always includes event context */
-function log(
-  level: "info" | "warn" | "error",
-  msg: string,
-  ctx: Record<string, unknown> = {}
-) {
+function log(level: "info" | "warn" | "error", msg: string, ctx: Record<string, unknown> = {}) {
   const entry = { level, msg, ts: new Date().toISOString(), ...ctx };
   if (level === "error") console.error(JSON.stringify(entry));
   else if (level === "warn") console.warn(JSON.stringify(entry));
@@ -29,20 +24,19 @@ serve(async (req) => {
     apiVersion: "2025-08-27.basil",
   });
 
-  // ─── Env validation ───
   const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
   if (!webhookSecret) {
     log("error", "STRIPE_WEBHOOK_SECRET not configured");
     return new Response("Webhook secret not configured", { status: 500 });
   }
 
+  // ─── Price ID sets ───
   const proPriceIds: string[] = [];
   const cadPriceId = Deno.env.get("STRIPE_PRO_PRICE_ID_CAD_LIVE");
   const usdPriceId = Deno.env.get("STRIPE_PRO_PRICE_ID_USD_LIVE");
   if (cadPriceId) proPriceIds.push(cadPriceId);
   if (usdPriceId) proPriceIds.push(usdPriceId);
 
-  // Team plan price IDs
   const teamPriceIds: string[] = [];
   const teamCadPriceId = Deno.env.get("STRIPE_TEAM_PRICE_ID_CAD_LIVE");
   const teamUsdPriceId = Deno.env.get("STRIPE_TEAM_PRICE_ID_USD_LIVE");
@@ -50,17 +44,14 @@ serve(async (req) => {
   if (teamUsdPriceId) teamPriceIds.push(teamUsdPriceId);
 
   if (proPriceIds.length === 0) {
-    log("error", "No Pro price IDs configured (STRIPE_PRO_PRICE_ID_CAD_LIVE / USD_LIVE)");
+    log("error", "No Pro price IDs configured");
     return new Response("Price IDs not configured", { status: 500 });
   }
 
   const allowTrials = Deno.env.get("ALLOW_TRIALS") === "true";
 
-  // ─── Signature verification (unchanged) ───
   const signature = req.headers.get("stripe-signature");
-  if (!signature) {
-    return new Response("No signature", { status: 400 });
-  }
+  if (!signature) return new Response("No signature", { status: 400 });
 
   const body = await req.text();
   let event: Stripe.Event;
@@ -68,12 +59,8 @@ serve(async (req) => {
   try {
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch (err) {
-    log("error", "Webhook signature verification failed", {
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return new Response(`Webhook Error: ${err instanceof Error ? err.message : "Unknown"}`, {
-      status: 400,
-    });
+    log("error", "Webhook signature verification failed", { error: err instanceof Error ? err.message : String(err) });
+    return new Response(`Webhook Error: ${err instanceof Error ? err.message : "Unknown"}`, { status: 400 });
   }
 
   const supabase = createClient(
@@ -83,7 +70,6 @@ serve(async (req) => {
 
   const eventCtx = { eventId: event.id, eventType: event.type };
 
-  // Only handle relevant events
   const relevantEvents = [
     "customer.subscription.created",
     "customer.subscription.updated",
@@ -99,12 +85,12 @@ serve(async (req) => {
   }
 
   // ─── Handle checkout.session.completed ───
-  // Seed stripe_customer_id → user_id mapping so subscription events
-  // can resolve the user without relying on email lookup.
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const refUserId = session.client_reference_id || session.metadata?.user_id;
     const sessionCustomerId = session.customer as string | null;
+    const purchaseType = session.metadata?.purchase_type || "parent_pro";
+    const teamId = session.metadata?.team_id;
 
     log("info", "Checkout completed", {
       ...eventCtx,
@@ -112,11 +98,33 @@ serve(async (req) => {
       customer: sessionCustomerId,
       subscription: session.subscription,
       refUserId,
+      purchaseType,
+      teamId,
     });
 
-    if (refUserId && sessionCustomerId) {
-      // Pre-seed the subscriptions row so subsequent subscription events
-      // can be resolved via stripe_customer_id → user_id.
+    if (purchaseType === "team_plan" && teamId && sessionCustomerId) {
+      // Seed team_subscriptions for team plan checkout
+      const { error: seedErr } = await supabase
+        .from("team_subscriptions")
+        .upsert(
+          {
+            team_id: teamId,
+            stripe_customer_id: sessionCustomerId,
+            stripe_subscription_id: (session.subscription as string) || null,
+            status: "active",
+            created_by_user_id: refUserId,
+          },
+          { onConflict: "team_id" }
+        );
+
+      if (seedErr) {
+        log("error", "Failed to seed team_subscriptions from checkout", { ...eventCtx, teamId, dbError: seedErr });
+        return new Response(JSON.stringify({ error: "db_team_checkout_seed_failed" }), {
+          status: 500, headers: { "Content-Type": "application/json" },
+        });
+      }
+    } else if (refUserId && sessionCustomerId) {
+      // Seed individual subscriptions row
       const { error: seedErr } = await supabase
         .from("subscriptions")
         .upsert(
@@ -125,23 +133,17 @@ serve(async (req) => {
             stripe_customer_id: sessionCustomerId,
             stripe_subscription_id: (session.subscription as string) || null,
             status: "active",
-            plan: "free", // Will be corrected by the subscription.created event
+            plan: "free", // Will be corrected by subscription.created
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
         );
 
       if (seedErr) {
-        log("error", "Failed to seed subscription from checkout", {
-          ...eventCtx,
-          refUserId,
-          customerId: sessionCustomerId,
-          dbError: seedErr,
+        log("error", "Failed to seed subscription from checkout", { ...eventCtx, refUserId, dbError: seedErr });
+        return new Response(JSON.stringify({ error: "db_checkout_seed_failed" }), {
+          status: 500, headers: { "Content-Type": "application/json" },
         });
-        return new Response(
-          JSON.stringify({ error: "db_checkout_seed_failed", eventId: event.id }),
-          { status: 500, headers: { "Content-Type": "application/json" } }
-        );
       }
     }
 
@@ -154,12 +156,7 @@ serve(async (req) => {
   if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object as Stripe.Invoice;
     const customerId = invoice.customer as string;
-    log("error", "Payment failed", {
-      ...eventCtx,
-      invoiceId: invoice.id,
-      customerId,
-      attemptCount: invoice.attempt_count,
-    });
+    log("error", "Payment failed", { ...eventCtx, invoiceId: invoice.id, customerId });
 
     const customer = await stripe.customers.retrieve(customerId);
     if (!customer.deleted && "email" in customer && customer.email) {
@@ -173,8 +170,7 @@ serve(async (req) => {
         await supabase.from("notifications").insert({
           user_id: profile.user_id,
           title: "Payment Failed",
-          message:
-            "Your subscription payment failed. Please update your payment method to keep your Pro features.",
+          message: "Your subscription payment failed. Please update your payment method to keep your Pro features.",
           notification_type: "payment_failed",
         });
       }
@@ -189,7 +185,102 @@ serve(async (req) => {
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
-  // Resolve user_id: prefer DB lookup by stripe_customer_id, fall back to email
+  const subscriptionPriceIds = (subscription.items?.data || []).map(
+    (item: { price: { id: string } }) => item.price.id
+  );
+  const matchesProPrice = subscriptionPriceIds.some((pid: string) => proPriceIds.includes(pid));
+  const matchesTeamPrice = subscriptionPriceIds.some((pid: string) => teamPriceIds.includes(pid));
+
+  const mapStatus = (s: string): string => {
+    switch (s) {
+      case "active": return "active";
+      case "trialing": return "trialing";
+      case "past_due": return "past_due";
+      case "canceled":
+      case "unpaid":
+      case "incomplete_expired": return "cancelled";
+      default: return "cancelled";
+    }
+  };
+
+  const status = mapStatus(subscription.status);
+  const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+
+  // ─── TEAM PLAN subscription events ───
+  if (matchesTeamPrice) {
+    // Find team_id from existing team_subscriptions by stripe_customer_id or stripe_subscription_id
+    const { data: existingTeamSub } = await supabase
+      .from("team_subscriptions")
+      .select("team_id")
+      .or(`stripe_subscription_id.eq.${subscription.id},stripe_customer_id.eq.${customerId}`)
+      .maybeSingle();
+
+    if (!existingTeamSub) {
+      log("warn", "No team_subscriptions row found for team subscription event", { ...eventCtx, customerId, subscriptionId: subscription.id });
+      return new Response(JSON.stringify({ received: true, warning: "no_team_sub_row" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const teamStatus = status === "active" ? "active" : (status === "cancelled" ? "cancelled" : status);
+
+    const { error: teamSubErr } = await supabase
+      .from("team_subscriptions")
+      .update({
+        status: teamStatus,
+        current_period_end: periodEnd,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: customerId,
+      })
+      .eq("team_id", existingTeamSub.team_id);
+
+    if (teamSubErr) {
+      log("error", "Failed to update team_subscriptions", { ...eventCtx, teamId: existingTeamSub.team_id, dbError: teamSubErr });
+      return new Response(JSON.stringify({ error: "db_team_sub_update_failed" }), {
+        status: 500, headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Refresh entitlements for all users on this team
+    const { data: teamMembers } = await supabase
+      .from("team_memberships")
+      .select("player_id, players(owner_user_id)")
+      .eq("team_id", existingTeamSub.team_id)
+      .eq("status", "active");
+
+    if (teamMembers) {
+      const userIds = new Set<string>();
+      for (const m of teamMembers) {
+        const ownerUserId = (m.players as unknown as { owner_user_id: string })?.owner_user_id;
+        if (ownerUserId) userIds.add(ownerUserId);
+      }
+
+      const isActive = teamStatus === "active";
+      for (const uid of userIds) {
+        await supabase
+          .from("entitlements")
+          .upsert(
+            {
+              user_id: uid,
+              can_view_full_history: isActive,
+              can_access_programs: isActive,
+              can_view_snapshot: isActive,
+              can_receive_ai_summary: isActive,
+              can_export_reports: isActive,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+      }
+    }
+
+    log("info", "Team subscription webhook processed", { ...eventCtx, teamId: existingTeamSub.team_id, status: teamStatus });
+    return new Response(JSON.stringify({ received: true, type: "team_subscription", teamId: existingTeamSub.team_id }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // ─── INDIVIDUAL PRO subscription events ───
   let userId: string | null = null;
 
   const { data: existingSub } = await supabase
@@ -202,7 +293,6 @@ serve(async (req) => {
     userId = existingSub.user_id;
     log("info", "Resolved user via stripe_customer_id", { ...eventCtx, customerId, userId });
   } else {
-    // Fallback: email lookup
     const customer = await stripe.customers.retrieve(customerId);
     if (customer.deleted || !("email" in customer) || !customer.email) {
       log("error", "Customer deleted or no email", { ...eventCtx, customerId });
@@ -211,60 +301,25 @@ serve(async (req) => {
       });
     }
 
-    const { data: profile, error: profileErr } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("user_id")
       .eq("email", customer.email)
       .maybeSingle();
 
-    if (profileErr || !profile) {
-      log("error", "No profile found for email", { ...eventCtx, email: customer.email, profileErr });
+    if (!profile) {
+      log("error", "No profile found for email", { ...eventCtx, email: customer.email });
       return new Response(JSON.stringify({ received: true, error: "no_user" }), {
         headers: { "Content-Type": "application/json" },
       });
     }
 
     userId = profile.user_id;
-    log("info", "Resolved user via email fallback", { ...eventCtx, customerId, userId, email: customer.email });
+    log("info", "Resolved user via email fallback", { ...eventCtx, customerId, userId });
   }
 
   const subCtx = { ...eventCtx, userId, customerId, subscriptionId: subscription.id };
 
-  // ─── Status mapping ───
-  const mapStatus = (s: string): string => {
-    switch (s) {
-      case "active":
-        return "active";
-      case "trialing":
-        return "trialing";
-      case "past_due":
-        return "past_due";
-      case "canceled":
-      case "unpaid":
-      case "incomplete_expired":
-        return "cancelled";
-      default:
-        return "cancelled";
-    }
-  };
-
-  const status = mapStatus(subscription.status);
-
-  // ─── Plan mapping: validate against known Pro price IDs ───
-  const subscriptionPriceIds = (subscription.items?.data || []).map(
-    (item: { price: { id: string } }) => item.price.id
-  );
-  const matchesProPrice = subscriptionPriceIds.some((pid: string) => proPriceIds.includes(pid));
-
-  if (!matchesProPrice && (status === "active" || status === "trialing")) {
-    log("warn", "Active subscription does not match any known Pro price ID", {
-      ...subCtx,
-      subscriptionPriceIds,
-      configuredProPriceIds: proPriceIds,
-    });
-  }
-
-  // Determine plan: must match price AND have valid status
   let plan: string;
   if (!matchesProPrice) {
     plan = "free";
@@ -276,9 +331,6 @@ serve(async (req) => {
     plan = "free";
   }
 
-  const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
-
-  // ─── Upsert subscriptions table ───
   const { error: subErr } = await supabase
     .from("subscriptions")
     .upsert(
@@ -295,17 +347,12 @@ serve(async (req) => {
     );
 
   if (subErr) {
-    log("error", "Failed to upsert subscription — returning 500 for Stripe retry", {
-      ...subCtx,
-      dbError: subErr,
+    log("error", "Failed to upsert subscription — returning 500 for Stripe retry", { ...subCtx, dbError: subErr });
+    return new Response(JSON.stringify({ error: "db_subscription_upsert_failed" }), {
+      status: 500, headers: { "Content-Type": "application/json" },
     });
-    return new Response(
-      JSON.stringify({ error: "db_subscription_upsert_failed", eventId: event.id }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
   }
 
-  // ─── Upsert entitlements table (only if subscription upsert succeeded) ───
   const isPro = plan === "pro";
   const { error: entErr } = await supabase
     .from("entitlements")
@@ -323,27 +370,17 @@ serve(async (req) => {
     );
 
   if (entErr) {
-    log("error", "Failed to upsert entitlements — returning 500 for Stripe retry", {
-      ...subCtx,
-      dbError: entErr,
+    log("error", "Failed to upsert entitlements — returning 500 for Stripe retry", { ...subCtx, dbError: entErr });
+    return new Response(JSON.stringify({ error: "db_entitlements_upsert_failed" }), {
+      status: 500, headers: { "Content-Type": "application/json" },
     });
-    return new Response(
-      JSON.stringify({ error: "db_entitlements_upsert_failed", eventId: event.id }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
   }
 
-  // ─── Mark trial as used (idempotent) ───
   if (status === "trialing" && matchesProPrice) {
-    const { error: trialErr } = await supabase
+    await supabase
       .from("profiles")
       .update({ has_used_trial: true })
       .eq("user_id", userId);
-
-    if (trialErr) {
-      log("warn", "Failed to set has_used_trial flag", { ...subCtx, dbError: trialErr });
-      // Non-fatal: trial already started, don't block webhook
-    }
   }
 
   log("info", "Webhook processed successfully", { ...subCtx, plan, status });
