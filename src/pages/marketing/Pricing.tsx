@@ -64,7 +64,7 @@ const Pricing: React.FC = () => {
             Two plans. No surprises.
           </h1>
           <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto font-medium">
-            Coaches use The Hockey App free. Parents and teams choose the plan that fits.
+            Free for coaches. Parents start with a 7-day trial. Teams can cover families.
           </p>
         </div>
       </section>
@@ -374,7 +374,7 @@ const Pricing: React.FC = () => {
               Try one week of structured training.
             </h2>
             <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
-              See the difference consistency makes. No risk.
+              Get started free. Teams can cover families. Otherwise parents upgrade after a 7-day trial.
             </p>
             <Button
               size="lg"

@@ -140,7 +140,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
 
             <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
-              No surprises. No hidden fees. Cancel anytime.
+              Free for coaches. Teams can cover families. No hidden fees.
             </p>
           </div>
               );

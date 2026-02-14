@@ -258,7 +258,7 @@ const Demo: React.FC = () => {
               Ready to simplify off-ice training?
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Free to get started. Set up your team in minutes.
+              Get started free. Teams can cover families. Otherwise parents upgrade after a 7-day trial.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

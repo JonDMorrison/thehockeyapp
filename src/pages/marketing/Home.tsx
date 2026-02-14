@@ -664,7 +664,7 @@ const Home: React.FC = () => {
             </div>
 
             <p className="text-sm text-text-muted">
-              Free to get started. Parent Pro: $15/month. Cancel anytime.
+              Get started free. Teams can cover families. Otherwise parents can upgrade after a 7-day trial.
             </p>
           </div>
         </div>
