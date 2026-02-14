@@ -2484,6 +2484,7 @@ export type Database = {
         Returns: Json
       }
       get_my_access_debug: { Args: never; Returns: Json }
+      get_my_access_status: { Args: never; Returns: Json }
       get_pending_comp_grants: {
         Args: never
         Returns: {

@@ -1,5 +1,4 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CoachProfileSection } from "@/components/team/CoachProfileSection";
 import { CollisionBanner } from "@/components/settings/CollisionBanner";
 import { toast } from "@/components/app/Toast";
+import { useQuery } from "@tanstack/react-query";
 
 interface ProfileData {
   user_id: string;
@@ -25,38 +25,24 @@ export default function Settings() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, signOut, loading: authLoading } = useAuth();
-  const { isPro, isComped, plan, subscription, loading: entLoading } = useEntitlements();
+  const {
+    isPro, isComped, isTeamCovered, isTeamPurchaser, hasCollision,
+    plan, access, loading: entLoading,
+  } = useEntitlements();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
-
-  // Check team coverage
-  const { data: teamCoverage } = useQuery({
-    queryKey: ["team-coverage", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_team_coverage_for_user", { p_user_id: user!.id });
-      if (error) return null;
-      return data?.[0] as { team_id: string; team_name: string; status: string; current_period_end: string } | null;
-    },
-    enabled: !!user,
-  });
-
-  const isTeamCovered = !!teamCoverage;
 
   // Show toast on checkout return
   useEffect(() => {
     const checkout = searchParams.get("checkout");
     if (checkout === "success") {
       toast.success("Welcome to Pro! Your features are being activated.");
-      // Clean URL
       window.history.replaceState({}, "", "/settings");
     } else if (checkout === "cancelled") {
       toast.info("Checkout cancelled.");
       window.history.replaceState({}, "", "/settings");
     }
   }, [searchParams]);
-
-  // Detect collision: user has individual pro AND team coverage
-  const hasCollision = isPro && !isComped && isTeamCovered;
 
   const handleUpgrade = async () => {
     if (!user) return;
@@ -104,7 +90,6 @@ export default function Settings() {
         .select("user_id, display_name, email, avatar_url")
         .eq("user_id", user.id)
         .single();
-      
       if (error) return null;
       return data as ProfileData;
     },
@@ -138,6 +123,41 @@ export default function Settings() {
   const isLoading = authLoading || profileLoading;
   const isCoach = (coachRoles?.length ?? 0) > 0;
 
+  // Derive plan display label
+  const getPlanDisplayLabel = () => {
+    if (isTeamPurchaser && isTeamCovered) return "Team Plan Owner";
+    if (isTeamCovered) return "Covered by Team Plan";
+    if (isComped) return "Complimentary Pro";
+    if (isPro) return `${getPlanLabel(plan)} Plan`;
+    return "Getting Started";
+  };
+
+  // Derive period end display
+  const getPeriodEndLabel = () => {
+    if (isTeamCovered && access?.team_coverage?.current_period_end) {
+      const teamName = access.team_coverage.team_name;
+      const end = new Date(access.team_coverage.current_period_end).toLocaleDateString();
+      if (isTeamPurchaser) return `Your team plan · Renews ${end}`;
+      return `${teamName} · Until ${end}`;
+    }
+    if (isComped && access?.comp?.expires_at) {
+      return `Access until ${new Date(access.comp.expires_at).toLocaleDateString()}`;
+    }
+    if (isPro && access?.individual?.current_period_end) {
+      return `Renews ${new Date(access.individual.current_period_end).toLocaleDateString()}`;
+    }
+    return null;
+  };
+
+  // Badge label
+  const getBadgeLabel = () => {
+    if (isTeamPurchaser) return "Owner";
+    if (isTeamCovered) return "Team";
+    if (isComped) return "Comp";
+    if (isPro) return "Active";
+    return null;
+  };
+
   const header = (
     <div className="px-5 py-4 border-b border-border bg-background">
       <h1 className="text-xl font-semibold">Account & Profile</h1>
@@ -165,6 +185,9 @@ export default function Settings() {
       </AppShell>
     );
   }
+
+  const periodEnd = getPeriodEndLabel();
+  const badge = getBadgeLabel();
 
   return (
     <AppShell header={header}>
@@ -201,7 +224,7 @@ export default function Settings() {
             Subscription
           </h2>
           <div className="bg-card border border-border rounded-xl p-4 space-y-4">
-            {/* Collision warning: individual pro + team coverage */}
+            {/* Collision warning: individual paid + team coverage */}
             {hasCollision && (
               <CollisionBanner
                 onManageSubscription={handleManageSubscription}
@@ -211,43 +234,23 @@ export default function Settings() {
             {/* Current Plan */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {(isPro || isTeamCovered) && <Crown className="h-5 w-5 text-amber-500" />}
+                {isPro && <Crown className="h-5 w-5 text-amber-500" />}
                 <div>
-                  <p className="font-medium text-foreground">
-                    {isTeamCovered
-                      ? "Covered by Team Plan"
-                      : isComped
-                        ? "Complimentary Pro"
-                        : isPro
-                          ? `${getPlanLabel(plan)} Plan`
-                          : "Getting Started"}
-                  </p>
-                  {isTeamCovered && teamCoverage && (
-                    <p className="text-xs text-muted-foreground">
-                      {teamCoverage.team_name} · Until {new Date(teamCoverage.current_period_end).toLocaleDateString()}
-                    </p>
-                  )}
-                  {isComped && !isTeamCovered && subscription?.current_period_end && (
-                    <p className="text-xs text-muted-foreground">
-                      Access until {new Date(subscription.current_period_end).toLocaleDateString()}
-                    </p>
-                  )}
-                  {isPro && !isComped && !isTeamCovered && subscription?.current_period_end && (
-                    <p className="text-xs text-muted-foreground">
-                      Renews {new Date(subscription.current_period_end).toLocaleDateString()}
-                    </p>
+                  <p className="font-medium text-foreground">{getPlanDisplayLabel()}</p>
+                  {periodEnd && (
+                    <p className="text-xs text-muted-foreground">{periodEnd}</p>
                   )}
                 </div>
               </div>
-              {(isPro || isTeamCovered) && (
+              {badge && (
                 <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
-                  {isTeamCovered ? "Team" : isComped ? "Comp" : "Active"}
+                  {badge}
                 </span>
               )}
             </div>
 
             {/* Upgrade prompt for non-pro users */}
-            {!isPro && !isTeamCovered && (
+            {!isPro && (
               <div className="space-y-2 border-t border-border pt-3">
                 <p className="text-xs font-medium text-muted-foreground">Start your 7-day free trial, then $15/mo. Cancel anytime.</p>
                 <p className="text-[11px] text-muted-foreground/70">Credit card required. You won't be charged during the trial.</p>
@@ -277,7 +280,7 @@ export default function Settings() {
                   )}
                   Switch to Paid Plan
                 </Button>
-              ) : isPro ? (
+              ) : isPro && !isTeamCovered ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -292,7 +295,23 @@ export default function Settings() {
                   )}
                   Manage Subscription
                 </Button>
-              ) : isTeamCovered ? (
+              ) : isTeamPurchaser ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading}
+                >
+                  {portalLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                  )}
+                  Manage Team Plan
+                </Button>
+              ) : isPro ? (
+                // Team-covered (not purchaser) — no action needed
                 null
               ) : (
                 <Button
@@ -313,7 +332,7 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Profile Section - Photo, Name, and Coach Bio (if coach) */}
+        {/* Profile Section */}
         <section>
           <CoachProfileSection isCoach={isCoach} />
         </section>
@@ -325,18 +344,8 @@ export default function Settings() {
             Preferences
           </h2>
           <div className="bg-card border border-border rounded-xl divide-y divide-border">
-            <SettingsRow 
-              icon={Bell} 
-              label="Notifications" 
-              sublabel="Coming soon"
-              disabled 
-            />
-            <SettingsRow 
-              icon={Shield} 
-              label="Privacy" 
-              sublabel="Coming soon"
-              disabled 
-            />
+            <SettingsRow icon={Bell} label="Notifications" sublabel="Coming soon" disabled />
+            <SettingsRow icon={Shield} label="Privacy" sublabel="Coming soon" disabled />
           </div>
         </section>
 
@@ -347,14 +356,14 @@ export default function Settings() {
             Support
           </h2>
           <div className="bg-card border border-border rounded-xl divide-y divide-border">
-            <SettingsRow 
-              icon={HelpCircle} 
-              label="Help & FAQ" 
+            <SettingsRow
+              icon={HelpCircle}
+              label="Help & FAQ"
               onClick={() => window.open("https://thehockeyapp.lovable.app/about", "_blank")}
             />
-            <SettingsRow 
-              icon={FileText} 
-              label="Terms & Privacy" 
+            <SettingsRow
+              icon={FileText}
+              label="Terms & Privacy"
               onClick={() => navigate("/terms")}
             />
           </div>
