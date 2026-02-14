@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.sync-schedule]
 verify_jwt = false
+
+[functions.check-notifications]
+verify_jwt = false
