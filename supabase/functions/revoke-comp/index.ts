@@ -39,9 +39,16 @@ serve(async (req) => {
     const adminUserId = userData.user.id;
     const adminEmail = userData.user.email?.toLowerCase() ?? "";
 
-    const allowedEmails = (Deno.env.get("SUPER_ADMIN_EMAILS") ?? "")
+    // Check super admin via admin_config table (single source of truth)
+    const { data: configRow } = await supabaseAdmin
+      .from("admin_config")
+      .select("value")
+      .eq("key", "super_admin_emails")
+      .maybeSingle();
+
+    const allowedEmails = (configRow?.value ?? "")
       .split(",")
-      .map((e) => e.trim().toLowerCase())
+      .map((e: string) => e.trim().toLowerCase())
       .filter(Boolean);
 
     if (!allowedEmails.includes(adminEmail)) {
@@ -109,28 +116,42 @@ serve(async (req) => {
 
     if (revokeErr) throw revokeErr;
 
+    // --- Recompute entitlements based on remaining subscriptions ---
     // Check if user has a separate paid active subscription
-    // (in case they also have a paid sub - unlikely with upsert, but safe)
-    // Since we use upsert on user_id, there's only one subscription row.
-    // After revoking comp, set entitlements to false.
+    const { data: paidSub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("user_id", targetUserId!)
+      .eq("plan", "pro")
+      .eq("source", "paid")
+      .eq("status", "active")
+      .gt("current_period_end", new Date().toISOString())
+      .maybeSingle();
+
+    const hasPaidActive = !!paidSub;
+
     const { error: entErr } = await supabaseAdmin
       .from("entitlements")
       .update({
-        can_view_full_history: false,
-        can_access_programs: false,
-        can_view_snapshot: false,
-        can_receive_ai_summary: false,
-        can_export_reports: false,
+        can_view_full_history: hasPaidActive,
+        can_access_programs: hasPaidActive,
+        can_view_snapshot: hasPaidActive,
+        can_receive_ai_summary: hasPaidActive,
+        can_export_reports: hasPaidActive,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", targetUserId!);
 
     if (entErr) throw entErr;
 
-    console.log(`[REVOKE-COMP] Revoked comp for user ${targetUserId} by ${adminEmail}`);
+    console.log(`[REVOKE-COMP] Revoked comp for user ${targetUserId} by ${adminEmail}. Paid active: ${hasPaidActive}`);
 
     return new Response(
-      JSON.stringify({ success: true, user_id: targetUserId }),
+      JSON.stringify({
+        success: true,
+        user_id: targetUserId,
+        recomputed_entitlements: hasPaidActive,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
