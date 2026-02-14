@@ -1,7 +1,7 @@
 export { logger } from "./logger";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { assertDefined, isDefined, requireUser, requireActivePlayer, requireActiveTeam } from "./nullSafety";
-export { hasEntitlement, getPlanLabel } from "./entitlements";
+export { hasEntitlement, getPlanLabel, FREE_ENTITLEMENTS, FEATURE_LABELS } from "./entitlements";
 export {
   canEditTeam,
   canManagePlayers,
@@ -44,5 +44,5 @@ export type {
   Challenge,
   TeamSearchResult,
 } from "./types";
-export type { Plan, Feature } from "./entitlements";
+export type { Plan, EntitlementKey, Entitlements } from "./entitlements";
 export type { TierId, TaskType } from "./constants";

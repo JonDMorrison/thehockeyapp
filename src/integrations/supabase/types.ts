@@ -118,6 +118,36 @@ export type Database = {
         }
         Relationships: []
       }
+      entitlements: {
+        Row: {
+          can_access_programs: boolean
+          can_export_reports: boolean
+          can_receive_ai_summary: boolean
+          can_view_full_history: boolean
+          can_view_snapshot: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_access_programs?: boolean
+          can_export_reports?: boolean
+          can_receive_ai_summary?: boolean
+          can_view_full_history?: boolean
+          can_view_snapshot?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_access_programs?: boolean
+          can_export_reports?: boolean
+          can_receive_ai_summary?: boolean
+          can_view_full_history?: boolean
+          can_view_snapshot?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -1151,6 +1181,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       task_completions: {
         Row: {
@@ -2247,6 +2307,10 @@ export type Database = {
       }
       get_today_plan: { Args: { p_player_id: string }; Returns: Json }
       get_today_snapshot: { Args: { p_player_id: string }; Returns: Json }
+      has_entitlement: {
+        Args: { p_key: string; p_user_id: string }
+        Returns: boolean
+      }
       is_guardian_of_team_player: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
