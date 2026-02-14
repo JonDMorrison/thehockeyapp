@@ -1,8 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText } from "lucide-react";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { getPlanLabel, FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
+import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
@@ -19,7 +22,58 @@ interface ProfileData {
 
 export default function Settings() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, signOut, loading: authLoading } = useAuth();
+  const { isPro, plan, subscription, loading: entLoading } = useEntitlements();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  // Show toast on checkout return
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    if (checkout === "success") {
+      toast.success("Welcome to Pro! Your features are being activated.");
+      // Clean URL
+      window.history.replaceState({}, "", "/settings");
+    } else if (checkout === "cancelled") {
+      toast.info("Checkout cancelled.");
+      window.history.replaceState({}, "", "/settings");
+    }
+  }, [searchParams]);
+
+  const handleUpgrade = async () => {
+    if (!user) return;
+    setCheckoutLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err) {
+      toast.error("Failed to start checkout. Please try again.");
+      console.error("Checkout error:", err);
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err) {
+      toast.error("Failed to open subscription management.");
+      console.error("Portal error:", err);
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   // Fetch user profile
   const { data: profile, isLoading: profileLoading } = useQuery<ProfileData | null>({
@@ -117,6 +171,84 @@ export default function Settings() {
                   {user.email}
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Subscription Section */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Subscription
+          </h2>
+          <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+            {/* Current Plan */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {isPro && <Crown className="h-5 w-5 text-amber-500" />}
+                <div>
+                  <p className="font-medium text-foreground">
+                    {getPlanLabel(plan)} Plan
+                  </p>
+                  {isPro && subscription?.current_period_end && (
+                    <p className="text-xs text-muted-foreground">
+                      Renews {new Date(subscription.current_period_end).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {isPro && (
+                <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
+                  Active
+                </span>
+              )}
+            </div>
+
+            {/* Pro Features List */}
+            {!isPro && (
+              <div className="space-y-2 border-t border-border pt-3">
+                <p className="text-xs font-medium text-muted-foreground">Unlock with Pro ($15/mo):</p>
+                {(Object.entries(FEATURE_LABELS) as [EntitlementKey, string][]).map(([, label]) => (
+                  <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-3.5 w-3.5 text-primary" />
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-1">
+              {isPro ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleManageSubscription}
+                  disabled={portalLoading}
+                >
+                  {portalLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                  )}
+                  Manage Subscription
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Crown className="h-4 w-4 mr-2" />
+                  )}
+                  Upgrade to Pro
+                </Button>
+              )}
             </div>
           </div>
         </section>
