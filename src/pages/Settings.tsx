@@ -24,7 +24,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, signOut, loading: authLoading } = useAuth();
-  const { isPro, plan, subscription, loading: entLoading } = useEntitlements();
+  const { isPro, isComped, plan, subscription, loading: entLoading } = useEntitlements();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -188,9 +188,14 @@ export default function Settings() {
                 {isPro && <Crown className="h-5 w-5 text-amber-500" />}
                 <div>
                   <p className="font-medium text-foreground">
-                    {getPlanLabel(plan)} Plan
+                    {isComped ? "Complimentary Pro" : `${getPlanLabel(plan)} Plan`}
                   </p>
-                  {isPro && subscription?.current_period_end && (
+                  {isComped && subscription?.current_period_end && (
+                    <p className="text-xs text-muted-foreground">
+                      Access until {new Date(subscription.current_period_end).toLocaleDateString()}
+                    </p>
+                  )}
+                  {isPro && !isComped && subscription?.current_period_end && (
                     <p className="text-xs text-muted-foreground">
                       Renews {new Date(subscription.current_period_end).toLocaleDateString()}
                     </p>
@@ -199,7 +204,7 @@ export default function Settings() {
               </div>
               {isPro && (
                 <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
-                  Active
+                  {isComped ? "Comp" : "Active"}
                 </span>
               )}
             </div>
@@ -220,7 +225,22 @@ export default function Settings() {
 
             {/* Action Buttons */}
             <div className="flex gap-2 pt-1">
-              {isPro ? (
+              {isComped ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleUpgrade}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Crown className="h-4 w-4 mr-2" />
+                  )}
+                  Switch to Paid Plan
+                </Button>
+              ) : isPro ? (
                 <Button
                   variant="outline"
                   size="sm"

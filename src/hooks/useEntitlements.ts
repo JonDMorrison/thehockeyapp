@@ -12,6 +12,7 @@ import { useAuth } from "./useAuth";
 interface SubscriptionInfo {
   plan: Plan;
   status: string;
+  source: string;
   current_period_end: string | null;
 }
 
@@ -38,7 +39,7 @@ export function useEntitlements() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subscriptions")
-        .select("plan, status, current_period_end")
+        .select("plan, status, source, current_period_end")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -52,12 +53,16 @@ export function useEntitlements() {
     checkEntitlement(entitlements, key);
 
   const isPro =
-    subscription?.plan === "pro" && subscription?.status === "active";
+    (subscription?.plan === "pro" && subscription?.status === "active") ||
+    (subscription?.plan === "pro" && subscription?.status === "comped" && subscription?.source === "comp");
+
+  const isComped = subscription?.source === "comp" && subscription?.status === "comped";
 
   return {
     entitlements: entitlements ?? FREE_ENTITLEMENTS,
     subscription,
     isPro,
+    isComped,
     plan: (subscription?.plan ?? "free") as Plan,
     can,
     loading: entitlementsLoading || subLoading,

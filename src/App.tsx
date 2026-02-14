@@ -67,6 +67,7 @@ const SoloProgramBuilder = lazy(() => import("./pages/SoloProgramBuilder"));
 const SoloTryWorkout = lazy(() => import("./pages/SoloTryWorkout"));
 const SoloSettings = lazy(() => import("./pages/SoloSettings"));
 const Settings = lazy(() => import("./pages/Settings"));
+const CompAdmin = lazy(() => import("./pages/admin/CompAdmin"));
 
 const queryClient = new QueryClient();
 
@@ -177,6 +178,7 @@ const AnimatedRoutes = () => {
             <Route path="/quick-checkoff" element={<QuickCheckoff />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/settings/widgets" element={<WidgetSettings />} />
+            <Route path="/admin/comp" element={<CompAdmin />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
