@@ -92,14 +92,52 @@ serve(async (req) => {
   }
 
   // ─── Handle checkout.session.completed ───
+  // Seed stripe_customer_id → user_id mapping so subscription events
+  // can resolve the user without relying on email lookup.
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    const refUserId = session.client_reference_id || session.metadata?.user_id;
+    const sessionCustomerId = session.customer as string | null;
+
     log("info", "Checkout completed", {
       ...eventCtx,
       sessionId: session.id,
-      customer: session.customer,
+      customer: sessionCustomerId,
       subscription: session.subscription,
+      refUserId,
     });
+
+    if (refUserId && sessionCustomerId) {
+      // Pre-seed the subscriptions row so subsequent subscription events
+      // can be resolved via stripe_customer_id → user_id.
+      const { error: seedErr } = await supabase
+        .from("subscriptions")
+        .upsert(
+          {
+            user_id: refUserId,
+            stripe_customer_id: sessionCustomerId,
+            stripe_subscription_id: (session.subscription as string) || null,
+            status: "active",
+            plan: "free", // Will be corrected by the subscription.created event
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+
+      if (seedErr) {
+        log("error", "Failed to seed subscription from checkout", {
+          ...eventCtx,
+          refUserId,
+          customerId: sessionCustomerId,
+          dbError: seedErr,
+        });
+        return new Response(
+          JSON.stringify({ error: "db_checkout_seed_failed", eventId: event.id }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     return new Response(JSON.stringify({ received: true, type: "checkout.session.completed" }), {
       headers: { "Content-Type": "application/json" },
     });
@@ -144,29 +182,45 @@ serve(async (req) => {
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
-  // Resolve customer email → user_id
-  const customer = await stripe.customers.retrieve(customerId);
-  if (customer.deleted || !("email" in customer) || !customer.email) {
-    log("error", "Customer deleted or no email", { ...eventCtx, customerId });
-    return new Response(JSON.stringify({ received: true, error: "no_email" }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Resolve user_id: prefer DB lookup by stripe_customer_id, fall back to email
+  let userId: string | null = null;
 
-  const { data: profile, error: profileErr } = await supabase
-    .from("profiles")
+  const { data: existingSub } = await supabase
+    .from("subscriptions")
     .select("user_id")
-    .eq("email", customer.email)
+    .eq("stripe_customer_id", customerId)
     .maybeSingle();
 
-  if (profileErr || !profile) {
-    log("error", "No profile found for email", { ...eventCtx, email: customer.email, profileErr });
-    return new Response(JSON.stringify({ received: true, error: "no_user" }), {
-      headers: { "Content-Type": "application/json" },
-    });
+  if (existingSub) {
+    userId = existingSub.user_id;
+    log("info", "Resolved user via stripe_customer_id", { ...eventCtx, customerId, userId });
+  } else {
+    // Fallback: email lookup
+    const customer = await stripe.customers.retrieve(customerId);
+    if (customer.deleted || !("email" in customer) || !customer.email) {
+      log("error", "Customer deleted or no email", { ...eventCtx, customerId });
+      return new Response(JSON.stringify({ received: true, error: "no_email" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: profile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("email", customer.email)
+      .maybeSingle();
+
+    if (profileErr || !profile) {
+      log("error", "No profile found for email", { ...eventCtx, email: customer.email, profileErr });
+      return new Response(JSON.stringify({ received: true, error: "no_user" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    userId = profile.user_id;
+    log("info", "Resolved user via email fallback", { ...eventCtx, customerId, userId, email: customer.email });
   }
 
-  const userId = profile.user_id;
   const subCtx = { ...eventCtx, userId, customerId, subscriptionId: subscription.id };
 
   // ─── Status mapping ───
