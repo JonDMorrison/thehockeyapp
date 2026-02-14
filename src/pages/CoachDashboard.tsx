@@ -248,12 +248,12 @@ const CoachDashboard: React.FC = () => {
       <PageContainer className="space-y-4">
         {/* Layer 1: Context - Date, Team, Day Type */}
         <TodayHeader
-          teamName={dashboard.team.name}
-          seasonLabel={dashboard.team.season_label}
-          teamLogoUrl={dashboard.team.logo_url}
-          date={dashboard.today.date}
-          mode={dashboard.today.mode}
-          gameDay={dashboard.today.game_day}
+          teamName={dashboard.team?.name ?? "My Team"}
+          seasonLabel={dashboard.team?.season_label}
+          teamLogoUrl={dashboard.team?.logo_url}
+          date={dashboard.today?.date ?? new Date().toISOString()}
+          mode={dashboard.today?.mode}
+          gameDay={dashboard.today?.game_day ?? { enabled: false, event_time: "", opponent: "" }}
           onUpdateTeamName={(newName) => updateTeamNameMutation.mutateAsync(newName)}
           isUpdating={updateTeamNameMutation.isPending}
         />
