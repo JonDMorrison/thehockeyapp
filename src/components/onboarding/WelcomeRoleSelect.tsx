@@ -95,7 +95,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
                       <Zap className="w-3 h-3" /> AI-assisted
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
-                      <Shield className="w-3 h-3" /> Free forever
+                      <Shield className="w-3 h-3" /> Free to use
                     </span>
                   </div>
                 </div>

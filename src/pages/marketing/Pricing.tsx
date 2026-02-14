@@ -11,20 +11,12 @@ import {
   Shield,
   Clock,
   CreditCard,
+  Users,
 } from "lucide-react";
 
-const freeFeatures = [
-  "Daily task cards",
-  "Quick checkoff for players",
-  "Join a team",
-  "Basic streak tracking",
-  "Coach task assignment",
-  "Team roster management",
-];
-
-const proFeatures = [
-  "Everything in Free, plus:",
-  "Full workout history",
+const parentFeatures = [
+  "Everything coaches assign, plus:",
+  "Full workout history (unlimited)",
   "Structured training programs",
   "Development snapshot",
   "AI weekly summaries",
@@ -32,20 +24,30 @@ const proFeatures = [
   "Priority support",
 ];
 
-const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string }[] = [
-  { feature: "Daily task cards", free: true, pro: true },
-  { feature: "Quick checkoff", free: true, pro: true },
-  { feature: "Join a team", free: true, pro: true },
-  { feature: "Streak tracking", free: true, pro: true },
-  { feature: "Coach task assignment", free: true, pro: true },
-  { feature: "Team roster", free: true, pro: true },
-  { feature: "Team goals", free: true, pro: true },
-  { feature: "Full workout history", free: "7 days", pro: "Unlimited" },
-  { feature: "Structured programs", free: false, pro: true },
-  { feature: "Development snapshot", free: false, pro: true },
-  { feature: "AI weekly summaries", free: false, pro: true },
-  { feature: "Export reports", free: false, pro: true },
-  { feature: "Priority support", free: false, pro: true },
+const teamFeatures = [
+  "Everything in Parent Pro, plus:",
+  "Covers up to 24 players",
+  "No individual parent subscriptions needed",
+  "All families get full Pro access",
+  "Team-wide analytics",
+  "Saves families $2,500+/year",
+  "Best value for organized teams",
+];
+
+const comparisonRows: { feature: string; free: boolean | string; pro: boolean | string; team: boolean | string }[] = [
+  { feature: "Daily task cards", free: true, pro: true, team: true },
+  { feature: "Quick checkoff", free: true, pro: true, team: true },
+  { feature: "Join a team", free: true, pro: true, team: true },
+  { feature: "Streak tracking", free: true, pro: true, team: true },
+  { feature: "Coach task assignment", free: true, pro: true, team: true },
+  { feature: "Team roster", free: true, pro: true, team: true },
+  { feature: "Team goals", free: true, pro: true, team: true },
+  { feature: "Full workout history", free: "7 days", pro: "Unlimited", team: "Unlimited" },
+  { feature: "Structured programs", free: false, pro: true, team: true },
+  { feature: "Development snapshot", free: false, pro: true, team: true },
+  { feature: "AI weekly summaries", free: false, pro: true, team: true },
+  { feature: "Export reports", free: false, pro: true, team: true },
+  { feature: "Covers entire team", free: false, pro: false, team: "Up to 24" },
 ];
 
 const Pricing: React.FC = () => {
@@ -62,7 +64,7 @@ const Pricing: React.FC = () => {
             Simple, honest pricing.
           </h1>
           <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto font-medium">
-            Start free. Upgrade when you're ready for more visibility and structure.
+            Free to get started. Upgrade when you're ready for full access.
           </p>
         </div>
       </section>
@@ -72,48 +74,16 @@ const Pricing: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
-            {/* Free Plan */}
-            <div className="bg-card rounded-2xl border border-border shadow-subtle p-8 flex flex-col">
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-text-muted mb-1">Free</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-5xl font-bold text-foreground">$0</span>
-                  <span className="text-text-muted">/month</span>
-                </div>
-                <p className="text-sm text-text-muted mt-2">
-                  Great for getting started with your team.
-                </p>
-              </div>
-
-              <ul className="space-y-3 mb-8 flex-1">
-                {freeFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-text-secondary">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full border-2 border-border text-foreground hover:bg-muted/50 rounded-xl"
-                onClick={() => setShowGetStarted(true)}
-              >
-                Get Started Free
-              </Button>
-            </div>
-
-            {/* Pro Plan */}
+            {/* Parent Pro Plan */}
             <div className="bg-card rounded-2xl border-2 border-primary shadow-medium p-8 flex flex-col relative">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full">
-                  Most Popular
+                  For Families
                 </span>
               </div>
 
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-primary mb-1">Pro</h3>
+                <h3 className="text-lg font-semibold text-primary mb-1">Parent Pro</h3>
                 <div className="flex items-baseline gap-1">
                   <span className="text-5xl font-bold text-foreground">$15</span>
                   <span className="text-text-muted">/month</span>
@@ -124,7 +94,7 @@ const Pricing: React.FC = () => {
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
-                {proFeatures.map((f) => (
+                {parentFeatures.map((f) => (
                   <li key={f} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-text-secondary">{f}</span>
@@ -142,6 +112,48 @@ const Pricing: React.FC = () => {
               </Button>
               <p className="text-xs text-text-muted text-center mt-3">
                 Credit card required. Cancel anytime.
+              </p>
+            </div>
+
+            {/* Team Plan */}
+            <div className="bg-card rounded-2xl border border-border shadow-subtle p-8 flex flex-col relative">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                <span className="bg-foreground text-background text-xs font-semibold px-4 py-1.5 rounded-full">
+                  Best Value
+                </span>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-foreground mb-1">Team Plan</h3>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-bold text-foreground">$500</span>
+                  <span className="text-text-muted">/year</span>
+                </div>
+                <p className="text-sm text-text-muted mt-2">
+                  Coach pays once. Every family gets Pro — up to 24 players.
+                </p>
+              </div>
+
+              <ul className="space-y-3 mb-8 flex-1">
+                {teamFeatures.map((f) => (
+                  <li key={f} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-text-secondary">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full border-2 border-foreground text-foreground hover:bg-muted/50 rounded-xl"
+                onClick={() => setShowGetStarted(true)}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Buy Team Plan
+              </Button>
+              <p className="text-xs text-text-muted text-center mt-3">
+                Annual billing. No per-family charges.
               </p>
             </div>
           </div>
@@ -167,22 +179,25 @@ const Pricing: React.FC = () => {
 
       {/* Feature Comparison Table */}
       <section className="py-20 bg-background">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-10">
             Compare plans
           </h2>
 
           <div className="bg-card rounded-2xl border border-border shadow-subtle overflow-hidden">
             {/* Header */}
-            <div className="grid grid-cols-3 border-b border-border">
+            <div className="grid grid-cols-4 border-b border-border">
               <div className="p-4 sm:p-5">
                 <span className="text-sm font-medium text-text-muted">Feature</span>
               </div>
               <div className="p-4 sm:p-5 text-center border-l border-border">
-                <span className="text-sm font-semibold text-foreground">Free</span>
+                <span className="text-sm font-semibold text-text-muted">Getting Started</span>
               </div>
               <div className="p-4 sm:p-5 text-center border-l border-border bg-primary/5">
-                <span className="text-sm font-semibold text-primary">Pro</span>
+                <span className="text-sm font-semibold text-primary">Parent Pro</span>
+              </div>
+              <div className="p-4 sm:p-5 text-center border-l border-border">
+                <span className="text-sm font-semibold text-foreground">Team Plan</span>
               </div>
             </div>
 
@@ -190,7 +205,7 @@ const Pricing: React.FC = () => {
             {comparisonRows.map((row, i) => (
               <div
                 key={row.feature}
-                className={`grid grid-cols-3 ${i < comparisonRows.length - 1 ? "border-b border-border" : ""}`}
+                className={`grid grid-cols-4 ${i < comparisonRows.length - 1 ? "border-b border-border" : ""}`}
               >
                 <div className="p-4 sm:p-5 flex items-center">
                   <span className="text-sm text-text-secondary">{row.feature}</span>
@@ -213,6 +228,15 @@ const Pricing: React.FC = () => {
                     <span className="text-xs font-medium text-primary">{row.pro}</span>
                   )}
                 </div>
+                <div className="p-4 sm:p-5 flex items-center justify-center border-l border-border">
+                  {row.team === true ? (
+                    <Check className="w-5 h-5 text-foreground" />
+                  ) : row.team === false ? (
+                    <X className="w-5 h-5 text-text-disabled" />
+                  ) : (
+                    <span className="text-xs font-medium text-foreground">{row.team}</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -227,7 +251,7 @@ const Pricing: React.FC = () => {
               {
                 icon: Clock,
                 title: "7-day free trial",
-                desc: "Try Pro for a full week. See the difference before you commit.",
+                desc: "Try Parent Pro for a full week. See the difference before you commit.",
               },
               {
                 icon: CreditCard,
@@ -265,7 +289,11 @@ const Pricing: React.FC = () => {
             {[
               {
                 q: "Do coaches need to pay?",
-                a: "No. Coaches use the free tier to assign tasks and track participation. The Pro subscription is for families who want deeper visibility into their child's progress.",
+                a: "No. Coaches can create teams, assign tasks, and track participation at no cost. The Parent Pro subscription is for families who want full visibility into their child's progress.",
+              },
+              {
+                q: "What's the difference between Parent Pro and Team Plan?",
+                a: "Parent Pro is for individual families at $15/month. The Team Plan is purchased by a coach or organization for $500/year and covers every player on the team — no family needs to pay individually.",
               },
               {
                 q: "What happens after the trial?",
@@ -273,15 +301,15 @@ const Pricing: React.FC = () => {
               },
               {
                 q: "Can I switch plans later?",
-                a: "Yes. You can upgrade to Pro anytime, and downgrade back to Free whenever you want. Your data is always preserved.",
+                a: "Yes. You can upgrade to Parent Pro anytime. If your team later purchases a Team Plan, your individual subscription becomes unnecessary — you'll be covered automatically.",
               },
               {
                 q: "Is my child's data safe?",
                 a: "Absolutely. There are no public profiles, no social feeds, and no data shared with third parties. Parents own the account and control visibility.",
               },
               {
-                q: "Does my whole family need Pro?",
-                a: "One Pro subscription covers all the players on your account. You don't need separate subscriptions for each child.",
+                q: "Does my whole family need Parent Pro?",
+                a: "One Parent Pro subscription covers all the players on your account. You don't need separate subscriptions for each child.",
               },
             ].map((faq, i) => (
               <div key={i} className="bg-card rounded-xl border border-border p-5 sm:p-6">
