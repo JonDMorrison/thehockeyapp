@@ -13,66 +13,64 @@
   :root {
     /* ========================================
        NEUTRAL COLOR SYSTEM
-       Warm off-white/stone palette for calm UI
+       Clean, structured, trustworthy
        ======================================== */
-    --background: 40 20% 98%;           /* Warm off-white */
-    --foreground: 220 15% 15%;          /* Rich charcoal */
+    --background: 0 0% 98%;             /* #FAFAFA */
+    --foreground: 0 0% 12%;             /* #1F1F1F */
     
-    --surface: 0 0% 100%;               /* Pure white cards */
-    --surface-muted: 40 15% 96%;        /* Subtle gray surface */
+    --surface: 0 0% 100%;               /* #FFFFFF */
+    --surface-muted: 0 0% 96%;          /* #F4F4F4 */
     
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 15%;
+    --card-foreground: 0 0% 12%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 0 0% 12%;
     
-    /* Text hierarchy */
-    --text-primary: 220 15% 15%;        /* Main text */
-    --text-secondary: 220 10% 40%;      /* Secondary text */
-    --text-muted: 220 8% 55%;           /* Muted/caption text */
-    --text-disabled: 220 5% 70%;        /* Disabled state */
+    /* Text hierarchy — all meet WCAG AA on white/fafafa */
+    --text-primary: 0 0% 12%;           /* #1F1F1F — 16:1 */
+    --text-secondary: 0 0% 20%;         /* #333333 — 12.6:1 */
+    --text-muted: 0 0% 33%;             /* #555555 — 7.5:1 */
+    --text-disabled: 0 0% 60%;          /* #999999 — 2.8:1 (decorative only) */
     
     /* Borders */
-    --border: 220 10% 90%;              /* Subtle borders */
-    --border-muted: 220 8% 94%;         /* Even more subtle */
-    --input: 220 10% 90%;
-    --ring: 220 15% 15%;
+    --border: 0 0% 91%;                 /* #E8E8E8 */
+    --border-muted: 0 0% 94%;           /* #F0F0F0 */
+    --input: 0 0% 91%;
+    --ring: 0 0% 12%;
     
     /* ========================================
        TEAM THEMING VARIABLES
        Applied via setTeamTheme() function
        Used as accents only, never flood surfaces
        ======================================== */
-    --team-primary: 24 95% 53%;         /* Fiery orange - matches logo */
+    --team-primary: 22 90% 46%;         /* #E94F00 — disciplined orange */
     --team-secondary: 0 0% 100%;
-    --team-tertiary: 15 90% 45%;        /* Deeper orange-red */
+    --team-tertiary: 22 85% 40%;        /* #CC4300 — hover state */
     
     /* Computed accent colors from team palette */
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
-    /* Gradient stops for hero/CTA effects - fire gradient */
-    --gradient-start: 35 95% 55%;       /* Golden amber */
-    --gradient-mid: 24 95% 53%;         /* Fiery orange */
-    --gradient-end: 12 90% 50%;         /* Red-orange flame */
+    /* Brand accent — navy blue, used sparingly */
+    --brand-accent: 213 100% 25%;       /* #003E7E */
     
-    --secondary: 220 10% 96%;
-    --secondary-foreground: 220 15% 15%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
     
-    --accent: 220 10% 96%;
-    --accent-foreground: 220 15% 15%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 12%;
     
-    --muted: 220 10% 96%;
-    --muted-foreground: 220 8% 45%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 33%;
     
     /* ========================================
        SEMANTIC COLORS
        Calm, muted versions - not alarming
        ======================================== */
-    --success: 152 60% 40%;             /* Calm green */
+    --success: 123 38% 33%;             /* #2E7D32 — calm, trustworthy green */
     --success-foreground: 0 0% 100%;
-    --success-muted: 152 40% 95%;
+    --success-muted: 123 25% 95%;
     
     --warning: 38 92% 50%;              /* Warm amber */
     --warning-foreground: 38 92% 15%;
@@ -100,12 +98,11 @@
        SHADOWS
        Subtle, premium feel
        ======================================== */
-    --shadow-subtle: 0 1px 2px 0 hsl(220 15% 15% / 0.03), 
-                     0 1px 3px 0 hsl(220 15% 15% / 0.05);
-    --shadow-medium: 0 4px 6px -1px hsl(220 15% 15% / 0.05), 
-                     0 2px 4px -2px hsl(220 15% 15% / 0.05);
-    --shadow-elevated: 0 10px 15px -3px hsl(220 15% 15% / 0.08), 
-                       0 4px 6px -4px hsl(220 15% 15% / 0.05);
+    --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 
+                     0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 
+                     0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-elevated: 0 6px 20px -4px rgba(0, 0, 0, 0.08);
     
     /* Safe area for mobile */
     --safe-area-top: env(safe-area-inset-top, 0px);
@@ -113,60 +110,60 @@
     
     /* Sidebar (keeping for shadcn compatibility) */
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 220 10% 30%;
-    --sidebar-primary: 220 15% 15%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 0% 12%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 10% 96%;
-    --sidebar-accent-foreground: 220 15% 15%;
-    --sidebar-border: 220 10% 92%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 12%;
+    --sidebar-border: 0 0% 91%;
     --sidebar-ring: var(--team-primary);
   }
 
   .dark {
-    --background: 220 15% 10%;
-    --foreground: 220 10% 95%;
+    --background: 0 0% 9%;
+    --foreground: 0 0% 95%;
     
-    --surface: 220 15% 13%;
-    --surface-muted: 220 12% 16%;
+    --surface: 0 0% 12%;
+    --surface-muted: 0 0% 15%;
     
-    --card: 220 15% 13%;
-    --card-foreground: 220 10% 95%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
     
-    --popover: 220 15% 13%;
-    --popover-foreground: 220 10% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
     
-    --text-primary: 220 10% 95%;
-    --text-secondary: 220 8% 70%;
-    --text-muted: 220 6% 55%;
-    --text-disabled: 220 5% 40%;
+    --text-primary: 0 0% 95%;
+    --text-secondary: 0 0% 70%;
+    --text-muted: 0 0% 55%;
+    --text-disabled: 0 0% 40%;
     
-    --border: 220 12% 20%;
-    --border-muted: 220 10% 16%;
-    --input: 220 12% 20%;
-    --ring: 220 10% 80%;
+    --border: 0 0% 20%;
+    --border-muted: 0 0% 16%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 80%;
     
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 220 12% 18%;
-    --secondary-foreground: 220 10% 95%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 0 0% 95%;
     
-    --accent: 220 12% 18%;
-    --accent-foreground: 220 10% 95%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 95%;
     
-    --muted: 220 12% 18%;
-    --muted-foreground: 220 8% 60%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 55%;
     
     --destructive: 0 55% 45%;
     --destructive-foreground: 0 0% 100%;
     
-    --sidebar-background: 220 15% 10%;
-    --sidebar-foreground: 220 8% 75%;
+    --sidebar-background: 0 0% 9%;
+    --sidebar-foreground: 0 0% 70%;
     --sidebar-primary: var(--team-primary);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 12% 16%;
-    --sidebar-accent-foreground: 220 10% 95%;
-    --sidebar-border: 220 12% 18%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
     --sidebar-ring: var(--team-primary);
   }
 }
@@ -180,6 +177,8 @@
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
