@@ -167,6 +167,8 @@ serve(async (req) => {
         status,
         plan,
         current_period_end: periodEnd,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }

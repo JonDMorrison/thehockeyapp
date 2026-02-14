@@ -91,8 +91,22 @@ serve(async (req) => {
       });
     }
 
-    // Use service role client for data operations
+    // Use service role client for data operations + entitlement check
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ─── Pro entitlement gate ───
+    const { data: entRow } = await supabase
+      .from("entitlements")
+      .select("can_receive_ai_summary")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!entRow?.can_receive_ai_summary) {
+      return new Response(JSON.stringify({ error: "AI summaries require a Pro subscription" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Calculate week end
     const weekStartDate = new Date(week_start);

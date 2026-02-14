@@ -1213,6 +1213,8 @@ export type Database = {
           id: string
           plan: string
           status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
@@ -1222,6 +1224,8 @@ export type Database = {
           id?: string
           plan?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1231,6 +1235,8 @@ export type Database = {
           id?: string
           plan?: string
           status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2370,6 +2376,7 @@ export type Database = {
         Args: { p_player_id: string; p_team_id: string }
         Returns: boolean
       }
+      is_pro: { Args: { p_user_id: string }; Returns: boolean }
       is_team_adult: {
         Args: { team_uuid: string; user_uuid: string }
         Returns: boolean
