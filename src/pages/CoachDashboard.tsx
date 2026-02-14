@@ -158,11 +158,12 @@ const CoachDashboard: React.FC = () => {
     }
   };
 
-  const scheduleConnected = dashboard?.upcoming && dashboard.upcoming.length > 0 || 
-    dashboard?.onboarding?.checklist?.find(i => i.id === 'connect_schedule')?.done;
+  const checklist = dashboard?.onboarding?.checklist ?? [];
+  const scheduleConnected = (dashboard?.upcoming && dashboard.upcoming.length > 0) || 
+    checklist.find(i => i.id === 'connect_schedule')?.done;
 
   const hasPlayers = (dashboard?.pulse?.players_count ?? 0) > 0;
-  const onboardingComplete = dashboard?.onboarding?.checklist?.every(i => i.done);
+  const onboardingComplete = checklist.length > 0 && checklist.every(i => i.done);
 
   // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
@@ -258,11 +259,11 @@ const CoachDashboard: React.FC = () => {
         />
 
         {/* Onboarding Progress Checklist - only if not complete */}
-        {!onboardingComplete && (
+        {!onboardingComplete && checklist.length > 0 && (
           <OnboardingProgress
-            checklist={dashboard.onboarding.checklist}
-            playersCount={dashboard.pulse.players_count}
-            hasWorkouts={dashboard.today.practice_card?.exists ?? false}
+            checklist={checklist}
+            playersCount={dashboard.pulse?.players_count ?? 0}
+            hasWorkouts={dashboard.today?.practice_card?.exists ?? false}
             onAction={handleOnboardingAction}
           />
         )}
