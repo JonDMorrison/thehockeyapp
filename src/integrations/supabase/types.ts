@@ -2236,6 +2236,10 @@ export type Database = {
         Args: { p_days?: number; p_player_id: string }
         Returns: Json
       }
+      get_player_development_snapshot: {
+        Args: { p_player_id: string }
+        Returns: Json
+      }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
       get_team_dashboard_snapshot: {
         Args: { p_team_id: string }
