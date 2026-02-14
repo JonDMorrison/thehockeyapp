@@ -74,8 +74,8 @@ const Pricing: React.FC = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
-            {/* Parent Pro */}
-            <div className="bg-card rounded-2xl border-2 border-primary shadow-medium p-8 flex flex-col relative">
+            {/* Parent Pro — visually dominant */}
+            <div className="bg-card rounded-2xl border-2 border-primary shadow-medium p-8 md:p-10 flex flex-col relative md:scale-[1.03] md:z-10">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                 <span className="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full">
                   For Families
@@ -126,7 +126,7 @@ const Pricing: React.FC = () => {
             <div className="bg-card rounded-2xl border border-border shadow-subtle p-8 flex flex-col relative">
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
                 <span className="bg-foreground text-background text-xs font-semibold px-4 py-1.5 rounded-full">
-                  Best Value
+                  Best for Teams
                 </span>
               </div>
 
@@ -186,6 +186,32 @@ const Pricing: React.FC = () => {
             </h2>
             <p className="text-text-secondary text-lg leading-relaxed max-w-xl mx-auto">
               A single private skating lesson costs $80–$150. For $15/month, your child gets daily structured training, accountability, and progress tracking — every single day.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Savings Math Block */}
+      <section className="py-16 bg-background">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-card rounded-2xl border border-border shadow-subtle p-8 md:p-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8">
+              The math is simple.
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+              <div className="bg-[hsl(0,0%,96%)] rounded-xl p-6 text-center">
+                <p className="text-sm font-medium text-text-muted mb-2">20 families paying individually</p>
+                <p className="text-lg text-text-secondary mb-1">20 × $15/mo = <span className="font-bold text-foreground">$300/mo</span></p>
+                <p className="text-2xl font-bold text-foreground">$3,600/year</p>
+              </div>
+              <div className="bg-primary/5 rounded-xl p-6 text-center border border-primary/20">
+                <p className="text-sm font-medium text-primary mb-2">One Team Plan</p>
+                <p className="text-3xl font-bold text-primary mb-1">$500/year</p>
+                <p className="text-sm text-text-muted">Covers everyone</p>
+              </div>
+            </div>
+            <p className="text-center text-lg font-semibold text-primary mt-6">
+              Save families up to $3,100 per year.
             </p>
           </div>
         </div>

@@ -273,7 +273,7 @@ const Demo: React.FC = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl"
+                className="text-base px-8 border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
                 asChild
               >
                 <Link to="/pricing">
