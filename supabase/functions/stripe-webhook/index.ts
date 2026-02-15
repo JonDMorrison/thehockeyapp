@@ -15,6 +15,32 @@ function log(level: "info" | "warn" | "error", msg: string, ctx: Record<string, 
   else console.log(JSON.stringify(entry));
 }
 
+// ── Admin activity logging helper ──
+async function logAdminEvent(
+  supabase: ReturnType<typeof createClient>,
+  eventType: string,
+  severity: string,
+  actor?: string | null,
+  teamId?: string | null,
+  playerId?: string | null,
+  email?: string | null,
+  metadata: Record<string, unknown> = {}
+) {
+  try {
+    await supabase.rpc("log_admin_event", {
+      p_event_type: eventType,
+      p_severity: severity,
+      p_actor: actor || null,
+      p_team: teamId || null,
+      p_player: playerId || null,
+      p_email: email || null,
+      p_metadata: metadata,
+    });
+  } catch (err) {
+    log("error", "Failed to log admin event", { eventType, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -119,10 +145,18 @@ serve(async (req) => {
 
       if (seedErr) {
         log("error", "Failed to seed team_subscriptions from checkout", { ...eventCtx, teamId, dbError: seedErr });
+        await logAdminEvent(supabase, "stripe_webhook_persistence_failed", "urgent", refUserId, teamId, null, null, {
+          stripe_event_id: event.id, error: "db_team_checkout_seed_failed", detail: seedErr.message,
+        });
         return new Response(JSON.stringify({ error: "db_team_checkout_seed_failed" }), {
           status: 500, headers: { "Content-Type": "application/json" },
         });
       }
+
+      // Log team plan purchased (urgent)
+      await logAdminEvent(supabase, "team_plan_purchased", "urgent", refUserId, teamId, null, null, {
+        stripe_event_id: event.id, stripe_customer_id: sessionCustomerId, purchase_type: purchaseType,
+      });
     } else if (refUserId && sessionCustomerId) {
       // Seed individual subscriptions row
       const { error: seedErr } = await supabase
@@ -141,6 +175,9 @@ serve(async (req) => {
 
       if (seedErr) {
         log("error", "Failed to seed subscription from checkout", { ...eventCtx, refUserId, dbError: seedErr });
+        await logAdminEvent(supabase, "stripe_webhook_persistence_failed", "urgent", refUserId, null, null, null, {
+          stripe_event_id: event.id, error: "db_checkout_seed_failed", detail: seedErr.message,
+        });
         return new Response(JSON.stringify({ error: "db_checkout_seed_failed" }), {
           status: 500, headers: { "Content-Type": "application/json" },
         });
@@ -158,8 +195,12 @@ serve(async (req) => {
     const customerId = invoice.customer as string;
     log("error", "Payment failed", { ...eventCtx, invoiceId: invoice.id, customerId });
 
+    let userEmail: string | null = null;
+    let resolvedUserId: string | null = null;
+
     const customer = await stripe.customers.retrieve(customerId);
     if (!customer.deleted && "email" in customer && customer.email) {
+      userEmail = customer.email;
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id")
@@ -167,6 +208,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (profile) {
+        resolvedUserId = profile.user_id;
         await supabase.from("notifications").insert({
           user_id: profile.user_id,
           title: "Payment Failed",
@@ -175,6 +217,11 @@ serve(async (req) => {
         });
       }
     }
+
+    // Log invoice_payment_failed (urgent)
+    await logAdminEvent(supabase, "invoice_payment_failed", "urgent", resolvedUserId, null, null, userEmail, {
+      stripe_event_id: event.id, invoice_id: invoice.id, stripe_customer_id: customerId,
+    });
 
     return new Response(JSON.stringify({ received: true, type: "invoice.payment_failed" }), {
       headers: { "Content-Type": "application/json" },
@@ -208,7 +255,6 @@ serve(async (req) => {
 
   // ─── TEAM PLAN subscription events ───
   if (matchesTeamPrice) {
-    // Find team_id from existing team_subscriptions by stripe_customer_id or stripe_subscription_id
     const { data: existingTeamSub } = await supabase
       .from("team_subscriptions")
       .select("team_id")
@@ -236,6 +282,9 @@ serve(async (req) => {
 
     if (teamSubErr) {
       log("error", "Failed to update team_subscriptions", { ...eventCtx, teamId: existingTeamSub.team_id, dbError: teamSubErr });
+      await logAdminEvent(supabase, "stripe_webhook_persistence_failed", "urgent", null, existingTeamSub.team_id, null, null, {
+        stripe_event_id: event.id, error: "db_team_sub_update_failed", detail: teamSubErr.message,
+      });
       return new Response(JSON.stringify({ error: "db_team_sub_update_failed" }), {
         status: 500, headers: { "Content-Type": "application/json" },
       });
@@ -252,7 +301,6 @@ serve(async (req) => {
       .eq("team_id", teamId)
       .eq("status", "active");
 
-    // Also include guardians of team players
     const distinctUserIds = new Set<string>();
     if (teamMembers) {
       const playerIds: string[] = [];
@@ -261,7 +309,6 @@ serve(async (req) => {
         if (ownerUserId) distinctUserIds.add(ownerUserId);
         playerIds.push(m.player_id);
       }
-      // Fetch guardians for all team players
       if (playerIds.length > 0) {
         const { data: guardians } = await supabase
           .from("player_guardians")
@@ -293,7 +340,6 @@ serve(async (req) => {
       can_export_reports: isActive,
     };
 
-    // Fetch current entitlements for these users to skip no-op updates
     const userIdArray = Array.from(distinctUserIds);
     let updatedCount = 0;
 
@@ -329,7 +375,6 @@ serve(async (req) => {
         }
       }
 
-      // Batch upsert only changed users
       for (const uid of needsUpdate) {
         const { error: entErr } = await supabase
           .from("entitlements")
@@ -407,6 +452,16 @@ serve(async (req) => {
     plan = "free";
   }
 
+  // ── Check previous status for event detection ──
+  const { data: prevSub } = await supabase
+    .from("subscriptions")
+    .select("status, plan")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const prevStatus = prevSub?.status;
+  const prevPlan = prevSub?.plan;
+
   const { error: subErr } = await supabase
     .from("subscriptions")
     .upsert(
@@ -424,6 +479,9 @@ serve(async (req) => {
 
   if (subErr) {
     log("error", "Failed to upsert subscription — returning 500 for Stripe retry", { ...subCtx, dbError: subErr });
+    await logAdminEvent(supabase, "stripe_webhook_persistence_failed", "urgent", userId, null, null, null, {
+      stripe_event_id: event.id, error: "db_subscription_upsert_failed", detail: subErr.message,
+    });
     return new Response(JSON.stringify({ error: "db_subscription_upsert_failed" }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });
@@ -447,6 +505,9 @@ serve(async (req) => {
 
   if (entErr) {
     log("error", "Failed to upsert entitlements — returning 500 for Stripe retry", { ...subCtx, dbError: entErr });
+    await logAdminEvent(supabase, "stripe_webhook_persistence_failed", "urgent", userId, null, null, null, {
+      stripe_event_id: event.id, error: "db_entitlements_upsert_failed", detail: entErr.message,
+    });
     return new Response(JSON.stringify({ error: "db_entitlements_upsert_failed" }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });
@@ -457,6 +518,26 @@ serve(async (req) => {
       .from("profiles")
       .update({ has_used_trial: true })
       .eq("user_id", userId);
+  }
+
+  // ── Admin event logging for individual pro subscription changes ──
+  if (matchesProPrice) {
+    // Trial started: status is trialing and wasn't before
+    if (status === "trialing" && prevStatus !== "trialing") {
+      // Get user email for admin context
+      const { data: prof } = await supabase.from("profiles").select("email").eq("user_id", userId).maybeSingle();
+      await logAdminEvent(supabase, "parent_trial_started", "urgent", userId, null, null, prof?.email || null, {
+        stripe_event_id: event.id, stripe_subscription_id: subscription.id,
+      });
+    }
+
+    // Trial converted: active now, was trialing before
+    if (status === "active" && prevStatus === "trialing") {
+      const { data: prof } = await supabase.from("profiles").select("email").eq("user_id", userId).maybeSingle();
+      await logAdminEvent(supabase, "parent_trial_converted", "urgent", userId, null, null, prof?.email || null, {
+        stripe_event_id: event.id, stripe_subscription_id: subscription.id,
+      });
+    }
   }
 
   log("info", "Webhook processed successfully", { ...subCtx, plan, status });
