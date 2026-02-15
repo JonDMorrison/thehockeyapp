@@ -38,3 +38,12 @@ verify_jwt = false
 
 [functions.send-parent-weekly-email]
 verify_jwt = false
+
+[functions.send-admin-activity-email]
+verify_jwt = false
+
+[functions.send-admin-daily-digest]
+verify_jwt = false
+
+[functions.compute-team-adoption-milestones]
+verify_jwt = false

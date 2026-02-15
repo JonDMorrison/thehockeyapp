@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_log: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          email: string | null
+          email_message_id: string | null
+          emailed_at: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          player_id: string | null
+          severity: string
+          team_id: string | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          email_message_id?: string | null
+          emailed_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          player_id?: string | null
+          severity?: string
+          team_id?: string | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          email?: string | null
+          email_message_id?: string | null
+          emailed_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          player_id?: string | null
+          severity?: string
+          team_id?: string | null
+        }
+        Relationships: []
+      }
       admin_config: {
         Row: {
           key: string
@@ -26,6 +68,30 @@ export type Database = {
         Update: {
           key?: string
           value?: string
+        }
+        Relationships: []
+      }
+      admin_digest_runs: {
+        Row: {
+          digest_date: string
+          email_message_id: string | null
+          events_included: number
+          id: string
+          sent_at: string
+        }
+        Insert: {
+          digest_date: string
+          email_message_id?: string | null
+          events_included?: number
+          id?: string
+          sent_at?: string
+        }
+        Update: {
+          digest_date?: string
+          email_message_id?: string | null
+          events_included?: number
+          id?: string
+          sent_at?: string
         }
         Relationships: []
       }
@@ -2720,6 +2786,18 @@ export type Database = {
       join_team_with_invite: {
         Args: { invite_token: string; p_player_id: string }
         Returns: Json
+      }
+      log_admin_event: {
+        Args: {
+          p_actor?: string
+          p_email?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_player?: string
+          p_severity?: string
+          p_team?: string
+        }
+        Returns: string
       }
       preview_team_by_invite: { Args: { invite_token: string }; Returns: Json }
       preview_team_by_short_code: {
