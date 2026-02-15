@@ -324,7 +324,7 @@ const TeamProgress: React.FC = () => {
         <div className="text-right">
           <p className="font-bold text-lg">{value}</p>
           <p className="text-xs text-text-muted">
-            {metric === "sessions" ? "sessions" : metric === "badges" ? "badges" : metric === "streak" ? "day streak" : "this week"}
+            {metric === "sessions" ? "sessions" : metric === "badges" ? "badges" : metric === "streak" ? "team streak" : "this week"}
           </p>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
@@ -451,7 +451,7 @@ const TeamProgress: React.FC = () => {
             <TabsContent value="streaks" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="w-4 h-4 text-team-primary" />
-                <span className="font-medium text-sm">Longest Streaks</span>
+                <span className="font-medium text-sm">Longest Team Streaks</span>
               </div>
               {leaderboardByStreak.filter(p => p.streak > 0).slice(0, 10).map((player, idx) =>
                 renderPlayerRow(player, idx + 1, "streak")
@@ -537,7 +537,7 @@ const TeamProgress: React.FC = () => {
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
                     <Flame className="w-5 h-5 text-orange-500 mx-auto mb-1" />
                     <p className="text-xl font-bold">{selectedPlayer.streak}</p>
-                    <p className="text-xs text-text-muted">Day Streak</p>
+                    <p className="text-xs text-text-muted">Team Streak</p>
                   </div>
                 </div>
 

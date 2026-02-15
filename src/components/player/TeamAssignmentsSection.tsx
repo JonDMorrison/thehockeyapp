@@ -129,8 +129,8 @@ export const TeamAssignmentsSection: React.FC<TeamAssignmentsSectionProps> = ({
           {currentStreak > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
               <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-semibold text-orange-600">
-                {currentStreak} day streak
+               <span className="text-sm font-semibold text-orange-600">
+                 {currentStreak} day team streak
               </span>
             </div>
           )}
