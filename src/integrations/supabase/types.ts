@@ -823,6 +823,7 @@ export type Database = {
           locked: boolean | null
           mode: string | null
           notes: string | null
+          program_source: Database["public"]["Enums"]["program_source"]
           published_at: string | null
           team_id: string
           tier: string | null
@@ -837,6 +838,7 @@ export type Database = {
           locked?: boolean | null
           mode?: string | null
           notes?: string | null
+          program_source?: Database["public"]["Enums"]["program_source"]
           published_at?: string | null
           team_id: string
           tier?: string | null
@@ -851,6 +853,7 @@ export type Database = {
           locked?: boolean | null
           mode?: string | null
           notes?: string | null
+          program_source?: Database["public"]["Enums"]["program_source"]
           published_at?: string | null
           team_id?: string
           tier?: string | null
@@ -875,6 +878,7 @@ export type Database = {
           is_required: boolean | null
           label: string
           practice_card_id: string
+          program_source: Database["public"]["Enums"]["program_source"]
           shot_type: string | null
           shots_expected: number | null
           sort_order: number
@@ -890,6 +894,7 @@ export type Database = {
           is_required?: boolean | null
           label: string
           practice_card_id: string
+          program_source?: Database["public"]["Enums"]["program_source"]
           shot_type?: string | null
           shots_expected?: number | null
           sort_order: number
@@ -905,6 +910,7 @@ export type Database = {
           is_required?: boolean | null
           label?: string
           practice_card_id?: string
+          program_source?: Database["public"]["Enums"]["program_source"]
           shot_type?: string | null
           shots_expected?: number | null
           sort_order?: number
@@ -1000,6 +1006,7 @@ export type Database = {
           local_event_id: string | null
           player_id: string
           practice_card_id: string
+          program_source: Database["public"]["Enums"]["program_source"]
           source: string | null
           status: string | null
           updated_at: string | null
@@ -1011,6 +1018,7 @@ export type Database = {
           local_event_id?: string | null
           player_id: string
           practice_card_id: string
+          program_source?: Database["public"]["Enums"]["program_source"]
           source?: string | null
           status?: string | null
           updated_at?: string | null
@@ -1022,6 +1030,7 @@ export type Database = {
           local_event_id?: string | null
           player_id?: string
           practice_card_id?: string
+          program_source?: Database["public"]["Enums"]["program_source"]
           source?: string | null
           status?: string | null
           updated_at?: string | null
@@ -2590,7 +2599,7 @@ export type Database = {
       user_is_team_covered: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      program_source: "team" | "parent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2717,6 +2726,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      program_source: ["team", "parent"],
+    },
   },
 } as const

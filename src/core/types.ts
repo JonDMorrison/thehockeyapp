@@ -39,6 +39,8 @@ export interface Team {
   updatedAt: string | null;
 }
 
+export type ProgramSource = "team" | "parent";
+
 export interface PracticeCard {
   id: string;
   teamId: string;
@@ -50,6 +52,7 @@ export interface PracticeCard {
   published: boolean;
   publishedAt: string | null;
   locked: boolean;
+  programSource: ProgramSource;
   createdByUserId: string;
   createdAt: string | null;
   updatedAt: string | null;
@@ -66,6 +69,7 @@ export interface PracticeTask {
   shotType: string | null;
   shotsExpected: number | null;
   isRequired: boolean;
+  programSource: ProgramSource;
   coachNotes: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -79,6 +83,7 @@ export interface SessionCompletion {
   completedAt: string | null;
   completedBy: string | null;
   source: string | null;
+  programSource: ProgramSource;
   localEventId: string | null;
   updatedAt: string | null;
 }
