@@ -90,10 +90,10 @@ export const ParentWeeklySummary: React.FC<ParentWeeklySummaryProps> = ({
         <h4 className="text-sm font-semibold">This Week's Summary</h4>
         {hasSummary && (
           <Link
-            to={`/parents/${playerId}/summaries`}
+            to="/reflections"
             className="text-xs text-primary flex items-center gap-0.5"
           >
-            Past Summaries
+            Weekly Reflections
             <ChevronRight className="w-3 h-3" />
           </Link>
         )}
