@@ -254,6 +254,7 @@ export type Database = {
           player_id: string
           stats: Json
           summary_text: string
+          updated_at: string
           user_id: string
           week_end: string
           week_start: string
@@ -264,6 +265,7 @@ export type Database = {
           player_id: string
           stats?: Json
           summary_text: string
+          updated_at?: string
           user_id: string
           week_end: string
           week_start: string
@@ -274,6 +276,7 @@ export type Database = {
           player_id?: string
           stats?: Json
           summary_text?: string
+          updated_at?: string
           user_id?: string
           week_end?: string
           week_start?: string
