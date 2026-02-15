@@ -27,6 +27,7 @@ export {
   DEFAULT_DAYS_PER_WEEK,
 } from "./constants";
 export type {
+  ProgramSource,
   Player,
   Team,
   PracticeCard,
