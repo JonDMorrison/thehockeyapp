@@ -14,6 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { format, subDays, parseISO } from "date-fns";
+import { ParentTotalsPanel } from "./ParentTotalsPanel";
 
 interface HomeDevelopmentSectionProps {
   playerId: string;
@@ -240,13 +241,8 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
             </AppCard>
           </div>
 
-          {/* Privacy Microcopy */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border">
-            <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-            <p className="text-xs text-muted-foreground">
-              Your home plan is private. Coaches only see team assignments.
-            </p>
-          </div>
+          {/* Parent Totals Panel */}
+          <ParentTotalsPanel playerId={playerId} teamId={teamId} />
 
           {/* Build another plan CTA */}
           <Button
