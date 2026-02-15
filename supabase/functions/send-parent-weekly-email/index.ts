@@ -51,8 +51,9 @@ function buildEmailHtml(params: {
   focusAreas: string[];
   aiSummary: string;
   isPro: boolean;
+  showMomentumBlock: boolean;
 }): string {
-  const { totalShots, totalWorkouts, longestStreak, focusAreas, aiSummary, isPro } = params;
+  const { totalShots, totalWorkouts, longestStreak, focusAreas, aiSummary, isPro, showMomentumBlock } = params;
 
   const focusDisplay = focusAreas.length > 0 ? focusAreas.join(", ") : "General development";
 
@@ -60,6 +61,25 @@ function buildEmailHtml(params: {
     ? `${PUBLISHED_URL}/players`
     : `${PUBLISHED_URL}/pricing`;
   const ctaLabel = isPro ? "Open Dashboard" : "Unlock Full Access";
+
+  // ── Momentum upgrade block (FREE users only, conditional) ──
+  const momentumBlockHtml = showMomentumBlock
+    ? `
+        <!-- Momentum Block -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px 0;">
+          <tr>
+            <td style="background-color:#f8f8f8;border-radius:8px;padding:20px 24px;">
+              <p style="font-size:14px;line-height:1.6;color:#555555;margin:0;">
+                You're building real consistency. Unlock full-season tracking and structured development plans.
+              </p>
+              <a href="${PUBLISHED_URL}/pricing" style="display:inline-block;margin-top:12px;font-size:13px;font-weight:600;color:#1a1a1a;text-decoration:underline;">
+                Learn more
+              </a>
+            </td>
+          </tr>
+        </table>
+    `
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -114,6 +134,8 @@ function buildEmailHtml(params: {
         <p style="font-size:15px;line-height:1.65;color:#333333;margin:0 0 28px 0;">
           ${aiSummary}
         </p>
+
+        ${momentumBlockHtml}
 
         <!-- Divider -->
         <hr style="border:none;border-top:1px solid #e5e5e5;margin:0 0 28px 0;">
@@ -201,6 +223,39 @@ serve(async (req) => {
         const { data: isPro } = await supabase.rpc("has_full_access", {
           p_user_id: summary.user_id,
         });
+        const userIsPro = isPro === true;
+
+        // ── Momentum block eligibility (FREE users only) ──
+        let showMomentumBlock = false;
+        if (!userIsPro) {
+          // Condition 1: streak >= 14 days
+          if (summary.longest_streak >= 14) {
+            showMomentumBlock = true;
+          }
+
+          // Condition 2: 2+ consecutive weeks with summaries
+          if (!showMomentumBlock) {
+            const { count } = await supabase
+              .from("parent_weekly_summaries")
+              .select("id", { count: "exact", head: true })
+              .eq("user_id", summary.user_id)
+              .not("ai_summary", "is", null)
+              .lt("week_start", summary.week_start)
+              .order("week_start", { ascending: false })
+              .limit(1);
+
+            // If there's at least 1 prior summary, that's 2+ consecutive weeks
+            if ((count ?? 0) >= 1) {
+              showMomentumBlock = true;
+            }
+          }
+
+          log("momentum_check", {
+            user_id: summary.user_id,
+            showMomentumBlock,
+            streak: summary.longest_streak,
+          });
+        }
 
         // Build email
         const subject = generateSubjectLine({
@@ -215,7 +270,8 @@ serve(async (req) => {
           longestStreak: summary.longest_streak,
           focusAreas: summary.focus_areas || [],
           aiSummary: summary.ai_summary || "",
-          isPro: isPro === true,
+          isPro: userIsPro,
+          showMomentumBlock,
         });
 
         // Send via Resend
