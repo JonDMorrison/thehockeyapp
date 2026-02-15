@@ -163,7 +163,7 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         </div>
         <div>
           <h3 className="font-bold text-base">Your Home Plan</h3>
-          <p className="text-xs text-muted-foreground">Private development training</p>
+          <p className="text-xs text-muted-foreground">This is your family's development system.</p>
         </div>
       </div>
 
