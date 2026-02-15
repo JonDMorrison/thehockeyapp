@@ -19,9 +19,11 @@ RULES:
 7. Use simple, parent-friendly language.
 8. Do NOT include medical advice or injury-related comments.`;
 
-interface ParentSummaryRequest {
-  player_id: string;
-  week_start: string; // YYYY-MM-DD
+function jsonResp(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 
 serve(async (req) => {
@@ -29,11 +31,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const requestId = crypto.randomUUID();
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -42,10 +44,7 @@ serve(async (req) => {
     // ── Auth ──
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResp({ error: "Unauthorized" }, 401);
     }
 
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
@@ -56,27 +55,49 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } =
       await supabaseAuth.auth.getClaims(token);
     if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResp({ error: "Unauthorized" }, 401);
     }
     const userId = claimsData.claims.sub as string;
 
-    // ── Input ──
-    const body: ParentSummaryRequest = await req.json();
+    // ── Input validation ──
+    const body = await req.json();
     const { player_id, week_start } = body;
-    if (!player_id || !week_start) {
-      return new Response(
-        JSON.stringify({ error: "player_id and week_start are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+
+    if (
+      !player_id ||
+      typeof player_id !== "string" ||
+      !week_start ||
+      typeof week_start !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(week_start)
+    ) {
+      return jsonResp(
+        { error: "player_id (uuid) and week_start (YYYY-MM-DD) are required" },
+        400
       );
     }
 
-    const weekStartDate = new Date(week_start);
+    const weekStartDate = new Date(week_start + "T00:00:00Z");
+    if (isNaN(weekStartDate.getTime())) {
+      return jsonResp({ error: "Invalid week_start date" }, 400);
+    }
+
     const weekEndDate = new Date(weekStartDate);
-    weekEndDate.setDate(weekEndDate.getDate() + 6);
+    weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
     const weekEnd = weekEndDate.toISOString().split("T")[0];
+
+    const log = (msg: string, extra?: Record<string, unknown>) =>
+      console.log(
+        JSON.stringify({
+          request_id: requestId,
+          user_id: userId,
+          player_id,
+          week_start,
+          msg,
+          ...extra,
+        })
+      );
+
+    log("started");
 
     // ── Service role client for data ──
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -89,10 +110,7 @@ serve(async (req) => {
       .single();
 
     if (!player) {
-      return new Response(JSON.stringify({ error: "Player not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResp({ error: "Player not found" }, 404);
     }
 
     const isOwner = player.owner_user_id === userId;
@@ -107,13 +125,11 @@ serve(async (req) => {
     }
 
     if (!isOwner && !isGuardian) {
-      return new Response(JSON.stringify({ error: "Not authorized for this player" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      log("rejected: not owner or guardian");
+      return jsonResp({ error: "Not authorized for this player" }, 403);
     }
 
-    // ── Entitlement gate ──
+    // ── Entitlement gate (Pro-only: can_receive_ai_summary) ──
     const { data: entRow } = await supabase
       .from("entitlements")
       .select("can_receive_ai_summary")
@@ -121,9 +137,9 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!entRow?.can_receive_ai_summary) {
-      return new Response(
-        JSON.stringify({ error: "AI summaries require a Pro subscription" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      return jsonResp(
+        { error: "AI summaries require a Pro subscription" },
+        403
       );
     }
 
@@ -145,8 +161,8 @@ serve(async (req) => {
 
     // ── Session completions (parent program_source) ──
     const parentCardIds = practiceCards?.map((c) => c.id) || [];
-    let teamSessionsComplete = 0;
-    let teamSessionsTotal = parentCardIds.length;
+    let parentSessionsComplete = 0;
+    const parentSessionsTotal = parentCardIds.length;
 
     if (parentCardIds.length > 0) {
       const { data: sessions } = await supabase
@@ -156,7 +172,7 @@ serve(async (req) => {
         .eq("program_source", "parent")
         .in("practice_card_id", parentCardIds);
 
-      teamSessionsComplete =
+      parentSessionsComplete =
         sessions?.filter((s) => s.status === "complete").length ?? 0;
     }
 
@@ -176,10 +192,10 @@ serve(async (req) => {
         pSessions?.filter((s) => s.status === "complete").length ?? 0;
     }
 
-    const workoutsCompleted = teamSessionsComplete + personalSessionsComplete;
-    const workoutsScheduled = teamSessionsTotal + personalSessionsTotal;
+    const workoutsCompleted = parentSessionsComplete + personalSessionsComplete;
+    const workoutsScheduled = parentSessionsTotal + personalSessionsTotal;
 
-    // ── Task completions for shots ──
+    // ── Task completions for shots/reps/minutes ──
     let totalShots = 0;
     let totalStrengthReps = 0;
     let totalMinutes = 0;
@@ -187,7 +203,9 @@ serve(async (req) => {
     if (parentCardIds.length > 0) {
       const { data: taskComps } = await supabase
         .from("task_completions")
-        .select("shots_logged, practice_tasks!inner(practice_card_id, task_type, target_type, target_value)")
+        .select(
+          "shots_logged, practice_tasks!inner(practice_card_id, task_type, target_type, target_value)"
+        )
         .eq("player_id", player_id)
         .eq("completed", true)
         .in("practice_tasks.practice_card_id", parentCardIds);
@@ -195,9 +213,14 @@ serve(async (req) => {
       for (const tc of taskComps || []) {
         const task = tc.practice_tasks as any;
         totalShots += tc.shots_logged || 0;
-        if (task?.task_type === "strength" || task?.task_type === "conditioning") {
-          if (task?.target_type === "reps") totalStrengthReps += task?.target_value || 0;
-          if (task?.target_type === "minutes") totalMinutes += task?.target_value || 0;
+        if (
+          task?.task_type === "strength" ||
+          task?.task_type === "conditioning"
+        ) {
+          if (task?.target_type === "reps")
+            totalStrengthReps += task?.target_value || 0;
+          if (task?.target_type === "minutes")
+            totalMinutes += task?.target_value || 0;
         }
       }
     }
@@ -206,17 +229,27 @@ serve(async (req) => {
     if (personalCardIds.length > 0) {
       const { data: pTaskComps } = await supabase
         .from("personal_task_completions")
-        .select("personal_practice_tasks!inner(personal_practice_card_id, task_type, shots_expected, target_type, target_value)")
+        .select(
+          "personal_practice_tasks!inner(personal_practice_card_id, task_type, shots_expected, target_type, target_value)"
+        )
         .eq("player_id", player_id)
         .eq("completed", true)
-        .in("personal_practice_tasks.personal_practice_card_id", personalCardIds);
+        .in(
+          "personal_practice_tasks.personal_practice_card_id",
+          personalCardIds
+        );
 
       for (const tc of pTaskComps || []) {
         const task = tc.personal_practice_tasks as any;
         totalShots += task?.shots_expected || 0;
-        if (task?.task_type === "strength" || task?.task_type === "conditioning") {
-          if (task?.target_type === "reps") totalStrengthReps += task?.target_value || 0;
-          if (task?.target_type === "minutes") totalMinutes += task?.target_value || 0;
+        if (
+          task?.task_type === "strength" ||
+          task?.task_type === "conditioning"
+        ) {
+          if (task?.target_type === "reps")
+            totalStrengthReps += task?.target_value || 0;
+          if (task?.target_type === "minutes")
+            totalMinutes += task?.target_value || 0;
         }
       }
     }
@@ -227,7 +260,6 @@ serve(async (req) => {
         : 0;
 
     // ── Streak calculation (parent-only) ──
-    // Get all completed dates from personal sessions
     const { data: allPersonalSessions } = await supabase
       .from("personal_session_completions")
       .select("personal_practice_cards!inner(date)")
@@ -252,16 +284,15 @@ serve(async (req) => {
       }
     }
 
-    const sortedDates = Array.from(completedDatesSet).sort().reverse();
-    let currentStreak = 0;
     let bestStreak = 0;
     let streak = 0;
     let prevDate: Date | null = null;
 
     for (const dateStr of Array.from(completedDatesSet).sort()) {
-      const d = new Date(dateStr);
+      const d = new Date(dateStr + "T00:00:00Z");
       if (prevDate) {
-        const diff = (d.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+        const diff =
+          (d.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
         if (diff === 1) {
           streak++;
         } else {
@@ -274,21 +305,20 @@ serve(async (req) => {
       prevDate = d;
     }
 
-    // Current streak: count back from today
+    // Current streak: count back from today (allow 1-day gap)
     const today = new Date().toISOString().split("T")[0];
-    currentStreak = 0;
-    let checkDate = new Date(today);
+    let currentStreak = 0;
+    let checkDate = new Date(today + "T00:00:00Z");
     while (completedDatesSet.has(checkDate.toISOString().split("T")[0])) {
       currentStreak++;
-      checkDate.setDate(checkDate.getDate() - 1);
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
     }
-    // Also check if yesterday ends streak (allow 1-day gap)
     if (currentStreak === 0) {
-      checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - 1);
+      checkDate = new Date(today + "T00:00:00Z");
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
       while (completedDatesSet.has(checkDate.toISOString().split("T")[0])) {
         currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+        checkDate.setUTCDate(checkDate.getUTCDate() - 1);
       }
     }
 
@@ -303,6 +333,8 @@ serve(async (req) => {
       best_parent_streak: bestStreak,
     };
 
+    log("stats_computed", { stats });
+
     // ── Get focus areas ──
     const { data: plan } = await supabase
       .from("personal_training_plans")
@@ -311,7 +343,8 @@ serve(async (req) => {
       .eq("is_active", true)
       .maybeSingle();
 
-    const focusAreas = plan?.training_focus?.join(", ") || "general development";
+    const focusAreas =
+      plan?.training_focus?.join(", ") || "general development";
 
     // ── AI summary generation ──
     const prompt = `Generate a parent weekly summary for ${player.first_name}'s home development program:
@@ -347,7 +380,8 @@ Remember: 4-6 sentences. One specific win. One next-week suggestion. No team/coa
       );
 
       if (!aiResponse.ok) {
-        console.error("AI error:", await aiResponse.text());
+        const errText = await aiResponse.text();
+        log("ai_error", { ai_status: aiResponse.status, ai_body: errText });
         summaryText = `${player.first_name} completed ${workoutsCompleted} of ${workoutsScheduled} home workouts this week with ${totalShots} shots logged. ${currentStreak > 0 ? `Current streak: ${currentStreak} days — keep it going!` : "Let's build a streak next week!"}`;
       } else {
         const aiData = await aiResponse.json();
@@ -356,7 +390,9 @@ Remember: 4-6 sentences. One specific win. One next-week suggestion. No team/coa
           `${player.first_name} completed ${workoutsCompleted} home workouts this week. Keep up the effort!`;
       }
     } catch (aiErr) {
-      console.error("AI call failed:", aiErr);
+      log("ai_call_failed", {
+        error: aiErr instanceof Error ? aiErr.message : String(aiErr),
+      });
       summaryText = `${player.first_name} completed ${workoutsCompleted} of ${workoutsScheduled} home workouts this week with ${totalShots} shots logged. Keep building!`;
     }
 
@@ -371,35 +407,38 @@ Remember: 4-6 sentences. One specific win. One next-week suggestion. No team/coa
           week_end: weekEnd,
           summary_text: summaryText,
           stats,
+          updated_at: new Date().toISOString(),
         },
         { onConflict: "user_id,player_id,week_start" }
       );
 
     if (upsertError) {
-      console.error("Upsert error:", upsertError);
-      throw upsertError;
+      log("upsert_failed", { error: upsertError.message });
+      return jsonResp(
+        { error: "Failed to save summary. Please retry." },
+        500
+      );
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        summary_text: summaryText,
-        stats,
-        week_start,
-        week_end: weekEnd,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    log("completed");
+
+    return jsonResp({
+      success: true,
+      player_id,
+      week_start,
+      week_end: weekEnd,
+    });
   } catch (error) {
-    console.error("Error in generate-parent-summary-ai:", error);
-    return new Response(
+    console.error(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        request_id: requestId,
+        msg: "unhandled_error",
+        error: error instanceof Error ? error.message : String(error),
+      })
+    );
+    return jsonResp(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      500
     );
   }
 });
