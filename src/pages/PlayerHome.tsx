@@ -37,6 +37,7 @@ import {
   Clock,
   Flame,
   Target,
+  Sparkles,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -49,6 +50,7 @@ import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { format, subDays, parseISO } from "date-fns";
 import logoImage from "@/assets/hockey-app-logo.png";
 import { JoinTeamCard } from "@/components/player/JoinTeamCard";
+import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
 
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
@@ -79,6 +81,7 @@ const PlayerHome: React.FC = () => {
   const celebratedMilestoneRef = useRef<number | null>(null);
 
   const [showTeamSelector, setShowTeamSelector] = useState(false);
+  const [showProgramBuilder, setShowProgramBuilder] = useState(false);
 
   const scrollToTeammates = () => {
     teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -510,6 +513,26 @@ const PlayerHome: React.FC = () => {
                 </AppCard>
               )}
 
+              {/* Build Development Plan CTA */}
+              {preferences?.active_team_id && (
+                <AppCard className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">Build a Development Plan</p>
+                        <p className="text-sm text-muted-foreground">AI-powered custom training for your player</p>
+                      </div>
+                    </div>
+                    <Button onClick={() => setShowProgramBuilder(true)} size="sm">
+                      Start
+                    </Button>
+                  </div>
+                </AppCard>
+              )}
+
               {/* Upcoming Workouts - All Teams */}
               <UpcomingWorkouts playerId={id!} />
 
@@ -760,6 +783,25 @@ const PlayerHome: React.FC = () => {
             </AppCard>
           )}
 
+          {/* Build Development Plan CTA - Mobile */}
+          {preferences?.active_team_id && (
+            <AppCard 
+              className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20 cursor-pointer"
+              onClick={() => setShowProgramBuilder(true)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">Build a Development Plan</p>
+                  <p className="text-xs text-muted-foreground">AI-powered custom training</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </AppCard>
+          )}
+
           {/* Upcoming Workouts - All Teams - Mobile */}
           <UpcomingWorkouts playerId={id!} compact />
 
@@ -938,6 +980,18 @@ const PlayerHome: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Parent Program Builder Modal */}
+      {id && preferences?.active_team_id && (
+        <ParentProgramBuilderModal
+          open={showProgramBuilder}
+          onOpenChange={setShowProgramBuilder}
+          playerId={id}
+          playerAge={player ? new Date().getFullYear() - player.birth_year : undefined}
+          playerShoots={player?.shoots}
+          teamId={preferences.active_team_id}
+        />
+      )}
     </AppShell>
   );
 };
