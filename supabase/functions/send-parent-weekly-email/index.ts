@@ -328,6 +328,27 @@ serve(async (req) => {
       }
     }
 
+    // ── Record send metrics ──
+    const metricDate = new Date().toISOString().split("T")[0];
+    const { data: existingSent } = await supabase
+      .from("parent_weekly_summary_metrics")
+      .select("metric_value")
+      .eq("metric_date", metricDate)
+      .eq("metric_name", "weekly_summary_sent_count")
+      .maybeSingle();
+
+    if (existingSent) {
+      await supabase
+        .from("parent_weekly_summary_metrics")
+        .update({ metric_value: (existingSent.metric_value as number) + sent })
+        .eq("metric_date", metricDate)
+        .eq("metric_name", "weekly_summary_sent_count");
+    } else if (sent > 0) {
+      await supabase
+        .from("parent_weekly_summary_metrics")
+        .insert({ metric_date: metricDate, metric_name: "weekly_summary_sent_count", metric_value: sent });
+    }
+
     log("completed", { sent, failed });
     return jsonResp({ success: true, sent, failed });
   } catch (error) {
