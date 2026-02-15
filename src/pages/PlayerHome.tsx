@@ -51,6 +51,8 @@ import { format, subDays, parseISO } from "date-fns";
 import logoImage from "@/assets/hockey-app-logo.png";
 import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
+import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
+import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
 
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
@@ -434,109 +436,40 @@ const PlayerHome: React.FC = () => {
                 )}
               </div>
             </div>
-            
-            {/* Streak Stats */}
-            {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
-              <div className="flex items-center gap-3">
-                {(streakData?.currentStreak ?? 0) > 0 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                    <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm font-semibold text-orange-600">{streakData?.currentStreak} day streak</span>
-                  </div>
-                )}
-                {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <Trophy className="w-4 h-4 text-amber-500" />
-                    <span className="text-sm font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Desktop Grid Layout - 2 column for better balance */}
           <div className="grid grid-cols-12 gap-6">
-            {/* Main Column - Primary Content */}
-            <div className="col-span-8 space-y-6">
-              {/* Today's Workout - Prominent */}
-              {preferences?.active_team_id && todaySnapshot?.success && (
-                <AppCard
-                  className="cursor-pointer hover:shadow-medium transition-shadow"
-                  onClick={() => navigate(`/players/${id}/today`)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        todaySnapshot.has_card 
-                          ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                            ? "bg-success/10"
-                            : "bg-team-primary/10"
-                          : "bg-surface-muted"
-                      }`}>
-                        {todaySnapshot.has_card ? (
-                          todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
-                            <CheckCircle className="w-6 h-6 text-success" />
-                          ) : (
-                            <Dumbbell className="w-6 h-6 text-team-primary" />
-                          )
-                        ) : (
-                          <Clock className="w-6 h-6 text-text-muted" />
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">Today's Workout</h3>
-                        {todaySnapshot.has_card ? (
-                          <p className="text-sm text-text-muted">
-                            {todaySnapshot.progress?.completed}/{todaySnapshot.progress?.total_required} tasks complete
-                          </p>
-                        ) : (
-                          <p className="text-sm text-text-muted">
-                            {todaySnapshot.mode === "gameday" ? "Game Day - Rest up!" : "No workout scheduled"}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-text-muted" />
-                  </div>
-                  {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-                    <div className="mt-4">
-                      <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-team-primary transition-all duration-500"
-                          style={{
-                            width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </AppCard>
+            {/* Main Column - Two Sections */}
+            <div className="col-span-8 space-y-8">
+              {/* Section 1 — Team Assignments */}
+              {preferences?.active_team_id && activeTeam && (
+                <TeamAssignmentsSection
+                  playerId={id!}
+                  teamId={preferences.active_team_id}
+                  teamName={activeTeam.name}
+                  streakData={streakData}
+                />
               )}
 
-              {/* Build Development Plan CTA */}
+              {/* Divider */}
               {preferences?.active_team_id && (
-                <AppCard className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Build a Development Plan</p>
-                        <p className="text-sm text-muted-foreground">AI-powered custom training for your player</p>
-                      </div>
-                    </div>
-                    <Button onClick={() => setShowProgramBuilder(true)} size="sm">
-                      Start
-                    </Button>
-                  </div>
-                </AppCard>
+                <div className="border-t border-border" />
+              )}
+
+              {/* Section 2 — Home Development */}
+              {preferences?.active_team_id && (
+                <HomeDevelopmentSection
+                  playerId={id!}
+                  teamId={preferences.active_team_id}
+                  onBuildPlan={() => setShowProgramBuilder(true)}
+                />
               )}
 
               {/* Upcoming Workouts - All Teams */}
               <UpcomingWorkouts playerId={id!} />
 
-              {/* Teammates Section - Moved to main content for prominence */}
+              {/* Teammates */}
               {preferences?.active_team_id && (
                 <div ref={teammatesRef}>
                   <TeammateRoster
@@ -662,23 +595,6 @@ const PlayerHome: React.FC = () => {
         <div className="md:hidden space-y-4">
           {/* Player Header - Mobile only */}
           <AppCard className="text-center relative overflow-hidden">
-            {((streakData?.currentStreak ?? 0) > 0 || (streakData?.bestStreak ?? 0) > 0) && (
-              <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-                {(streakData?.currentStreak ?? 0) > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20">
-                    <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm font-bold text-orange-600">{streakData?.currentStreak}</span>
-                    <span className="text-xs text-orange-600/70">day{streakData?.currentStreak !== 1 ? 's' : ''}</span>
-                  </div>
-                )}
-                {(streakData?.bestStreak ?? 0) > 0 && (streakData?.bestStreak ?? 0) > (streakData?.currentStreak ?? 0) && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                    <Trophy className="w-3 h-3 text-amber-500" />
-                    <span className="text-xs font-medium text-amber-600">Best: {streakData?.bestStreak}</span>
-                  </div>
-                )}
-              </div>
-            )}
             <Avatar
               src={player.profile_photo_url}
               fallback={`${player.first_name} ${player.last_initial || ""}`}
@@ -696,110 +612,29 @@ const PlayerHome: React.FC = () => {
             </div>
           </AppCard>
 
-          {/* Active Team - Mobile */}
-          {memberships && memberships.length > 0 && (
-            <AppCard
-              className="cursor-pointer hover:shadow-medium transition-shadow"
-              onClick={() => preferences?.active_team_id && navigate(`/teams/${preferences.active_team_id}/roster`)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center">
-                    <Star className="w-5 h-5 text-team-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-text-muted uppercase font-medium">Active Team</p>
-                    <p className="font-semibold">{activeTeam?.name || "Not set"}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-text-muted" />
-              </div>
-            </AppCard>
+          {/* Section 1 — Team Assignments - Mobile */}
+          {preferences?.active_team_id && activeTeam && (
+            <TeamAssignmentsSection
+              playerId={id!}
+              teamId={preferences.active_team_id}
+              teamName={activeTeam.name}
+              streakData={streakData}
+              compact
+            />
           )}
 
-          {/* Today's Workout Card - Mobile */}
-          {preferences?.active_team_id && todaySnapshot?.success && (
-            <AppCard
-              className="cursor-pointer hover:shadow-medium transition-shadow"
-              onClick={() => navigate(`/players/${id}/today`)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    todaySnapshot.has_card 
-                      ? todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                        ? "bg-success/10"
-                        : "bg-team-primary/10"
-                      : "bg-surface-muted"
-                  }`}>
-                    {todaySnapshot.has_card ? (
-                      todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0 ? (
-                        <CheckCircle className="w-5 h-5 text-success" />
-                      ) : (
-                        <Dumbbell className="w-5 h-5 text-team-primary" />
-                      )
-                    ) : (
-                      <Clock className="w-5 h-5 text-text-muted" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs text-text-muted uppercase font-medium">Today's Workout</p>
-                    {todaySnapshot.has_card ? (
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">
-                          {todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required && (todaySnapshot.progress?.total_required ?? 0) > 0
-                            ? "Completed!"
-                            : `${todaySnapshot.progress?.completed || 0}/${todaySnapshot.progress?.total_required || 0} tasks`
-                          }
-                        </p>
-                        {todaySnapshot.progress?.completed !== todaySnapshot.progress?.total_required && 
-                         (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-                          <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-primary-foreground bg-team-primary rounded-full animate-pulse">
-                            {(todaySnapshot.progress?.total_required || 0) - (todaySnapshot.progress?.completed || 0)}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-text-muted">No workout today</p>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-text-muted" />
-              </div>
-              {todaySnapshot.has_card && (todaySnapshot.progress?.total_required ?? 0) > 0 && (
-                <div className="mt-3 h-1.5 bg-surface-muted rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      todaySnapshot.progress?.completed === todaySnapshot.progress?.total_required
-                        ? "bg-success"
-                        : "bg-team-primary"
-                    }`}
-                    style={{ 
-                      width: `${Math.round(((todaySnapshot.progress?.completed ?? 0) / (todaySnapshot.progress?.total_required ?? 1)) * 100)}%` 
-                    }}
-                  />
-                </div>
-              )}
-            </AppCard>
-          )}
-
-          {/* Build Development Plan CTA - Mobile */}
+          {/* Divider */}
           {preferences?.active_team_id && (
-            <AppCard 
-              className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20 cursor-pointer"
-              onClick={() => setShowProgramBuilder(true)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">Build a Development Plan</p>
-                  <p className="text-xs text-muted-foreground">AI-powered custom training</p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </AppCard>
+            <div className="border-t border-border" />
+          )}
+
+          {/* Section 2 — Home Development - Mobile */}
+          {preferences?.active_team_id && (
+            <HomeDevelopmentSection
+              playerId={id!}
+              teamId={preferences.active_team_id}
+              onBuildPlan={() => setShowProgramBuilder(true)}
+            />
           )}
 
           {/* Upcoming Workouts - All Teams - Mobile */}
