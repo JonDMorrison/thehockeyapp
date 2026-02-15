@@ -121,7 +121,7 @@ export const ParentWeeklySummary: React.FC<ParentWeeklySummaryProps> = ({
             </Badge>
             <Badge variant="secondary" className="gap-1 text-xs font-medium">
               <Flame className="w-3 h-3" />
-              {stats?.current_parent_streak ?? 0} day streak
+              {stats?.current_parent_streak ?? 0} day home streak
             </Badge>
           </div>
 

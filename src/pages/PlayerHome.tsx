@@ -164,7 +164,7 @@ const PlayerHome: React.FC = () => {
   const { data: streakData } = useQuery({
     queryKey: ["player-streak", id, preferences?.active_team_id],
     queryFn: async () => {
-      // Get session completions for this player on the active team
+      // Get session completions for this player on the active team (team-only)
       const { data: completions, error } = await supabase
         .from("session_completions")
         .select(`
@@ -173,6 +173,7 @@ const PlayerHome: React.FC = () => {
         `)
         .eq("player_id", id)
         .eq("practice_cards.team_id", preferences!.active_team_id)
+        .eq("program_source", "team")
         .eq("status", "complete")
         .order("completed_at", { ascending: false });
 
