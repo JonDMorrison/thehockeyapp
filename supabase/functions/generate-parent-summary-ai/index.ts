@@ -79,6 +79,14 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
+    // ── Entitlement gate: on-demand requires Pro/team/comp ──
+    const supabaseGate = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: hasFullAccess } = await supabaseGate.rpc("has_full_access", { p_user_id: userId });
+    if (hasFullAccess !== true) {
+      console.log(JSON.stringify({ event: "summary_blocked", user_id: userId, reason: "no_access" }));
+      return jsonResp({ error: "upgrade_required", message: "On-demand summaries require Parent Pro or Team coverage." }, 403);
+    }
+
     // ── Input validation ──
     const body = await req.json();
     const { player_id, week_start } = body;
@@ -149,11 +157,8 @@ serve(async (req) => {
       return jsonResp({ error: "Not authorized for this player" }, 403);
     }
 
-    // ── Determine tier: Pro vs Free ──
-    // Pro = has_active_individual_pro OR team_covered via has_full_access RPC
-    const { data: hasFullAccess } = await supabase
-      .rpc("has_full_access", { p_user_id: userId });
-    const isPro = hasFullAccess === true;
+    // ── Tier: already verified Pro via gate above ──
+    const isPro = true; // gate ensures only Pro/team/comp users reach here
 
     log("tier_resolved", { isPro });
 
@@ -449,11 +454,11 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
     }
 
     // ── Record metrics ──
-    const today = new Date().toISOString().split("T")[0];
+    const metricsDate = new Date().toISOString().split("T")[0];
     const metricsToUpsert = [
-      { metric_date: today, metric_name: "weekly_summary_generated_count", metric_value: 1 },
-      { metric_date: today, metric_name: "average_shots", metric_value: totalShots, metadata: { player_id, sample_size: 1 } },
-      { metric_date: today, metric_name: "average_workouts", metric_value: workoutsCompleted, metadata: { player_id, sample_size: 1 } },
+      { metric_date: metricsDate, metric_name: "weekly_summary_generated_count", metric_value: 1 },
+      { metric_date: metricsDate, metric_name: "average_shots", metric_value: totalShots, metadata: { player_id, sample_size: 1 } },
+      { metric_date: metricsDate, metric_name: "average_workouts", metric_value: workoutsCompleted, metadata: { player_id, sample_size: 1 } },
     ];
 
     for (const m of metricsToUpsert) {
