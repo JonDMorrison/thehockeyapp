@@ -1,7 +1,13 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Users, Flame, Target } from "lucide-react";
+import { Users, Flame, Target, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TeamPulseBarProps {
   playersCount: number;
@@ -104,6 +110,20 @@ export const TeamPulseBar: React.FC<TeamPulseBarProps> = ({
           </div>
         </>
       )}
+
+      {/* Team-only tooltip */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button className="ml-1 p-0.5 rounded-full hover:bg-muted transition-colors">
+              <Info className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p className="text-xs">Only team-assigned work appears here.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </motion.div>
   );
 };

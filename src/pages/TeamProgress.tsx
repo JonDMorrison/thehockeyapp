@@ -139,7 +139,8 @@ const TeamProgress: React.FC = () => {
       const { data: cards } = await supabase
         .from("practice_cards")
         .select("id")
-        .eq("team_id", id!);
+        .eq("team_id", id!)
+        .eq("program_source", "team");
 
       if (!cards || cards.length === 0) return [];
 
@@ -149,6 +150,7 @@ const TeamProgress: React.FC = () => {
         .from("session_completions")
         .select("player_id, completed_at, practice_card_id")
         .in("practice_card_id", cardIds)
+        .eq("program_source", "team")
         .eq("status", "complete");
 
       if (error) throw error;

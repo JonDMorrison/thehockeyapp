@@ -50,6 +50,7 @@ export const AssignedWorkoutsSection: React.FC<AssignedWorkoutsSectionProps> = (
           tier
         `)
         .eq("team_id", teamId)
+        .eq("program_source", "team")
         .gte("date", today)
         .not("published_at", "is", null)
         .order("date", { ascending: true })
@@ -79,6 +80,7 @@ export const AssignedWorkoutsSection: React.FC<AssignedWorkoutsSectionProps> = (
         .from("session_completions")
         .select("practice_card_id, status")
         .in("practice_card_id", cardIds)
+        .eq("program_source", "team")
         .eq("status", "complete");
 
       // Build the workout list with completion stats
