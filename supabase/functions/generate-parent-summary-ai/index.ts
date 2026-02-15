@@ -448,6 +448,48 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
       );
     }
 
+    // ── Record metrics ──
+    const today = new Date().toISOString().split("T")[0];
+    const metricsToUpsert = [
+      { metric_date: today, metric_name: "weekly_summary_generated_count", metric_value: 1 },
+      { metric_date: today, metric_name: "average_shots", metric_value: totalShots, metadata: { player_id, sample_size: 1 } },
+      { metric_date: today, metric_name: "average_workouts", metric_value: workoutsCompleted, metadata: { player_id, sample_size: 1 } },
+    ];
+
+    for (const m of metricsToUpsert) {
+      // Upsert: increment count, rolling average for avg metrics
+      const { data: existing } = await supabase
+        .from("parent_weekly_summary_metrics")
+        .select("metric_value, metadata")
+        .eq("metric_date", m.metric_date)
+        .eq("metric_name", m.metric_name)
+        .maybeSingle();
+
+      if (existing) {
+        if (m.metric_name === "weekly_summary_generated_count") {
+          await supabase
+            .from("parent_weekly_summary_metrics")
+            .update({ metric_value: (existing.metric_value as number) + 1 })
+            .eq("metric_date", m.metric_date)
+            .eq("metric_name", m.metric_name);
+        } else {
+          // Rolling average
+          const prevSize = (existing.metadata as any)?.sample_size || 1;
+          const newSize = prevSize + 1;
+          const newAvg = (((existing.metric_value as number) * prevSize) + m.metric_value) / newSize;
+          await supabase
+            .from("parent_weekly_summary_metrics")
+            .update({ metric_value: Math.round(newAvg * 100) / 100, metadata: { sample_size: newSize } })
+            .eq("metric_date", m.metric_date)
+            .eq("metric_name", m.metric_name);
+        }
+      } else {
+        await supabase
+          .from("parent_weekly_summary_metrics")
+          .insert(m);
+      }
+    }
+
     log("completed");
 
     return jsonResp({
@@ -455,6 +497,7 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
       player_id,
       week_start,
       week_end: weekEnd,
+      tier: isPro ? "pro" : "free",
     });
   } catch (error) {
     console.error(

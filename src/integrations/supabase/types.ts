@@ -342,6 +342,33 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_weekly_summary_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_date: string
+          metric_name: string
+          metric_value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_date?: string
+          metric_name: string
+          metric_value?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_date?: string
+          metric_name?: string
+          metric_value?: number
+        }
+        Relationships: []
+      }
       pending_comp_grants: {
         Row: {
           created_at: string
@@ -2589,6 +2616,10 @@ export type Database = {
       }
       get_my_access_debug: { Args: never; Returns: Json }
       get_my_access_status: { Args: never; Returns: Json }
+      get_parent_summary_system_stats: {
+        Args: { p_end_date?: string; p_start_date?: string }
+        Returns: Json
+      }
       get_parent_week_metrics: {
         Args: { p_user_id: string; p_week_start: string }
         Returns: Json
