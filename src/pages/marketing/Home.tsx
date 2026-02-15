@@ -47,15 +47,14 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
-                Stop nagging.{" "}
+                The off-ice accountability system{" "}
                 <span className="text-primary">
-                  Start building discipline.
+                  for hockey families.
                 </span>
               </h1>
 
               <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Structured off-ice training your child follows on their own. 
-                You stay in control. Coaches stay aligned. Kids take ownership.
+                Clear weekly plans kids follow independently — so parents stop nagging, coaches stay aligned, and real progress happens.
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
