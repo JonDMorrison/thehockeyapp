@@ -33,6 +33,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import hockeyPlayerBasement from "@/assets/hockey-player-basement.jpg";
+import founderHomeImg from "@/assets/placeholder-founder-home.jpg";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
@@ -665,6 +666,62 @@ const Home: React.FC = () => {
             <p className="text-sm text-text-muted">
               Get started free. Teams can cover families. Otherwise parents can upgrade after a 7-day trial.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Section */}
+      <section className="py-20 lg:py-28 bg-background">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="relative flex justify-center">
+              <div className="rounded-2xl overflow-hidden shadow-subtle max-w-md w-full">
+                <img
+                  src={founderHomeImg}
+                  alt="Jon Morrison coaching youth hockey players"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                Built by a Coach.{" "}
+                <span className="text-primary">Designed for Families.</span>
+              </h2>
+
+              <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
+                <p>
+                  The Hockey App wasn't created by a tech company guessing at hockey culture.
+                </p>
+                <p>
+                  It was built by a former BCHL player, minor hockey coach, and father of three daughters in the game.
+                </p>
+                <p>
+                  After years of seeing the same pattern — parents nagging, players resisting, coaches frustrated — one thing became clear:
+                </p>
+                <p className="text-lg font-semibold text-foreground">
+                  Families don't need more pressure. They need structure.
+                </p>
+                <p>
+                  The Hockey App creates that structure — so kids take ownership, parents stay aligned, and coaches gain visibility without chasing players.
+                </p>
+              </div>
+
+              <div className="mt-8">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
+                  asChild
+                >
+                  <Link to="/about">
+                    Learn More About Jon
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

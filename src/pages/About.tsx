@@ -1,149 +1,168 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, Send, Loader2, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import founderImg from "@/assets/placeholder-founder-coaching.jpg";
+
+const credentials = {
+  left: [
+    "Former BCHL Player",
+    "Abbotsford Hawks U11 Coach",
+    "Abbotsford Hawks U9 Coach",
+    "Abbotsford Hawks U7 Coach",
+  ],
+  right: [
+    "Fraser Valley Kings Development",
+    "BC Stars Development Environment",
+    "Father of Three Hockey Players",
+    "Builder of The Hockey App",
+  ],
+};
 
 const About: React.FC = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    const { error } = await supabase
-      .from("contact_submissions")
-      .insert({ name: name.trim(), email: email.trim(), message: message.trim() });
-
-    setIsSubmitting(false);
-
-    if (error) {
-      toast.error("Failed to submit. Please try again.");
-      return;
-    }
-
-    setIsSubmitted(true);
-    toast.success("Message sent! We'll get back to you soon.");
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <MarketingNav />
-      
-      <main className="flex-1 pt-24 pb-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 group"
-          >
-            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back to home
-          </Link>
 
-          <h1 className="text-4xl font-bold mb-6">About The Hockey App</h1>
-          
-          <div className="prose prose-gray dark:prose-invert max-w-none">
-            <p className="text-lg text-muted-foreground mb-6">
-              The Hockey App was built by hockey parents who wanted a better way to help their kids 
-              develop off the ice.
-            </p>
-            
-            <h2 className="text-2xl font-semibold mt-8 mb-4">Our Mission</h2>
-            <p className="text-muted-foreground mb-4">
-              We believe that consistent off-ice training is key to developing well-rounded hockey players. 
-              Our mission is to make it easy for coaches to assign training, for kids to complete it, 
-              and for parents to stay informed—all while keeping youth privacy at the forefront.
-            </p>
-            
-            <h2 className="text-2xl font-semibold mt-8 mb-4">Privacy First</h2>
-            <p className="text-muted-foreground mb-4">
-              We're COPPA compliant and take youth privacy seriously. Parents maintain full control 
-              over their child's data, and we never sell or share personal information with third parties.
-            </p>
-            
-            <h2 className="text-2xl font-semibold mt-8 mb-4">Contact Us</h2>
-            <p className="text-muted-foreground mb-6">
-              Have questions or feedback? We'd love to hear from you.
-            </p>
+      {/* Hero */}
+      <section className="relative pt-16 bg-[hsl(0,0%,98%)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-28">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.08] text-foreground">
+                Hockey is a leadership laboratory.
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
+                From junior hockey in the BCHL to coaching three daughters and multiple minor hockey teams, Jon Morrison builds athletes through structure, discipline, and long-term development.
+              </p>
+              <Button
+                size="lg"
+                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                asChild
+              >
+                <Link to="/demo">
+                  See How The Hockey App Works
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
 
-            {isSubmitted ? (
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-6 flex items-center gap-4">
-                <CheckCircle className="w-8 h-8 text-primary flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-foreground">Thank you for reaching out!</p>
-                  <p className="text-sm text-muted-foreground">We'll review your message and get back to you soon.</p>
-                </div>
+            <div className="flex justify-center lg:justify-end">
+              <div className="rounded-2xl overflow-hidden shadow-subtle max-w-md w-full">
+                <img
+                  src={founderImg}
+                  alt="Jon Morrison coaching youth hockey"
+                  className="w-full h-auto object-cover aspect-[4/5]"
+                />
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 not-prose">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Your name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Your question or feedback..."
-                    rows={4}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-              </form>
-            )}
+            </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Main Story */}
+      <section className="py-20 lg:py-28 bg-background">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
+            <h2 className="text-2xl font-bold text-foreground">Where It Started</h2>
+            <p>
+              I grew up in the rink. I played junior hockey in the BCHL, lived in billets, trained year-round, and learned what it meant to be accountable to a team before I was old enough to vote.
+            </p>
+            <p>
+              Hockey taught me structure. It taught me that talent matters less than consistency. And it taught me that the players who develop the fastest are the ones who do the quiet work — the unglamorous reps at home, in the garage, in the basement — when nobody is watching.
+            </p>
+
+            <h2 className="text-2xl font-bold text-foreground pt-4">The Pattern I Kept Seeing</h2>
+            <p>
+              Years later, I became a coach. I've coached Abbotsford Hawks U7, U9, and U11. I've worked with Fraser Valley Kings development groups and been part of the BC Stars development environment. I've coached dozens of kids across multiple age groups.
+            </p>
+            <p>
+              And I kept seeing the same pattern:
+            </p>
+            <p>
+              Coaches would assign off-ice training. Parents would try to make it happen. Kids would resist. And every night, the same argument would play out in kitchens across the country — "Did you do your training?"
+            </p>
+            <p>
+              The problem was never the kid's commitment. It was the lack of structure. There was no system. No clear plan. No way for the child to own it themselves.
+            </p>
+
+            <h2 className="text-2xl font-bold text-foreground pt-4">Three Daughters in the Game</h2>
+            <p>
+              I'm also a hockey dad. I have three daughters who play. I've lived the exact tension I'm describing — trying to support without pushing, trying to encourage without nagging, trying to build discipline without creating resentment.
+            </p>
+            <p>
+              That's the hardest part of being a hockey parent: you care deeply, but if you push too hard, your child pulls away.
+            </p>
+
+            <h2 className="text-2xl font-bold text-foreground pt-4">Why I Built This</h2>
+            <p>
+              The Hockey App exists because I needed it. As a coach, I needed a way to give families clear weekly plans without creating more work for parents. As a dad, I needed a system my daughters could follow on their own — so training happened without me standing over them.
+            </p>
+            <p>
+              This isn't a tech company's idea of what hockey needs. It's a coach and father's answer to a problem I've lived with for over a decade.
+            </p>
+
+            <h2 className="text-2xl font-bold text-foreground pt-4">What It Does</h2>
+            <p>
+              The Hockey App gives coaches a simple way to assign structured off-ice training. Kids open the app, see their tasks for the day, and check them off. Parents get visibility without having to manage anything. Everyone stays aligned.
+            </p>
+            <p>
+              No rankings. No pressure. No public leaderboards. Just quiet consistency — the kind that builds real athletes.
+            </p>
+
+            <h2 className="text-2xl font-bold text-foreground pt-4">The Philosophy</h2>
+            <p>
+              I believe development happens through daily habits, not occasional intensity. I believe kids are more capable than we think — if we give them the structure to succeed. And I believe parents deserve to step back from being the enforcer and just be the supporter.
+            </p>
+            <p>
+              The Hockey App is designed around these beliefs. It's calm. It's structured. And it works because it removes friction instead of adding it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Coaching Credentials */}
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-foreground">
+            Coaching &amp; Playing Experience
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            {[credentials.left, credentials.right].map((col, ci) => (
+              <ul key={ci} className="space-y-4">
+                {col.map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span className="text-base font-medium text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="py-20 lg:py-28 bg-background">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+            Development Over Ego.{" "}
+            <span className="text-primary">Structure Over Chaos.</span>
+          </h2>
+          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            The Hockey App was built from real experience — as a player, as a coach, and as a father. It exists to align families, coaches, and players around one goal: consistent, disciplined development.
+          </p>
+          <Button
+            size="lg"
+            className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+            asChild
+          >
+            <Link to="/auth">Get Started For Free</Link>
+          </Button>
+        </div>
+      </section>
 
       <MarketingFooter />
     </div>
