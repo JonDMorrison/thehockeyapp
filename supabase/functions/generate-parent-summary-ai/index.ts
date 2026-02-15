@@ -7,17 +7,37 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are writing a weekly training summary for a parent who runs their child's at-home hockey development program. This is completely separate from any team or coach program.
+// ── FREE tier system prompt ──
+// Reflection only, max 70 words, no drill suggestions, no volume targets
+const SYSTEM_PROMPT_FREE = `You are writing a weekly training summary for a parent who runs their child's at-home hockey development program. This is completely separate from any team or coach program.
+
+RULES:
+1. Maximum 70 words. Be concise.
+2. 3–4 sentences maximum.
+3. Encouraging but genuine — never cheesy or over-the-top.
+4. Call out exactly ONE specific win from the week.
+5. Do NOT suggest drills, specific exercises, or training plans.
+6. Do NOT mention volume targets, shot counts to aim for, or weekly goals.
+7. Do NOT mention team, coach, team goals, teammates, or rankings.
+8. Use simple, parent-friendly language.
+9. Do NOT include medical advice or injury-related comments.
+10. This is a reflection only — no coaching or programming advice.`;
+
+// ── PRO tier system prompt ──
+// Reflection + 1 focus suggestion + 1 volume target + program alignment
+const SYSTEM_PROMPT_PRO = `You are writing a weekly training summary for a parent who runs their child's at-home hockey development program. This is completely separate from any team or coach program.
 
 RULES:
 1. 4–6 sentences maximum.
 2. Encouraging but genuine — never cheesy or over-the-top.
 3. Call out exactly ONE specific win from the week (e.g. "completed every scheduled workout", "logged 150+ shots").
-4. Suggest exactly ONE concrete next-week focus.
-5. Do NOT mention team, coach, team goals, teammates, or rankings.
-6. Reflect the parent's chosen focus areas if provided.
-7. Use simple, parent-friendly language.
-8. Do NOT include medical advice or injury-related comments.`;
+4. Suggest exactly ONE short focus area for next week (e.g. "wrist shots from the slot" or "core strength").
+5. Suggest exactly ONE specific weekly volume target (e.g. "aim for 200 shots next week" or "try 4 workouts").
+6. If a structured training program is active, briefly mention alignment (e.g. "staying on track with the current program").
+7. Do NOT mention team, coach, team goals, teammates, or rankings.
+8. Reflect the parent's chosen focus areas if provided.
+9. Use simple, parent-friendly language.
+10. Do NOT include medical advice or injury-related comments.`;
 
 function jsonResp(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -129,19 +149,13 @@ serve(async (req) => {
       return jsonResp({ error: "Not authorized for this player" }, 403);
     }
 
-    // ── Entitlement gate (Pro-only: can_receive_ai_summary) ──
-    const { data: entRow } = await supabase
-      .from("entitlements")
-      .select("can_receive_ai_summary")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // ── Determine tier: Pro vs Free ──
+    // Pro = has_active_individual_pro OR team_covered via has_full_access RPC
+    const { data: hasFullAccess } = await supabase
+      .rpc("has_full_access", { p_user_id: userId });
+    const isPro = hasFullAccess === true;
 
-    if (!entRow?.can_receive_ai_summary) {
-      return jsonResp(
-        { error: "AI summaries require a Pro subscription" },
-        403
-      );
-    }
+    log("tier_resolved", { isPro });
 
     // ── Fetch parent-only practice cards ──
     const { data: practiceCards } = await supabase
@@ -346,8 +360,18 @@ serve(async (req) => {
     const focusAreas =
       plan?.training_focus?.join(", ") || "general development";
 
-    // ── AI summary generation ──
-    const prompt = `Generate a parent weekly summary for ${player.first_name}'s home development program:
+    // ── AI summary generation (tier-aware) ──
+    const hasActiveProgram = !!plan;
+
+    // FREE prompt: reflection only, max 70 words
+    const freePrompt = `Generate a brief weekly reflection for ${player.first_name}'s home development:
+- Workouts completed: ${workoutsCompleted} of ${workoutsScheduled} (${completionPct}%)
+- Current streak: ${currentStreak} days
+
+Remember: Max 70 words. Reflection only. No drill suggestions. No volume targets.`;
+
+    // PRO prompt: reflection + focus + volume target + program alignment
+    const proPrompt = `Generate a parent weekly summary for ${player.first_name}'s home development program:
 - Workouts completed: ${workoutsCompleted} of ${workoutsScheduled} scheduled (${completionPct}%)
 - Total shots logged: ${totalShots}
 - Strength reps (pushups etc): ${totalStrengthReps}
@@ -355,8 +379,12 @@ serve(async (req) => {
 - Current streak: ${currentStreak} days
 - Best streak: ${bestStreak} days
 - Focus areas: ${focusAreas}
+- Has active structured program: ${hasActiveProgram ? "yes" : "no"}
 
-Remember: 4-6 sentences. One specific win. One next-week suggestion. No team/coach references.`;
+Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly volume target.${hasActiveProgram ? " Mention program alignment." : ""} No team/coach references.`;
+
+    const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE;
+    const userPrompt = isPro ? proPrompt : freePrompt;
 
     let summaryText: string;
     try {
@@ -371,8 +399,8 @@ Remember: 4-6 sentences. One specific win. One next-week suggestion. No team/coa
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: [
-              { role: "system", content: SYSTEM_PROMPT },
-              { role: "user", content: prompt },
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
             ],
             temperature: 0.4,
           }),
