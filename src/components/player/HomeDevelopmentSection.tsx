@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { format, subDays, parseISO } from "date-fns";
 import { ParentTotalsPanel } from "./ParentTotalsPanel";
+import { ParentWeeklySummary } from "./ParentWeeklySummary";
 
 interface HomeDevelopmentSectionProps {
   playerId: string;
@@ -240,6 +241,9 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
               </p>
             </AppCard>
           </div>
+
+          {/* Parent Weekly Summary */}
+          <ParentWeeklySummary playerId={playerId} />
 
           {/* Parent Totals Panel */}
           <ParentTotalsPanel playerId={playerId} teamId={teamId} />

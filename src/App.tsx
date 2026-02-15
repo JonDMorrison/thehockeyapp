@@ -68,6 +68,7 @@ const SoloTryWorkout = lazy(() => import("./pages/SoloTryWorkout"));
 const SoloSettings = lazy(() => import("./pages/SoloSettings"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CompAdmin = lazy(() => import("./pages/admin/CompAdmin"));
+const ParentSummaries = lazy(() => import("./pages/ParentSummaries"));
 
 const queryClient = new QueryClient();
 
@@ -134,6 +135,7 @@ const AnimatedRoutes = () => {
             <Route path="/players/:id/history" element={<PlayerHistory />} />
             <Route path="/players/:id/badges" element={<PlayerBadges />} />
             <Route path="/players/:id/goals" element={<PlayerTeamGoals />} />
+            <Route path="/parents/:playerId/summaries" element={<ParentSummaries />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
             
             {/* Team management */}
