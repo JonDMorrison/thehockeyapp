@@ -291,6 +291,57 @@ export type Database = {
           },
         ]
       }
+      parent_weekly_summaries: {
+        Row: {
+          ai_summary: string | null
+          created_at: string
+          focus_areas: string[] | null
+          id: string
+          longest_streak: number
+          program_active: boolean
+          sent_at: string | null
+          summary_version: string
+          total_pushups: number
+          total_shots: number
+          total_workouts: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          created_at?: string
+          focus_areas?: string[] | null
+          id?: string
+          longest_streak?: number
+          program_active?: boolean
+          sent_at?: string | null
+          summary_version?: string
+          total_pushups?: number
+          total_shots?: number
+          total_workouts?: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          ai_summary?: string | null
+          created_at?: string
+          focus_areas?: string[] | null
+          id?: string
+          longest_streak?: number
+          program_active?: boolean
+          sent_at?: string | null
+          summary_version?: string
+          total_pushups?: number
+          total_shots?: number
+          total_workouts?: number
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       pending_comp_grants: {
         Row: {
           created_at: string
@@ -2538,9 +2589,19 @@ export type Database = {
       }
       get_my_access_debug: { Args: never; Returns: Json }
       get_my_access_status: { Args: never; Returns: Json }
+      get_parent_week_metrics: {
+        Args: { p_user_id: string; p_week_start: string }
+        Returns: Json
+      }
       get_parent_week_summary: {
         Args: { p_player_id: string; p_week_start: string }
         Returns: Json
+      }
+      get_parents_eligible_for_weekly_summary: {
+        Args: { p_week_start: string }
+        Returns: {
+          user_id: string
+        }[]
       }
       get_pending_comp_grants: {
         Args: never
