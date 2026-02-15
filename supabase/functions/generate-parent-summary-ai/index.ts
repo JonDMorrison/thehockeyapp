@@ -83,7 +83,7 @@ serve(async (req) => {
     const supabaseGate = createClient(supabaseUrl, supabaseServiceKey);
     const { data: hasFullAccess } = await supabaseGate.rpc("has_full_access", { p_user_id: userId });
     if (hasFullAccess !== true) {
-      console.log(JSON.stringify({ event: "summary_blocked", user_id: userId, reason: "no_access" }));
+      console.log(JSON.stringify({ request_id: requestId, event: "summary_blocked", user_id: userId, reason: "no_full_access" }));
       return jsonResp({ error: "upgrade_required", message: "On-demand summaries require Parent Pro or Team coverage." }, 403);
     }
 
