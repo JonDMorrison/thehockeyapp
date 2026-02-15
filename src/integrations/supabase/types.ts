@@ -247,6 +247,47 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_week_summaries: {
+        Row: {
+          created_at: string
+          id: string
+          player_id: string
+          stats: Json
+          summary_text: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player_id: string
+          stats?: Json
+          summary_text: string
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_id?: string
+          stats?: Json
+          summary_text?: string
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_week_summaries_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_comp_grants: {
         Row: {
           created_at: string
@@ -2494,6 +2535,10 @@ export type Database = {
       }
       get_my_access_debug: { Args: never; Returns: Json }
       get_my_access_status: { Args: never; Returns: Json }
+      get_parent_week_summary: {
+        Args: { p_player_id: string; p_week_start: string }
+        Returns: Json
+      }
       get_pending_comp_grants: {
         Args: never
         Returns: {
