@@ -233,18 +233,19 @@ serve(async (req) => {
             showMomentumBlock = true;
           }
 
-          // Condition 2: 2+ consecutive weeks with summaries
+          // Condition 2: consecutive week — a summary exists for exactly 7 days prior
           if (!showMomentumBlock) {
+            const priorWeekStart = new Date(summary.week_start + "T00:00:00Z");
+            priorWeekStart.setUTCDate(priorWeekStart.getUTCDate() - 7);
+            const priorWeekStr = priorWeekStart.toISOString().split("T")[0];
+
             const { count } = await supabase
               .from("parent_weekly_summaries")
               .select("id", { count: "exact", head: true })
               .eq("user_id", summary.user_id)
-              .not("ai_summary", "is", null)
-              .lt("week_start", summary.week_start)
-              .order("week_start", { ascending: false })
-              .limit(1);
+              .eq("week_start", priorWeekStr)
+              .not("ai_summary", "is", null);
 
-            // If there's at least 1 prior summary, that's 2+ consecutive weeks
             if ((count ?? 0) >= 1) {
               showMomentumBlock = true;
             }
