@@ -258,6 +258,11 @@ const CoachDashboard: React.FC = () => {
           isUpdating={updateTeamNameMutation.isPending}
         />
 
+        {/* Contextual microcopy */}
+        <p className="text-xs text-muted-foreground px-1">
+          This is your team's accountability system.
+        </p>
+
         {/* Onboarding Progress Checklist - only if not complete */}
         {!onboardingComplete && checklist.length > 0 && (
           <OnboardingProgress

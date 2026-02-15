@@ -192,6 +192,10 @@ export default function Settings() {
   return (
     <AppShell header={header}>
       <div className="px-5 py-6 space-y-6">
+        {/* Contextual microcopy */}
+        <p className="text-xs text-muted-foreground">
+          Team work and home development are tracked separately.
+        </p>
         {/* Account Section */}
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
