@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.generate-parent-summary-ai]
 verify_jwt = false
+
+[functions.generate-parent-weekly-summaries]
+verify_jwt = false
