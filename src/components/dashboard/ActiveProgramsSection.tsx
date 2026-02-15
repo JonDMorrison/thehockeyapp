@@ -61,6 +61,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
         .from("practice_cards")
         .select("id, date, title, mode")
         .eq("team_id", teamId)
+        .eq("program_source", "team")
         .eq("mode", "challenge")
         .order("date", { ascending: true });
 
@@ -85,6 +86,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
           practice_cards!inner(team_id, mode)
         `)
         .eq("practice_cards.team_id", teamId)
+        .eq("program_source", "team")
         .eq("status", "done");
 
       if (error) throw error;

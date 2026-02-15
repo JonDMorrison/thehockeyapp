@@ -66,6 +66,7 @@ const TeamPractice: React.FC = () => {
           practice_tasks (id)
         `)
         .eq("team_id", id)
+        .eq("program_source", "team")
         .order("date", { ascending: false })
         .limit(30);
 

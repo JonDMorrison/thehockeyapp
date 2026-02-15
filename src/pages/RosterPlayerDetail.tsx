@@ -106,6 +106,7 @@ const RosterPlayerDetail: React.FC = () => {
         .from("practice_cards")
         .select("id")
         .eq("team_id", teamId!)
+        .eq("program_source", "team")
         .order("date", { ascending: false })
         .limit(10);
 
