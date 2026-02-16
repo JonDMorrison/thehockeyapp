@@ -38,7 +38,7 @@ const Home: React.FC = () => {
               </h1>
 
               <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Clear weekly plans kids follow independently so parents stop nagging, coaches stay aligned, and real progress happens.
+                Kids follow the plan on their own. Parents step back from enforcer to supporter. Coaches stay aligned. Real progress happens.
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
@@ -75,17 +75,16 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
-              Everyone wants development. No one has a system.
+              "Did you do your training?"
             </h2>
             
             <div className="space-y-8 max-w-2xl mx-auto">
               <div className="space-y-5 text-lg text-text-secondary">
-                <p>Coaches assign off-ice work but have no way to know if it gets done. They follow up manually, or stop assigning altogether.</p>
-                <p>Players want to improve but don't have a clear routine. Without structure, good intentions fade.</p>
-                <p>Parents end up filling the gap: reminding, nagging, tracking. It creates friction at home and puts them in a role they never signed up for.</p>
+                <p>Coaches assign off-ice training. Parents try to make it happen. Kids resist. And every night, the same argument plays out in kitchens across the country.</p>
+                <p>The problem was never the kid's commitment. It was the lack of structure. No system. No clear plan. No way for the child to own it themselves.</p>
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-primary">
-                The Hockey App gives everyone a system so development actually happens.
+                The Hockey App gives every family that system.
               </p>
             </div>
           </div>
@@ -205,25 +204,22 @@ const Home: React.FC = () => {
 
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                Built by a Coach.{" "}
-                <span className="text-primary">Designed for Families.</span>
+                Kids don't need more pressure.{" "}
+                <span className="text-primary">They need a system they can own.</span>
               </h2>
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
                 <p>
-                  The Hockey App wasn't created by a tech company guessing at hockey culture.
+                  Development happens through daily habits, not occasional intensity. The players who improve fastest are the ones doing the quiet work: reps in the garage, in the basement, when nobody is watching.
                 </p>
                 <p>
-                  It was built by a former BCHL player, minor hockey coach, and father of three daughters in the game.
-                </p>
-                <p>
-                  After years of seeing the same pattern: parents nagging, players resisting, coaches frustrated. One thing became clear:
+                  Kids are more capable than we think, if we give them the structure to succeed. They don't need someone standing over them. They need a clear plan they can follow on their own.
                 </p>
                 <p className="text-lg font-semibold text-foreground">
-                  Families don't need more pressure. They need structure.
+                  Parents deserve to step back from being the enforcer and just be the supporter.
                 </p>
                 <p>
-                  The Hockey App creates that structure so kids take ownership, parents stay aligned, and coaches gain visibility without chasing players.
+                  The Hockey App removes the friction so training happens without the argument. No rankings. No pressure. Just quiet consistency, the kind that builds real athletes.
                 </p>
               </div>
 
@@ -235,7 +231,7 @@ const Home: React.FC = () => {
                   asChild
                 >
                   <Link to="/about">
-                    Learn More About Jon
+                    Read the Full Story
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
