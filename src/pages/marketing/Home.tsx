@@ -38,7 +38,7 @@ const Home: React.FC = () => {
               </h1>
 
               <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Clear weekly plans kids follow independently — so parents stop nagging, coaches stay aligned, and real progress happens.
+                Clear weekly plans kids follow independently so parents stop nagging, coaches stay aligned, and real progress happens.
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
@@ -80,12 +80,12 @@ const Home: React.FC = () => {
             
             <div className="space-y-8 max-w-2xl mx-auto">
               <div className="space-y-5 text-lg text-text-secondary">
-                <p>Coaches assign off-ice work but have no way to know if it gets done. They follow up manually — or stop assigning altogether.</p>
+                <p>Coaches assign off-ice work but have no way to know if it gets done. They follow up manually, or stop assigning altogether.</p>
                 <p>Players want to improve but don't have a clear routine. Without structure, good intentions fade.</p>
-                <p>Parents end up filling the gap — reminding, nagging, tracking. It creates friction at home and puts them in a role they never signed up for.</p>
+                <p>Parents end up filling the gap: reminding, nagging, tracking. It creates friction at home and puts them in a role they never signed up for.</p>
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-primary">
-                The Hockey App gives everyone a system — so development actually happens.
+                The Hockey App gives everyone a system so development actually happens.
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ const Home: React.FC = () => {
               {
                 icon: ClipboardCheck,
                 title: "Structure without the stress",
-                description: "Weekly training plans your child can follow on their own. No nagging, no spreadsheets — just a clear routine that builds real habits.",
+                description: "Weekly training plans your child can follow on their own. No nagging, no spreadsheets. Just a clear routine that builds real habits.",
               },
               {
                 icon: Shield,
@@ -119,7 +119,7 @@ const Home: React.FC = () => {
               {
                 icon: Trophy,
                 title: "Progress without pressure",
-                description: "Effort-based milestones and streaks reward consistency — not talent. Kids build confidence by showing up, not by competing against teammates.",
+                description: "Effort-based milestones and streaks reward consistency, not talent. Kids build confidence by showing up, not by competing against teammates.",
               },
             ].map((item, i) => (
               <div key={i} className="text-center">
@@ -152,7 +152,7 @@ const Home: React.FC = () => {
               {
                 icon: Wifi,
                 title: "Works offline",
-                description: "Garages, basements, rinks with no signal — tasks sync when you're back online.",
+                description: "Garages, basements, rinks with no signal. Tasks sync when you're back online.",
               },
               {
                 icon: Calendar,
@@ -167,7 +167,7 @@ const Home: React.FC = () => {
               {
                 icon: Trophy,
                 title: "Milestone recognition",
-                description: "Effort-based rewards for consistency. No leaderboards or comparisons — just personal progress.",
+                description: "Effort-based rewards for consistency. No leaderboards or comparisons. Just personal progress.",
               },
             ].map((feature, i) => (
               <div
@@ -217,13 +217,13 @@ const Home: React.FC = () => {
                   It was built by a former BCHL player, minor hockey coach, and father of three daughters in the game.
                 </p>
                 <p>
-                  After years of seeing the same pattern — parents nagging, players resisting, coaches frustrated — one thing became clear:
+                  After years of seeing the same pattern: parents nagging, players resisting, coaches frustrated. One thing became clear:
                 </p>
                 <p className="text-lg font-semibold text-foreground">
                   Families don't need more pressure. They need structure.
                 </p>
                 <p>
-                  The Hockey App creates that structure — so kids take ownership, parents stay aligned, and coaches gain visibility without chasing players.
+                  The Hockey App creates that structure so kids take ownership, parents stay aligned, and coaches gain visibility without chasing players.
                 </p>
               </div>
 
