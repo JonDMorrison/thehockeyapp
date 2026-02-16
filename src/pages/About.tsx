@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
-import founderImg from "@/assets/placeholder-founder-coaching.jpg";
+import founderImg from "@/assets/founder-about-headshot.png";
 
 const credentials = {
   left: [
