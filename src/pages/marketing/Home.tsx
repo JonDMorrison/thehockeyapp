@@ -210,7 +210,7 @@ const Home: React.FC = () => {
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
                 <p>
-                  I'm Jon. I coach minor hockey and I have two kids who play. I lived the nightly argument: "Did you do your training?" I watched my players show up to practice without putting in any work at home. And I realized the problem wasn't motivation. It was that nobody had a system.
+                  I'm Jon. I coach minor hockey and I have three kids who play. I lived the nightly argument: "Did you do your training?" I watched my players show up to practice without putting in any work at home. And I realized the problem wasn't motivation. It was that nobody had a system.
                 </p>
                 <p>
                   So I built one. The Hockey App gives kids a clear plan they can follow on their own, without a parent standing over them. It gives coaches visibility into who's putting in the work. And it gives families something they didn't have before: structure without the stress.
