@@ -1,160 +1,77 @@
 
+# Homepage Clarity Overhaul
 
-# Foundation Reset: Production Architecture Discipline
+## The Problem
 
-## Goal
-Establish a clean, production-grade foundation layer without modifying any existing UI or features. This creates the structural scaffolding that all future development will build on.
+The current homepage has **13 sections** before the footer. It reads like a feature catalog rather than a clear pitch. A coach visiting for the first time has to scroll through Team Goals, Game Day Mode, Team Cheers, Weekly Summaries, and more before understanding the core value. The essential "what is this and how does it work" gets lost in feature noise.
 
----
+## Strategy
 
-## Scope of Changes
+Reduce the homepage to **7 focused sections** that answer three questions fast:
+1. What is this? (Hero)
+2. Why does it exist? (Problem)
+3. How does it work? (3-step flow)
+4. What does it look like? (Visual proof)
+5. Who built it? (Credibility)
+6. What does it cost? (Pricing anchor)
+7. What do I do next? (CTA)
 
-### 1. Create `/src/core/` directory with foundational modules
+## Sections to Keep (with refinements)
 
-**`src/core/types.ts`** -- Shared domain types derived from the existing database schema (in `types.ts`). These are clean, readable interfaces that the rest of the app will import instead of using raw Supabase Row types or `any`.
+1. **Hero** -- Keep as-is. Headline and sub are strong.
 
-Types to define:
-- `Player` (id, firstName, lastInitial, birthYear, ownerUserId, etc.)
-- `Team` (id, name, seasonLabel, paletteId, logoUrl, photoUrl, etc.)
-- `PracticeCard` (id, teamId, date, title, tier, mode, published, locked)
-- `PracticeTask` (id, cardId, label, taskType, sortOrder, targetType, targetValue, shotsExpected, isRequired)
-- `SessionCompletion` (id, playerId, cardId, status, completedAt, durationMinutes)
-- `PersonalPracticeCard` (same shape for solo mode)
-- `TrainingProgram` (id, teamId, name, status, tier, startDate, endDate, focusAreas)
-- `TeamGoal` (id, teamId, name, goalType, targetValue, currentValue, status)
-- `Subscription` (placeholder -- userId, plan, status, expiresAt)
-- `Entitlement` (placeholder -- feature flags tied to subscription tier)
-- `UserRole` type union (re-export from existing hook for single source of truth)
+2. **The Problem** -- Keep as-is. Resonates with parents and coaches.
 
-**`src/core/logger.ts`** -- Structured logger utility that replaces all `console.log` / `console.error` calls.
+3. **How It Works (3 roles)** -- Keep but tighten the descriptions. These are slightly long. Shorten each to 1-2 sentences max so a coach scanning gets it in seconds.
 
-- Exposes `logger.info()`, `logger.warn()`, `logger.error()`, `logger.debug()`
-- Each accepts a message string and optional context object
-- In production (`import.meta.env.PROD`), all output is suppressed
-- In development, outputs with level prefix and timestamp
-- Approximately 40 lines of code
+4. **Features Grid** -- Keep but reposition it right after "How It Works" as the natural follow-up ("what else does it do?"). Reduce from 6 items to 4 most important: Works Offline, Knows Your Schedule, Parent-Controlled, Milestone Recognition. Cut "Smart workout creation" and "Solo mode" (secondary features that add noise for a first-time visitor).
 
-**`src/core/permissions.ts`** -- Centralizes permission check helpers used across the app.
+5. **Founder Section** -- Keep as-is.
 
-- `canEditTeam(role)`, `canManagePlayers(role)`, `canPublishCard(role)`
-- Maps to existing RLS helper function names (`is_team_adult`, `is_team_head_coach`, etc.) so client-side guards stay in sync with database policies
-- Pure functions, no Supabase calls -- these are for UI gating only
+6. **Pricing Anchor** -- Keep as-is.
 
-**`src/core/entitlements.ts`** -- Feature gating scaffold (no billing integration yet).
+7. **Final CTA** -- Keep as-is.
 
-- Defines `Plan` enum: `free | starter | pro`
-- Defines `Feature` enum: `ai_assist | advanced_analytics | unlimited_programs | ...`
-- `hasEntitlement(plan, feature): boolean` lookup function
-- Currently returns `true` for everything (no paywall active), but the structure is ready
+## Sections to Remove
 
-**`src/core/constants.ts`** -- App-wide magic values pulled into one file.
+These are real features but belong on the Features page, not the homepage:
 
-- Tier multipliers (currently in `tierScaling.ts`)
-- Task type labels and icons
-- Max values (e.g., max players per team, max tasks per card)
-- Storage keys (currently scattered as string literals in `ActiveViewContext`, `useTeamTheme`, etc.)
-- Default palette ID, default tier, etc.
+- **Team Goals** (thermometer visual) -- Too detailed for a first impression
+- **Consistency and Recognition** (streaks/badges phone mockup) -- Secondary feature
+- **Game Day Mode** (navy card visual) -- Niche feature, not a homepage seller
+- **Team Encouragement / Cheers** -- Nice-to-have, not a homepage differentiator
+- **Weekly Summaries** (AI summary card) -- Detailed feature, better on /features
+- **Visual Section** ("Built by hockey parents" with basement photo) -- Redundant with the Founder section that follows it
 
-**`src/core/index.ts`** -- Barrel export for clean imports: `import { logger, Player, hasEntitlement } from "@/core"`
+## Final Page Order
 
----
-
-### 2. Structured Logger Adoption
-
-Replace all `console.log` and `console.error` calls across the codebase (~95 occurrences in ~15 files) with the structured logger:
-
-- `console.log(...)` becomes `logger.debug(...)` or `logger.info(...)`
-- `console.error(...)` becomes `logger.error(...)`
-- `.catch(console.error)` becomes `.catch((err) => logger.error("context", { err }))`
-
-Files affected (partial list):
-- `src/pages/JoinTeamPlayer.tsx`
-- `src/components/planning/ProgramBuilderWizard.tsx`
-- `src/pages/SoloWeekPlanner.tsx`
-- `src/components/player/InviteFriendModal.tsx`
-- `src/components/builder/AIAssistSheet.tsx`
-- `src/components/team/CoachProfileSection.tsx`
-- `src/components/team/ScheduleSyncSection.tsx`
-- `src/lib/syncEngine.ts`
-- `src/pages/NotFound.tsx`
-- And ~6 more
-
----
-
-### 3. Remove `any` Usage
-
-Approximately 136 occurrences across 16 files. The approach:
-
-- Supabase query results: use the auto-generated Row types from `types.ts` (e.g., `Database["public"]["Tables"]["players"]["Row"]`) or the new domain types from `core/types.ts`
-- Event handlers like `onValueChange={(v: any) => ...}` become properly typed (e.g., `(v: string) => ...`)
-- Catch blocks: `catch (error: any)` becomes `catch (error: unknown)` with narrowing via `error instanceof Error`
-- Map callbacks on Supabase data: type the parameter using the Row type or a local interface
-
-Key files:
-- `src/hooks/useUserRoles.ts` (2 uses)
-- `src/pages/PracticeCardEditor.tsx` (5 uses)
-- `src/pages/WeekPlanEditor.tsx` (6 uses)
-- `src/components/dashboard/CoachCheersSection.tsx`
-- `src/components/team/AddChildSection.tsx`, `JoinAsPlayerSection.tsx`, `InviteParentsModal.tsx`
-- `src/pages/JoinTeamSearch.tsx`, `SoloTryWorkout.tsx`
-
----
-
-### 4. Enable Strict TypeScript
-
-Update `tsconfig.app.json`:
-- `"strict": true`
-- `"noImplicitAny": true`
-- Keep `"noUnusedLocals": false` and `"noUnusedParameters": false` to avoid noise
-
-Update `tsconfig.json` (root):
-- Remove `"noImplicitAny": false`
-- Add `"strict": true`
-
-This will surface additional type errors that must be fixed in tandem with the `any` removal in step 3.
-
----
-
-### 5. Centralized Error Boundary
-
-Create `src/core/ErrorBoundary.tsx`:
-- React class component implementing `componentDidCatch`
-- Calls `logger.error("Uncaught UI error", { error, errorInfo })`
-- Renders a calm fallback: app logo, "Something went wrong" message, and a "Reload" button
-- No stack traces shown to users
-
-Wrap the app in `src/App.tsx`:
-- Add `<ErrorBoundary>` around the router/providers (outermost wrapper)
-
----
-
-### 6. Barrel Export for `/core`
-
-After all modules are created, add `src/core/index.ts` exporting everything so imports are clean:
-
-```
-import { logger, Player, PracticeCard, hasEntitlement, TIERS } from "@/core";
+```text
+Nav
+-----------------------------
+1. Hero (headline + phone mockup + CTA)
+2. The Problem ("You shouldn't have to be the enforcer")
+3. How It Works (3 roles, tighter copy)
+4. Features Grid (4 items, compact)
+5. Founder Section (credibility)
+6. Pricing Anchor ("Less than one private lesson")
+7. Final CTA
+-----------------------------
+Footer
 ```
 
----
+## Technical Details
 
-## What Will NOT Change
-- No UI changes (layouts, colors, components stay identical)
-- No new features added
-- No database migrations
-- No changes to `src/integrations/supabase/client.ts` or `types.ts` (auto-generated)
-- No changes to `.env` or `supabase/config.toml`
-- No changes to edge functions
+### File changed
+- `src/pages/marketing/Home.tsx`
 
-## Execution Order
-1. Create `src/core/` modules (types, logger, permissions, entitlements, constants, ErrorBoundary, index)
-2. Enable strict TypeScript in tsconfig files
-3. Replace all `any` usages across the codebase
-4. Replace all console.log/error with logger calls
-5. Wrap App with ErrorBoundary
+### What changes in code
+- Remove 6 section blocks (Team Goals, Consistency, Game Day, Cheers, Weekly Summaries, Visual/basement-photo section)
+- Remove unused imports (Flame, Heart, MessageCircle, Gamepad2, BarChart3, DollarSign icons that are only used by removed sections; FeatureRewards, MarketingMilestonePreview, MarketingAIPreview components; hockeyPlayerBasement image import)
+- Shorten the 3 "How It Works" role descriptions to 1-2 sentences each
+- Trim the Features Grid from 6 cards to 4 (remove "Smart workout creation" and "Solo mode")
+- Reorder remaining sections: Hero, Problem, How It Works, Features Grid, Founder, Pricing, Final CTA
 
-## Estimated Scope
-- ~8 new files created (all in `src/core/`)
-- ~20 existing files edited (type fixes + logger replacement)
-- 0 features added, 0 UI changes
-
+### No other files affected
+- No routing changes
+- No component deletions (removed sections are inline JSX, not separate components)
+- Features page (`/features`) already covers the detailed feature content being removed from homepage
