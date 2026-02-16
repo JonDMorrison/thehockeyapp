@@ -15,7 +15,7 @@ import {
   Calendar,
   DollarSign,
 } from "lucide-react";
-import founderHomeImg from "@/assets/placeholder-founder-home.jpg";
+import founderHomeImg from "@/assets/founder-jon-coaching.png";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
