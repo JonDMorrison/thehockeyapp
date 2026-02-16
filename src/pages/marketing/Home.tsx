@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Trophy,
   Calendar,
+  ClipboardCheck,
   DollarSign,
 } from "lucide-react";
 import founderHomeImg from "@/assets/founder-jon-coaching.png";
@@ -96,56 +97,40 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              How it works
+              What The Hockey App does
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Three roles. One clear system. Everyone knows what's expected.
+              One system that keeps families, players, and coaches aligned around consistent development.
             </p>
           </div>
 
-          <div className="relative">
-            {/* Connecting line - visible on desktop */}
-            <div className="hidden md:block absolute top-10 left-[16.67%] right-[16.67%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-            
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              {[
-                {
-                  step: "01",
-                  role: "Parent",
-                  title: "Stay in control",
-                  description: "You own the account, see everything assigned and completed, and decide what the coach can see.",
-                },
-                {
-                  step: "02",
-                  role: "Player",
-                  title: "Own the routine",
-                  description: "Open the app, see today's tasks, check them off. Minutes a day, no reminders needed.",
-                },
-                {
-                  step: "03",
-                  role: "Coach",
-                  title: "Assign and track",
-                  description: "Create simple weekly task cards in minutes. See who's participating without rankings or pressure.",
-                },
-              ].map((item, i) => (
-                <div key={i} className="relative text-center md:text-left">
-                  <div className="mb-6 relative">
-                    <span className="text-6xl lg:text-7xl font-bold text-muted-foreground/20">
-                      {item.step}
-                    </span>
-                    {/* Dot connector on the line */}
-                    <div className="hidden md:block absolute top-1/2 left-1/2 md:left-8 -translate-y-1/2 w-2 h-2 rounded-full bg-primary/40" />
-                  </div>
-                  
-                  <span className="text-xs font-semibold text-primary uppercase tracking-widest">
-                    {item.role}
-                  </span>
-                  
-                  <h3 className="text-2xl font-bold mt-2 mb-3">{item.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            {[
+              {
+                icon: ClipboardCheck,
+                title: "Structure without the stress",
+                description: "Weekly training plans your child can follow on their own. No nagging, no spreadsheets — just a clear routine that builds real habits.",
+              },
+              {
+                icon: Shield,
+                title: "Visibility without overreach",
+                description: "Parents see everything. Coaches see participation. Players own their progress. Everyone stays informed without anyone overstepping.",
+              },
+              {
+                icon: Trophy,
+                title: "Progress without pressure",
+                description: "Effort-based milestones and streaks reward consistency — not talent. Kids build confidence by showing up, not by competing against teammates.",
+              },
+            ].map((item, i) => (
+              <div key={i} className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+                  <item.icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
                 </div>
-              ))}
-            </div>
+                
+                <h3 className="text-xl font-bold mb-3 text-foreground">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed max-w-xs mx-auto">{item.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
