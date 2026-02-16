@@ -204,22 +204,22 @@ const Home: React.FC = () => {
 
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                Kids don't need more pressure.{" "}
-                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">They need a system they can own.</span>
+                Built by a hockey dad{" "}
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">who coaches, too.</span>
               </h2>
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
                 <p>
-                  Development happens through daily habits, not occasional intensity. The players who improve fastest are the ones doing the quiet work: reps in the garage, in the basement, when nobody is watching.
+                  I'm Jon. I coach minor hockey and I have two kids who play. I lived the nightly argument: "Did you do your training?" I watched my players show up to practice without putting in any work at home. And I realized the problem wasn't motivation. It was that nobody had a system.
                 </p>
                 <p>
-                  Kids are more capable than we think, if we give them the structure to succeed. They don't need someone standing over them. They need a clear plan they can follow on their own.
+                  So I built one. The Hockey App gives kids a clear plan they can follow on their own, without a parent standing over them. It gives coaches visibility into who's putting in the work. And it gives families something they didn't have before: structure without the stress.
                 </p>
                 <p className="text-lg font-semibold text-foreground">
-                  Parents deserve to step back from being the enforcer and just be the supporter.
+                  I built this because I needed it for my own family, and for my own team.
                 </p>
                 <p>
-                  The Hockey App removes the friction so training happens without the argument. No rankings. No pressure. Just quiet consistency, the kind that builds real athletes.
+                  No rankings. No pressure. Just quiet consistency, the kind that builds real athletes.
                 </p>
               </div>
 
