@@ -99,7 +99,7 @@ const Home: React.FC = () => {
               What The Hockey App does
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              One system that keeps families, players, and coaches aligned around consistent development.
+              Coaches know that what happens off the ice matters just as much as what happens on it. But you're already stretched thin. You need a tool that makes home training easy, fun, and automatic.
             </p>
           </div>
 
@@ -108,12 +108,12 @@ const Home: React.FC = () => {
               {
                 icon: ClipboardCheck,
                 title: "Structure without the stress",
-                description: "Weekly training plans your child can follow on their own. No nagging, no spreadsheets. Just a clear routine that builds real habits.",
+                description: "Set it up once and your players have a clear weekly plan they can follow on their own. No chasing families. No spreadsheets. Just a routine that builds real habits.",
               },
               {
                 icon: Shield,
                 title: "Visibility without overreach",
-                description: "Parents see everything. Coaches see participation. Players own their progress. Everyone stays informed without anyone overstepping.",
+                description: "Coaches see who's putting in the work without micromanaging. Parents stay informed. Players own their progress. Everyone aligned, nobody overstepping.",
               },
               {
                 icon: Trophy,
@@ -210,10 +210,13 @@ const Home: React.FC = () => {
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
                 <p>
-                  I'm Jon. I coach minor hockey and I have three kids who play. I lived the nightly argument: "Did you do your training?" I watched my players show up to practice without putting in any work at home. And I realized the problem wasn't motivation. It was that nobody had a system.
+                  I'm Jon. I coach minor hockey and I have three kids who play. I've worked with players who have gone on to succeed at every level of the game, and I've seen firsthand what separates those who make it: consistent work at home, not just talent on the ice.
                 </p>
                 <p>
-                  So I built one. The Hockey App gives kids a clear plan they can follow on their own, without a parent standing over them. It gives coaches visibility into who's putting in the work. And it gives families something they didn't have before: structure without the stress.
+                  But I also lived the reality of being a busy coach and parent. The nightly argument: "Did you do your training?" Players showing up without putting in any work between practices. I realized the problem wasn't motivation. It was that nobody had a system that made it easy and fun to stay on track.
+                </p>
+                <p>
+                  So I built one. The Hockey App gives kids a clear plan they can follow on their own. It gives coaches visibility into who's putting in the work, without adding to their already full plate. And it gives families structure without the stress.
                 </p>
                 <p className="text-lg font-semibold text-foreground">
                   I built this because I needed it for my own family, and for my own team.
