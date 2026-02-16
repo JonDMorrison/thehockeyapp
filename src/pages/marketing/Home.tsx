@@ -32,7 +32,7 @@ const Home: React.FC = () => {
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
                 The off-ice accountability system{" "}
-                <span className="text-primary">
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
                   for hockey families.
                 </span>
               </h1>
@@ -83,7 +83,7 @@ const Home: React.FC = () => {
                 <p>Coaches assign off-ice training. Parents try to make it happen. Kids resist. And every night, the same argument plays out in kitchens across the country.</p>
                 <p>The problem was never the kid's commitment. It was the lack of structure. No system. No clear plan. No way for the child to own it themselves.</p>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-primary">
+              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
                 The Hockey App gives every family that system.
               </p>
             </div>
@@ -205,7 +205,7 @@ const Home: React.FC = () => {
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Kids don't need more pressure.{" "}
-                <span className="text-primary">They need a system they can own.</span>
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">They need a system they can own.</span>
               </h2>
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
