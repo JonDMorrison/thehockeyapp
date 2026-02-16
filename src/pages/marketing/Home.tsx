@@ -74,15 +74,17 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
-              You shouldn't have to be the enforcer.
+              Everyone wants development. No one has a system.
             </h2>
             
-            <div className="space-y-5 text-lg text-text-secondary max-w-2xl mx-auto">
-              <p>Your child's coach assigns off-ice work. Your child knows they should do it.</p>
-              <p>But every night, you're the one reminding, pushing, arguing.</p>
-              <p>It creates tension at home — and it doesn't have to.</p>
-              <p className="text-2xl sm:text-3xl font-bold text-primary pt-4">
-                We built the structure so you don't have to.
+            <div className="space-y-8 max-w-2xl mx-auto">
+              <div className="space-y-5 text-lg text-text-secondary">
+                <p>Coaches assign off-ice work but have no way to know if it gets done. They follow up manually — or stop assigning altogether.</p>
+                <p>Players want to improve but don't have a clear routine. Without structure, good intentions fade.</p>
+                <p>Parents end up filling the gap — reminding, nagging, tracking. It creates friction at home and puts them in a role they never signed up for.</p>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-primary">
+                The Hockey App gives everyone a system — so development actually happens.
               </p>
             </div>
           </div>
