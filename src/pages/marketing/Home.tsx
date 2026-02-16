@@ -218,11 +218,11 @@ const Home: React.FC = () => {
                 <p>
                   So I built one. The Hockey App gives kids a clear plan they can follow on their own. It gives coaches visibility into who's putting in the work, without adding to their already full plate. And it gives families structure without the stress.
                 </p>
+                <p>
+                  As parents, the last thing we want is to pile on more pressure. But when training feels fun, rewarding, and even social, kids actually want to do it. That's when real growth happens, not because someone is forcing it, but because they're excited to show up.
+                </p>
                 <p className="text-lg font-semibold text-foreground">
                   I built this because I needed it for my own family, and for my own team.
-                </p>
-                <p>
-                  No rankings. No pressure. Just quiet consistency, the kind that builds real athletes.
                 </p>
               </div>
 
