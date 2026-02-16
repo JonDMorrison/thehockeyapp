@@ -1,77 +1,40 @@
 
-# Homepage Clarity Overhaul
 
-## The Problem
+## Weave the Story Into Marketing Content
 
-The current homepage has **13 sections** before the footer. It reads like a feature catalog rather than a clear pitch. A coach visiting for the first time has to scroll through Team Goals, Game Day Mode, Team Cheers, Weekly Summaries, and more before understanding the core value. The essential "what is this and how does it work" gets lost in feature noise.
+The About page has powerful, relatable copy about the tension hockey families feel. The plan is to bring that emotional resonance into the **Home page** without referencing Jon Morrison by name, focusing on the universal experience parents and coaches share.
 
-## Strategy
+### Changes
 
-Reduce the homepage to **7 focused sections** that answer three questions fast:
-1. What is this? (Hero)
-2. Why does it exist? (Problem)
-3. How does it work? (3-step flow)
-4. What does it look like? (Visual proof)
-5. Who built it? (Credibility)
-6. What does it cost? (Pricing anchor)
-7. What do I do next? (CTA)
+**1. Rewrite "The Problem" section (Home page)**
 
-## Sections to Keep (with refinements)
+Replace the current three-paragraph problem statement with language drawn directly from the story. Specifically, use the "kitchen argument" narrative:
 
-1. **Hero** -- Keep as-is. Headline and sub are strong.
+> Coaches assign off-ice training. Parents try to make it happen. Kids resist. And every night, the same argument plays out in kitchens across the country: "Did you do your training?"
+>
+> The problem was never the kid's commitment. It was the lack of structure. No system. No clear plan. No way for the child to own it themselves.
 
-2. **The Problem** -- Keep as-is. Resonates with parents and coaches.
+This is far more visceral and relatable than the current version. It names the exact moment parents recognize.
 
-3. **How It Works (3 roles)** -- Keep but tighten the descriptions. These are slightly long. Shorten each to 1-2 sentences max so a coach scanning gets it in seconds.
+**2. Rewrite "Built by a Coach" section (Home page)**
 
-4. **Features Grid** -- Keep but reposition it right after "How It Works" as the natural follow-up ("what else does it do?"). Reduce from 6 items to 4 most important: Works Offline, Knows Your Schedule, Parent-Controlled, Milestone Recognition. Cut "Smart workout creation" and "Solo mode" (secondary features that add noise for a first-time visitor).
+Remove the founder-specific framing. Instead, lead with the philosophy and the insight that kids are more capable than we think:
 
-5. **Founder Section** -- Keep as-is.
+- New headline: something like **"Kids don't need more pressure. They need a system they can own."**
+- Body copy pulls from the philosophy: "Development happens through daily habits, not occasional intensity. Kids are more capable than we think, if we give them the structure to succeed. Parents deserve to step back from being the enforcer and just be the supporter."
+- Keep the coaching photo but change the CTA from "Learn More About Jon" to "Read the Full Story" linking to /about
 
-6. **Pricing Anchor** -- Keep as-is.
+**3. Update the hero subheadline (Home page)**
 
-7. **Final CTA** -- Keep as-is.
+Tighten it to echo the empowerment angle: kids follow the plan independently, parents step back from enforcer to supporter.
 
-## Sections to Remove
+### What stays the same
+- The "What The Hockey App Does" benefits section (already strong)
+- The features grid, pricing, and final CTA
+- The About page itself (the full story lives there)
+- The Features page
 
-These are real features but belong on the Features page, not the homepage:
-
-- **Team Goals** (thermometer visual) -- Too detailed for a first impression
-- **Consistency and Recognition** (streaks/badges phone mockup) -- Secondary feature
-- **Game Day Mode** (navy card visual) -- Niche feature, not a homepage seller
-- **Team Encouragement / Cheers** -- Nice-to-have, not a homepage differentiator
-- **Weekly Summaries** (AI summary card) -- Detailed feature, better on /features
-- **Visual Section** ("Built by hockey parents" with basement photo) -- Redundant with the Founder section that follows it
-
-## Final Page Order
-
-```text
-Nav
------------------------------
-1. Hero (headline + phone mockup + CTA)
-2. The Problem ("You shouldn't have to be the enforcer")
-3. How It Works (3 roles, tighter copy)
-4. Features Grid (4 items, compact)
-5. Founder Section (credibility)
-6. Pricing Anchor ("Less than one private lesson")
-7. Final CTA
------------------------------
-Footer
-```
-
-## Technical Details
-
-### File changed
-- `src/pages/marketing/Home.tsx`
-
-### What changes in code
-- Remove 6 section blocks (Team Goals, Consistency, Game Day, Cheers, Weekly Summaries, Visual/basement-photo section)
-- Remove unused imports (Flame, Heart, MessageCircle, Gamepad2, BarChart3, DollarSign icons that are only used by removed sections; FeatureRewards, MarketingMilestonePreview, MarketingAIPreview components; hockeyPlayerBasement image import)
-- Shorten the 3 "How It Works" role descriptions to 1-2 sentences each
-- Trim the Features Grid from 6 cards to 4 (remove "Smart workout creation" and "Solo mode")
-- Reorder remaining sections: Hero, Problem, How It Works, Features Grid, Founder, Pricing, Final CTA
-
-### No other files affected
-- No routing changes
-- No component deletions (removed sections are inline JSX, not separate components)
-- Features page (`/features`) already covers the detailed feature content being removed from homepage
+### Technical details
+- Only `src/pages/marketing/Home.tsx` is modified
+- No new components, assets, or dependencies
+- Approximately 3 sections updated with new copy and minor heading changes
