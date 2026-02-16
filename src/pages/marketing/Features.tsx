@@ -33,7 +33,7 @@ const Features: React.FC = () => {
         "Coach assigns structured off-ice tasks",
         "Simple enough for any age to follow",
         "Your child knows exactly what to do each day",
-        "Works offline — garage, basement, anywhere",
+        "Works offline: garage, basement, anywhere",
       ],
       Preview: FeatureTaskCard,
       glowColor: "primary" as const,

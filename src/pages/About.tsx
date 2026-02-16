@@ -71,7 +71,7 @@ const About: React.FC = () => {
               I grew up in the rink. I played junior hockey in the BCHL, lived in billets, trained year-round, and learned what it meant to be accountable to a team before I was old enough to vote.
             </p>
             <p>
-              Hockey taught me structure. It taught me that talent matters less than consistency. And it taught me that the players who develop the fastest are the ones who do the quiet work — the unglamorous reps at home, in the garage, in the basement — when nobody is watching.
+              Hockey taught me structure. It taught me that talent matters less than consistency. And it taught me that the players who develop the fastest are the ones who do the quiet work: the unglamorous reps at home, in the garage, in the basement, when nobody is watching.
             </p>
 
             <h2 className="text-2xl font-bold text-foreground pt-4">The Pattern I Kept Seeing</h2>
@@ -82,7 +82,7 @@ const About: React.FC = () => {
               And I kept seeing the same pattern:
             </p>
             <p>
-              Coaches would assign off-ice training. Parents would try to make it happen. Kids would resist. And every night, the same argument would play out in kitchens across the country — "Did you do your training?"
+              Coaches would assign off-ice training. Parents would try to make it happen. Kids would resist. And every night, the same argument would play out in kitchens across the country: "Did you do your training?"
             </p>
             <p>
               The problem was never the kid's commitment. It was the lack of structure. There was no system. No clear plan. No way for the child to own it themselves.
@@ -90,7 +90,7 @@ const About: React.FC = () => {
 
             <h2 className="text-2xl font-bold text-foreground pt-4">Three Daughters in the Game</h2>
             <p>
-              I'm also a hockey dad. I have three daughters who play. I've lived the exact tension I'm describing — trying to support without pushing, trying to encourage without nagging, trying to build discipline without creating resentment.
+              I'm also a hockey dad. I have three daughters who play. I've lived the exact tension I'm describing: trying to support without pushing, trying to encourage without nagging, trying to build discipline without creating resentment.
             </p>
             <p>
               That's the hardest part of being a hockey parent: you care deeply, but if you push too hard, your child pulls away.
@@ -98,7 +98,7 @@ const About: React.FC = () => {
 
             <h2 className="text-2xl font-bold text-foreground pt-4">Why I Built This</h2>
             <p>
-              The Hockey App exists because I needed it. As a coach, I needed a way to give families clear weekly plans without creating more work for parents. As a dad, I needed a system my daughters could follow on their own — so training happened without me standing over them.
+              The Hockey App exists because I needed it. As a coach, I needed a way to give families clear weekly plans without creating more work for parents. As a dad, I needed a system my daughters could follow on their own so training happened without me standing over them.
             </p>
             <p>
               This isn't a tech company's idea of what hockey needs. It's a coach and father's answer to a problem I've lived with for over a decade.
@@ -109,12 +109,12 @@ const About: React.FC = () => {
               The Hockey App gives coaches a simple way to assign structured off-ice training. Kids open the app, see their tasks for the day, and check them off. Parents get visibility without having to manage anything. Everyone stays aligned.
             </p>
             <p>
-              No rankings. No pressure. No public leaderboards. Just quiet consistency — the kind that builds real athletes.
+              No rankings. No pressure. No public leaderboards. Just quiet consistency, the kind that builds real athletes.
             </p>
 
             <h2 className="text-2xl font-bold text-foreground pt-4">The Philosophy</h2>
             <p>
-              I believe development happens through daily habits, not occasional intensity. I believe kids are more capable than we think — if we give them the structure to succeed. And I believe parents deserve to step back from being the enforcer and just be the supporter.
+              I believe development happens through daily habits, not occasional intensity. I believe kids are more capable than we think, if we give them the structure to succeed. And I believe parents deserve to step back from being the enforcer and just be the supporter.
             </p>
             <p>
               The Hockey App is designed around these beliefs. It's calm. It's structured. And it works because it removes friction instead of adding it.
@@ -152,7 +152,7 @@ const About: React.FC = () => {
             <span className="text-primary">Structure Over Chaos.</span>
           </h2>
           <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            The Hockey App was built from real experience — as a player, as a coach, and as a father. It exists to align families, coaches, and players around one goal: consistent, disciplined development.
+            The Hockey App was built from real experience: as a player, as a coach, and as a father. It exists to align families, coaches, and players around one goal: consistent, disciplined development.
           </p>
           <Button
             size="lg"
