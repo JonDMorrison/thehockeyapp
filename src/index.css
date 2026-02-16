@@ -55,6 +55,10 @@
     /* Brand accent — navy blue, used sparingly */
     --brand-accent: 213 100% 25%;       /* #003E7E */
     
+    /* Headline gradient — red to blue */
+    --gradient-start: 0 85% 50%;        /* #E61A1A — bold red */
+    --gradient-end: 213 100% 25%;       /* #003E7E — navy blue */
+    
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 12%;
     
