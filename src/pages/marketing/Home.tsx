@@ -244,44 +244,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Anchor Section */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle text-center">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-6">
-              <DollarSign className="w-4 h-4" />
-              Simple Pricing
-            </div>
-            
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-foreground">
-              Less than one private lesson.
-            </h2>
-            <p className="text-lg text-text-secondary mb-8 max-w-xl mx-auto">
-              For $15/month, your child gets:
-            </p>
-            
-            <div className="grid sm:grid-cols-2 gap-4 max-w-md mx-auto mb-8">
-              {[
-                "Structured weekly training",
-                "Built-in accountability",
-                "Progress tracking",
-                "Full parent visibility",
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 text-left">
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                  <span className="text-sm font-medium">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-sm text-text-muted">
-              Get started free. Teams can cover families. Otherwise parents can upgrade after a 7-day trial.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
       <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
