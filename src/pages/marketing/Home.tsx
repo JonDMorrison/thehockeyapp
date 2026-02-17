@@ -189,11 +189,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Founder Section */}
-      <section className="py-20 lg:py-28 bg-background">
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative flex justify-center">
-              <div className="rounded-2xl overflow-hidden shadow-subtle max-w-md w-full bg-gradient-to-b from-[hsl(0,0%,92%)] to-[hsl(0,0%,96%)]">
+              <div className="max-w-md w-full">
                 <img
                   src={founderHomeImg}
                   alt="Jon Morrison with his three daughters in hockey gear"
