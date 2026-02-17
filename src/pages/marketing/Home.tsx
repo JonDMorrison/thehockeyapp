@@ -17,7 +17,6 @@ import {
   DollarSign,
 } from "lucide-react";
 import founderHomeImg from "@/assets/founder-jon-coaching.png";
-import playerTodayImg from "@/assets/demo-player-today.png";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
@@ -274,13 +273,9 @@ const Home: React.FC = () => {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <div className="rounded-2xl overflow-hidden shadow-subtle max-w-xs w-full border border-border">
-                <img
-                  src={playerTodayImg}
-                  alt="Player daily checklist showing today's training tasks"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
+              <PhoneMockup showGlow={false} className="w-72 lg:w-80">
+                <MarketingAppPreview />
+              </PhoneMockup>
             </div>
           </div>
         </div>
