@@ -205,7 +205,7 @@ const Home: React.FC = () => {
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
                 Built by a hockey dad{" "}
-                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">who coaches, too.</span>
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">who loves coaching, too.</span>
               </h2>
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
