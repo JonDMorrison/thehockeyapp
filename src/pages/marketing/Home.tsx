@@ -134,56 +134,60 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Grid Section */}
+      {/* Features Section */}
       <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              Built for how hockey families actually live
+              It works where your kid actually trains.
             </h2>
             <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              Practical features that fit into busy schedules.
+              In the garage. In the basement. On the driveway before dinner. The Hockey App was built for real life, not ideal conditions.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
-            {[
-              {
-                icon: Wifi,
-                title: "Works offline",
-                description: "Garages, basements, rinks with no signal. Tasks sync when you're back online.",
-              },
-              {
-                icon: Calendar,
-                title: "Knows your schedule",
-                description: "Syncs with team calendars. Adjusts training load around games and rest days.",
-              },
-              {
-                icon: Shield,
-                title: "Parent-controlled",
-                description: "Parents own accounts and decide what coaches can see. Your child's data stays private.",
-              },
-              {
-                icon: Trophy,
-                title: "Milestone recognition",
-                description: "Effort-based rewards for consistency. No leaderboards or comparisons. Just personal progress.",
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="group rounded-xl p-6 transition-all duration-200 bg-card border border-border shadow-subtle hover:shadow-medium"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-primary" strokeWidth={1.75} />
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-foreground">
-                  {feature.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-text-muted">
-                  {feature.description}
+          <div className="space-y-6 max-w-4xl mx-auto">
+            {/* Top row - two cards */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <Wifi className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">No Wi-Fi? No problem.</h3>
+                <p className="text-base leading-relaxed text-text-secondary">
+                  Your kid checks off tasks in the garage, the basement, or a rink with zero signal. Everything syncs the moment they're back online.
                 </p>
               </div>
-            ))}
+
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <Calendar className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">It knows when to push and when to rest.</h3>
+                <p className="text-base leading-relaxed text-text-secondary">
+                  Connect your team calendar and the app adjusts automatically. Game day? Light work. Off day? Time to grind. No parent math required.
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom row - full width feature */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <Shield className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">Your family's data stays yours.</h3>
+                <p className="text-base leading-relaxed text-text-secondary">
+                  Parents own accounts. Parents decide what coaches can see. Home training is private unless you choose to share it. Full stop.
+                </p>
+              </div>
+
+              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <Trophy className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">Rewards that actually motivate.</h3>
+                <p className="text-base leading-relaxed text-text-secondary">
+                  Streaks, milestones, and badges built around showing up, not competing. Your kid builds confidence by being consistent, not by being the best.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
