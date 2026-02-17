@@ -1,25 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
 import founderImg from "@/assets/founder-about-headshot.png";
 
-const credentials = {
-  left: [
-    "Former BCHL Player",
-    "Abbotsford Hawks U11 Coach",
-    "Abbotsford Hawks U9 Coach",
-    "Abbotsford Hawks U7 Coach",
-  ],
-  right: [
-    "Fraser Valley Kings Development",
-    "BC Stars Development Environment",
-    "Father of Three Hockey Players",
-    "Builder of The Hockey App",
-  ],
-};
 
 const About: React.FC = () => {
   return (
@@ -119,27 +105,6 @@ const About: React.FC = () => {
             <p>
               The Hockey App is designed around these beliefs. It's calm. It's structured. And it works because it removes friction instead of adding it.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Coaching Credentials */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12 text-foreground">
-            Coaching &amp; Playing Experience
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            {[credentials.left, credentials.right].map((col, ci) => (
-              <ul key={ci} className="space-y-4">
-                {col.map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-base font-medium text-foreground">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            ))}
           </div>
         </div>
       </section>
