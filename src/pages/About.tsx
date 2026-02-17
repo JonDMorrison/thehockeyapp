@@ -5,6 +5,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
 import founderImg from "@/assets/founder-about-headshot.png";
+import garageTrainingImg from "@/assets/girl-garage-training.jpg";
 
 
 const About: React.FC = () => {
@@ -110,22 +111,36 @@ const About: React.FC = () => {
       </section>
 
       {/* Closing CTA */}
-      <section className="py-20 lg:py-28 bg-background">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-            Development Over Ego.{" "}
-            <span className="text-primary">Structure Over Chaos.</span>
-          </h2>
-          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            The Hockey App was built from real experience: as a player, as a coach, and as a father. It exists to align families, coaches, and players around one goal: consistent, disciplined development.
-          </p>
-          <Button
-            size="lg"
-            className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
-            asChild
-          >
-            <Link to="/auth">Get Started For Free</Link>
-          </Button>
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="rounded-2xl overflow-hidden shadow-subtle">
+              <img
+                src={garageTrainingImg}
+                alt="Young female hockey player training in her garage"
+                className="w-full h-auto object-cover aspect-[4/5]"
+              />
+            </div>
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-[1.08] text-foreground">
+                The best players{" "}
+                <span className="text-primary">train at home.</span>
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                The rink is where you compete. The garage, the basement, the driveway — that's where you get better. The players who separate themselves are the ones who put in the quiet reps when nobody's watching.
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+                The Hockey App makes that training easy, fun, and something kids actually want to do. No nagging. No pressure. Just a clear plan and the motivation to show up every day.
+              </p>
+              <Button
+                size="lg"
+                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                asChild
+              >
+                <Link to="/auth">Get Started For Free</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
