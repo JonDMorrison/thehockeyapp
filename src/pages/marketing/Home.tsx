@@ -17,7 +17,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import founderHomeImg from "@/assets/founder-jon-coaching.png";
-import playerTodayImg from "@/assets/mockup-today-checklist.png";
+import playerTodayImg from "@/assets/demo-player-today.png";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
@@ -251,36 +251,36 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                A clear plan,{" "}
+                No more{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  every single day.
+                  "did you do your training?"
                 </span>
               </h2>
-              <p className="text-lg text-text-secondary leading-relaxed mb-6 max-w-lg">
-                Kids open the app, see exactly what's on their plate, and check it off. No guessing. No nagging. Just a simple routine they can own.
+              <p className="text-lg text-text-secondary leading-relaxed mb-8 max-w-lg">
+                Your child opens the app, sees today's plan, and checks it off themselves. You stop being the enforcer and start being the supporter. That's the shift.
               </p>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
-                  "Daily checklist tailored to the week's plan",
-                  "Streaks and milestones that reward showing up",
-                  "Works offline — garage, basement, anywhere",
+                  "A daily checklist kids actually follow on their own",
+                  "Effort-based streaks that build real confidence",
+                  "Coaches see progress without chasing families",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="text-sm font-medium text-foreground">{item}</span>
+                    <span className="text-base font-medium text-foreground">{item}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <PhoneMockup showGlow={false} className="w-72 lg:w-80">
+              <div className="rounded-2xl overflow-hidden shadow-subtle max-w-xs w-full border border-border">
                 <img
                   src={playerTodayImg}
                   alt="Player daily checklist showing today's training tasks"
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto object-cover"
                 />
-              </PhoneMockup>
+              </div>
             </div>
           </div>
         </div>
