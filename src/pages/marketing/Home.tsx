@@ -16,7 +16,7 @@ import {
   ClipboardCheck,
   DollarSign,
 } from "lucide-react";
-import founderHomeImg from "@/assets/founder-jon-coaching.png";
+import familyNexlevelImg from "@/assets/family-nexlevel.png";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
@@ -195,7 +195,7 @@ const Home: React.FC = () => {
             <div className="relative flex justify-center">
               <div className="max-w-md w-full">
                 <img
-                  src={founderHomeImg}
+                  src={familyNexlevelImg}
                   alt="Jon Morrison with his three daughters in hockey gear"
                   className="w-full h-auto object-cover"
                 />
