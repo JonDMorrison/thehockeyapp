@@ -17,6 +17,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import founderHomeImg from "@/assets/founder-jon-coaching.png";
+import playerTodayImg from "@/assets/mockup-today-checklist.png";
 
 const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
@@ -244,6 +245,48 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* App Screenshot Section */}
+      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                A clear plan,{" "}
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
+                  every single day.
+                </span>
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed mb-6 max-w-lg">
+                Kids open the app, see exactly what's on their plate, and check it off. No guessing. No nagging. Just a simple routine they can own.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Daily checklist tailored to the week's plan",
+                  "Streaks and milestones that reward showing up",
+                  "Works offline — garage, basement, anywhere",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span className="text-sm font-medium text-foreground">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-center lg:justify-end">
+              <PhoneMockup showGlow={false} className="w-72 lg:w-80">
+                <img
+                  src={playerTodayImg}
+                  alt="Player daily checklist showing today's training tasks"
+                  className="w-full h-full object-cover"
+                />
+              </PhoneMockup>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
       <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
