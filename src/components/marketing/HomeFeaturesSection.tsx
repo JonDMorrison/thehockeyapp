@@ -2,7 +2,7 @@ import React from "react";
 import { Users, Calendar, Home as HomeIcon, TrendingUp } from "lucide-react";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import coachDashboardImg from "@/assets/mockup-coach-dashboard.png";
-import practiceCardImg from "@/assets/feature-practice-card.png";
+import practiceCardImg from "@/assets/feature-summer-program.png";
 import todayChecklistImg from "@/assets/mockup-today-checklist.png";
 import playerChecklistImg from "@/assets/mockup-player-checklist.png";
 
