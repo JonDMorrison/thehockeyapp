@@ -20,10 +20,13 @@ const About: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.08] text-foreground">
-                Hockey is a leadership laboratory.
+                I built this app because{" "}
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
+                  my family needed it.
+                </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
-                From junior hockey in the BCHL to coaching three daughters and multiple minor hockey teams, Jon Morrison builds athletes through structure, discipline, and long-term development.
+                I'm Jon Morrison. I coach minor hockey and I have three daughters who play. I kept running into the same problem every family faces: getting kids to train at home without it turning into a fight. So I built something to fix it.
               </p>
               <Button
                 size="lg"
