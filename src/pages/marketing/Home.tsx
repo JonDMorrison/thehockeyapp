@@ -44,7 +44,7 @@ const Home: React.FC = () => {
               </h1>
 
               <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                A simple app that gives your child a daily training checklist they actually follow. You stop nagging. They start building real habits. And everyone sees the progress.
+                A simple app that gives your child a daily training checklist they actually follow on their own.
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
