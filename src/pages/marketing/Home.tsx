@@ -116,18 +116,18 @@ const Home: React.FC = () => {
             {[
               {
                 icon: ClipboardCheck,
-                title: "Structure without the stress",
-                description: "Set it up once and your players have a clear weekly plan they can follow on their own. No chasing families. No spreadsheets. Just a routine that builds real habits.",
+                title: "Set up workouts in minutes",
+                description: "Tell us what your player needs to work on and we'll create the program. Daily checklists are ready to go, no planning required.",
               },
               {
-                icon: Shield,
-                title: "Visibility without overreach",
-                description: "Coaches see who's putting in the work without micromanaging. Parents stay informed. Players own their progress. Everyone aligned, nobody overstepping.",
+                icon: Calendar,
+                title: "Syncs with your TeamSnap schedule",
+                description: "The app pulls in your game and practice schedule automatically. Heavy training on off days, light work before games. No parent math required.",
               },
               {
                 icon: Trophy,
-                title: "Progress without pressure",
-                description: "Effort-based milestones and streaks reward consistency, not talent. Kids build confidence by showing up, not by competing against teammates.",
+                title: "Train solo or with a team",
+                description: "Players can follow their own program at home or train alongside teammates with a shared team plan. It works either way.",
               },
             ].map((item, i) => (
               <div key={i} className="text-center">
