@@ -1,10 +1,10 @@
 import React from "react";
 import { Users, Calendar, Home as HomeIcon, TrendingUp } from "lucide-react";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
-import coachDashboardImg from "@/assets/mockup-coach-dashboard.png";
-import practiceCardImg from "@/assets/feature-summer-program.png";
-import todayChecklistImg from "@/assets/mockup-today-checklist.png";
-import playerChecklistImg from "@/assets/mockup-player-checklist.png";
+import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachView";
+import { FeatureProgramCalendar } from "@/components/marketing/features/FeatureProgramCalendar";
+import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
+import { FeaturePlayerProgress } from "@/components/marketing/features/FeaturePlayerProgress";
 
 const features = [
   {
@@ -12,32 +12,28 @@ const features = [
     title: "Perfect for coaches",
     description:
       "Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.",
-    image: coachDashboardImg,
-    imageAlt: "Coach dashboard showing team progress",
+    preview: FeatureCoachView,
   },
   {
     icon: Calendar,
     title: "Run a spring or summer program",
     description:
       "Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.",
-    image: practiceCardImg,
-    imageAlt: "Practice card builder for seasonal programs",
+    preview: FeatureProgramCalendar,
   },
   {
     icon: HomeIcon,
     title: "Set up your family",
     description:
       "Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.",
-    image: todayChecklistImg,
-    imageAlt: "Player daily checklist view",
+    preview: FeatureCheckoff,
   },
   {
     icon: TrendingUp,
     title: "Works for any age or level",
     description:
       "From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.",
-    image: playerChecklistImg,
-    imageAlt: "Player checklist adapting to different skill levels",
+    preview: FeaturePlayerProgress,
   },
 ];
 
@@ -110,7 +106,9 @@ export const HomeFeaturesSection: React.FC = () => {
                     isReversed ? "lg:order-1" : ""
                   } flex justify-center`}
                 >
-                  <img src={feature.image} alt={feature.imageAlt} className="w-56 lg:w-64 rounded-2xl shadow-xl" />
+                  <PhoneMockup showGlow={false} className="w-56 lg:w-64">
+                    <feature.preview />
+                  </PhoneMockup>
                 </div>
               </div>
             );
