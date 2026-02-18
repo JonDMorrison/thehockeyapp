@@ -110,7 +110,7 @@ export const HomeFeaturesSection: React.FC = () => {
                     isReversed ? "lg:order-1" : ""
                   } flex justify-center`}
                 >
-                  <PhoneMockup showGlow={false} className="w-56 lg:w-64" imageSrc={feature.image} imageAlt={feature.imageAlt} />
+                  <img src={feature.image} alt={feature.imageAlt} className="w-56 lg:w-64 rounded-2xl shadow-xl" />
                 </div>
               </div>
             );
