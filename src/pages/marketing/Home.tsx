@@ -5,6 +5,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
+import { FeatureRewards } from "@/components/marketing/features";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
@@ -292,7 +293,7 @@ const Home: React.FC = () => {
 
             <div className="flex justify-center lg:justify-end">
               <PhoneMockup showGlow={false} className="w-72 lg:w-80">
-                <MarketingAppPreview />
+                <FeatureRewards />
               </PhoneMockup>
             </div>
           </div>
