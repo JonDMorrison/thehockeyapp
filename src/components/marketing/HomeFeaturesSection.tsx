@@ -1,5 +1,10 @@
 import React from "react";
 import { Users, Calendar, Home as HomeIcon, TrendingUp } from "lucide-react";
+import { PhoneMockup } from "@/components/marketing/PhoneMockup";
+import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachView";
+import { FeatureTaskCard } from "@/components/marketing/features/FeatureTaskCard";
+import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
+import { FeatureRewards } from "@/components/marketing/features/FeatureRewards";
 
 const features = [
   {
@@ -7,28 +12,28 @@ const features = [
     title: "Perfect for coaches",
     description:
       "Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.",
-    accent: "from-primary/10 to-primary/5",
+    preview: FeatureCoachView,
   },
   {
     icon: Calendar,
     title: "Run a spring or summer program",
     description:
       "Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.",
-    accent: "from-[hsl(213,100%,25%,0.08)] to-[hsl(213,100%,25%,0.03)]",
+    preview: FeatureTaskCard,
   },
   {
     icon: HomeIcon,
     title: "Set up your family",
     description:
       "Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.",
-    accent: "from-primary/10 to-primary/5",
+    preview: FeatureCheckoff,
   },
   {
     icon: TrendingUp,
     title: "Works for any age or level",
     description:
       "From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.",
-    accent: "from-[hsl(213,100%,25%,0.08)] to-[hsl(213,100%,25%,0.03)]",
+    preview: FeatureRewards,
   },
 ];
 
@@ -101,28 +106,9 @@ export const HomeFeaturesSection: React.FC = () => {
                     isReversed ? "lg:order-1" : ""
                   } flex justify-center`}
                 >
-                  <div className="relative w-full max-w-sm">
-                    {/* Background accent shape */}
-                    <div
-                      className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${feature.accent} -rotate-2 scale-[1.03]`}
-                    />
-                    {/* Card */}
-                    <div className="relative bg-card rounded-2xl border border-border p-8 shadow-subtle">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/[0.04] rounded-full -translate-y-1/2 translate-x-1/2" />
-                      <div className="absolute bottom-0 left-0 w-16 h-16 bg-[hsl(213,100%,25%,0.03)] rounded-full translate-y-1/2 -translate-x-1/2" />
-                      <div className="relative z-10 flex flex-col items-center text-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                          <feature.icon
-                            className="w-8 h-8 text-primary"
-                            strokeWidth={1.5}
-                          />
-                        </div>
-                        <p className="text-sm text-text-muted font-medium leading-relaxed">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <PhoneMockup showGlow={false} className="w-56 lg:w-64">
+                    <feature.preview />
+                  </PhoneMockup>
                 </div>
               </div>
             );
