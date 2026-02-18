@@ -1,10 +1,10 @@
 import React from "react";
 import { Users, Calendar, Home as HomeIcon, TrendingUp } from "lucide-react";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
-import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachView";
-import { FeatureTaskCard } from "@/components/marketing/features/FeatureTaskCard";
-import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
-import { FeatureRewards } from "@/components/marketing/features/FeatureRewards";
+import coachDashboardImg from "@/assets/mockup-coach-dashboard.png";
+import practiceCardImg from "@/assets/feature-practice-card.png";
+import todayChecklistImg from "@/assets/mockup-today-checklist.png";
+import playerChecklistImg from "@/assets/mockup-player-checklist.png";
 
 const features = [
   {
@@ -12,28 +12,32 @@ const features = [
     title: "Perfect for coaches",
     description:
       "Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.",
-    preview: FeatureCoachView,
+    image: coachDashboardImg,
+    imageAlt: "Coach dashboard showing team progress",
   },
   {
     icon: Calendar,
     title: "Run a spring or summer program",
     description:
       "Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.",
-    preview: FeatureTaskCard,
+    image: practiceCardImg,
+    imageAlt: "Practice card builder for seasonal programs",
   },
   {
     icon: HomeIcon,
     title: "Set up your family",
     description:
       "Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.",
-    preview: FeatureCheckoff,
+    image: todayChecklistImg,
+    imageAlt: "Player daily checklist view",
   },
   {
     icon: TrendingUp,
     title: "Works for any age or level",
     description:
       "From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.",
-    preview: FeatureRewards,
+    image: playerChecklistImg,
+    imageAlt: "Player checklist adapting to different skill levels",
   },
 ];
 
@@ -106,9 +110,7 @@ export const HomeFeaturesSection: React.FC = () => {
                     isReversed ? "lg:order-1" : ""
                   } flex justify-center`}
                 >
-                  <PhoneMockup showGlow={false} className="w-56 lg:w-64">
-                    <feature.preview />
-                  </PhoneMockup>
+                  <PhoneMockup showGlow={false} className="w-56 lg:w-64" imageSrc={feature.image} imageAlt={feature.imageAlt} />
                 </div>
               </div>
             );
