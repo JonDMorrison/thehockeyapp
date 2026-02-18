@@ -6,6 +6,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { FeatureRewards } from "@/components/marketing/features";
+import { HomeFeaturesSection } from "@/components/marketing/HomeFeaturesSection";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
@@ -13,9 +14,6 @@ import {
   Trophy,
   Calendar,
   ClipboardCheck,
-  Users,
-  Home as HomeIcon,
-  TrendingUp,
 } from "lucide-react";
 import familyNexlevelImg from "@/assets/family-nexlevel.png";
 
@@ -144,63 +142,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
-        <div className="absolute top-20 right-10 w-48 h-48 rounded-full bg-primary/[0.04] blur-2xl hidden lg:block" />
-        <div className="absolute bottom-20 left-10 w-56 h-56 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-2xl hidden lg:block" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              One app. A hundred ways to use it.
-            </h2>
-            <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              Whether you're a coach, a parent, or running a program — The Hockey App fits the way you already work.
-            </p>
-          </div>
-
-          <div className="space-y-6 max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <Users className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Perfect for coaches</h3>
-                <p className="text-base leading-relaxed text-text-secondary">
-                  Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.
-                </p>
-              </div>
-
-              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <Calendar className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Run a spring or summer program</h3>
-                <p className="text-base leading-relaxed text-text-secondary">
-                  Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <HomeIcon className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Set up your family</h3>
-                <p className="text-base leading-relaxed text-text-secondary">
-                  Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.
-                </p>
-              </div>
-
-              <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <TrendingUp className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Works for any age or level</h3>
-                <p className="text-base leading-relaxed text-text-secondary">
-                  From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeFeaturesSection />
 
       {/* Founder Section */}
       <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
