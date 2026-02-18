@@ -26,8 +26,14 @@ const Home: React.FC = () => {
       <MarketingNav />
 
       {/* Hero Section */}
-      <section className="relative pt-16 bg-[hsl(0,0%,98%)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-32">
+      <section className="relative pt-16 bg-[hsl(0,0%,98%)] overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-primary/[0.04] blur-3xl" />
+        <div className="absolute bottom-0 -right-24 w-80 h-80 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-3xl" />
+        <div className="absolute top-40 right-16 w-3 h-3 rounded-full bg-primary/20 hidden lg:block" />
+        <div className="absolute top-60 right-32 w-2 h-2 rounded-full bg-primary/15 hidden lg:block" />
+        <div className="absolute bottom-32 left-20 w-2 h-2 rounded-full bg-[hsl(213,100%,25%,0.15)] hidden lg:block" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-32 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
@@ -71,8 +77,9 @@ const Home: React.FC = () => {
       </section>
 
       {/* The Problem Section */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
               "Did you do your training?"
@@ -92,8 +99,10 @@ const Home: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 lg:py-28 bg-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28 bg-background overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-primary/[0.03] blur-2xl" />
+        <div className="absolute bottom-0 -left-20 w-72 h-72 rounded-full bg-[hsl(213,100%,25%,0.03)] blur-2xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
               What The Hockey App does
@@ -135,8 +144,10 @@ const Home: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute top-20 right-10 w-48 h-48 rounded-full bg-primary/[0.04] blur-2xl hidden lg:block" />
+        <div className="absolute bottom-20 left-10 w-56 h-56 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-2xl hidden lg:block" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               It works where your kid actually trains.
@@ -193,8 +204,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Founder Section */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="absolute top-10 left-1/4 w-4 h-4 rounded-full bg-primary/10 hidden lg:block" />
+        <div className="absolute bottom-20 right-1/4 w-3 h-3 rounded-full bg-[hsl(213,100%,25%,0.1)] hidden lg:block" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative flex justify-center">
               <div className="max-w-md w-full">
@@ -249,8 +263,10 @@ const Home: React.FC = () => {
       </section>
 
       {/* App Screenshot Section */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute -top-10 -left-20 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
+        <div className="absolute bottom-10 right-0 w-64 h-64 rounded-full bg-[hsl(213,100%,25%,0.03)] blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
@@ -286,8 +302,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 lg:py-28 bg-background">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+      <section className="relative py-20 lg:py-28 bg-background overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-primary/[0.03] blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-4 h-4 rounded-full bg-primary/10 hidden lg:block" />
+        <div className="absolute top-10 right-1/3 w-3 h-3 rounded-full bg-[hsl(213,100%,25%,0.1)] hidden lg:block" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Start building consistent habits at home.
