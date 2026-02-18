@@ -8,13 +8,13 @@ import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview"
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
-  Shield,
-  Wifi,
   ArrowRight,
   Trophy,
   Calendar,
   ClipboardCheck,
-  DollarSign,
+  Users,
+  Home as HomeIcon,
+  TrendingUp,
 } from "lucide-react";
 import familyNexlevelImg from "@/assets/family-nexlevel.png";
 
@@ -150,52 +150,50 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              It works where your kid actually trains.
+              One app. A hundred ways to use it.
             </h2>
             <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-              In the garage. In the basement. On the driveway before dinner. The Hockey App was built for real life, not ideal conditions.
+              Whether you're a coach, a parent, or running a program — The Hockey App fits the way you already work.
             </p>
           </div>
 
           <div className="space-y-6 max-w-4xl mx-auto">
-            {/* Top row - two cards */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <Wifi className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">No Wi-Fi? No problem.</h3>
+                <Users className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">Perfect for coaches</h3>
                 <p className="text-base leading-relaxed text-text-secondary">
-                  Your kid checks off tasks in the garage, the basement, or a rink with zero signal. Everything syncs the moment they're back online.
+                  Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.
                 </p>
               </div>
 
               <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <Calendar className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">It knows when to push and when to rest.</h3>
+                <h3 className="text-xl font-bold mb-3 text-foreground">Run a spring or summer program</h3>
                 <p className="text-base leading-relaxed text-text-secondary">
-                  Connect your team calendar and the app adjusts automatically. Game day? Light work. Off day? Time to grind. No parent math required.
+                  Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.
                 </p>
               </div>
             </div>
 
-            {/* Bottom row - full width feature */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <Shield className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Your family's data stays yours.</h3>
+                <HomeIcon className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">Set up your family</h3>
                 <p className="text-base leading-relaxed text-text-secondary">
-                  Parents own accounts. Parents decide what coaches can see. Home training is private unless you choose to share it. Full stop.
+                  Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.
                 </p>
               </div>
 
               <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-8 shadow-subtle group hover:shadow-medium transition-all duration-300">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <Trophy className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
-                <h3 className="text-xl font-bold mb-3 text-foreground">Rewards that actually motivate.</h3>
+                <TrendingUp className="w-10 h-10 text-primary mb-5" strokeWidth={1.5} />
+                <h3 className="text-xl font-bold mb-3 text-foreground">Works for any age or level</h3>
                 <p className="text-base leading-relaxed text-text-secondary">
-                  Streaks, milestones, and badges built around showing up, not competing. Your kid builds confidence by being consistent, not by being the best.
+                  From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.
                 </p>
               </div>
             </div>
