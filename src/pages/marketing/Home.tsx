@@ -87,8 +87,8 @@ const Home: React.FC = () => {
             
             <div className="space-y-8 max-w-2xl mx-auto">
               <div className="space-y-5 text-lg text-text-secondary">
-                <p>Coaches assign off-ice training. Parents try to make it happen. Kids resist. And every night, the same argument plays out in kitchens across the country.</p>
-                <p>The problem was never the kid's commitment. It was the lack of structure. No system. No clear plan. No way for the child to own it themselves.</p>
+                <p>You remind them once. Then twice. Then it turns into a fight. By the time they finally do it, nobody feels good about it.</p>
+                <p>It's not that your kid doesn't care. They just don't have a system that lets them own it. No clear plan. No structure. No way to feel proud of what they're doing without you standing over them.</p>
               </div>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
                 The Hockey App gives every family that system.
