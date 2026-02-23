@@ -2,6 +2,10 @@
  * App-wide constants and magic values.
  */
 
+// ── Beta mode ─────────────────────────────────────
+// Flip to `false` to re-enable pricing & paywalls
+export const BETA_MODE = true;
+
 // ── Storage keys ──────────────────────────────────
 export const STORAGE_KEYS = {
   ACTIVE_VIEW: "hockey-app-active-view",

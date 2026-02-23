@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Heart, Shield, Lock } from "lucide-react";
 import { HockeyAppLogo } from "./HockeyAppLogo";
+import { BETA_MODE } from "@/core/constants";
 
 export const MarketingFooter: React.FC = () => {
   return (
@@ -38,7 +39,9 @@ export const MarketingFooter: React.FC = () => {
             <ul className="space-y-2 text-background/70">
               <li><Link to="/features" className="hover:text-background transition-colors">Features</Link></li>
               <li><Link to="/demo" className="hover:text-background transition-colors">How It Works</Link></li>
-              <li><Link to="/pricing" className="hover:text-background transition-colors">Pricing</Link></li>
+              {!BETA_MODE && (
+                <li><Link to="/pricing" className="hover:text-background transition-colors">Pricing</Link></li>
+              )}
             </ul>
           </div>
 

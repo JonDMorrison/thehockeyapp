@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { getPlanLabel, FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
+import { BETA_MODE } from "@/core/constants";
 import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
@@ -222,6 +223,7 @@ export default function Settings() {
         </section>
 
         {/* Subscription Section */}
+        {!BETA_MODE && (
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
@@ -335,6 +337,17 @@ export default function Settings() {
             </div>
           </div>
         </section>
+        )}
+
+        {/* Beta banner */}
+        {BETA_MODE && (
+        <section>
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center space-y-1">
+            <p className="text-sm font-medium text-foreground">🎉 Beta Access — All Features Unlocked</p>
+            <p className="text-xs text-muted-foreground">You have full access to every feature during the beta period.</p>
+          </div>
+        </section>
+        )}
 
         {/* Profile Section */}
         <section>

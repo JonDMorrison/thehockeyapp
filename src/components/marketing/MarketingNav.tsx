@@ -4,18 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HockeyAppLogo } from "./HockeyAppLogo";
+import { BETA_MODE } from "@/core/constants";
 
 export const MarketingNav: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const navLinks = [
+  const allNavLinks = [
     { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
-    { href: "/pricing", label: "Pricing" },
+    { href: "/pricing", label: "Pricing", hideInBeta: true },
     { href: "/demo", label: "How It Works" },
     { href: "/about", label: "About" },
   ];
+
+  const navLinks = BETA_MODE
+    ? allNavLinks.filter((l) => !l.hideInBeta)
+    : allNavLinks;
 
   const isActive = (href: string) => location.pathname === href;
 
