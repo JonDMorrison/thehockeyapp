@@ -144,13 +144,18 @@ const Auth: React.FC = () => {
               <span className="font-bold text-xl text-foreground">The Hockey App</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              {mode === "signin" ? "Welcome back" : "Join Hockey App"}
+              {mode === "signin" ? "Welcome back" : "Start training smarter"}
             </h1>
             <p className="text-muted-foreground">
               {mode === "signin" 
                 ? "Sign in to track your training progress" 
-                : "Create your account to get started"}
+                : "Create your free account and build better habits"}
             </p>
+            {mode === "signup" && (
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Join hockey families building consistent off-ice training habits.
+              </p>
+            )}
           </div>
 
           {/* Form Card */}

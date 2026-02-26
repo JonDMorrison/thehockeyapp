@@ -204,7 +204,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* App Screenshot Section */}
+      {/* Results Section */}
       <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
         <div className="absolute -top-10 -left-20 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
         <div className="absolute bottom-10 right-0 w-64 h-64 rounded-full bg-[hsl(213,100%,25%,0.03)] blur-3xl" />
@@ -212,19 +212,19 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                No more{" "}
+                What changes{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  "did you do your training?"
+                  after one week.
                 </span>
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed mb-8 max-w-lg">
-                Your child opens the app, sees today's plan, and checks it off themselves. You stop being the enforcer and start being the supporter. That's the shift.
+                You stop being the enforcer and start being the supporter. That's the shift families tell us about.
               </p>
               <div className="space-y-4">
                 {[
-                  "A daily checklist kids actually follow on their own",
-                  "Effort-based streaks that build real confidence",
-                  "Coaches see progress without chasing families",
+                  "Kids train without being asked",
+                  "Coaches see who's putting in work",
+                  "Parents stop being the enforcer",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />

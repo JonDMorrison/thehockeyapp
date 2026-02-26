@@ -53,7 +53,8 @@ import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
 import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
 import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
-
+import { FirstRunOverlay } from "@/components/player/FirstRunOverlay";
+import { AnimatePresence } from "framer-motion";
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
 
@@ -84,6 +85,7 @@ const PlayerHome: React.FC = () => {
 
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [showProgramBuilder, setShowProgramBuilder] = useState(false);
+  const [showFirstRun, setShowFirstRun] = useState(false);
 
   const scrollToTeammates = () => {
     teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -339,6 +341,35 @@ const PlayerHome: React.FC = () => {
       }
     }
   }, [streakData?.currentStreak, id]);
+
+  // First-run detection: show welcome overlay if player has zero completed sessions
+  const { data: sessionCount } = useQuery({
+    queryKey: ["player-session-count", id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("session_completions")
+        .select("id", { count: "exact", head: true })
+        .eq("player_id", id!)
+        .eq("status", "complete");
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!user && !!id,
+  });
+
+  useEffect(() => {
+    if (sessionCount === 0 && !playerLoading && player) {
+      const dismissed = localStorage.getItem(`first_run_dismissed_${id}`);
+      if (!dismissed) {
+        setShowFirstRun(true);
+      }
+    }
+  }, [sessionCount, playerLoading, player, id]);
+
+  const handleDismissFirstRun = () => {
+    setShowFirstRun(false);
+    localStorage.setItem(`first_run_dismissed_${id}`, "true");
+  };
 
   // Combined loading state - check after all hooks are called
   const isLoading = authLoading || playerLoading || membershipsLoading;
@@ -828,6 +859,23 @@ const PlayerHome: React.FC = () => {
           teamId={preferences.active_team_id}
         />
       )}
+
+      {/* First-run welcome overlay */}
+      <AnimatePresence>
+        {showFirstRun && player && (
+          <FirstRunOverlay
+            playerName={player.first_name}
+            hasWorkout={!!todaySnapshot?.has_card}
+            onStart={() => {
+              handleDismissFirstRun();
+              if (preferences?.active_team_id) {
+                navigate(`/players/${id}/today`);
+              }
+            }}
+            onDismiss={handleDismissFirstRun}
+          />
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 };

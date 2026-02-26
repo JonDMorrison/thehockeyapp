@@ -30,7 +30,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: "Today", path: "/today" },
+  { icon: Home, label: "Home", path: "/today" },
   { icon: Users, label: "Teams", path: "/teams" },
   { icon: User, label: "Players", path: "/players" },
   { icon: Settings, label: "Settings", path: "/settings" },

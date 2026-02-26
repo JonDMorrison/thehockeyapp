@@ -35,7 +35,7 @@ const Teams: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ["teams", user?.id] });
   }, [queryClient, user?.id]);
 
-  const { data: teams, isLoading } = useQuery({
+  const { data: teams, isLoading, isFetched } = useQuery({
     queryKey: ["teams", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -75,6 +75,15 @@ const Teams: React.FC = () => {
   // If not authenticated, render nothing while redirect happens
   if (!isAuthenticated) {
     return null;
+  }
+
+  // Smart redirect: if user has exactly one team, skip the list
+  if (isFetched && teams && teams.length === 1) {
+    const team = teams[0].teams as { id: string } | null;
+    if (team) {
+      navigate(`/teams/${team.id}`, { replace: true });
+      return null;
+    }
   }
 
   return (

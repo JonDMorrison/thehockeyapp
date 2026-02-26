@@ -50,7 +50,7 @@ const Players: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
   }, [queryClient, user?.id]);
 
-  const { data: players, isLoading } = useQuery({
+  const { data: players, isLoading, isFetched } = useQuery({
     queryKey: ["players-with-teams", user?.id],
     queryFn: async () => {
       // Fetch players
@@ -108,6 +108,12 @@ const Players: React.FC = () => {
 
   // If not authenticated, render nothing while redirect happens
   if (!isAuthenticated) {
+    return null;
+  }
+
+  // Smart redirect: if user has exactly one player, skip the list
+  if (isFetched && players && players.length === 1) {
+    navigate(`/players/${players[0].id}/home`, { replace: true });
     return null;
   }
 

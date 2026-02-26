@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Challenge } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, addDays } from "date-fns";
 import { motion } from "framer-motion";
@@ -20,6 +20,7 @@ import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 import { UserMenu } from "@/components/app/UserMenu";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import logoImage from "@/assets/hockey-app-logo.png";
+import { BETA_MODE } from "@/core/constants";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {
@@ -110,6 +111,7 @@ interface DashboardData {
 export default function SoloDashboard() {
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showScheduleConnect, setShowScheduleConnect] = useState(false);
 
@@ -220,8 +222,8 @@ export default function SoloDashboard() {
                 playerId={playerId}
                 settingsPath={`/solo/settings/${playerId}`}
                 onPhotoUploaded={() => {
-                  // Refetch dashboard data to update avatar
-                  window.location.reload();
+                  // Refetch dashboard data to update avatar without full reload
+                  queryClient.invalidateQueries({ queryKey: ['solo-dashboard', playerId] });
                 }}
               />
               <div>
@@ -368,7 +370,7 @@ export default function SoloDashboard() {
               {/* Content */}
               <div className="relative z-10">
                 <h3 className="font-bold text-white text-sm leading-tight">Invite Friend</h3>
-                <p className="text-white/70 text-xs mt-0.5">Give 7 days free</p>
+                <p className="text-white/70 text-xs mt-0.5">{BETA_MODE ? "Train together" : "Give 7 days free"}</p>
               </div>
             </motion.button>
           </div>
