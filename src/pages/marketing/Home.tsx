@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BETA_MODE } from "@/core/constants";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -47,7 +48,7 @@ const Home: React.FC = () => {
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
-                Parents start with a 7-day free trial. Teams can cover families.
+                {BETA_MODE ? "Free during the beta. All features unlocked." : "Parents start with a 7-day free trial. Teams can cover families."}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BETA_MODE } from "@/core/constants";
 import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
@@ -270,16 +271,18 @@ const Demo: React.FC = () => {
                 Get Started For Free
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-base px-8 border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
-                asChild
-              >
-                <Link to="/pricing">
-                  View Pricing
-                </Link>
-              </Button>
+              {!BETA_MODE && (
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="text-base px-8 border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
+                  asChild
+                >
+                  <Link to="/pricing">
+                    View Pricing
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
