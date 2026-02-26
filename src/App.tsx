@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
@@ -10,6 +10,7 @@ import { logger, ErrorBoundary } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
+import { BETA_MODE } from "@/core/constants";
 
 // Marketing pages - loaded eagerly for fast landing page
 import Home from "./pages/marketing/Home";
@@ -117,7 +118,7 @@ const AnimatedRoutes = () => {
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing" element={BETA_MODE ? <Navigate to="/" replace /> : <Pricing />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />

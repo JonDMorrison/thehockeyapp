@@ -1,6 +1,7 @@
 import { Lock, Trophy, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
+import { BETA_MODE } from "@/core/constants";
 
 type UpgradeContext =
   | "history_gate"      // Viewing history beyond 7 days
@@ -72,6 +73,9 @@ export function UpgradePrompt({
   celebrationStat,
 }: UpgradePromptProps) {
   const label = FEATURE_LABELS[feature];
+
+  // During beta, all features are unlocked — don't show upgrade prompts
+  if (BETA_MODE) return null;
 
   if (compact) {
     return (
