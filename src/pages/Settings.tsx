@@ -354,18 +354,6 @@ export default function Settings() {
           <CoachProfileSection isCoach={isCoach} />
         </section>
 
-        {/* Preferences Section */}
-        <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Preferences
-          </h2>
-          <div className="bg-card border border-border rounded-xl divide-y divide-border">
-            <SettingsRow icon={Bell} label="Notifications" sublabel="Coming soon" disabled />
-            <SettingsRow icon={Shield} label="Privacy" sublabel="Coming soon" disabled />
-          </div>
-        </section>
-
         {/* Support Section */}
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">

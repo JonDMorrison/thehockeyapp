@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, TrendingUp, Settings } from "lucide-react";
+import { Users, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CoachDockProps {
@@ -7,7 +7,6 @@ interface CoachDockProps {
   activeToday: number;
   onRoster: () => void;
   onProgress: () => void;
-  onSettings: () => void;
 }
 
 export const CoachDock: React.FC<CoachDockProps> = ({
@@ -15,7 +14,6 @@ export const CoachDock: React.FC<CoachDockProps> = ({
   activeToday,
   onRoster,
   onProgress,
-  onSettings,
 }) => {
   const dockItems = [
     {
@@ -34,18 +32,10 @@ export const CoachDock: React.FC<CoachDockProps> = ({
       onClick: onProgress,
       highlighted: false,
     },
-    {
-      id: "settings",
-      icon: Settings,
-      label: "Settings",
-      subtext: "Team config",
-      onClick: onSettings,
-      highlighted: false,
-    },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {dockItems.map(({ id, icon: Icon, label, subtext, onClick, highlighted }) => (
         <button
           key={id}

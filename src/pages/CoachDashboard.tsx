@@ -246,7 +246,7 @@ const CoachDashboard: React.FC = () => {
       }
     >
       <PageContainer className="space-y-4">
-        {/* Layer 1: Context - Date, Team, Day Type */}
+        {/* Layer 1: Context - Date, Team, Day Type + Pulse Stats */}
         <TodayHeader
           teamName={dashboard.team?.name ?? "My Team"}
           seasonLabel={dashboard.team?.season_label}
@@ -258,10 +258,27 @@ const CoachDashboard: React.FC = () => {
           isUpdating={updateTeamNameMutation.isPending}
         />
 
-        {/* Contextual microcopy */}
-        <p className="text-xs text-muted-foreground px-1">
-          This is your team's accountability system.
-        </p>
+        {/* Inline Team Pulse Stats */}
+        {hasPlayers && (
+          <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
+            <span className="flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" />
+              {dashboard.pulse.players_count} player{dashboard.pulse.players_count !== 1 ? 's' : ''}
+            </span>
+            <span className="text-border">·</span>
+            <span className={dashboard.pulse.active_today_count > 0 ? "text-primary font-medium" : ""}>
+              {dashboard.pulse.active_today_count} active today
+            </span>
+            <span className="text-border">·</span>
+            <span>{dashboard.pulse.sessions_complete_today} complete</span>
+          </div>
+        )}
+
+        {!hasPlayers && (
+          <p className="text-xs text-muted-foreground px-1">
+            This is your team's accountability system.
+          </p>
+        )}
 
         {/* Onboarding Progress Checklist - only if not complete */}
         {!onboardingComplete && checklist.length > 0 && (
@@ -311,14 +328,7 @@ const CoachDashboard: React.FC = () => {
         {/* Team Cheers Section */}
         {hasPlayers && <CoachCheersSection teamId={id!} />}
 
-        {/* Team Pulse Bar - compact stats */}
-        {hasPlayers && (
-          <TeamPulseBar
-            playersCount={dashboard.pulse.players_count}
-            activeToday={dashboard.pulse.active_today_count}
-            sessionsComplete={dashboard.pulse.sessions_complete_today}
-          />
-        )}
+        {/* Team Pulse stats merged into inline badges above */}
 
         {/* Upcoming Events with Sync */}
         {scheduleConnected && dashboard.upcoming && dashboard.upcoming.length > 0 && (
@@ -331,13 +341,12 @@ const CoachDashboard: React.FC = () => {
           />
         )}
 
-        {/* Layer 4: Navigation - Coach Dock (3 items) */}
+        {/* Layer 4: Navigation - Coach Dock (2 items, Settings removed — already in header) */}
         <CoachDock
           playersCount={dashboard.pulse.players_count}
           activeToday={dashboard.pulse.active_today_count}
           onRoster={() => navigate(`/teams/${id}/roster`)}
           onProgress={() => navigate(`/teams/${id}/progress`)}
-          onSettings={() => navigate(`/teams/${id}/settings`)}
         />
       </PageContainer>
 

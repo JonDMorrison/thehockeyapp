@@ -10,13 +10,35 @@ export interface WorkoutCheckItemProps {
   icon?: React.ReactNode;
   completed?: boolean;
   disabled?: boolean;
+  /** Progress text like "2 of 5 done" */
+  progressText?: string;
   onToggle?: (id: string, completed: boolean) => void;
 }
 
+// SVG checkmark path for draw-in animation
+const CheckmarkPath = () => (
+  <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none">
+    <motion.path
+      d="M5 13l4 4L19 7"
+      stroke="currentColor"
+      strokeWidth={3}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={{ pathLength: 1, opacity: 1 }}
+      transition={{
+        pathLength: { duration: 0.4, ease: "easeOut" },
+        opacity: { duration: 0.1 },
+      }}
+    />
+  </svg>
+);
+
 const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>(
-  ({ id, label, target, icon, completed = false, disabled = false, onToggle }, ref) => {
+  ({ id, label, target, icon, completed = false, disabled = false, progressText, onToggle }, ref) => {
     const [isPressed, setIsPressed] = React.useState(false);
     const [showRipple, setShowRipple] = React.useState(false);
+    const [justCompleted, setJustCompleted] = React.useState(false);
     const controls = useAnimation();
 
     const handleClick = async () => {
@@ -25,14 +47,16 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
       // Trigger ripple effect
       if (!completed) {
         setShowRipple(true);
+        setJustCompleted(true);
         setTimeout(() => setShowRipple(false), 600);
+        setTimeout(() => setJustCompleted(false), 1000);
       }
 
-      // Animate the checkmark
+      // Animate the checkmark area
       if (!completed) {
         await controls.start({
-          scale: [1, 1.3, 1],
-          transition: { duration: 0.3, times: [0, 0.5, 1] }
+          scale: [1, 1.2, 0.9, 1.05, 1],
+          transition: { duration: 0.5, times: [0, 0.2, 0.4, 0.7, 1] }
         });
       }
 
@@ -47,7 +71,7 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
         onTap={() => setIsPressed(false)}
         onTapCancel={() => setIsPressed(false)}
         animate={{
-          scale: isPressed ? 0.96 : 1,
+          scale: isPressed ? 0.95 : justCompleted ? [1, 1.02, 1] : 1,
           y: isPressed ? 2 : 0,
         }}
         transition={{
@@ -119,17 +143,7 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
           )}
         >
           {completed ? (
-            <motion.div
-              initial={{ scale: 0, rotate: -45 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 15,
-              }}
-            >
-              <Check className="w-7 h-7" strokeWidth={3} />
-            </motion.div>
+            <CheckmarkPath />
           ) : (
             icon || <div className="w-6 h-6 rounded-full border-2 border-current opacity-60" />
           )}
@@ -147,6 +161,15 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
           </span>
           {target && (
             <span className="block text-sm text-text-muted mt-0.5">{target}</span>
+          )}
+          {progressText && !completed && (
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="block text-xs text-primary font-medium mt-1"
+            >
+              {progressText}
+            </motion.span>
           )}
         </div>
 
