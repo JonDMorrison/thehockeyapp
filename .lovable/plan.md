@@ -1,130 +1,119 @@
 
 
-## UX Audit: The Hockey App
-### From the perspective of a hockey coach and dad
+## UI Improvement Recommendations
 
-After reviewing every major screen, flow, and interaction pattern in the app, here are the highest-impact UX improvements -- organized from most impactful to least.
-
----
-
-### 1. Haptic-quality feedback on task completion (the core interaction)
-
-The single most important interaction in this app is checking off a training task. Right now it's a standard checkbox toggle. For a kid in a garage tapping their phone with sweaty hands, this needs to feel *great*.
-
-**Changes:**
-- Add a subtle scale animation (0.95 -> 1.0) on the `WorkoutCheckItem` when toggled
-- Add a satisfying checkmark animation (draw-in SVG path) instead of instant state change
-- Show a micro-celebration (small confetti burst or star animation) when the *last* task is checked off, before the full session celebration fires
-- Add progressive encouragement text that changes as tasks complete: "2 of 5 done -- keep going!" -> "Almost there!" -> "Last one!"
+After reviewing every screen on both desktop and mobile, here are the highest-impact visual and interaction improvements.
 
 ---
 
-### 2. Eliminate the "where am I?" problem
+### 1. Marketing hero section: phone mockup clips on mobile
 
-The app has three distinct user journeys (Coach, Parent/Player on a team, Solo) but shares a single bottom nav with generic labels (Today, Teams, Players, Settings). A coach who is also a hockey dad has to mentally context-switch constantly.
+On mobile (390px), the phone mockup gets cut off at the bottom of the hero -- the stats bar ("7 DAY STREAK", "142 TOTAL SHOTS") is partially hidden. The phone should either be fully visible or elegantly cropped with a fade-out gradient.
 
-**Changes:**
-- When a user has *only one role* (e.g., they're only a coach with one team), skip the Teams list page entirely and go straight to that team's dashboard. Same for Players -- if there's only one player, skip the list.
-- Add a subtle "role badge" to the AppShell header showing the current context: "Coaching: Northside Wolves" or "Training: Emma M."
-- On the bottom nav, rename "Today" to "Home" -- it's more universally understood and matches what it actually does (route to dashboard)
+**Fix**: Add a bottom gradient mask on the phone mockup container in the mobile hero, so it fades out cleanly instead of being abruptly clipped by the section boundary.
 
----
-
-### 3. Empty states that teach, not just inform
-
-Several screens show empty states like "No teams yet" or "Dashboard not available" with generic descriptions. These are missed opportunities to guide users.
-
-**Changes:**
-- **Teams empty state**: Show a 3-step visual: "1. Create team -> 2. Invite families -> 3. Assign first workout" with a progress indicator
-- **Players empty state**: Differentiate between "your coach hasn't invited you yet" (show how to ask for an invite code) vs. "you haven't added your child" (show the add flow)
-- **CoachDashboard when no workout is published**: Instead of just showing planning cards, add a prominent "Your players have nothing to do today" nudge with a one-tap "Assign today's workout" button
+**File**: `src/pages/marketing/Home.tsx`
 
 ---
 
-### 4. Reduce cognitive load on the Coach Dashboard
+### 2. Demo page CTA copy leaks pricing during beta
 
-The CoachDashboard currently shows: TodayHeader, microcopy, OnboardingProgress, AddPlayerChoice, PlanningHubCards, ActivePrograms, AssignedWorkouts, TeamGoalCard, CoachCheers, TeamPulseBar, UpcomingEvents, and CoachDock -- up to 12 sections stacked vertically. That's overwhelming.
+The Demo page final CTA still says "Get started free. Teams can cover families. Otherwise parents upgrade after a 7-day trial." This contradicts the beta messaging everywhere else.
 
-**Changes:**
-- Collapse "Team Pulse" stats (players count, active today, sessions complete) into the TodayHeader as inline badges instead of a separate section
-- Move CoachDock actions (Roster, Progress, Settings) into the existing header bar as icon buttons -- they're already partially duplicated there (Settings gear is in the header AND the dock)
-- Remove the duplicate "Settings" access (it's in both the header icon and the CoachDock)
-- Group "Planning" and "Programs" into a single collapsible section
-- Net result: ~8 sections instead of 12
+**Fix**: Wrap the paragraph in a `BETA_MODE` conditional: show "Free during the beta. All features unlocked." when in beta.
+
+**File**: `src/pages/marketing/Demo.tsx` (line ~262)
 
 ---
 
-### 5. The "Invite Friend" card says "Give 7 days free" (beta inconsistency)
+### 3. Mobile nav: "Off-Ice Training for Families" tagline is hidden
 
-On the SoloDashboard, the third action card says "Invite Friend" with subtext "Give 7 days free". During beta, everything is free, so this copy is misleading.
+The tagline below "The Hockey App" in the MarketingNav uses `hidden sm:block`, so mobile users only see the logo and brand name. On mobile, the nav feels bare -- there's no context about what the app does until you scroll.
 
-**Changes:**
-- When `BETA_MODE` is true, change subtext to "Train together" or "Share the app"
-- Same pattern as the GetStartedModal beta copy updates already done
+**Fix**: This is actually fine for nav bar space constraints. No change needed -- just confirmed intentional.
 
 ---
 
-### 6. Settings page has "Coming soon" items that hurt credibility
+### 4. Consistent CTA button styling across marketing pages
 
-The Settings page shows "Notifications - Coming soon" and "Privacy - Coming soon" as disabled rows. For a beta launch, showing unfinished features makes the app feel incomplete.
+The Features page final CTA uses `asChild` with `Link to="/auth"`, while Home and Demo use `onClick` to open the `GetStartedModal`. This means clicking "Get Started" on the Features page skips the role selection flow entirely and goes straight to auth.
 
-**Changes:**
-- Remove "Coming soon" items entirely during beta, or replace with a single "More features coming soon" note at the bottom
-- Move the "Help & FAQ" link higher -- it's the most useful thing for beta testers
+**Fix**: Replace the Features page CTA with the same `GetStartedModal` pattern used on Home and Demo so users go through role selection first.
 
----
-
-### 7. Auth page: "Join Hockey App" headline on signup feels generic
-
-The signup page says "Join Hockey App" which doesn't reinforce the value proposition at the critical moment of conversion.
-
-**Changes:**
-- Change to "Start training smarter" or "Create your free account"
-- Add a single social proof line below: "Trusted by hockey families across North America" (or whatever is accurate for beta: "Join our growing beta community")
+**File**: `src/pages/marketing/Features.tsx` (lines ~210-219)
 
 ---
 
-### 8. SoloDashboard `window.location.reload()` on photo upload
+### 5. "Founder" and "Results" sections share the same gray background
 
-In `SoloDashboard.tsx`, the `onPhotoUploaded` callback does `window.location.reload()` which is a jarring full-page refresh that kills all state. 
+On the Home page, the Founder section and the Results section both use `bg-[hsl(0,0%,96%)]`, making them visually merge into one giant block. There's no separation -- the user can't tell where one ends and the other begins.
 
-**Changes:**
-- Replace with `queryClient.invalidateQueries({ queryKey: ['solo-dashboard', playerId] })` to refresh data without losing scroll position or local state
+**Fix**: Change the Results section background to `bg-background` (white) to alternate properly: gray (Founder) then white (Results) then white (CTA). Or insert a subtle divider.
 
----
-
-### 9. Marketing Home: second "did you do your training?" section is redundant
-
-The homepage has two sections that say essentially the same thing: the "Problem" section with the quoted question, and the "No more 'did you do your training?'" section lower down. This dilutes the emotional punch.
-
-**Changes:**
-- Remove the second instance or reframe it as a "Results" section: "What changes after one week" with concrete outcomes (e.g., "Kids train without being asked", "Coaches see who's putting in work", "Parents stop being the enforcer")
+**File**: `src/pages/marketing/Home.tsx` (line ~208)
 
 ---
 
-### 10. Add a "quick win" first-run experience for new players
+### 6. SoloDashboard three-card grid is too cramped on small screens
 
-When a kid opens the app for the first time after their parent signs them up, they land on PlayerHome which can be data-heavy and overwhelming. There's no guided first interaction.
+The 3-column `grid grid-cols-3 gap-3` with `aspect-square` cards becomes very tight on 320px-375px screens. The text inside ("Ready to Train", "Plan Training") can overflow or wrap awkwardly.
 
-**Changes:**
-- If the player has zero completed sessions, show a simplified "Welcome" overlay: "Your coach has assigned today's training. Tap to start!" pointing at the workout card
-- Dismiss after first session completion
+**Fix**: Change to `grid-cols-3 gap-2` on small screens with slightly reduced padding (`p-3` instead of `p-4`), or use `min-h-[100px]` instead of `aspect-square` to let cards flex vertically.
+
+**File**: `src/pages/SoloDashboard.tsx` (line ~254)
+
+---
+
+### 7. Coach Dashboard header logo + back button takes too much horizontal space
+
+The CoachDashboard header has: back chevron + logo image + "The Hockey App" text + context switcher + refresh + settings. On narrow screens, the text gets pushed off or the icons crowd. The "The Hockey App" branding in the header is redundant -- the user is already inside the app.
+
+**Fix**: Remove "The Hockey App" text from the CoachDashboard and PlayerHome headers (keep only the logo icon). This frees ~120px of horizontal space for the action buttons.
+
+**Files**: `src/pages/CoachDashboard.tsx` (line ~221), `src/pages/PlayerHome.tsx` (line ~431)
+
+---
+
+### 8. Empty state component lacks visual warmth
+
+The generic `EmptyState` component uses a small icon + plain text. For an app targeting kids and families, empty states should feel encouraging, not clinical.
+
+**Fix**: Add an optional `illustration` prop (React node) to EmptyState that renders above the icon, allowing pages to pass in custom illustrations or emoji-based graphics. Also increase the icon size from `h-6 w-6` to `h-10 w-10` and add a subtle background circle behind it.
+
+**File**: `src/components/app/EmptyState.tsx`
+
+---
+
+### 9. Settings page "Help & FAQ" links to the About page
+
+The Help & FAQ row opens `https://thehockeyapp.lovable.app/about` in a new tab, which is just the founder story. That's not help or FAQ content. Users clicking "Help" expect actual help.
+
+**Fix**: Either create a simple `/help` page with real FAQ content, or rename the link to "About The Hockey App" so expectations match. For beta, renaming is the fastest fix.
+
+**File**: `src/pages/Settings.tsx` (line ~367)
+
+---
+
+### 10. Auth page form card has inconsistent border radius
+
+The form card uses `rounded-3xl` (24px) while the inner inputs use `rounded-2xl` (16px). The toggle button at the bottom has no explicit rounding. This creates a subtle visual inconsistency.
+
+**Fix**: Standardize: card at `rounded-2xl`, inputs at `rounded-xl`. This matches the design system's `--radius: 1rem` (16px) base with `--radius-sm: 0.75rem` (12px) for inputs.
+
+**File**: `src/pages/Auth.tsx` (line ~162)
 
 ---
 
 ### Technical Details
 
 **Files to modify:**
-- `src/components/app/WorkoutCheckItem.tsx` -- Add completion animations (#1)
-- `src/components/app/AppShell.tsx` -- Smart single-entity skip logic, rename "Today" to "Home" (#2)
-- `src/pages/Teams.tsx`, `src/pages/Players.tsx` -- Auto-redirect when single entity (#2)
-- `src/pages/CoachDashboard.tsx` -- Consolidate sections, remove duplicate Settings (#4)
-- `src/components/dashboard/CoachDock.tsx` -- Remove Settings item or the header icon (#4)
-- `src/components/dashboard/TeamPulseBar.tsx` -- Merge into TodayHeader (#4)
-- `src/pages/SoloDashboard.tsx` -- Fix reload, beta copy for invite card (#5, #8)
-- `src/pages/Settings.tsx` -- Remove "Coming soon" items, reorder sections (#6)
-- `src/pages/Auth.tsx` -- Update signup headline and add social proof (#7)
-- `src/pages/marketing/Home.tsx` -- Reframe second "did you do your training" section (#9)
-- `src/pages/PlayerHome.tsx` -- Add first-run welcome overlay (#10)
-- Various empty state components -- Enhance with guided steps (#3)
+- `src/pages/marketing/Home.tsx` -- Fix merged gray sections (#5)
+- `src/pages/marketing/Demo.tsx` -- Beta CTA copy fix (#2)
+- `src/pages/marketing/Features.tsx` -- Use GetStartedModal instead of direct Link (#4)
+- `src/pages/SoloDashboard.tsx` -- Responsive card grid fix (#6)
+- `src/pages/CoachDashboard.tsx` -- Remove redundant brand text from header (#7)
+- `src/pages/PlayerHome.tsx` -- Remove redundant brand text from header (#7)
+- `src/components/app/EmptyState.tsx` -- Larger icon, optional illustration (#8)
+- `src/pages/Settings.tsx` -- Rename misleading "Help & FAQ" link (#9)
+- `src/pages/Auth.tsx` -- Standardize border radius (#10)
 
