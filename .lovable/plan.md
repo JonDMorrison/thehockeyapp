@@ -1,28 +1,53 @@
 
 
-## Redesign the Features Section: Use-Case Cards
+## Recommendations to Improve The Hockey App
 
-Replace the current 4 feature cards (Wi-Fi, Schedule, Privacy, Rewards) with 4 new use-case-oriented cards that show visitors *how* they can use the app. This shifts from technical features to practical scenarios.
+### 1. Pricing page is still fully accessible via direct URL
+The `/pricing` route is still registered in `App.tsx` and the `Pricing.tsx` page has zero beta-mode awareness. Anyone navigating to `/pricing` directly sees full pricing ($15/mo, $500/yr, comparison tables, FAQs about payment). This contradicts the beta messaging everywhere else.
 
-### New Cards
+**Fix**: Either redirect `/pricing` to `/` when `BETA_MODE` is true, or wrap the page content with beta-aware copy.
 
-1. **Perfect for coaches** -- Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.
-2. **Run a spring or summer program** -- Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.
-3. **Set up your family** -- Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.
-4. **Works for any age or level** -- From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.
+---
 
-### Visual Updates
+### 2. UpgradePrompt component still shows paid copy
+`src/components/app/UpgradePrompt.tsx` still references "$15/month after trial", "Start 7-Day Free Trial", and "$500/yr" pricing. If any code path renders this component during beta, users see contradictory messaging.
 
-- Icons will change to match the new themes: Users (coaches/team), Calendar (seasonal program), Home (family), TrendingUp (growth/levels)
-- Keep the existing card styling (rounded-2xl, hover shadow, decorative circles)
-- Section headline updated to something like: **"One app. A hundred ways to use it."**
-- Subtitle updated to reinforce versatility
+**Fix**: When `BETA_MODE` is true, either hide UpgradePrompt entirely or replace its copy with "All features unlocked during beta."
+
+---
+
+### 3. Dead Index.tsx page is routable
+`src/pages/Index.tsx` is a component demo/reference screen (Team Home, Today, Players tabs with fake data). It's not linked from anywhere meaningful but is NOT the marketing home page -- that's `Home.tsx`. However, it's imported in `App.tsx` but never used in routes (Home is mapped to `/`). This is dead code that should be removed to reduce bundle size and avoid confusion.
+
+**Fix**: Remove `Index.tsx` since it's unused.
+
+---
+
+### 4. Missing `<title>` and meta tags
+`index.html` likely has generic Vite boilerplate metadata. For a production beta launch, proper page titles, Open Graph tags, and a favicon setup matter for link sharing.
+
+**Fix**: Update `index.html` with proper title ("The Hockey App - Off-Ice Training for Hockey Families"), description, and OG tags.
+
+---
+
+### 5. Pricing route still lazy-loaded in App.tsx
+Even though the nav hides the Pricing link, the route `<Route path="/pricing" element={<Pricing />} />` is still active. This means the page is accessible and indexed by search engines.
+
+**Fix**: Conditionally render the `/pricing` route only when `BETA_MODE` is false, or redirect it.
+
+---
 
 ### Technical Details
 
-- **File**: `src/pages/marketing/Home.tsx`
-- Replace the 4 feature card content blocks (lines ~145-190) with new titles, descriptions, and icons
-- Update section heading and subtitle text
-- Import any new icons from lucide-react (e.g., `Users`, `Home`, `TrendingUp`) replacing `Wifi` and `Shield`
-- No structural or layout changes needed -- same 2x2 grid, same card component pattern
+**Files to modify:**
+- `src/App.tsx` -- Remove Index.tsx import (dead code), conditionally exclude `/pricing` route during beta
+- `src/components/app/UpgradePrompt.tsx` -- Add BETA_MODE guard to hide or replace copy
+- `src/pages/Index.tsx` -- Delete (unused reference screen)
+- `index.html` -- Add proper title, meta description, OG tags
+
+**Files already correct (no changes needed):**
+- `MarketingNav.tsx` -- Already hides Pricing link in beta
+- `MarketingFooter.tsx` -- Already hides Pricing link in beta
+- `Settings.tsx` -- Already shows beta banner
+- `useEntitlements.ts` -- Already grants full access in beta
 
