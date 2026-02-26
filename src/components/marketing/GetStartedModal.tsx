@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { BETA_MODE } from "@/core/constants";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -37,7 +38,9 @@ const options = [
     id: "coach",
     role: "coach" as SelectedRole,
     title: "I'm a Coach",
-    description: "Create your team and assign off-ice workouts — always free. Upgrade to a Team Plan ($500/yr) to cover your entire roster.",
+    description: BETA_MODE
+      ? "Create your team and assign off-ice workouts — completely free during the beta."
+      : "Create your team and assign off-ice workouts — always free. Upgrade to a Team Plan ($500/yr) to cover your entire roster.",
     icon: Users,
     buttonLabel: "Start Coaching — Free",
     buttonVariant: "default" as const,
@@ -50,11 +53,13 @@ const options = [
     id: "parent",
     role: "solo" as SelectedRole,
     title: "I'm a Parent",
-    description: "Build consistent off-ice habits at home. 7-day free trial, then $15/mo. If your team has a plan, you're already covered.",
+    description: BETA_MODE
+      ? "Build consistent off-ice habits at home. All features free during the beta period."
+      : "Build consistent off-ice habits at home. 7-day free trial, then $15/mo. If your team has a plan, you're already covered.",
     icon: Dumbbell,
-    buttonLabel: "Start 7-Day Free Trial",
+    buttonLabel: BETA_MODE ? "Get Started Free" : "Start 7-Day Free Trial",
     buttonVariant: "default" as const,
-    smallText: "Credit card required · Cancel anytime",
+    smallText: BETA_MODE ? "No credit card required." : "Credit card required · Cancel anytime",
     directHref: null,
     iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
     hoverClass: "hover:border-orange-500/50",
@@ -95,10 +100,12 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 text-center">
             <DialogTitle className="text-xl">
-              Start free. Choose your role.
+              {BETA_MODE ? "Get started free during the beta." : "Start free. Choose your role."}
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Coaches use it free. Parents start with a 7-day trial. Teams can cover everyone.
+              {BETA_MODE
+                ? "All features unlocked. No credit card required."
+                : "Coaches use it free. Parents start with a 7-day trial. Teams can cover everyone."}
             </p>
           </DialogHeader>
 
@@ -140,7 +147,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
 
             <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
-              Free for coaches. Teams can cover families. No hidden fees.
+              {BETA_MODE ? "All features free during the beta. No hidden fees." : "Free for coaches. Teams can cover families. No hidden fees."}
             </p>
           </div>
               );

@@ -251,7 +251,7 @@ export default function SoloTryWorkout() {
               size="lg"
               className="w-full"
             >
-              Start Free Trial
+              Get Started Free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <p className="text-xs text-muted-foreground text-center">
@@ -268,7 +268,7 @@ export default function SoloTryWorkout() {
       <div className="px-6 py-12 mt-8">
         <div className="max-w-md mx-auto text-center">
           <p className="text-xs text-muted-foreground">
-            No credit card required. Cancel anytime.
+            No credit card required. Free during the beta.
           </p>
         </div>
       </div>
