@@ -363,7 +363,7 @@ export default function Settings() {
           <div className="bg-card border border-border rounded-xl divide-y divide-border">
             <SettingsRow
               icon={HelpCircle}
-              label="Help & FAQ"
+              label="About The Hockey App"
               onClick={() => window.open("https://thehockeyapp.lovable.app/about", "_blank")}
             />
             <SettingsRow

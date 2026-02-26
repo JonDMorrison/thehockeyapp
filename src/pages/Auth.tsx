@@ -159,7 +159,7 @@ const Auth: React.FC = () => {
           </div>
 
           {/* Form Card */}
-          <div className="bg-card/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl shadow-primary/5 border border-border/50">
+          <div className="bg-card/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl shadow-primary/5 border border-border/50">
             <form onSubmit={handleSubmit} className="space-y-5">
               {mode === "signup" && (
                 <div className="space-y-2">
@@ -174,7 +174,7 @@ const Auth: React.FC = () => {
                       placeholder="First and last name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.displayName ? "border-destructive" : ""}`}
+                      className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.displayName ? "border-destructive" : ""}`}
                       autoComplete="name"
                     />
                   </div>
@@ -196,7 +196,7 @@ const Auth: React.FC = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.email ? "border-destructive" : ""}`}
+                    className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.email ? "border-destructive" : ""}`}
                     autoComplete="email"
                     autoFocus
                   />
@@ -218,7 +218,7 @@ const Auth: React.FC = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`pl-12 h-14 rounded-2xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
+                    className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
                     autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   />
                 </div>

@@ -426,10 +426,7 @@ const PlayerHome: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
-              <span className="font-semibold text-foreground">The Hockey App</span>
-            </div>
+            <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
           </div>
           <div className="flex items-center gap-1">
             <ContextSwitcher currentPlayerId={id} compact />
