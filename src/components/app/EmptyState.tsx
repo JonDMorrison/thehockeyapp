@@ -5,6 +5,7 @@ import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: LucideIcon;
+  illustration?: React.ReactNode;
   title: string;
   description?: string;
   action?: {
@@ -14,7 +15,7 @@ interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
-  ({ className, icon: Icon, title, description, action, ...props }, ref) => {
+  ({ className, icon: Icon, illustration, title, description, action, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -24,8 +25,13 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
         {...props}
       >
-        {Icon && (
-          <Icon className="h-6 w-6 text-muted-foreground mb-3" strokeWidth={1.5} />
+        {illustration && (
+          <div className="mb-4">{illustration}</div>
+        )}
+        {Icon && !illustration && (
+          <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+            <Icon className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
+          </div>
         )}
         <h3 className="text-base font-semibold text-foreground mb-1">
           {title}

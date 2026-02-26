@@ -251,11 +251,11 @@ export default function SoloDashboard() {
 
         <div className="px-5 space-y-6 pb-8">
           {/* Three Card Grid */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {/* Card 1: Ready to Train */}
             <motion.button
               onClick={handleStartWorkout}
-              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-blue-500 to-indigo-600 text-left"
+              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-blue-500 to-indigo-600 text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -325,7 +325,7 @@ export default function SoloDashboard() {
             {/* Card 2: Plan Training */}
             <motion.button
               onClick={() => navigate(`/solo/planning/${playerId}`)}
-              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-emerald-500 to-teal-600 text-left"
+              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-emerald-500 to-teal-600 text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -351,7 +351,7 @@ export default function SoloDashboard() {
             {/* Card 3: Invite A Friend */}
             <motion.button
               onClick={() => setShowInviteModal(true)}
-              className="relative overflow-hidden rounded-2xl p-4 aspect-square flex flex-col justify-between bg-gradient-to-br from-orange-500 to-amber-500 text-left"
+              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-orange-500 to-amber-500 text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}

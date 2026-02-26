@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import {
   FeatureTaskCard,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 
 const Features: React.FC = () => {
+  const [showGetStarted, setShowGetStarted] = useState(false);
   const features = [
     {
       icon: ClipboardList,
@@ -210,12 +212,10 @@ const Features: React.FC = () => {
               <Button 
                 size="lg" 
                 className="bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
-                asChild
+                onClick={() => setShowGetStarted(true)}
               >
-                <Link to="/auth">
-                  Get Started For Free
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
-                </Link>
+                Get Started For Free
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
               </Button>
               <Button 
                 size="lg" 
@@ -234,6 +234,7 @@ const Features: React.FC = () => {
       </section>
 
       <MarketingFooter />
+      <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
 };

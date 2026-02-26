@@ -64,12 +64,16 @@ const Home: React.FC = () => {
 
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative">
-                <PhoneMockup 
-                  showGlow={false}
-                  className="w-72 lg:w-80"
-                >
-                  <MarketingAppPreview />
-                </PhoneMockup>
+                <div className="relative">
+                  <PhoneMockup 
+                    showGlow={false}
+                    className="w-72 lg:w-80"
+                  >
+                    <MarketingAppPreview />
+                  </PhoneMockup>
+                  {/* Bottom gradient mask for clean mobile crop */}
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[hsl(0,0%,98%)] to-transparent pointer-events-none lg:hidden" />
+                </div>
               </div>
             </div>
           </div>
@@ -205,7 +209,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Results Section */}
-      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+       <section className="relative py-20 lg:py-28 bg-background overflow-hidden">
         <div className="absolute -top-10 -left-20 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
         <div className="absolute bottom-10 right-0 w-64 h-64 rounded-full bg-[hsl(213,100%,25%,0.03)] blur-3xl" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
