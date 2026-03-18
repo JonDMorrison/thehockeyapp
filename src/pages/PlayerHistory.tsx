@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
@@ -21,29 +22,30 @@ import {
   X,
 } from "lucide-react";
 
-const tierLabels: Record<string, string> = {
-  rec: "Rec",
-  rep: "Rep",
-  elite: "Elite",
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  complete: <Check className="w-4 h-4" />,
-  partial: <Clock className="w-4 h-4" />,
-  none: <X className="w-4 h-4" />,
-};
-
-const statusLabels: Record<string, string> = {
-  complete: "Complete",
-  partial: "Partial",
-  none: "Not started",
-};
-
 const PlayerHistory: React.FC = () => {
+  const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+
+  const tierLabels: Record<string, string> = {
+    rec: t("teams.practice.tierRec"),
+    rep: t("teams.practice.tierRep"),
+    elite: t("teams.practice.tierElite"),
+  };
+
+  const statusIcons: Record<string, React.ReactNode> = {
+    complete: <Check className="w-4 h-4" />,
+    partial: <Clock className="w-4 h-4" />,
+    none: <X className="w-4 h-4" />,
+  };
+
+  const statusLabels: Record<string, string> = {
+    complete: t("players.history.statusComplete"),
+    partial: t("players.history.statusPartial"),
+    none: t("players.history.statusNone"),
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -174,13 +176,13 @@ const PlayerHistory: React.FC = () => {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => navigate("/today")}
+            onClick={() => navigate(`/players/${playerId}/home`)}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-bold truncate">History</h1>
-            <p className="text-xs text-text-muted">Last 7 days</p>
+            <h1 className="text-lg font-bold truncate">{t("players.history.title")}</h1>
+            <p className="text-xs text-text-muted">{t("players.history.subtitle")}</p>
           </div>
           {player && (
             <Avatar
@@ -193,7 +195,15 @@ const PlayerHistory: React.FC = () => {
       }
     >
       <PageContainer>
-        {history && history.length > 0 ? (
+        {!teamData ? (
+          <AppCard>
+            <EmptyState
+              icon={Calendar}
+              title={t("players.history.noTeamTitle")}
+              description={t("players.history.noTeamDescription")}
+            />
+          </AppCard>
+        ) : history && history.length > 0 ? (
           <div className="space-y-3">
             {history.map((card) => {
               const cardDate = parseISO(card.date);
@@ -219,11 +229,11 @@ const PlayerHistory: React.FC = () => {
                         <Tag variant="tier" size="sm">{tierLabels[card.tier]}</Tag>
                       </div>
                       <p className="text-sm text-text-muted">
-                        {taskCount} task{taskCount !== 1 ? "s" : ""}
+                        {taskCount} {taskCount !== 1 ? t("teams.practice.tasks") : t("teams.practice.task")}
                       </p>
                     </div>
                     <Tag
-                      variant={status === "complete" ? "success" : status === "partial" ? "neutral" : "neutral"}
+                      variant={status === "complete" ? "success" : status === "partial" ? "warning" : "neutral"}
                       size="sm"
                     >
                       {statusIcons[status]}
@@ -238,8 +248,8 @@ const PlayerHistory: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={Calendar}
-              title="No practice history"
-              description="Practice cards from the last 7 days will appear here."
+              title={t("players.history.emptyTitle")}
+              description={t("players.history.noCompletionsDescription")}
             />
           </AppCard>
         )}

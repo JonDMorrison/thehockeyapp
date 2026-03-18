@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import type { Challenge } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, addDays } from "date-fns";
 import { motion } from "framer-motion";
-import { 
-  Flame, Play, CheckCircle2, ChevronRight, Lock, RotateCcw,
+import {
+  Flame, Play, CheckCircle2, ChevronRight, Lock,
   Target, Dumbbell, Zap, Calendar, Star, Award, Trophy, Medal,
   Shield, Crown, CheckCircle, Brain, Users, Settings
 } from "lucide-react";
@@ -40,21 +42,21 @@ const BADGE_ICONS: Record<string, React.ElementType> = {
 
 // Badge categories for grouping
 const BADGE_CATEGORIES = [
-  { 
-    id: 'consistency', 
-    label: 'Consistency', 
+  {
+    id: 'consistency',
+    label: 'Consistency',
     metricTypes: ['sessions_completed'],
     description: 'Keep showing up'
   },
-  { 
-    id: 'shooting', 
-    label: 'Shooting', 
+  {
+    id: 'shooting',
+    label: 'Shooting',
     metricTypes: ['total_shots'],
     description: 'Put in the reps'
   },
-  { 
-    id: 'gameday', 
-    label: 'Game Ready', 
+  {
+    id: 'gameday',
+    label: 'Game Ready',
     metricTypes: ['game_day_completed', 'prep_tasks_completed'],
     description: 'Be prepared'
   },
@@ -109,11 +111,19 @@ interface DashboardData {
 }
 
 export default function SoloDashboard() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showScheduleConnect, setShowScheduleConnect] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const { data: dashboard, isLoading } = useQuery({
     queryKey: ['solo-dashboard', playerId],
@@ -140,7 +150,10 @@ export default function SoloDashboard() {
           .select('*')
           .eq('is_active', true)
       ]);
-      
+
+      if (earnedResult.error) throw earnedResult.error;
+      if (allChallengesResult.error) throw allChallengesResult.error;
+
       return {
         earned: earnedResult.data || [],
         all: allChallengesResult.data || []
@@ -149,7 +162,7 @@ export default function SoloDashboard() {
     enabled: !!playerId,
   });
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <AppShell>
         <div className="p-4 space-y-6">
@@ -161,14 +174,23 @@ export default function SoloDashboard() {
     );
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   if (!dashboard?.success) {
     return (
       <AppShell>
         <div className="p-4 text-center pt-20">
-          <p className="text-muted-foreground">Unable to load dashboard</p>
-          <Button className="mt-4" onClick={() => navigate('/solo/setup')}>
-            Go to Setup
-          </Button>
+          <p className="text-muted-foreground">{t('solo.unableToLoadDashboard')}</p>
+          <div className="flex gap-3 justify-center mt-4">
+            <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ['solo-dashboard', playerId] })}>
+              {t('common.retry')}
+            </Button>
+            <Button onClick={() => navigate('/solo/setup')}>
+              {t('solo.goToSetup')}
+            </Button>
+          </div>
         </div>
       </AppShell>
     );
@@ -177,10 +199,6 @@ export default function SoloDashboard() {
   const { player, today, streak, recent_workouts, week_activity, stats, plan } = dashboard;
 
   const handleStartWorkout = () => {
-    navigate(`/solo/today/${playerId}`);
-  };
-
-  const handleRepeatWorkout = (cardId: string) => {
     navigate(`/solo/today/${playerId}`);
   };
 
@@ -199,8 +217,8 @@ export default function SoloDashboard() {
     };
   });
 
-  const progressPercent = today.task_count > 0 
-    ? Math.round((today.completed_count / today.task_count) * 100) 
+  const progressPercent = today.task_count > 0
+    ? Math.round((today.completed_count / today.task_count) * 100)
     : 0;
 
   return (
@@ -228,14 +246,14 @@ export default function SoloDashboard() {
               />
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  Hey {player.first_name}!
+                  {t('solo.heyName', { name: player.first_name })}
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(), 'EEEE, MMM d')}
                 </p>
               </div>
             </div>
-            
+
             {/* Context Switcher & Streak */}
             <div className="flex items-center gap-2">
               <ContextSwitcher currentPlayerId={playerId} compact />
@@ -265,7 +283,7 @@ export default function SoloDashboard() {
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
               <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
-              
+
               {/* Icon */}
               <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 {today.status === 'complete' ? (
@@ -273,17 +291,17 @@ export default function SoloDashboard() {
                 ) : today.status === 'in_progress' ? (
                   <div className="relative">
                     <svg className="w-5 h-5 text-white" viewBox="0 0 24 24">
-                      <circle 
-                        cx="12" cy="12" r="10" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
+                      <circle
+                        cx="12" cy="12" r="10"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
                         opacity="0.3"
                       />
-                      <circle 
-                        cx="12" cy="12" r="10" 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <circle
+                        cx="12" cy="12" r="10"
+                        fill="none"
+                        stroke="currentColor"
                         strokeWidth="2"
                         strokeDasharray={`${progressPercent * 0.628} 100`}
                         strokeLinecap="round"
@@ -298,25 +316,25 @@ export default function SoloDashboard() {
                   <Play className="w-5 h-5 text-white" />
                 )}
               </div>
-              
+
               {/* Content */}
               <div className="relative z-10">
                 <h3 className="font-bold text-white text-sm leading-tight">
-                  {today.status === 'complete' 
-                    ? "Done!" 
-                    : today.status === 'in_progress' 
-                      ? "Continue" 
-                      : "Ready to Train"
+                  {today.status === 'complete'
+                    ? t('solo.statusDone')
+                    : today.status === 'in_progress'
+                      ? t('solo.statusContinue')
+                      : t('solo.statusReadyToTrain')
                   }
                 </h3>
                 <p className="text-white/70 text-xs mt-0.5">
-                  {today.status === 'complete' 
-                    ? "Great work" 
+                  {today.status === 'complete'
+                    ? t('solo.statusGreatWork')
                     : today.status === 'in_progress'
-                      ? `${today.completed_count}/${today.task_count} done`
-                      : today.card_id 
-                        ? `${today.task_count} tasks`
-                        : "Start now"
+                      ? t('solo.statusProgressCount', { completed: today.completed_count, total: today.task_count })
+                      : today.card_id
+                        ? t('solo.statusTaskCount', { count: today.task_count })
+                        : t('solo.statusStartNow')
                   }
                 </p>
               </div>
@@ -335,16 +353,16 @@ export default function SoloDashboard() {
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
               <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
-              
+
               {/* Icon */}
               <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
-              
+
               {/* Content */}
               <div className="relative z-10">
-                <h3 className="font-bold text-white text-sm leading-tight">Plan Training</h3>
-                <p className="text-white/70 text-xs mt-0.5">Build routines</p>
+                <h3 className="font-bold text-white text-sm leading-tight">{t('solo.planTraining')}</h3>
+                <p className="text-white/70 text-xs mt-0.5">{t('solo.buildRoutines')}</p>
               </div>
             </motion.button>
 
@@ -361,16 +379,16 @@ export default function SoloDashboard() {
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
               <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />
-              
+
               {/* Icon */}
               <div className="relative z-10 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
-              
+
               {/* Content */}
               <div className="relative z-10">
-                <h3 className="font-bold text-white text-sm leading-tight">Invite Friend</h3>
-                <p className="text-white/70 text-xs mt-0.5">{BETA_MODE ? "Train together" : "Give 7 days free"}</p>
+                <h3 className="font-bold text-white text-sm leading-tight">{t('solo.inviteFriend')}</h3>
+                <p className="text-white/70 text-xs mt-0.5">{BETA_MODE ? t('solo.trainTogether') : t('solo.give7DaysFree')}</p>
               </div>
             </motion.button>
           </div>
@@ -379,16 +397,16 @@ export default function SoloDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">This Week</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">{t('solo.thisWeek')}</h3>
             </div>
             <div className="flex gap-2">
               {weekDays.map((day, idx) => (
-                <div 
-                  key={idx}
+                <div
+                  key={day.date}
                   className={cn(
                     "flex-1 aspect-square rounded-xl flex flex-col items-center justify-center transition-all",
-                    day.completed 
-                      ? "bg-primary/10" 
+                    day.completed
+                      ? "bg-primary/10"
                       : day.hasWorkout
                         ? "bg-amber-500/10"
                         : "bg-muted/50",
@@ -397,8 +415,8 @@ export default function SoloDashboard() {
                 >
                   <span className={cn(
                     "text-xs font-medium",
-                    day.completed 
-                      ? "text-primary" 
+                    day.completed
+                      ? "text-primary"
                       : day.hasWorkout
                         ? "text-amber-600"
                         : "text-muted-foreground"
@@ -419,25 +437,25 @@ export default function SoloDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium text-muted-foreground">Teams</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">{t('solo.teams')}</h3>
             </div>
             <SoloJoinTeamSection playerId={playerId!} variant="card" />
           </div>
 
           {/* Schedule Widget */}
-          <SoloUpcomingEvents 
+          <SoloUpcomingEvents
             playerId={playerId!}
             onConnectSchedule={() => navigate(`/solo/settings/${playerId}`)}
           />
           {recent_workouts && recent_workouts.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                Completed Workouts
+                {t('solo.completedWorkouts')}
               </h3>
               <div className="space-y-2">
                 {recent_workouts.slice(0, 3).map((workout) => (
-                  <div 
-                    key={workout.id} 
+                  <div
+                    key={workout.id}
                     className="bg-card border border-border rounded-xl p-4 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
@@ -446,21 +464,13 @@ export default function SoloDashboard() {
                       </div>
                       <div>
                         <p className="font-medium text-sm text-foreground">
-                          {workout.title || 'Workout'}
+                          {workout.title || t('solo.workoutFallback')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(workout.date), 'MMM d')} · {workout.task_count} tasks
+                          {format(new Date(workout.date), 'MMM d')} · {workout.task_count} {t('solo.tasks')}
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground"
-                      onClick={() => handleRepeatWorkout(workout.id)}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
                   </div>
                 ))}
               </div>
@@ -471,38 +481,38 @@ export default function SoloDashboard() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-muted-foreground">
-                Badges to Earn
+                {t('solo.badgesToEarn')}
               </h3>
-              <button 
+              <button
                 className="text-xs text-primary font-medium flex items-center gap-0.5"
                 onClick={() => navigate(`/solo/badges/${playerId}`)}
               >
-                View all <ChevronRight className="h-3 w-3" />
+                {t('solo.viewAll')} <ChevronRight className="h-3 w-3" />
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {BADGE_CATEGORIES.map((category) => {
                 // Get badges for this category
-                const categoryBadges = badges?.all.filter((c: Challenge) => 
+                const categoryBadges = badges?.all.filter((c: Challenge) =>
                   category.metricTypes.includes(c.metric_type)
                 ) || [];
-                
+
                 // Get earned badges in this category
                 const earnedInCategory = categoryBadges.filter((c: Challenge) =>
                   badges?.earned.find((e: { challenge_id: string }) => e.challenge_id === c.id)
                 );
-                
+
                 // Get next badge to earn (lowest target not yet earned)
                 const unearnedBadges = categoryBadges
                   .filter((c: Challenge) => !badges?.earned.find((e: { challenge_id: string }) => e.challenge_id === c.id))
                   .sort((a: Challenge, b: Challenge) => a.target_value - b.target_value);
-                
+
                 const nextBadge = unearnedBadges[0];
                 const IconComponent = nextBadge ? BADGE_ICONS[nextBadge.badge_icon] || Star : Star;
-                
+
                 return (
-                  <div 
+                  <div
                     key={category.id}
                     className="bg-card border border-border rounded-xl p-4"
                   >
@@ -510,22 +520,22 @@ export default function SoloDashboard() {
                       {/* Badge Icon */}
                       <div className={cn(
                         "w-12 h-12 rounded-xl flex items-center justify-center",
-                        earnedInCategory.length > 0 
-                          ? "bg-primary/10" 
+                        earnedInCategory.length > 0
+                          ? "bg-primary/10"
                           : "bg-muted/50"
                       )}>
                         {nextBadge ? (
                           <IconComponent className={cn(
                             "h-6 w-6",
-                            earnedInCategory.length > 0 
-                              ? "text-primary" 
+                            earnedInCategory.length > 0
+                              ? "text-primary"
                               : "text-muted-foreground"
                           )} />
                         ) : (
                           <CheckCircle2 className="h-6 w-6 text-primary" />
                         )}
                       </div>
-                      
+
                       {/* Badge Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -539,13 +549,13 @@ export default function SoloDashboard() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">
-                          {nextBadge 
-                            ? `Next: ${nextBadge.name}` 
-                            : "All badges earned!"
+                          {nextBadge
+                            ? t('solo.nextBadge', { name: nextBadge.name })
+                            : t('solo.allBadgesEarned')
                           }
                         </p>
                       </div>
-                      
+
                       {/* Lock or Check */}
                       {nextBadge ? (
                         <Lock className="h-4 w-4 text-muted-foreground/50" />
@@ -563,15 +573,15 @@ export default function SoloDashboard() {
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-foreground">{stats.total_workouts}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Workouts</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('solo.statWorkouts')}</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-foreground">{stats.total_shots}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Shots</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('solo.statShots')}</p>
             </div>
             <div className="bg-card border border-border rounded-xl p-4 text-center">
               <p className="text-2xl font-bold text-foreground">{stats.badges_earned}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Badges</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('solo.statBadges')}</p>
             </div>
           </div>
         </div>

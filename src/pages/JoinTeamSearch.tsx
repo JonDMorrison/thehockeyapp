@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -9,13 +10,13 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Search, 
-  Users, 
-  ChevronRight, 
-  Link2, 
+import {
+  Search,
+  Users,
+  ChevronRight,
+  Link2,
   ArrowLeft,
-  Dumbbell 
+  Dumbbell
 } from "lucide-react";
 
 interface TeamResult {
@@ -29,17 +30,24 @@ interface TeamResult {
 }
 
 const JoinTeamSearch: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [activeTab, setActiveTab] = useState<"search" | "code">("search");
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Search teams by name
   const { data: teams, isLoading, isFetching } = useQuery({
-    queryKey: ["team-search", searchQuery],
+    queryKey: ["team-search", debouncedSearch],
     queryFn: async () => {
-      if (!searchQuery || searchQuery.length < 2) return [];
-      
+      if (!debouncedSearch || debouncedSearch.length < 2) return [];
+
       // Search for teams with active invites
       const { data, error } = await supabase
         .from("teams")
@@ -52,7 +60,7 @@ const JoinTeamSearch: React.FC = () => {
           palette_id,
           team_invites!inner(token, status, expires_at)
         `)
-        .ilike("name", `%${searchQuery}%`)
+        .ilike("name", `%${debouncedSearch}%`)
         .eq("team_invites.status", "active")
         .gt("team_invites.expires_at", new Date().toISOString())
         .limit(10);
@@ -70,7 +78,7 @@ const JoinTeamSearch: React.FC = () => {
         invite_token: team.team_invites?.[0]?.token || null,
       })) as TeamResult[];
     },
-    enabled: searchQuery.length >= 2,
+    enabled: debouncedSearch.length >= 2,
     staleTime: 30000,
   });
 
@@ -94,19 +102,21 @@ const JoinTeamSearch: React.FC = () => {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/welcome")}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold">Join a Team</h1>
-            <p className="text-sm text-muted-foreground">Find your team to start training</p>
+            <h1 className="text-xl font-bold">{t("auth.joinTeamSearch.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("auth.joinTeamSearch.subtitle")}</p>
           </div>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex gap-2 p-1 bg-muted rounded-lg mb-6">
+        <div role="tablist" className="flex gap-2 p-1 bg-muted rounded-lg mb-6">
           <button
+            role="tab"
+            aria-selected={activeTab === "search"}
             onClick={() => setActiveTab("search")}
             className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
               activeTab === "search"
@@ -115,9 +125,11 @@ const JoinTeamSearch: React.FC = () => {
             }`}
           >
             <Search className="w-4 h-4 inline-block mr-2" />
-            Search
+            {t("auth.joinTeamSearch.searchTab")}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "code"}
             onClick={() => setActiveTab("code")}
             className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
               activeTab === "code"
@@ -126,7 +138,7 @@ const JoinTeamSearch: React.FC = () => {
             }`}
           >
             <Link2 className="w-4 h-4 inline-block mr-2" />
-            Invite Code
+            {t("auth.joinTeamSearch.inviteCodeTab")}
           </button>
         </div>
 
@@ -137,7 +149,7 @@ const JoinTeamSearch: React.FC = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search by team name..."
+                placeholder={t("auth.joinTeamSearch.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-12 text-base"
@@ -151,11 +163,11 @@ const JoinTeamSearch: React.FC = () => {
                 <SkeletonCard />
                 <SkeletonCard />
               </div>
-            ) : searchQuery.length < 2 ? (
+            ) : debouncedSearch.length < 2 ? (
               <AppCard className="text-center py-12">
                 <Users className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                  Type at least 2 characters to search for teams
+                  {t("auth.joinTeamSearch.searchHint")}
                 </p>
               </AppCard>
             ) : teams && teams.length > 0 ? (
@@ -189,8 +201,8 @@ const JoinTeamSearch: React.FC = () => {
               <AppCard>
                 <EmptyState
                   icon={Users}
-                  title="No teams found"
-                  description="Try a different search term or ask your coach for an invite code."
+                  title={t("auth.joinTeamSearch.noTeamsTitle")}
+                  description={t("auth.joinTeamSearch.noTeamsDescription")}
                 />
               </AppCard>
             )}
@@ -199,14 +211,14 @@ const JoinTeamSearch: React.FC = () => {
           <>
             {/* Invite Code Input */}
             <AppCard className="mb-6">
-              <AppCardTitle className="text-lg mb-2">Have an invite code?</AppCardTitle>
+              <AppCardTitle className="text-lg mb-2">{t("auth.joinTeamSearch.haveInviteCodeTitle")}</AppCardTitle>
               <AppCardDescription className="mb-4">
-                Your coach may have shared an invite link or code. Paste it below.
+                {t("auth.joinTeamSearch.haveInviteCodeDescription")}
               </AppCardDescription>
               <div className="space-y-3">
                 <Input
                   type="text"
-                  placeholder="Paste invite code or link..."
+                  placeholder={t("auth.joinTeamSearch.inviteCodePlaceholder")}
                   value={inviteCode}
                   onChange={(e) => {
                     // Extract code from URL if pasted
@@ -225,13 +237,13 @@ const JoinTeamSearch: React.FC = () => {
                   disabled={!inviteCode.trim()}
                 >
                   <Link2 className="w-4 h-4 mr-2" />
-                  Join with Code
+                  {t("auth.joinTeamSearch.joinWithCodeButton")}
                 </Button>
               </div>
             </AppCard>
 
             <p className="text-sm text-muted-foreground text-center">
-              Don't have a code? Switch to Search to find your team.
+              {t("auth.joinTeamSearch.noCodeHint")}
             </p>
           </>
         )}
@@ -244,9 +256,9 @@ const JoinTeamSearch: React.FC = () => {
                 <Dumbbell className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold mb-1">Not on a team?</h3>
+                <h3 className="font-semibold mb-1">{t("auth.joinTeamSearch.notOnTeamTitle")}</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Train on your own and track your progress without a coach.
+                  {t("auth.joinTeamSearch.notOnTeamDescription")}
                 </p>
                 <Button
                   variant="outline"
@@ -254,7 +266,7 @@ const JoinTeamSearch: React.FC = () => {
                   asChild
                 >
                   <Link to="/solo/setup">
-                    Train On My Own
+                    {t("auth.joinTeamSearch.trainOnMyOwnButton")}
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </Link>
                 </Button>

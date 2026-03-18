@@ -1,14 +1,31 @@
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
+const COLLISION_DISMISSED_KEY = "collisionBannerDismissed";
 
 interface CollisionBannerProps {
   onManageSubscription: () => void;
   portalLoading: boolean;
+  cardId?: string;
 }
 
-export function CollisionBanner({ onManageSubscription, portalLoading }: CollisionBannerProps) {
+export function CollisionBanner({ onManageSubscription, portalLoading, cardId = "default" }: CollisionBannerProps) {
+  const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(COLLISION_DISMISSED_KEY);
+    if (stored === cardId) {
+      setDismissed(true);
+    }
+  }, [cardId]);
+
+  const handleDismiss = () => {
+    localStorage.setItem(COLLISION_DISMISSED_KEY, cardId);
+    setDismissed(true);
+  };
 
   if (dismissed) return null;
 
@@ -18,10 +35,10 @@ export function CollisionBanner({ onManageSubscription, portalLoading }: Collisi
         <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium text-foreground">
-            You're currently covered by your team's plan.
+            {t("practice.collision.title")}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            You may be paying for an individual subscription you no longer need. You can cancel it to avoid double paying.
+            {t("practice.collision.description")}
           </p>
         </div>
       </div>
@@ -34,15 +51,15 @@ export function CollisionBanner({ onManageSubscription, portalLoading }: Collisi
           disabled={portalLoading}
         >
           <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-          Manage Parent Subscription
+          {t("practice.collision.manageButton")}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           className="text-muted-foreground"
-          onClick={() => setDismissed(true)}
+          onClick={handleDismiss}
         >
-          Keep as-is
+          {t("practice.collision.keepButton")}
         </Button>
       </div>
     </div>

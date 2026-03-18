@@ -1,5 +1,8 @@
+import { useTranslation } from 'react-i18next';
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, User, Calendar, Bell, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,8 +11,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SoloScheduleSyncSection } from "@/components/player/SoloScheduleSyncSection";
 import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 export default function SoloSettings() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const { data: player, isLoading } = useQuery({
     queryKey: ['player', playerId],
@@ -34,11 +45,11 @@ export default function SoloSettings() {
       >
         <ChevronLeft className="h-5 w-5" />
       </Button>
-      <h1 className="text-lg font-semibold">Settings</h1>
+      <h1 className="text-lg font-semibold">{t('solo.settings')}</h1>
     </div>
   );
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <AppShell header={header} hideNav>
         <div className="p-5 space-y-4">
@@ -49,6 +60,10 @@ export default function SoloSettings() {
     );
   }
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <AppShell header={header} hideNav>
       <div className="px-5 py-6 space-y-6">
@@ -56,13 +71,13 @@ export default function SoloSettings() {
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <User className="h-4 w-4" />
-            Profile
+            {t('solo.profile')}
           </h2>
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-3">
               {player?.profile_photo_url ? (
-                <img 
-                  src={player.profile_photo_url} 
+                <img
+                  src={player.profile_photo_url}
                   alt={player.first_name}
                   className="h-12 w-12 rounded-full object-cover"
                 />
@@ -83,7 +98,7 @@ export default function SoloSettings() {
                   className="h-auto p-0 text-xs text-primary"
                   onClick={() => navigate(`/players/${playerId}`)}
                 >
-                  Edit profile
+                  {t('solo.editProfile')}
                 </Button>
               </div>
             </div>
@@ -94,7 +109,7 @@ export default function SoloSettings() {
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Teams
+            {t('solo.teams')}
           </h2>
           <SoloJoinTeamSection playerId={playerId!} variant="section" />
         </section>
@@ -103,7 +118,7 @@ export default function SoloSettings() {
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Schedule Sync
+            {t('solo.scheduleSync')}
           </h2>
           <SoloScheduleSyncSection playerId={playerId!} />
         </section>
@@ -112,20 +127,20 @@ export default function SoloSettings() {
         <section className="opacity-50">
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            {t('solo.notifications')}
           </h2>
           <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-sm text-muted-foreground">Coming soon</p>
+            <p className="text-sm text-muted-foreground">{t('solo.comingSoon')}</p>
           </div>
         </section>
 
         <section className="opacity-50">
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Privacy
+            {t('solo.privacy')}
           </h2>
           <div className="bg-card border border-border rounded-xl p-4">
-            <p className="text-sm text-muted-foreground">Coming soon</p>
+            <p className="text-sm text-muted-foreground">{t('solo.comingSoon')}</p>
           </div>
         </section>
       </div>

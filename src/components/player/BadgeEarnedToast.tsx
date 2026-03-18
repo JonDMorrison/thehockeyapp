@@ -4,6 +4,7 @@ import { Sparkles, X } from "lucide-react";
 import { BadgeIcon } from "@/components/app/BadgeIcon";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface BadgeEarnedToastProps {
   badgeName: string;
@@ -16,10 +17,12 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
   badgeIcon = "trophy",
   onClose,
 }) => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     // Fire celebration confetti
     const colors = ['#FFD700', '#FFA500', '#FF6347', '#32CD32', '#1E90FF', '#9370DB'];
-    
+
     confetti({
       particleCount: 80,
       spread: 70,
@@ -48,7 +51,11 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+      >
         <motion.div
           initial={{ scale: 0.5, opacity: 0, y: 50 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -63,7 +70,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 -z-10" style={{ padding: '2px' }}>
               <div className="w-full h-full bg-card rounded-2xl" />
             </div>
-            
+
             {/* Sparkle decorations */}
             <motion.div
               initial={{ opacity: 0, scale: 0 }}
@@ -81,11 +88,12 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
             >
               <Sparkles className="w-4 h-4 text-orange-400" />
             </motion.div>
-            
-            {/* Close button */}
-            <button 
+
+            {/* Close button — min 44×44px touch target */}
+            <button
               onClick={onClose}
-              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-muted/80 flex items-center justify-center hover:bg-muted transition-colors"
+              aria-label={t("common.close")}
+              className="absolute top-2 right-2 min-h-[44px] min-w-[44px] rounded-full bg-muted/80 flex items-center justify-center hover:bg-muted transition-colors"
             >
               <X className="w-3 h-3 text-muted-foreground" />
             </button>
@@ -99,7 +107,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
             >
               <BadgeIcon badgeIcon={badgeIcon} size="xl" showGlow showRing />
             </motion.div>
-            
+
             {/* Title with gradient text */}
             <motion.h3
               initial={{ opacity: 0, y: 10 }}
@@ -107,9 +115,9 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
               transition={{ delay: 0.2 }}
               className="text-lg font-bold mb-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent"
             >
-              New Badge Earned! 🎉
+              {t("common.badge.earnedTitle")}
             </motion.h3>
-            
+
             {/* Badge name */}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -119,7 +127,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
             >
               {badgeName}
             </motion.p>
-            
+
             {/* Dismiss hint */}
             <motion.p
               initial={{ opacity: 0 }}
@@ -127,7 +135,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
               transition={{ delay: 0.5 }}
               className="text-xs text-muted-foreground mt-4"
             >
-              Tap to dismiss
+              {t("common.badge.tapToDismiss")}
             </motion.p>
           </div>
         </motion.div>

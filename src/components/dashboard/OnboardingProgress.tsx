@@ -46,7 +46,15 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
   hasWorkouts,
   onAction,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Build steps first to get completedCount for default expand state
+  const stepsForInit: Array<{ done: boolean }> = [
+    { done: playersCount > 0 || checklist.find(i => i.id === "add_players")?.done || false },
+    { done: checklist.find(i => i.id === "connect_schedule")?.done || false },
+    { done: checklist.find(i => i.id === "set_preferences")?.done || false },
+    { done: hasWorkouts },
+  ];
+  const initCompletedCount = stepsForInit.filter(s => s.done).length;
+  const [isExpanded, setIsExpanded] = useState(initCompletedCount === 0);
 
   // Build the progress steps from checklist + derived state
   const steps: ProgressStep[] = [

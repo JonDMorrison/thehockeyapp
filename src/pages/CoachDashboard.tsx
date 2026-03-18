@@ -15,7 +15,7 @@ import { SkeletonStatBar, SkeletonHeroCard, SkeletonEventsList, SkeletonProgramC
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { ChevronLeft, Settings, RefreshCw, Users } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Users, Swords } from "lucide-react";
 import { z } from "zod";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
@@ -300,6 +300,17 @@ const CoachDashboard: React.FC = () => {
             }}
           />
         )}
+
+        {/* Game Day Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full flex items-center gap-2 border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+          onClick={() => setShowGameDayModal(true)}
+        >
+          <Swords className="w-4 h-4" />
+          Set Up Game Day
+        </Button>
 
         {/* Planning Hub Cards - 3 Creative Cards */}
         <PlanningHubCards

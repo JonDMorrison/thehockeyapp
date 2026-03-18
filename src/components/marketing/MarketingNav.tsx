@@ -5,17 +5,19 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HockeyAppLogo } from "./HockeyAppLogo";
 import { BETA_MODE } from "@/core/constants";
+import { useTranslation } from 'react-i18next';
 
 export const MarketingNav: React.FC = () => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const allNavLinks = [
-    { href: "/", label: "Home" },
-    { href: "/features", label: "Features" },
-    { href: "/pricing", label: "Pricing", hideInBeta: true },
-    { href: "/demo", label: "How It Works" },
-    { href: "/about", label: "About" },
+    { href: "/", label: t('marketing.nav_home') },
+    { href: "/features", label: t('marketing.nav_features') },
+    { href: "/pricing", label: t('marketing.nav_pricing'), hideInBeta: true },
+    { href: "/demo", label: t('marketing.nav_how_it_works') },
+    { href: "/about", label: t('marketing.nav_about') },
   ];
 
   const navLinks = BETA_MODE
@@ -35,9 +37,9 @@ export const MarketingNav: React.FC = () => {
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg sm:text-xl text-foreground leading-tight">
-                The Hockey App
+                {t('marketing.nav_title')}
               </span>
-              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">Off-Ice Training for Families</span>
+              <span className="text-[10px] text-muted-foreground -mt-0.5 hidden sm:block">{t('marketing.nav_subtitle')}</span>
             </div>
           </Link>
 
@@ -59,13 +61,13 @@ export const MarketingNav: React.FC = () => {
               </Link>
             ))}
             <Button variant="ghost" className="text-sm" asChild>
-              <Link to="/auth">Sign in</Link>
+              <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
             </Button>
-            <Button 
-              className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft" 
+            <Button
+              className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft"
               asChild
             >
-              <Link to="/auth">Get Started For Free</Link>
+              <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
             </Button>
           </div>
 
@@ -104,13 +106,13 @@ export const MarketingNav: React.FC = () => {
             ))}
             <div className="pt-4 flex flex-col gap-2">
               <Button variant="outline" asChild className="w-full">
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
               </Button>
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90" 
+              <Button
+                className="w-full bg-primary hover:bg-primary/90"
                 asChild
               >
-                <Link to="/auth">Get Started For Free</Link>
+                <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
               </Button>
             </div>
           </div>

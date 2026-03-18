@@ -10,8 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/app/Toast";
+import { useTranslation } from "react-i18next";
 import {
-  ChevronLeft,
   Smartphone,
   Lock,
   Eye,
@@ -27,6 +27,7 @@ interface PrivacySettings {
 }
 
 const WidgetSettings: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -48,7 +49,7 @@ const WidgetSettings: React.FC = () => {
         .maybeSingle();
 
       if (error) throw error;
-      
+
       // Return defaults if no settings exist
       if (!data) {
         return {
@@ -58,7 +59,7 @@ const WidgetSettings: React.FC = () => {
           allow_lock_screen_actions: false,
         } as PrivacySettings;
       }
-      
+
       return data as PrivacySettings;
     },
     enabled: !!user?.id,
@@ -80,10 +81,10 @@ const WidgetSettings: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-privacy-settings"] });
-      toast.success("Settings saved");
+      toast.success(t("settings.widgetSettings.toast.saved"));
     },
     onError: () => {
-      toast.error("Failed to save settings");
+      toast.error(t("settings.widgetSettings.toast.failedToSave"));
     },
   });
 
@@ -106,35 +107,17 @@ const WidgetSettings: React.FC = () => {
   }
 
   return (
-    <AppShell>
+    <AppShell useNavHeader navTitle={t("settings.widgetSettings.title")}>
       <PageContainer>
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="shrink-0"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold">Widgets & Lock Screen</h1>
-              <p className="text-sm text-muted-foreground">
-                Control what appears on your device
-              </p>
-            </div>
-          </div>
-
           {/* Privacy warning */}
           <AppCard className="border-amber-500/20 bg-amber-500/5">
             <div className="flex gap-3">
               <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="text-sm font-medium">Privacy Notice</p>
+                <p className="text-sm font-medium">{t("settings.widgetSettings.privacyNotice")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Lock screens can be seen by others. Keep player names off for privacy.
+                  {t("settings.widgetSettings.privacyNoticeDesc")}
                 </p>
               </div>
             </div>
@@ -145,10 +128,10 @@ const WidgetSettings: React.FC = () => {
             <div className="space-y-1 mb-4">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-muted-foreground" />
-                <h2 className="font-semibold">Lock Screen Display</h2>
+                <h2 className="font-semibold">{t("settings.widgetSettings.lockScreenDisplay")}</h2>
               </div>
               <p className="text-sm text-muted-foreground">
-                Choose what information appears on widgets
+                {t("settings.widgetSettings.lockScreenDisplayDesc")}
               </p>
             </div>
 
@@ -159,10 +142,10 @@ const WidgetSettings: React.FC = () => {
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="show-player-name" className="font-medium">
-                    Show player name
+                    {t("settings.widgetSettings.showPlayerName")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Display the player's name on widgets
+                    {t("settings.widgetSettings.showPlayerNameDesc")}
                   </p>
                 </div>
                 <Switch
@@ -176,10 +159,10 @@ const WidgetSettings: React.FC = () => {
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="show-team-name" className="font-medium">
-                    Show team name
+                    {t("settings.widgetSettings.showTeamName")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Display the team name on widgets
+                    {t("settings.widgetSettings.showTeamNameDesc")}
                   </p>
                 </div>
                 <Switch
@@ -193,10 +176,10 @@ const WidgetSettings: React.FC = () => {
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
                   <Label htmlFor="allow-actions" className="font-medium">
-                    Allow lock screen actions
+                    {t("settings.widgetSettings.allowLockScreenActions")}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Mark tasks complete from lock screen
+                    {t("settings.widgetSettings.allowLockScreenActionsDesc")}
                   </p>
                 </div>
                 <Switch
@@ -213,7 +196,7 @@ const WidgetSettings: React.FC = () => {
             <div className="space-y-1 mb-4">
               <div className="flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-muted-foreground" />
-                <h2 className="font-semibold">Adding Widgets</h2>
+                <h2 className="font-semibold">{t("settings.widgetSettings.addingWidgets")}</h2>
               </div>
             </div>
 
@@ -221,26 +204,26 @@ const WidgetSettings: React.FC = () => {
 
             <div className="space-y-4 text-sm">
               <div className="space-y-2">
-                <p className="font-medium">iOS</p>
+                <p className="font-medium">{t("settings.widgetSettings.ios")}</p>
                 <ol className="list-decimal list-inside text-muted-foreground space-y-1">
-                  <li>Long press on your home screen</li>
-                  <li>Tap the + button in the top left</li>
-                  <li>Search for "Hockey App"</li>
-                  <li>Choose your widget size and tap "Add Widget"</li>
+                  <li>{t("settings.widgetSettings.iosStep1")}</li>
+                  <li>{t("settings.widgetSettings.iosStep2")}</li>
+                  <li>{t("settings.widgetSettings.iosStep3")}</li>
+                  <li>{t("settings.widgetSettings.iosStep4")}</li>
                 </ol>
               </div>
 
               <div className="space-y-2">
-                <p className="font-medium">Android</p>
+                <p className="font-medium">{t("settings.widgetSettings.android")}</p>
                 <ol className="list-decimal list-inside text-muted-foreground space-y-1">
-                  <li>Long press on your home screen</li>
-                  <li>Select "Widgets"</li>
-                  <li>Find "Hockey App" and hold to place</li>
+                  <li>{t("settings.widgetSettings.androidStep1")}</li>
+                  <li>{t("settings.widgetSettings.androidStep2")}</li>
+                  <li>{t("settings.widgetSettings.androidStep3")}</li>
                 </ol>
               </div>
 
               <p className="text-muted-foreground italic pt-2">
-                Widget availability depends on your device and browser support.
+                {t("settings.widgetSettings.widgetAvailability")}
               </p>
             </div>
           </AppCard>
@@ -254,7 +237,7 @@ const WidgetSettings: React.FC = () => {
                 ) : (
                   <EyeOff className="w-4 h-4 text-muted-foreground" />
                 )}
-                <h2 className="font-semibold">Widget Preview</h2>
+                <h2 className="font-semibold">{t("settings.widgetSettings.widgetPreview")}</h2>
               </div>
             </div>
 
@@ -264,17 +247,17 @@ const WidgetSettings: React.FC = () => {
             <div className="bg-muted/50 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                  Today
+                  {t("settings.widgetSettings.today")}
                 </span>
                 {settings?.lock_screen_show_team_name && (
                   <span className="text-xs text-muted-foreground">Team Name</span>
                 )}
               </div>
-              
+
               {settings?.lock_screen_show_player_name && (
                 <p className="font-medium">Player Name</p>
               )}
-              
+
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-primary/20 rounded-full overflow-hidden">
                   <div className="h-full w-1/3 bg-primary rounded-full" />
@@ -284,7 +267,7 @@ const WidgetSettings: React.FC = () => {
 
               {settings?.allow_lock_screen_actions && (
                 <Button size="sm" variant="secondary" className="w-full mt-2">
-                  Mark Next Done
+                  {t("settings.widgetSettings.markNextDone")}
                 </Button>
               )}
             </div>

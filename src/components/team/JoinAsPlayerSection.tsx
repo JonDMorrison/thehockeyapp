@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -49,6 +50,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
   teamId,
   teamName,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showSheet, setShowSheet] = useState(false);
@@ -179,7 +181,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
-      toast.success("Joined team!", "You're now on the roster and can participate in training.");
+      toast.success(t("teams.joinAsPlayer.toastJoinedTitle"), t("teams.joinAsPlayer.toastJoinedDescription"));
       setShowSheet(false);
     },
     onError: (error: Error) => {
@@ -192,7 +194,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
         });
         setErrors(newErrors);
       } else {
-        toast.error("Failed to join", error.message);
+        toast.error(t("teams.joinAsPlayer.toastJoinFailedTitle"), error.message);
       }
     },
   });
@@ -219,11 +221,11 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
-      toast.success("Left roster", "You've been removed from the team roster.");
+      toast.success(t("teams.joinAsPlayer.toastLeftTitle"), t("teams.joinAsPlayer.toastLeftDescription"));
       setShowLeaveDialog(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to leave", error.message);
+      toast.error(t("teams.joinAsPlayer.toastLeaveFailedTitle"), error.message);
     },
   });
 
@@ -237,9 +239,9 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
               <Check className="w-5 h-5 text-green-600" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-sm">You're on the roster</p>
+              <p className="font-medium text-sm">{t("teams.joinAsPlayer.onRoster")}</p>
               <p className="text-xs text-muted-foreground">
-                Participating as {existingMembership.playerName}
+                {t("teams.joinAsPlayer.participatingAs", { playerName: existingMembership.playerName })}
               </p>
             </div>
           </div>
@@ -250,28 +252,27 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
             className="w-full text-muted-foreground hover:text-destructive hover:border-destructive"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Leave Roster
+            {t("teams.joinAsPlayer.leaveRoster")}
           </Button>
         </AppCard>
 
         <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Leave team roster?</AlertDialogTitle>
+              <AlertDialogTitle>{t("teams.joinAsPlayer.leaveDialogTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                You'll be removed from {teamName}'s roster and won't receive workouts as a player.
-                Your coach access will remain unchanged. You can rejoin anytime.
+                {t("teams.joinAsPlayer.leaveDialogDescription", { teamName })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => leaveMutation.mutate()}
                 disabled={leaveMutation.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 {leaveMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Leave Roster
+                {t("teams.joinAsPlayer.leaveRoster")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -285,10 +286,10 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       <AppCard>
         <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
           <Dumbbell className="w-4 h-4 text-team-primary" />
-          Participate in Training
+          {t("teams.joinAsPlayer.title")}
         </AppCardTitle>
         <AppCardDescription className="mb-4">
-          Want to do the workouts too? Join the roster as a player.
+          {t("teams.joinAsPlayer.description")}
         </AppCardDescription>
 
         <Button
@@ -298,18 +299,18 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
           className="w-full"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Join as Player
+          {t("teams.joinAsPlayer.joinButton")}
         </Button>
       </AppCard>
 
       <Sheet open={showSheet} onOpenChange={setShowSheet}>
         <SheetContent side="bottom" className="h-auto max-h-[85vh]">
           <SheetHeader>
-            <SheetTitle>Join {teamName} as a Player</SheetTitle>
+            <SheetTitle>{t("teams.joinAsPlayer.sheetTitle", { teamName })}</SheetTitle>
             <SheetDescription>
               {existingAdultPlayer
-                ? `We'll add your profile "${existingAdultPlayer.first_name}" to this team's roster.`
-                : "Create your player profile to participate in training."}
+                ? t("teams.joinAsPlayer.sheetDescriptionExisting", { name: existingAdultPlayer.first_name })
+                : t("teams.joinAsPlayer.sheetDescriptionNew")}
             </SheetDescription>
           </SheetHeader>
 
@@ -317,18 +318,18 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
             {existingAdultPlayer ? (
               // Use existing profile
               <div className="p-4 rounded-lg bg-muted/50 border">
-                <p className="font-medium">Using existing profile</p>
+                <p className="font-medium">{t("teams.joinAsPlayer.usingExisting")}</p>
                 <p className="text-sm text-muted-foreground">
                   {existingAdultPlayer.first_name}{" "}
                   {existingAdultPlayer.last_initial && `${existingAdultPlayer.last_initial}.`}
-                  {" • "}Born {existingAdultPlayer.birth_year}
+                  {" • "}{t("teams.addChild.bornYear", { year: existingAdultPlayer.birth_year })}
                 </p>
               </div>
             ) : (
               // Create new profile form
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Your First Name</Label>
+                  <Label htmlFor="firstName">{t("teams.joinAsPlayer.firstNameLabel")}</Label>
                   <Input
                     id="firstName"
                     value={firstName}
@@ -342,7 +343,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthYear">Birth Year</Label>
+                  <Label htmlFor="birthYear">{t("teams.addChild.birthYear")}</Label>
                   <Select
                     value={String(birthYear)}
                     onValueChange={(v) => setBirthYear(Number(v))}
@@ -361,15 +362,15 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Shoots</Label>
+                  <Label>{t("teams.addChild.shoots")}</Label>
                   <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                      <SelectItem value="unknown">Not sure</SelectItem>
+                      <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
+                      <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
+                      <SelectItem value="unknown">{t("teams.joinAsPlayer.shootsNotSure")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -383,7 +384,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
               disabled={joinMutation.isPending}
             >
               {joinMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {existingAdultPlayer ? "Add Me to Roster" : "Create Profile & Join"}
+              {existingAdultPlayer ? t("teams.joinAsPlayer.addMeToRoster") : t("teams.joinAsPlayer.createAndJoin")}
             </Button>
           </div>
         </SheetContent>

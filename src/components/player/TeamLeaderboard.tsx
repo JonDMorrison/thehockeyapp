@@ -7,6 +7,7 @@ import { SkeletonLeaderboard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { startOfWeek, endOfWeek, format } from "date-fns";
 import { Trophy, Target, Medal, Crown, Flame } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TeamLeaderboardProps {
   teamId: string;
@@ -29,6 +30,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
   teamId,
   currentPlayerId,
 }) => {
+  const { t } = useTranslation();
   const [leaderboardType, setLeaderboardType] = useState<LeaderboardType>("sessions");
 
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -66,7 +68,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
 
       if (compError) throw compError;
 
-      // Get task completions for shots
+      // Get task completions for shots (this week only, via practice_card join)
       const { data: taskCompletions, error: taskError } = await supabase
         .from("task_completions")
         .select(`
@@ -76,7 +78,8 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
             practice_card_id
           )
         `)
-        .eq("completed", true);
+        .eq("completed", true)
+        .in("practice_tasks.practice_card_id", cardIds);
 
       if (taskError) throw taskError;
 
@@ -166,7 +169,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
       <div className="flex items-center justify-between mb-3">
         <AppCardTitle className="flex items-center gap-2 text-sm">
           <Trophy className="w-4 h-4 text-amber-500" />
-          Weekly Leaderboard
+          {t("players.teamLeaderboard.title")}
         </AppCardTitle>
         <div className="flex gap-1">
           <Button
@@ -175,7 +178,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
             className="h-6 text-xs px-2"
             onClick={() => setLeaderboardType("sessions")}
           >
-            Sessions
+            {t("players.teamLeaderboard.sessions")}
           </Button>
           <Button
             variant={leaderboardType === "shots" ? "default" : "ghost"}
@@ -183,7 +186,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
             className="h-6 text-xs px-2"
             onClick={() => setLeaderboardType("shots")}
           >
-            Shots
+            {t("players.teamLeaderboard.shots")}
           </Button>
         </div>
       </div>
@@ -192,7 +195,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
         <div className="text-center py-4">
           <Target className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
-            No activity this week yet. Be the first!
+            {t("players.teamLeaderboard.noActivity")}
           </p>
         </div>
       ) : (
@@ -216,7 +219,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
               />
               <div className="flex-1 min-w-0">
                 <p className={`text-sm truncate ${entry.isCurrentPlayer ? "font-semibold" : ""}`}>
-                  {entry.isCurrentPlayer ? "You" : entry.playerName}
+                  {entry.isCurrentPlayer ? t("common.you") : entry.playerName}
                 </p>
               </div>
               <div className="text-right">
@@ -226,7 +229,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
                     : entry.totalShots.toLocaleString()}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {leaderboardType === "sessions" ? "sessions" : "shots"}
+                  {leaderboardType === "sessions" ? t("players.teamLeaderboard.sessions") : t("players.teamLeaderboard.shots")}
                 </p>
               </div>
             </div>
@@ -252,7 +255,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
                   size="sm"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">You</p>
+                  <p className="text-sm font-semibold truncate">{t("common.you")}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-sm">
@@ -261,7 +264,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
                       : currentPlayerEntry.totalShots.toLocaleString()}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {leaderboardType === "sessions" ? "sessions" : "shots"}
+                    {leaderboardType === "sessions" ? t("players.teamLeaderboard.sessions") : t("players.teamLeaderboard.shots")}
                   </p>
                 </div>
               </div>
@@ -274,8 +277,11 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
               <Flame className="w-4 h-4 text-orange-500" />
               <span className="text-xs text-muted-foreground">
                 {currentPlayerEntry.rank === 2
-                  ? "So close to #1! Keep pushing!"
-                  : `${currentPlayerEntry.rank - 1} more ${leaderboardType === "sessions" ? "session" : "shots"} to move up!`}
+                  ? t("players.teamLeaderboard.soCloseToFirst")
+                  : t("players.teamLeaderboard.nMoreToMoveUp", {
+                      n: currentPlayerEntry.rank - 1,
+                      type: leaderboardType === "sessions" ? t("players.teamLeaderboard.session") : t("players.teamLeaderboard.shots"),
+                    })}
               </span>
             </div>
           )}

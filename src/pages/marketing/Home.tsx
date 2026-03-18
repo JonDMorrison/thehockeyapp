@@ -17,8 +17,10 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import familyNexlevelImg from "@/assets/family-nexlevel.png";
+import { useTranslation } from 'react-i18next';
 
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   const [showGetStarted, setShowGetStarted] = useState(false);
 
   return (
@@ -37,27 +39,27 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
-                The off-ice accountability system{" "}
+                {t('marketing.home_hero_heading_prefix')}{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  for hockey families.
+                  {t('marketing.home_hero_heading_gradient')}
                 </span>
               </h1>
 
               <p className="text-xl text-text-secondary font-medium mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                A simple app that gives your child a daily training checklist they actually follow on their own.
+                {t('marketing.home_hero_subtext')}
               </p>
 
               <p className="text-sm text-text-muted mb-8 max-w-xl mx-auto lg:mx-0">
-                {BETA_MODE ? "Free during the beta. All features unlocked." : "Parents start with a 7-day free trial. Teams can cover families."}
+                {BETA_MODE ? t('marketing.home_hero_beta_free') : t('marketing.home_hero_trial')}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                   onClick={() => setShowGetStarted(true)}
                 >
-                  Get Started For Free
+                  {t('marketing.home_hero_get_started')}
                 </Button>
               </div>
             </div>
@@ -65,7 +67,7 @@ const Home: React.FC = () => {
             <div className="relative flex justify-center lg:justify-end">
               <div className="relative">
                 <div className="relative">
-                  <PhoneMockup 
+                  <PhoneMockup
                     showGlow={false}
                     className="w-72 lg:w-80"
                   >
@@ -86,16 +88,16 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
-              "Did you do your training?"
+              {t('marketing.home_problem_heading')}
             </h2>
-            
+
             <div className="space-y-8 max-w-2xl mx-auto">
               <div className="space-y-5 text-lg text-text-secondary">
-                <p>You remind them once. Then twice. Then it turns into a fight. By the time they finally do it, nobody feels good about it.</p>
-                <p>It's not that your kid doesn't care. They just don't have a system that lets them own it. No clear plan. No structure. No way to feel proud of what they're doing without you standing over them.</p>
+                <p>{t('marketing.home_problem_p1')}</p>
+                <p>{t('marketing.home_problem_p2')}</p>
               </div>
               <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                The Hockey App gives every family that system.
+                {t('marketing.home_problem_solution')}
               </p>
             </div>
           </div>
@@ -109,10 +111,10 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              What The Hockey App does
+              {t('marketing.home_how_heading')}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Coaches know that what happens off the ice matters just as much as what happens on it. But you're already stretched thin. You need a tool that makes home training easy, fun, and automatic.
+              {t('marketing.home_how_subtext')}
             </p>
           </div>
 
@@ -120,25 +122,25 @@ const Home: React.FC = () => {
             {[
               {
                 icon: ClipboardCheck,
-                title: "Set up workouts in minutes",
-                description: "Tell us what your player needs to work on and we'll create the program. Daily checklists are ready to go, no planning required.",
+                title: t('marketing.home_how_setup_title'),
+                description: t('marketing.home_how_setup_desc'),
               },
               {
                 icon: Calendar,
-                title: "Syncs with your TeamSnap schedule",
-                description: "The app pulls in your game and practice schedule automatically. Heavy training on off days, light work before games. No parent math required.",
+                title: t('marketing.home_how_calendar_title'),
+                description: t('marketing.home_how_calendar_desc'),
               },
               {
                 icon: Trophy,
-                title: "Train solo or with a team",
-                description: "Players can follow their own program at home or train alongside teammates with a shared team plan. It works either way.",
+                title: t('marketing.home_how_team_title'),
+                description: t('marketing.home_how_team_desc'),
               },
             ].map((item, i) => (
               <div key={i} className="text-center">
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
                   <item.icon className="w-8 h-8 text-primary" strokeWidth={1.5} />
                 </div>
-                
+
                 <h3 className="text-xl font-bold mb-3 text-foreground">{item.title}</h3>
                 <p className="text-muted-foreground leading-relaxed max-w-xs mx-auto">{item.description}</p>
               </div>
@@ -160,7 +162,7 @@ const Home: React.FC = () => {
               <div className="max-w-md w-full">
                 <img
                   src={familyNexlevelImg}
-                  alt="Jon Morrison with his three daughters in hockey gear"
+                  alt={t('marketing.home_founder_img_alt')}
                   className="w-full h-auto object-cover"
                 />
               </div>
@@ -168,25 +170,17 @@ const Home: React.FC = () => {
 
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                Built by a hockey dad{" "}
-                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">who loves coaching, too.</span>
+                {t('marketing.home_founder_heading_prefix')}{" "}
+                <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">{t('marketing.home_founder_heading_gradient')}</span>
               </h2>
 
               <div className="space-y-4 text-base text-muted-foreground leading-relaxed">
-                <p>
-                  I'm Jon. I coach minor hockey and I have three kids who play. I've worked with players who have gone on to succeed at every level of the game, and I've seen firsthand what separates those who make it: consistent work at home, not just talent on the ice.
-                </p>
-                <p>
-                  But I also lived the reality of being a busy coach and parent. The nightly argument: "Did you do your training?" Players showing up without putting in any work between practices. I realized the problem wasn't motivation. It was that nobody had a system that made it easy and fun to stay on track.
-                </p>
-                <p>
-                  So I built one. The Hockey App gives kids a clear plan they can follow on their own. It gives coaches visibility into who's putting in the work, without adding to their already full plate. And it gives families structure without the stress.
-                </p>
-                <p>
-                  As parents, the last thing we want is to pile on more pressure. But when training feels fun, rewarding, and even social, kids actually want to do it. That's when real growth happens, not because someone is forcing it, but because they're excited to show up.
-                </p>
+                <p>{t('marketing.home_founder_p1')}</p>
+                <p>{t('marketing.home_founder_p2')}</p>
+                <p>{t('marketing.home_founder_p3')}</p>
+                <p>{t('marketing.home_founder_p4')}</p>
                 <p className="text-lg font-semibold text-foreground">
-                  I built this because I needed it for my own family, and for my own team.
+                  {t('marketing.home_founder_p5')}
                 </p>
               </div>
 
@@ -198,7 +192,7 @@ const Home: React.FC = () => {
                   asChild
                 >
                   <Link to="/about">
-                    Read the Full Story
+                    {t('marketing.home_founder_button')}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
@@ -216,19 +210,19 @@ const Home: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                What changes{" "}
+                {t('marketing.home_results_heading_prefix')}{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  after one week.
+                  {t('marketing.home_results_heading_gradient')}
                 </span>
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed mb-8 max-w-lg">
-                You stop being the enforcer and start being the supporter. That's the shift families tell us about.
+                {t('marketing.home_results_subtext')}
               </p>
               <div className="space-y-4">
                 {[
-                  "Kids train without being asked",
-                  "Coaches see who's putting in work",
-                  "Parents stop being the enforcer",
+                  t('marketing.home_results_kids_train'),
+                  t('marketing.home_results_coaches_see'),
+                  t('marketing.home_results_parents_stop'),
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
@@ -255,28 +249,28 @@ const Home: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              Start building consistent habits at home.
+              {t('marketing.home_cta_heading')}
             </h2>
             <p className="text-lg text-text-secondary mb-10 max-w-2xl mx-auto">
-              Give your child the structure to train on their own. See the difference in one week.
+              {t('marketing.home_cta_subtext')}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
-                Get Started For Free
+                {t('marketing.home_cta_get_started')}
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
+              <Button
+                size="lg"
+                variant="outline"
                 className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
                 asChild
               >
                 <Link to="/demo">
-                  See How It Works
+                  {t('marketing.home_cta_see_how')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>

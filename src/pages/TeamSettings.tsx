@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
+import { logger } from "@/core";
 import { teamPalettes, CUSTOM_PALETTE_ID, customPaletteOption, getTeamPalette, CustomColors } from "@/lib/themes";
 import { ColorPickerPopover } from "@/components/team/ColorPickerPopover";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
@@ -53,12 +55,6 @@ import { JoinAsPlayerSection } from "@/components/team/JoinAsPlayerSection";
 import { AddChildSection } from "@/components/team/AddChildSection";
 import { Link } from "react-router-dom";
 
-const roleLabels: Record<string, string> = {
-  head_coach: "Head Coach",
-  assistant_coach: "Asst. Coach",
-  manager: "Manager",
-};
-
 interface TeamRole {
   id: string;
   user_id: string;
@@ -75,11 +71,18 @@ const teamInfoSchema = z.object({
 });
 
 const TeamSettings: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+
+  const roleLabels: Record<string, string> = {
+    head_coach: t("teams.role.headCoach"),
+    assistant_coach: t("teams.role.assistantCoach"),
+    manager: t("teams.role.manager"),
+  };
 
   const [name, setName] = useState("");
   const [seasonLabel, setSeasonLabel] = useState("");
@@ -90,6 +93,7 @@ const TeamSettings: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [roleToRemove, setRoleToRemove] = useState<TeamRole | null>(null);
+  const [inviteToRevoke, setInviteToRevoke] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -127,10 +131,11 @@ const TeamSettings: React.FC = () => {
 
       // Fetch profiles
       const userIds = rolesData.map((r) => r.user_id);
-      const { data: profilesData } = await supabase
+      const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, display_name, email")
         .in("user_id", userIds);
+      if (profilesError) logger.error("Failed to fetch team role profiles", { profilesError });
 
       const rolesWithProfiles = rolesData.map((r) => ({
         ...r,
@@ -192,20 +197,20 @@ const TeamSettings: React.FC = () => {
   const updateTeam = useMutation({
     mutationFn: async () => {
       const validated = teamInfoSchema.parse({ name, season_label: seasonLabel });
-      
+
       const updateData: Record<string, any> = {
         name: validated.name,
         season_label: validated.season_label || null,
         palette_id: paletteId,
       };
-      
+
       // Include custom colors if using custom palette
       if (paletteId === CUSTOM_PALETTE_ID) {
         updateData.custom_primary = customPrimary;
         updateData.custom_secondary = customSecondary;
         updateData.custom_tertiary = customTertiary;
       }
-      
+
       const { error } = await supabase
         .from("teams")
         .update(updateData)
@@ -225,7 +230,7 @@ const TeamSettings: React.FC = () => {
       } else {
         setTeamTheme(paletteId);
       }
-      toast.success("Saved", "Team settings updated.");
+      toast.success(t("teams.settings.toastSavedTitle"), t("teams.settings.toastSavedDescription"));
     },
     onError: (error: Error) => {
       if (error instanceof z.ZodError) {
@@ -237,7 +242,7 @@ const TeamSettings: React.FC = () => {
         });
         setErrors(newErrors);
       } else {
-        toast.error("Failed to save", error.message);
+        toast.error(t("teams.settings.toastFailedSave"), error.message);
       }
     },
   });
@@ -271,9 +276,12 @@ const TeamSettings: React.FC = () => {
       if (updateError) throw updateError;
 
       queryClient.invalidateQueries({ queryKey: ["team", id] });
-      toast.success("Uploaded", `Team ${type} updated.`);
+      toast.success(
+        t("teams.settings.toastUploadedTitle"),
+        t("teams.settings.toastUploadedDescription", { type })
+      );
     } catch (error: unknown) {
-      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
+      toast.error(t("teams.settings.toastUploadFailed"), error instanceof Error ? error.message : "Unknown error");
     } finally {
       setUploading(false);
     }
@@ -291,11 +299,11 @@ const TeamSettings: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", id] });
-      toast.success("Removed", "Adult removed from team.");
+      toast.success(t("teams.settings.toastRemovedTitle"), t("teams.settings.toastRemovedDescription"));
       setRoleToRemove(null);
     },
     onError: (error: Error) => {
-      toast.error("Failed to remove", error.message);
+      toast.error(t("teams.settings.toastFailedRemove"), error.message);
     },
   });
 
@@ -311,10 +319,10 @@ const TeamSettings: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-invites", id] });
-      toast.success("Revoked", "Invite has been cancelled.");
+      toast.success(t("teams.settings.toastRevokedTitle"), t("teams.settings.toastRevokedDescription"));
     },
     onError: (error: Error) => {
-      toast.error("Failed to revoke", error.message);
+      toast.error(t("teams.settings.toastFailedRevoke"), error.message);
     },
   });
 
@@ -329,16 +337,16 @@ const TeamSettings: React.FC = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Team deleted", "Your team has been permanently deleted.");
+      toast.success(t("teams.settings.toastDeletedTitle"), t("teams.settings.toastDeletedDescription"));
       navigate("/teams", { replace: true });
     },
     onError: (error: Error) => {
-      toast.error("Failed to delete", error.message);
+      toast.error(t("teams.settings.toastFailedDelete"), error.message);
     },
   });
 
   // Get the selected palette - for custom, use custom colors
-  const selectedPalette = paletteId === CUSTOM_PALETTE_ID 
+  const selectedPalette = paletteId === CUSTOM_PALETTE_ID
     ? getTeamPalette(CUSTOM_PALETTE_ID, { primary: customPrimary, secondary: customSecondary, tertiary: customTertiary })
     : teamPalettes.find((p) => p.id === paletteId);
   const teamRoles = (team?.team_roles || []) as TeamRole[];
@@ -372,18 +380,18 @@ const TeamSettings: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title="Team Settings" />
+          <PageHeader title={t("teams.settings.title")} />
         </div>
       }
     >
       <PageContainer>
         {/* Team Info */}
         <AppCard>
-          <AppCardTitle className="text-lg mb-4">Team Info</AppCardTitle>
+          <AppCardTitle className="text-lg mb-4">{t("teams.settings.teamInfoTitle")}</AppCardTitle>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Team Name</Label>
+              <Label htmlFor="name">{t("teams.settings.teamNameLabel")}</Label>
               <Input
                 id="name"
                 value={name}
@@ -396,7 +404,7 @@ const TeamSettings: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="season_label">Season Label</Label>
+              <Label htmlFor="season_label">{t("teams.settings.seasonLabel")}</Label>
               <Input
                 id="season_label"
                 value={seasonLabel}
@@ -411,7 +419,7 @@ const TeamSettings: React.FC = () => {
               disabled={updateTeam.isPending}
             >
               {updateTeam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Save Changes
+              {t("teams.settings.saveChanges")}
             </Button>
           </div>
         </AppCard>
@@ -420,16 +428,16 @@ const TeamSettings: React.FC = () => {
         <AppCard>
           <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
             <Image className="w-4 h-4 text-team-primary" />
-            Appearance
+            {t("teams.settings.appearanceTitle")}
           </AppCardTitle>
           <AppCardDescription className="mb-4">
-            Customize your team's look
+            {t("teams.settings.appearanceDescription")}
           </AppCardDescription>
 
           <div className="space-y-6">
             {/* Photo Upload */}
             <div className="space-y-2">
-              <Label>Team Photo</Label>
+              <Label>{t("teams.settings.teamPhotoLabel")}</Label>
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Avatar
@@ -462,14 +470,14 @@ const TeamSettings: React.FC = () => {
                   }}
                 />
                 <div className="text-sm text-text-muted">
-                  JPG or PNG, max 5MB
+                  {t("teams.settings.photoHint")}
                 </div>
               </div>
             </div>
 
             {/* Logo Upload */}
             <div className="space-y-2">
-              <Label>Team Logo</Label>
+              <Label>{t("teams.settings.teamLogoLabel")}</Label>
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-lg bg-surface-muted border border-border flex items-center justify-center overflow-hidden">
@@ -508,7 +516,7 @@ const TeamSettings: React.FC = () => {
                   }}
                 />
                 <div className="text-sm text-text-muted">
-                  PNG preferred, max 5MB
+                  {t("teams.settings.logoHint")}
                 </div>
               </div>
             </div>
@@ -517,7 +525,7 @@ const TeamSettings: React.FC = () => {
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 <Palette className="w-4 h-4 text-text-muted" />
-                Team Colors
+                {t("teams.settings.teamColorsLabel")}
               </Label>
               <Select value={paletteId} onValueChange={setPaletteId}>
                 <SelectTrigger>
@@ -561,7 +569,7 @@ const TeamSettings: React.FC = () => {
                           style={{ backgroundColor: `hsl(${customTertiary})` }}
                         />
                       </div>
-                      <span>Custom</span>
+                      <span>{t("teams.settings.customPalette")}</span>
                     </div>
                   </SelectItem>
                   {/* Preset palettes */}
@@ -592,7 +600,7 @@ const TeamSettings: React.FC = () => {
               {/* Custom Color Pickers - shown when custom is selected */}
               {paletteId === CUSTOM_PALETTE_ID && (
                 <div className="p-4 rounded-lg bg-surface-muted space-y-3">
-                  <p className="text-sm font-medium text-text-muted">Pick your colors:</p>
+                  <p className="text-sm font-medium text-text-muted">{t("teams.settings.pickColors")}</p>
                   <div className="flex flex-wrap gap-2">
                     <ColorPickerPopover
                       label="Primary"
@@ -637,7 +645,7 @@ const TeamSettings: React.FC = () => {
                 onClick={() => updateTeam.mutate()}
                 disabled={updateTeam.isPending}
               >
-                Apply Colors
+                {t("teams.settings.applyColors")}
               </Button>
             </div>
           </div>
@@ -650,15 +658,15 @@ const TeamSettings: React.FC = () => {
               <UserPlus className="w-4 h-4 text-team-primary" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-text-primary">Looking for your coach profile?</p>
+              <p className="text-sm font-medium text-text-primary">{t("teams.settings.coachProfileHint")}</p>
               <p className="text-sm text-text-muted mt-0.5">
-                Edit your personal photo, name, and coaching bio in Account Settings.
+                {t("teams.settings.coachProfileHintDescription")}
               </p>
               <Link
                 to="/settings"
                 className="inline-flex items-center gap-1 text-sm font-medium text-team-primary hover:underline mt-2"
               >
-                Go to Account Settings
+                {t("teams.settings.goToAccountSettings")}
                 <ChevronLeft className="w-3 h-3 rotate-180" />
               </Link>
             </div>
@@ -692,7 +700,7 @@ const TeamSettings: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <AppCardTitle className="text-lg flex items-center gap-2">
               <Shield className="w-4 h-4 text-team-primary" />
-              Coaches & Managers
+              {t("teams.settings.coachesManagersTitle")}
             </AppCardTitle>
             <Button
               variant="team-soft"
@@ -700,7 +708,7 @@ const TeamSettings: React.FC = () => {
               onClick={() => setShowInviteModal(true)}
             >
               <UserPlus className="w-4 h-4" />
-              Invite
+              {t("teams.settings.invite")}
             </Button>
           </div>
 
@@ -722,7 +730,7 @@ const TeamSettings: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
                       {profile?.display_name || profile?.email || "Unknown"}
-                      {isCurrentUser && " (You)"}
+                      {isCurrentUser && ` ${t("teams.settings.youSuffix")}`}
                     </p>
                     <p className="text-xs text-text-muted">
                       {roleLabels[role.role] || role.role}
@@ -746,7 +754,7 @@ const TeamSettings: React.FC = () => {
             {pendingInvites && pendingInvites.length > 0 && (
               <>
                 <AppCardDescription className="mt-4 mb-2">
-                  Pending Invites
+                  {t("teams.settings.pendingInvites")}
                 </AppCardDescription>
                 {pendingInvites.map((invite) => (
                   <div
@@ -761,17 +769,17 @@ const TeamSettings: React.FC = () => {
                         {invite.invited_email}
                       </p>
                       <p className="text-xs text-text-muted">
-                        {roleLabels[invite.role]} · Expires{" "}
+                        {roleLabels[invite.role]} · {t("teams.settings.expires")}{" "}
                         {new Date(invite.expires_at).toLocaleDateString()}
                       </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => revokeInvite.mutate(invite.id)}
+                      onClick={() => setInviteToRevoke(invite.id)}
                       className="text-destructive hover:bg-destructive/10"
                     >
-                      Revoke
+                      {t("teams.settings.revoke")}
                     </Button>
                   </div>
                 ))}
@@ -780,7 +788,7 @@ const TeamSettings: React.FC = () => {
 
             {!isHeadCoach && (
               <p className="text-xs text-text-muted text-center py-2">
-                Only the head coach can remove team members
+                {t("teams.settings.headCoachOnly")}
               </p>
             )}
           </div>
@@ -790,18 +798,18 @@ const TeamSettings: React.FC = () => {
           <AppCard className="border-destructive/30 bg-destructive/5">
             <AppCardTitle className="text-lg flex items-center gap-2 text-destructive mb-1">
               <AlertTriangle className="w-4 h-4" />
-              Danger Zone
+              {t("teams.settings.dangerZoneTitle")}
             </AppCardTitle>
             <AppCardDescription className="mb-4">
-              Irreversible actions
+              {t("teams.settings.dangerZoneDescription")}
             </AppCardDescription>
 
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-medium text-foreground">Delete Team</p>
+                  <p className="font-medium text-foreground">{t("teams.settings.deleteTeamTitle")}</p>
                   <p className="text-sm text-text-muted">
-                    Permanently delete this team and all associated data including players, practice cards, and progress history. This action cannot be undone.
+                    {t("teams.settings.deleteTeamDescription")}
                   </p>
                 </div>
                 <Button
@@ -810,7 +818,7 @@ const TeamSettings: React.FC = () => {
                   onClick={() => setShowDeleteConfirm(true)}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  Delete
+                  {t("common.delete")}
                 </Button>
               </div>
             </div>
@@ -826,6 +834,36 @@ const TeamSettings: React.FC = () => {
         teamName={team?.name || ""}
       />
 
+      {/* Revoke Invite Confirmation */}
+      <AlertDialog
+        open={!!inviteToRevoke}
+        onOpenChange={(open) => !open && setInviteToRevoke(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("teams.settings.revokeInviteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("teams.settings.revokeInviteDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (inviteToRevoke) {
+                  revokeInvite.mutate(inviteToRevoke);
+                  setInviteToRevoke(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {revokeInvite.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {t("common.revoke")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Remove Adult Confirmation */}
       <AlertDialog
         open={!!roleToRemove}
@@ -833,20 +871,19 @@ const TeamSettings: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogTitle>{t("teams.settings.removeTeamMemberTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this person from the team? They
-              will lose access to team management.
+              {t("teams.settings.removeTeamMemberDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => roleToRemove && removeRole.mutate(roleToRemove)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {removeRole.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Remove
+              {t("common.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -864,24 +901,24 @@ const TeamSettings: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive flex items-center gap-2">
               <AlertTriangle className="w-5 h-5" />
-              Delete Team Permanently
+              {t("teams.settings.deleteTeamPermanentlyTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                This will permanently delete <strong>{team?.name}</strong> and all associated data:
+                {t("teams.settings.deleteTeamPermanentlyDescription", { name: team?.name })}
               </p>
               <ul className="list-disc list-inside text-sm space-y-1">
-                <li>All players and their memberships</li>
-                <li>Practice cards and task completions</li>
-                <li>Team goals and progress history</li>
-                <li>Week plans and training programs</li>
+                <li>{t("teams.settings.deleteItem1")}</li>
+                <li>{t("teams.settings.deleteItem2")}</li>
+                <li>{t("teams.settings.deleteItem3")}</li>
+                <li>{t("teams.settings.deleteItem4")}</li>
               </ul>
               <p className="font-medium text-destructive">
-                This action cannot be undone.
+                {t("teams.settings.deleteCannotUndo")}
               </p>
               <div className="pt-2">
                 <Label htmlFor="confirm-delete" className="text-xs text-text-muted">
-                  Type the team name to confirm:
+                  {t("teams.settings.deleteConfirmLabel")}
                 </Label>
                 <Input
                   id="confirm-delete"
@@ -894,14 +931,14 @@ const TeamSettings: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteTeam.mutate()}
               disabled={deleteConfirmText !== team?.name || deleteTeam.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
             >
               {deleteTeam.isPending && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
-              Delete Forever
+              {t("teams.settings.deleteForever")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

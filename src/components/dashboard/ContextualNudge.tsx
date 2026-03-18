@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { X, Lightbulb, Users, Calendar, Link } from "lucide-react";
+import { X, Lightbulb, Users, Calendar } from "lucide-react";
 
 interface NudgeItem {
   id: string;

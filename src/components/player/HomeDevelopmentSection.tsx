@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
@@ -154,6 +155,29 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
     hasParentPlan && stats!.totalCards > 0
       ? Math.round((stats!.completedCards / stats!.totalCards) * 100)
       : 0;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className="w-8 h-8 rounded-lg" />
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <AppCard key={i} className="text-center py-4">
+              <Skeleton className="w-16 h-16 rounded-full mx-auto mb-2" />
+              <Skeleton className="h-5 w-12 mx-auto mb-1" />
+              <Skeleton className="h-3 w-20 mx-auto" />
+            </AppCard>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

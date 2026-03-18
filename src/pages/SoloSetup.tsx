@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,24 +12,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/app/Toast";
-import { 
-  Loader2, 
-  ChevronLeft, 
-  Target, 
-  Dumbbell, 
-  Heart, 
+import {
+  Loader2,
+  ChevronLeft,
+  Target,
+  Dumbbell,
+  Heart,
   Zap,
   Calendar,
   ArrowRight,
   Sparkles
 } from "lucide-react";
-
-const TRAINING_FOCUSES = [
-  { id: "shooting", label: "Shooting", icon: Target, description: "Wrist shots, snap shots, accuracy" },
-  { id: "conditioning", label: "Conditioning", icon: Dumbbell, description: "Strength, endurance, agility" },
-  { id: "mobility", label: "Mobility", icon: Heart, description: "Stretching, flexibility, recovery" },
-  { id: "skills", label: "Skills", icon: Zap, description: "Stickhandling, puck control" },
-];
 
 const DAYS_OPTIONS = [3, 4, 5, 6, 7];
 
@@ -38,9 +32,17 @@ const playerSchema = z.object({
 });
 
 const SoloSetup: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  const TRAINING_FOCUSES = [
+    { id: "shooting", label: t('solo.focusLabelShooting'), icon: Target, description: t('solo.focusDescShooting') },
+    { id: "conditioning", label: t('solo.focusLabelConditioning'), icon: Dumbbell, description: t('solo.focusDescConditioning') },
+    { id: "mobility", label: t('solo.focusLabelMobility'), icon: Heart, description: t('solo.focusDescMobility') },
+    { id: "skills", label: t('solo.focusLabelSkills'), icon: Zap, description: t('solo.focusDescSkills') },
+  ];
 
   const [step, setStep] = useState<"player" | "focus" | "schedule">("player");
   const [firstName, setFirstName] = useState("");
@@ -114,11 +116,11 @@ const SoloSetup: React.FC = () => {
     },
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
-      toast.success("You're all set!", "Your solo training is ready to go.");
+      toast.success(t('solo.allSet'), t('solo.soloTrainingReady'));
       navigate(`/solo/dashboard/${player.id}`);
     },
     onError: (error: Error) => {
-      toast.error("Setup failed", error.message);
+      toast.error(t('solo.setupFailed'), error.message);
     },
   });
 
@@ -141,7 +143,7 @@ const SoloSetup: React.FC = () => {
       setStep("focus");
     } else if (step === "focus") {
       if (selectedFocuses.length === 0) {
-        toast.error("Select at least one focus", "Pick what you want to work on.");
+        toast.error(t('solo.selectAtLeastOneFocus'), t('solo.pickWhatYouWantToWorkOn'));
         return;
       }
       setStep("schedule");
@@ -188,8 +190,8 @@ const SoloSetup: React.FC = () => {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <p className="text-sm font-semibold">Train On My Own</p>
-            <p className="text-xs text-muted-foreground">Step {stepNumber} of 3</p>
+            <p className="text-sm font-semibold">{t('solo.trainOnMyOwn')}</p>
+            <p className="text-xs text-muted-foreground">{t('solo.stepNOf3', { n: stepNumber })}</p>
           </div>
         </div>
       }
@@ -213,23 +215,23 @@ const SoloSetup: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-orange-500" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Let's personalize your training</h1>
+              <h1 className="text-2xl font-bold mb-2">{t('solo.letsPersonalizeYourTraining')}</h1>
               <p className="text-muted-foreground">
-                We'll create a custom plan just for you.
+                {t('solo.createCustomPlanForYou')}
               </p>
             </div>
 
             <AppCard>
-              <AppCardTitle className="text-lg mb-4">About You</AppCardTitle>
-              
+              <AppCardTitle className="text-lg mb-4">{t('solo.aboutYou')}</AppCardTitle>
+
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">{t('solo.firstName')}</Label>
                   <Input
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Your first name"
+                    placeholder={t('solo.yourFirstName')}
                     className={errors.first_name ? "border-destructive" : ""}
                     autoFocus
                   />
@@ -239,7 +241,7 @@ const SoloSetup: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthYear">Birth Year</Label>
+                  <Label htmlFor="birthYear">{t('solo.birthYear')}</Label>
                   <select
                     id="birthYear"
                     value={birthYear}
@@ -264,9 +266,9 @@ const SoloSetup: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
                 <Target className="w-8 h-8 text-orange-500" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">What do you want to work on?</h1>
+              <h1 className="text-2xl font-bold mb-2">{t('solo.whatDoYouWantToWorkOn')}</h1>
               <p className="text-muted-foreground">
-                Select all that apply. You can change these later.
+                {t('solo.selectAllThatApply')}
               </p>
             </div>
 
@@ -274,7 +276,7 @@ const SoloSetup: React.FC = () => {
               {TRAINING_FOCUSES.map((focus) => {
                 const isSelected = selectedFocuses.includes(focus.id);
                 const Icon = focus.icon;
-                
+
                 return (
                   <button
                     key={focus.id}
@@ -310,9 +312,9 @@ const SoloSetup: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
                 <Calendar className="w-8 h-8 text-orange-500" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">How often can you train?</h1>
+              <h1 className="text-2xl font-bold mb-2">{t('solo.howOftenCanYouTrain')}</h1>
               <p className="text-muted-foreground">
-                Pick a realistic number. Consistency beats intensity.
+                {t('solo.pickRealisticNumber')}
               </p>
             </div>
 
@@ -328,7 +330,7 @@ const SoloSetup: React.FC = () => {
                   }`}
                 >
                   <p className="text-2xl font-bold">{days}</p>
-                  <p className="text-xs text-muted-foreground">days</p>
+                  <p className="text-xs text-muted-foreground">{t('solo.days')}</p>
                 </button>
               ))}
             </div>
@@ -339,9 +341,9 @@ const SoloSetup: React.FC = () => {
                   <Sparkles className="w-5 h-5 text-orange-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Your plan at a glance</p>
+                  <p className="font-semibold text-sm">{t('solo.yourPlanAtAGlance')}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {daysPerWeek} training days per week focusing on{" "}
+                    {daysPerWeek} {t('solo.trainingDaysPerWeekFocusingOn')}{" "}
                     {selectedFocuses.map((f, i) => {
                       const focus = TRAINING_FOCUSES.find((tf) => tf.id === f);
                       if (i === selectedFocuses.length - 1 && selectedFocuses.length > 1) {
@@ -369,12 +371,12 @@ const SoloSetup: React.FC = () => {
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : step === "schedule" ? (
             <>
-              Start Training
+              {t('solo.startTraining')}
               <Sparkles className="w-5 h-5" />
             </>
           ) : (
             <>
-              Continue
+              {t('solo.continue')}
               <ArrowRight className="w-5 h-5" />
             </>
           )}

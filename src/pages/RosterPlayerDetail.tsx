@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -31,6 +32,7 @@ interface SessionPhoto {
 }
 
 const RosterPlayerDetail: React.FC = () => {
+  const { t } = useTranslation();
   const { teamId, playerId } = useParams<{ teamId: string; playerId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -158,10 +160,10 @@ const RosterPlayerDetail: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={User}
-              title="Player not found"
-              description="This player is not on this team."
+              title={t("players.rosterDetail.notFoundTitle")}
+              description={t("players.rosterDetail.notFoundDescription")}
               action={{
-                label: "Back to Roster",
+                label: t("players.rosterDetail.backToRoster"),
                 onClick: () => navigate(`/teams/${teamId}/roster`),
               }}
             />
@@ -203,15 +205,25 @@ const RosterPlayerDetail: React.FC = () => {
             {player.first_name} {player.last_initial && `${player.last_initial}.`}
           </h2>
           <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-            <Tag variant="neutral">Born {player.birth_year}</Tag>
+            <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
             {player.shoots && player.shoots !== "unknown" && (
               <Tag variant="accent">
-                Shoots {player.shoots === "left" ? "Left" : "Right"}
+                {t("players.rosterDetail.shoots")} {player.shoots === "left" ? t("teams.addChild.shootsLeft") : t("teams.addChild.shootsRight")}
               </Tag>
             )}
             {player.jersey_number && (
               <Tag variant="tier">#{player.jersey_number}</Tag>
             )}
+          </div>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/players/${playerId}/home`)}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              {t("players.rosterDetail.viewProgress")}
+            </Button>
           </div>
         </AppCard>
 
@@ -220,14 +232,14 @@ const RosterPlayerDetail: React.FC = () => {
           <AppCard>
             <AppCardTitle className="text-base flex items-center gap-2 mb-4">
               <Star className="w-4 h-4 text-team-primary" />
-              About {player.first_name}
+              {t("players.rosterDetail.aboutTitle", { name: player.first_name })}
             </AppCardTitle>
             <div className="space-y-4 text-sm">
               {player.fav_nhl_city && (
                 <div className="flex items-start gap-3">
                   <Trophy className="w-4 h-4 text-text-muted mt-0.5" />
                   <div>
-                    <p className="text-text-muted">Favorite NHL City</p>
+                    <p className="text-text-muted">{t("players.rosterDetail.favNhlCity")}</p>
                     <p className="font-medium">{player.fav_nhl_city}</p>
                   </div>
                 </div>
@@ -236,7 +248,7 @@ const RosterPlayerDetail: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Star className="w-4 h-4 text-text-muted mt-0.5" />
                   <div>
-                    <p className="text-text-muted">Favorite Player</p>
+                    <p className="text-text-muted">{t("players.rosterDetail.favPlayer")}</p>
                     <p className="font-medium">{player.fav_nhl_player}</p>
                   </div>
                 </div>
@@ -245,7 +257,7 @@ const RosterPlayerDetail: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Heart className="w-4 h-4 text-text-muted mt-0.5" />
                   <div>
-                    <p className="text-text-muted">What They Love</p>
+                    <p className="text-text-muted">{t("players.rosterDetail.whatTheyLove")}</p>
                     <p className="font-medium">{player.hockey_love}</p>
                   </div>
                 </div>
@@ -254,7 +266,7 @@ const RosterPlayerDetail: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Target className="w-4 h-4 text-text-muted mt-0.5" />
                   <div>
-                    <p className="text-text-muted">Season Goals</p>
+                    <p className="text-text-muted">{t("players.rosterDetail.seasonGoals")}</p>
                     <p className="font-medium">{player.season_goals}</p>
                   </div>
                 </div>
@@ -268,7 +280,7 @@ const RosterPlayerDetail: React.FC = () => {
           <AppCard>
             <AppCardTitle className="text-base flex items-center gap-2 mb-4">
               <ImageIcon className="w-4 h-4 text-team-primary" />
-              Recent Photos
+              {t("players.rosterDetail.recentPhotos")}
             </AppCardTitle>
             <div className="grid grid-cols-3 gap-2">
               {sharedPhotos.map((photo) => (
@@ -278,7 +290,7 @@ const RosterPlayerDetail: React.FC = () => {
                 >
                   <img
                     src={getPhotoUrl(photo.storage_path)}
-                    alt="Session photo"
+                    alt={t("players.rosterDetail.sessionPhotoAlt")}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-1 right-1 w-5 h-5 bg-team-primary/80 rounded-full flex items-center justify-center">
@@ -288,7 +300,7 @@ const RosterPlayerDetail: React.FC = () => {
               ))}
             </div>
             <p className="text-xs text-text-muted text-center mt-3">
-              Photos shared by guardians
+              {t("players.rosterDetail.photosSharedByGuardians")}
             </p>
           </AppCard>
         )}

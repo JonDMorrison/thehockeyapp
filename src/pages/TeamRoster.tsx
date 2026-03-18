@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -10,7 +11,8 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, UserPlus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronLeft, UserPlus, Search } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 
@@ -31,13 +33,15 @@ interface Membership {
 }
 
 const TeamRoster: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { activeView, activePlayerId } = useActiveView();
-  
+
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteModalTab, setInviteModalTab] = useState<"add-child" | "invite">("add-child");
+  const [filterText, setFilterText] = useState("");
 
   // Context-aware back navigation
   const handleBack = () => {
@@ -134,7 +138,7 @@ const TeamRoster: React.FC = () => {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <PageHeader
-              title="Roster"
+              title={t("teams.roster.title")}
               subtitle={team?.name}
             />
           </div>
@@ -147,7 +151,7 @@ const TeamRoster: React.FC = () => {
             }}
           >
             <UserPlus className="w-4 h-4" />
-            Add Player
+            {t("teams.roster.addPlayer")}
           </Button>
         </div>
       }
@@ -155,15 +159,32 @@ const TeamRoster: React.FC = () => {
       <PageContainer>
         {memberships && memberships.length > 0 ? (
           <div className="space-y-3">
+            {/* Name filter */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                inputMode="search"
+                placeholder={t("teams.roster.filterPlaceholder")}
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                className="pl-9"
+              />
+            </div>
             <p className="text-sm text-text-muted">
-              {memberships.length} player{memberships.length !== 1 ? "s" : ""} on the team
+              {t("teams.roster.playerCount", { count: memberships.length })}
             </p>
-            {memberships.map((membership) => {
+            {memberships.filter((membership) => {
+              if (!filterText.trim()) return true;
+              const player = membership.players;
+              if (!player) return false;
+              const fullName = `${player.first_name} ${player.last_initial ?? ""}`.toLowerCase();
+              return fullName.includes(filterText.toLowerCase());
+            }).map((membership) => {
               const player = membership.players;
               if (!player) return null;
 
               return (
-                <AppCard 
+                <AppCard
                   key={membership.id}
                   className="cursor-pointer hover:bg-surface-muted/50 transition-colors"
                   onClick={() => navigate(`/teams/${id}/roster/${player.id}`)}
@@ -180,7 +201,7 @@ const TeamRoster: React.FC = () => {
                       </p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Tag variant="neutral" size="sm">
-                          Born {player.birth_year}
+                          {t("teams.roster.bornYear", { year: player.birth_year })}
                         </Tag>
                         {player.shoots && player.shoots !== "unknown" && (
                           <Tag variant="accent" size="sm">

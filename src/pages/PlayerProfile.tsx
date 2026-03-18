@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { logger } from "@/core";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
@@ -83,6 +85,7 @@ const NHL_TEAMS = [
 ];
 
 const PlayerProfile: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -93,7 +96,7 @@ const PlayerProfile: React.FC = () => {
   const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
+
   // Edit form state
   const [editForm, setEditForm] = useState({
     first_name: "",
@@ -136,10 +139,11 @@ const PlayerProfile: React.FC = () => {
 
       // Fetch profiles for guardians
       const guardianUserIds = guardiansData.map((g) => g.user_id);
-      const { data: profilesData } = await supabase
+      const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, display_name, email")
         .in("user_id", guardianUserIds);
+      if (profilesError) logger.error("Failed to fetch guardian profiles", { profilesError });
 
       // Combine guardian data with profiles
       const guardiansWithProfiles = guardiansData.map((g) => ({
@@ -239,11 +243,11 @@ const PlayerProfile: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success("Profile updated", "Changes saved successfully.");
+      toast.success(t("players.profile.toastUpdatedTitle"), t("players.profile.toastUpdatedDescription"));
       setIsEditing(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to update", error.message);
+      toast.error(t("players.profile.toastUpdateFailedTitle"), error.message);
     },
   });
 
@@ -254,13 +258,13 @@ const PlayerProfile: React.FC = () => {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast.error("Invalid file", "Please select an image file.");
+      toast.error(t("players.profile.toastInvalidFileTitle"), t("players.profile.toastInvalidFileDescription"));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File too large", "Please select an image under 5MB.");
+      toast.error(t("players.profile.toastFileTooLargeTitle"), t("players.profile.toastFileTooLargeDescription"));
       return;
     }
 
@@ -291,9 +295,13 @@ const PlayerProfile: React.FC = () => {
       if (updateError) throw updateError;
 
       queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success("Photo updated", "Your profile photo has been updated.");
+      toast.success(t("players.profile.toastPhotoUpdatedTitle"), t("players.profile.toastPhotoUpdatedDescription"));
     } catch (error: unknown) {
-      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
+      const errMsg = error instanceof Error ? error.message : "";
+      const friendlyMsg = errMsg.toLowerCase().includes("too large")
+        ? t("players.profile.toastUploadTooLarge")
+        : t("players.profile.toastUploadFailedDescription");
+      toast.error(t("players.profile.toastUploadFailedTitle"), friendlyMsg);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -314,11 +322,11 @@ const PlayerProfile: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success("Guardian removed", "They no longer have access to this player.");
+      toast.success(t("players.profile.toastGuardianRemovedTitle"), t("players.profile.toastGuardianRemovedDescription"));
       setGuardianToRemove(null);
     },
     onError: (error: Error) => {
-      toast.error("Failed to remove guardian", error.message);
+      toast.error(t("players.profile.toastGuardianRemoveFailedTitle"), error.message);
     },
   });
 
@@ -346,10 +354,10 @@ const PlayerProfile: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={User}
-              title="Player not found"
-              description="This player doesn't exist or you don't have access."
+              title={t("players.profile.notFoundTitle")}
+              description={t("players.profile.notFoundDescription")}
               action={{
-                label: "Go Back",
+                label: t("players.profile.goBack"),
                 onClick: () => navigate("/players"),
               }}
             />
@@ -385,7 +393,7 @@ const PlayerProfile: React.FC = () => {
               onClick={() => setIsEditing(true)}
             >
               <Edit3 className="w-4 h-4 mr-1" />
-              Edit
+              {t("common.edit")}
             </Button>
           )}
         </div>
@@ -413,6 +421,7 @@ const PlayerProfile: React.FC = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
+                aria-label={t("players.uploadProfilePhoto")}
                 className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {isUploading ? (
@@ -423,12 +432,12 @@ const PlayerProfile: React.FC = () => {
               </button>
             )}
           </div>
-          
+
           {isEditing ? (
             <div className="space-y-3 text-left">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="first_name">First Name</Label>
+                  <Label htmlFor="first_name">{t("players.new.firstNameLabel")}</Label>
                   <Input
                     id="first_name"
                     value={editForm.first_name}
@@ -437,7 +446,7 @@ const PlayerProfile: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="last_initial">Last Initial</Label>
+                  <Label htmlFor="last_initial">{t("players.new.lastInitialLabel")}</Label>
                   <Input
                     id="last_initial"
                     value={editForm.last_initial}
@@ -449,7 +458,7 @@ const PlayerProfile: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="jersey_number">Jersey #</Label>
+                  <Label htmlFor="jersey_number">{t("players.profile.jerseyLabel")}</Label>
                   <Input
                     id="jersey_number"
                     value={editForm.jersey_number}
@@ -458,7 +467,7 @@ const PlayerProfile: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="shoots">Shoots</Label>
+                  <Label htmlFor="shoots">{t("players.new.shootsLabel")}</Label>
                   <Select
                     value={editForm.shoots}
                     onValueChange={(value) => setEditForm({ ...editForm, shoots: value })}
@@ -467,8 +476,8 @@ const PlayerProfile: React.FC = () => {
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
+                      <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
+                      <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -480,10 +489,10 @@ const PlayerProfile: React.FC = () => {
                 {player.first_name} {player.last_initial && `${player.last_initial}.`}
               </h2>
               <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-                <Tag variant="neutral">Born {player.birth_year}</Tag>
+                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
                 {player.shoots && player.shoots !== "unknown" && (
                   <Tag variant="accent">
-                    Shoots {player.shoots === "left" ? "Left" : "Right"}
+                    {t("players.profile.shootsSide", { side: player.shoots === "left" ? t("teams.addChild.shootsLeft") : t("teams.addChild.shootsRight") })}
                   </Tag>
                 )}
                 {player.jersey_number && (
@@ -498,19 +507,19 @@ const PlayerProfile: React.FC = () => {
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-4">
             <Star className="w-4 h-4 text-primary" />
-            Hockey Favorites
+            {t("players.profile.favoritesTitle")}
           </AppCardTitle>
-          
+
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fav_nhl_city">Favorite NHL Team</Label>
+                <Label htmlFor="fav_nhl_city">{t("players.profile.favTeamLabel")}</Label>
                 <Select
                   value={editForm.fav_nhl_city}
                   onValueChange={(value) => setEditForm({ ...editForm, fav_nhl_city: value })}
                 >
                   <SelectTrigger id="fav_nhl_city">
-                    <SelectValue placeholder="Select a team" />
+                    <SelectValue placeholder={t("players.profile.selectTeamPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {NHL_TEAMS.map((team) => (
@@ -520,7 +529,7 @@ const PlayerProfile: React.FC = () => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="fav_nhl_player">Favorite NHL Player</Label>
+                <Label htmlFor="fav_nhl_player">{t("players.profile.favPlayerLabel")}</Label>
                 <Input
                   id="fav_nhl_player"
                   value={editForm.fav_nhl_player}
@@ -529,7 +538,7 @@ const PlayerProfile: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="hockey_love">What do you love about hockey?</Label>
+                <Label htmlFor="hockey_love">{t("players.profile.hockeyLoveLabel")}</Label>
                 <Textarea
                   id="hockey_love"
                   value={editForm.hockey_love}
@@ -545,18 +554,18 @@ const PlayerProfile: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Trophy className="w-4 h-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-muted-foreground">Favorite Team</p>
+                    <p className="text-muted-foreground">{t("players.profile.favTeamReadLabel")}</p>
                     <p className="font-medium">{player.fav_nhl_city}</p>
                   </div>
                 </div>
               ) : canEdit && (
-                <p className="text-muted-foreground text-sm">Tap Edit to add your favorite team</p>
+                <p className="text-muted-foreground text-sm">{t("players.profile.favTeamEmpty")}</p>
               )}
               {player.fav_nhl_player && (
                 <div className="flex items-start gap-3">
                   <Star className="w-4 h-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-muted-foreground">Favorite Player</p>
+                    <p className="text-muted-foreground">{t("players.profile.favPlayerReadLabel")}</p>
                     <p className="font-medium">{player.fav_nhl_player}</p>
                   </div>
                 </div>
@@ -565,7 +574,7 @@ const PlayerProfile: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <Heart className="w-4 h-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-muted-foreground">What They Love</p>
+                    <p className="text-muted-foreground">{t("players.profile.hockeyLoveReadLabel")}</p>
                     <p className="font-medium">{player.hockey_love}</p>
                   </div>
                 </div>
@@ -578,22 +587,22 @@ const PlayerProfile: React.FC = () => {
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-4">
             <Target className="w-4 h-4 text-primary" />
-            Season Goals
+            {t("players.profile.seasonGoalsTitle")}
           </AppCardTitle>
-          
+
           {isEditing ? (
             <Textarea
               value={editForm.season_goals}
               onChange={(e) => setEditForm({ ...editForm, season_goals: e.target.value })}
-              placeholder="What do you want to achieve this season?"
+              placeholder={t("players.profile.seasonGoalsPlaceholder")}
               rows={3}
             />
           ) : player.season_goals ? (
             <p className="text-sm">{player.season_goals}</p>
           ) : canEdit ? (
-            <p className="text-muted-foreground text-sm">Tap Edit to set your season goals</p>
+            <p className="text-muted-foreground text-sm">{t("players.profile.seasonGoalsEmpty")}</p>
           ) : (
-            <p className="text-muted-foreground text-sm">No goals set yet</p>
+            <p className="text-muted-foreground text-sm">{t("players.profile.seasonGoalsNone")}</p>
           )}
         </AppCard>
 
@@ -601,9 +610,9 @@ const PlayerProfile: React.FC = () => {
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-4">
             <Award className="w-4 h-4 text-primary" />
-            Badges Earned
+            {t("players.profile.badgesTitle")}
           </AppCardTitle>
-          
+
           {badges && badges.length > 0 ? (
             <div className="grid grid-cols-3 gap-3">
               {badges.slice(0, 6).map((badge) => (
@@ -619,20 +628,20 @@ const PlayerProfile: React.FC = () => {
           ) : (
             <EmptyState
               icon={Award}
-              title="No badges yet"
-              description="Complete challenges to earn badges!"
+              title={t("players.profile.badgesEmptyTitle")}
+              description={t("players.profile.badgesEmptyDescription")}
               className="py-6"
             />
           )}
-          
+
           {badges && badges.length > 6 && (
             <Button
               variant="ghost"
               size="sm"
               className="w-full mt-3"
-              onClick={() => navigate(`/solo/badges/${id}`)}
+              onClick={() => navigate(`/players/${id}/badges`)}
             >
-              View all {badges.length} badges
+              {t("players.profile.viewAllBadges", { count: badges.length })}
             </Button>
           )}
         </AppCard>
@@ -661,7 +670,7 @@ const PlayerProfile: React.FC = () => {
               }}
             >
               <X className="w-4 h-4 mr-1" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               className="flex-1"
@@ -673,7 +682,7 @@ const PlayerProfile: React.FC = () => {
               ) : (
                 <Save className="w-4 h-4 mr-1" />
               )}
-              Save
+              {t("common.save")}
             </Button>
           </div>
         )}
@@ -683,7 +692,7 @@ const PlayerProfile: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <AppCardTitle className="text-base flex items-center gap-2">
               <Shield className="w-4 h-4 text-primary" />
-              Guardians
+              {t("players.profile.guardiansTitle")}
             </AppCardTitle>
             {isOwner && (
               <Button
@@ -692,7 +701,7 @@ const PlayerProfile: React.FC = () => {
                 onClick={() => setShowInviteModal(true)}
               >
                 <UserPlus className="w-4 h-4" />
-                Invite
+                {t("players.profile.inviteButton")}
               </Button>
             )}
           </div>
@@ -714,8 +723,8 @@ const PlayerProfile: React.FC = () => {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
-                      {profile?.display_name || profile?.email || "Unknown"}
-                      {isCurrentUser && " (You)"}
+                      {profile?.display_name || profile?.email || t("players.profile.unknownGuardian")}
+                      {isCurrentUser && ` ${t("players.profile.youSuffix")}`}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize">
                       {guardian.guardian_role}
@@ -739,7 +748,7 @@ const PlayerProfile: React.FC = () => {
             {isOwner && pendingInvites && pendingInvites.length > 0 && (
               <>
                 <AppCardDescription className="mt-4 mb-2">
-                  Pending Invites
+                  {t("players.profile.pendingInvites")}
                 </AppCardDescription>
                 {pendingInvites.map((invite) => (
                   <div
@@ -754,11 +763,11 @@ const PlayerProfile: React.FC = () => {
                         {invite.invited_email}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Expires {new Date(invite.expires_at).toLocaleDateString()}
+                        {t("players.profile.inviteExpires", { date: new Date(invite.expires_at).toLocaleDateString() })}
                       </p>
                     </div>
                     <Tag variant="warning" size="sm">
-                      Pending
+                      {t("players.profile.pendingTag")}
                     </Tag>
                   </div>
                 ))}
@@ -767,6 +776,48 @@ const PlayerProfile: React.FC = () => {
           </div>
         </AppCard>
       </PageContainer>
+
+      {/* Sticky Save/Cancel bar when editing */}
+      {isEditing && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t p-4">
+          <div className="flex gap-3 max-w-lg mx-auto">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setIsEditing(false);
+                if (player) {
+                  setEditForm({
+                    first_name: player.first_name || "",
+                    last_initial: player.last_initial || "",
+                    jersey_number: player.jersey_number || "",
+                    shoots: player.shoots || "",
+                    fav_nhl_city: player.fav_nhl_city || "",
+                    fav_nhl_player: player.fav_nhl_player || "",
+                    hockey_love: player.hockey_love || "",
+                    season_goals: player.season_goals || "",
+                  });
+                }
+              }}
+            >
+              <X className="w-4 h-4 mr-1" />
+              {t("common.cancel")}
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => updatePlayer.mutate(editForm)}
+              disabled={updatePlayer.isPending || !editForm.first_name}
+            >
+              {updatePlayer.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-1" />
+              ) : (
+                <Save className="w-4 h-4 mr-1" />
+              )}
+              {t("common.save")}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Invite Guardian Modal */}
       <InviteGuardianModal
@@ -783,20 +834,19 @@ const PlayerProfile: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Guardian</AlertDialogTitle>
+            <AlertDialogTitle>{t("players.profile.removeGuardianTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove this guardian? They will no longer
-              have access to {player.first_name}'s profile.
+              {t("players.profile.removeGuardianDescription", { name: player.first_name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => guardianToRemove && removeGuardian.mutate(guardianToRemove)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {removeGuardian.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Remove
+              {t("common.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

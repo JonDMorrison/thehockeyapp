@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -29,14 +30,15 @@ interface ProfileData {
   updated_at?: string | null;
 }
 
-export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({ 
+export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   teamId: _teamId,
-  isCoach = true 
+  isCoach = true
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [displayName, setDisplayName] = useState("");
   const [coachWhy, setCoachWhy] = useState("");
   const [coachLove, setCoachLove] = useState("");
@@ -54,7 +56,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
         .select("*")
         .eq("user_id", user.id)
         .single();
-      
+
       if (error) throw error;
       return data as ProfileData;
     },
@@ -74,7 +76,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   // Track changes - allow saving even if no profile exists yet
   useEffect(() => {
     if (profile) {
-      const changed = 
+      const changed =
         displayName !== (profile.display_name || "") ||
         coachWhy !== (profile.coach_why || "") ||
         coachLove !== (profile.coach_love || "") ||
@@ -110,19 +112,19 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
       // Use upsert to handle case where profile doesn't exist yet
       const { error: updateError } = await supabase
         .from("profiles")
-        .upsert({ 
+        .upsert({
           user_id: user.id,
           avatar_url: urlData.publicUrl,
-          email: user.email 
+          email: user.email
         } as { user_id: string; avatar_url: string; email: string | undefined }, { onConflict: 'user_id' });
 
       if (updateError) throw updateError;
 
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       queryClient.invalidateQueries({ queryKey: ["coach-profile"] });
-      toast.success("Photo updated!");
+      toast.success(t("teams.coachProfile.toastPhotoUpdated"));
     } catch (error: unknown) {
-      toast.error("Upload failed", error instanceof Error ? error.message : "Unknown error");
+      toast.error(t("teams.coachProfile.toastUploadFailed"), error instanceof Error ? error.message : "Unknown error");
     } finally {
       setUploading(false);
     }
@@ -132,20 +134,20 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   const saveProfile = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
-      
+
       const profileData: Record<string, any> = {
         user_id: user.id,
         email: user.email,
         display_name: displayName.trim() || null,
       };
-      
+
       // Only include coach fields if user is a coach
       if (isCoach) {
         profileData.coach_why = coachWhy.trim() || null;
         profileData.coach_love = coachLove.trim() || null;
         profileData.coach_memory = coachMemory.trim() || null;
       }
-      
+
       // Use upsert to create profile if it doesn't exist
       const { error } = await supabase
         .from("profiles")
@@ -157,10 +159,10 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       queryClient.invalidateQueries({ queryKey: ["coach-profile"] });
       setHasChanges(false);
-      toast.success("Profile saved!");
+      toast.success(t("teams.coachProfile.toastSaved"));
     },
     onError: (error: Error) => {
-      toast.error("Failed to save", error.message);
+      toast.error(t("teams.coachProfile.toastSaveFailed"), error.message);
     },
   });
 
@@ -184,10 +186,10 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
     <AppCard>
       <AppCardTitle className="flex items-center gap-2 mb-1">
         <User className="w-4 h-4 text-team-primary" />
-        My Profile
+        {t("teams.coachProfile.title")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">
-        {isCoach ? "Your photo and bio visible to your team" : "Your profile information"}
+        {isCoach ? t("teams.coachProfile.descriptionCoach") : t("teams.coachProfile.descriptionDefault")}
       </AppCardDescription>
 
       <div className="space-y-6">
@@ -222,18 +224,18 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
             />
           </div>
           <div className="flex-1 space-y-2">
-            <Label htmlFor="displayName">Display Name</Label>
+            <Label htmlFor="displayName">{t("teams.coachProfile.displayName")}</Label>
             <Input
               id="displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder={isCoach ? "Coach Smith" : "Your name"}
+              placeholder={isCoach ? t("teams.coachProfile.displayNamePlaceholderCoach") : t("teams.coachProfile.displayNamePlaceholderDefault")}
               maxLength={50}
             />
             <p className="text-xs text-muted-foreground">
-              {isCoach 
-                ? "This is how players and parents will see you" 
-                : "This is how others will see you"}
+              {isCoach
+                ? t("teams.coachProfile.displayNameHintCoach")
+                : t("teams.coachProfile.displayNameHintDefault")}
             </p>
           </div>
         </div>
@@ -244,23 +246,23 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-team-primary" />
               <p className="text-sm font-medium text-foreground">
-                Coach Bio
+                {t("teams.coachProfile.bioTitle")}
               </p>
             </div>
             <p className="text-xs text-muted-foreground -mt-2">
-              Help your team get to know you better
+              {t("teams.coachProfile.bioSubtitle")}
             </p>
 
             <div className="space-y-2">
               <Label htmlFor="coachWhy" className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-pink-500" />
-                Why do you coach?
+                {t("teams.coachProfile.whyLabel")}
               </Label>
               <Textarea
                 id="coachWhy"
                 value={coachWhy}
                 onChange={(e) => setCoachWhy(e.target.value)}
-                placeholder="I love seeing kids develop their skills and confidence..."
+                placeholder={t("teams.coachProfile.whyPlaceholder")}
                 rows={2}
                 maxLength={300}
                 className="resize-none"
@@ -273,13 +275,13 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
             <div className="space-y-2">
               <Label htmlFor="coachLove" className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-blue-500" />
-                What do you love about coaching?
+                {t("teams.coachProfile.loveLabel")}
               </Label>
               <Textarea
                 id="coachLove"
                 value={coachLove}
                 onChange={(e) => setCoachLove(e.target.value)}
-                placeholder="The energy at practice, watching breakthroughs happen..."
+                placeholder={t("teams.coachProfile.lovePlaceholder")}
                 rows={2}
                 maxLength={300}
                 className="resize-none"
@@ -292,13 +294,13 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
             <div className="space-y-2">
               <Label htmlFor="coachMemory" className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-amber-500" />
-                What's your best hockey memory?
+                {t("teams.coachProfile.memoryLabel")}
               </Label>
               <Textarea
                 id="coachMemory"
                 value={coachMemory}
                 onChange={(e) => setCoachMemory(e.target.value)}
-                placeholder="Scoring my first goal, winning provincials, a great team moment..."
+                placeholder={t("teams.coachProfile.memoryPlaceholder")}
                 rows={2}
                 maxLength={300}
                 className="resize-none"
@@ -320,10 +322,10 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
           {saveProfile.isPending ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
+              {t("teams.coachProfile.saving")}
             </>
           ) : (
-            "Save Profile"
+            t("teams.coachProfile.saveButton")
           )}
         </Button>
       </div>

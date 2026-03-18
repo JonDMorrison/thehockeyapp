@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Check, Target, Activity, Flame, Heart, Brain } from "lucide-react";
 import type { TaskType } from "../CoachOnboardingWizard";
@@ -7,44 +8,46 @@ interface TaskTypesStepProps {
   onChange: (types: TaskType[]) => void;
 }
 
-const TASK_OPTIONS: { type: TaskType; icon: React.ReactNode; title: string; description: string; required?: boolean }[] = [
+const TASK_OPTIONS: { type: TaskType; icon: React.ReactNode; titleKey: string; descriptionKey: string; required?: boolean }[] = [
   {
     type: "shooting",
     icon: <Target className="h-5 w-5" />,
-    title: "Shooting",
-    description: "Shots, release, volume",
+    titleKey: "welcome.taskTypes.shootingTitle",
+    descriptionKey: "welcome.taskTypes.shootingDescription",
     required: true,
   },
   {
     type: "mobility",
     icon: <Activity className="h-5 w-5" />,
-    title: "Mobility & warm-up",
-    description: "Dynamic stretches, activation",
+    titleKey: "welcome.taskTypes.mobilityTitle",
+    descriptionKey: "welcome.taskTypes.mobilityDescription",
   },
   {
     type: "conditioning",
     icon: <Flame className="h-5 w-5" />,
-    title: "Conditioning",
-    description: "Sprints, wall sits, pushups",
+    titleKey: "welcome.taskTypes.conditioningTitle",
+    descriptionKey: "welcome.taskTypes.conditioningDescription",
   },
   {
     type: "recovery",
     icon: <Heart className="h-5 w-5" />,
-    title: "Recovery",
-    description: "Stretching, light movement",
+    titleKey: "welcome.taskTypes.recoveryTitle",
+    descriptionKey: "welcome.taskTypes.recoveryDescription",
   },
   {
     type: "prep",
     icon: <Brain className="h-5 w-5" />,
-    title: "Game prep",
-    description: "Hydration, visualization",
+    titleKey: "welcome.taskTypes.prepTitle",
+    descriptionKey: "welcome.taskTypes.prepDescription",
   },
 ];
 
 export function TaskTypesStep({ value, onChange }: TaskTypesStepProps) {
+  const { t } = useTranslation();
+
   const toggleType = (type: TaskType) => {
     if (type === "shooting") return; // Can't remove shooting
-    
+
     if (value.includes(type)) {
       // Ensure at least one type remains
       if (value.length > 1) {
@@ -58,9 +61,9 @@ export function TaskTypesStep({ value, onChange }: TaskTypesStepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">What do you want to assign?</h1>
+        <h1 className="text-2xl font-bold">{t("welcome.taskTypes.title")}</h1>
         <p className="text-muted-foreground">
-          You can change this anytime in settings
+          {t("welcome.taskTypes.subtitle")}
         </p>
       </div>
 
@@ -68,12 +71,13 @@ export function TaskTypesStep({ value, onChange }: TaskTypesStepProps) {
         {TASK_OPTIONS.map((option) => {
           const isSelected = value.includes(option.type);
           const isRequired = option.required;
-          
+
           return (
             <button
               key={option.type}
               onClick={() => toggleType(option.type)}
               disabled={isRequired}
+              aria-disabled={isRequired ? "true" : undefined}
               className={cn(
                 "w-full p-4 rounded-xl border-2 text-left transition-all",
                 "flex items-center gap-4",
@@ -92,16 +96,21 @@ export function TaskTypesStep({ value, onChange }: TaskTypesStepProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-medium">{option.title}</h3>
+                  <h3 className="font-medium">{t(option.titleKey)}</h3>
                   {isRequired && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      Required
+                      {t("welcome.taskTypes.requiredBadge")}
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {option.description}
+                  {t(option.descriptionKey)}
                 </p>
+                {isRequired && (
+                  <p className="text-xs text-muted-foreground mt-1 italic">
+                    {t("welcome.taskTypes.shootingAlwaysIncluded")}
+                  </p>
+                )}
               </div>
               <div className={cn(
                 "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all",

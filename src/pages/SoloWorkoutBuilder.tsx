@@ -1,9 +1,11 @@
-import { useState, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays } from "date-fns";
-import { 
+import {
   ChevronLeft, Plus, Target, Dumbbell, Heart, Timer, Sparkles,
   MoreHorizontal, Trash2, GripVertical, Check
 } from "lucide-react";
@@ -51,28 +53,27 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   other: <MoreHorizontal className="w-4 h-4" />,
 };
 
-const taskTypeLabels: Record<string, string> = {
-  shooting: "Shooting",
-  conditioning: "Conditioning",
-  mobility: "Mobility",
-  recovery: "Recovery",
-  prep: "Prep",
-  other: "Other",
-};
-
-const QUICK_TEMPLATES = [
-  { id: 'high_volume_shooting', label: '🎯 High Volume', description: '100+ shots' },
-  { id: 'quick_skills', label: '⚡ Quick Skills', description: '15 min' },
-  { id: 'conditioning_day', label: '🏋️ Conditioning', description: 'Strength focus' },
-  { id: 'recovery_day', label: '💆 Recovery', description: 'Light & easy' },
-  { id: 'balanced_day', label: '⚖️ Balanced', description: 'Mix of everything' },
+const QUICK_TEMPLATE_IDS = [
+  'high_volume_shooting',
+  'quick_skills',
+  'conditioning_day',
+  'recovery_day',
+  'balanced_day',
 ];
 
 export default function SoloWorkoutBuilder() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const dateParam = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
 
@@ -80,6 +81,23 @@ export default function SoloWorkoutBuilder() {
   const [title, setTitle] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
+
+  const taskTypeLabels: Record<string, string> = {
+    shooting: t('practice.taskTypeShooting'),
+    conditioning: t('practice.taskTypeConditioning'),
+    mobility: t('practice.taskTypeMobility'),
+    recovery: t('practice.taskTypeRecovery'),
+    prep: t('practice.taskTypePrep'),
+    other: t('practice.taskTypeOther'),
+  };
+
+  const QUICK_TEMPLATES = [
+    { id: 'high_volume_shooting', label: t('practice.quickTemplateHighVolume'), description: t('practice.quickTemplateHighVolumeDesc') },
+    { id: 'quick_skills', label: t('practice.quickTemplateQuickSkills'), description: t('practice.quickTemplateQuickSkillsDesc') },
+    { id: 'conditioning_day', label: t('practice.quickTemplateConditioning'), description: t('practice.quickTemplateConditioningDesc') },
+    { id: 'recovery_day', label: t('practice.quickTemplateRecovery'), description: t('practice.quickTemplateRecoveryDesc') },
+    { id: 'balanced_day', label: t('practice.quickTemplateBalanced'), description: t('practice.quickTemplateBalancedDesc') },
+  ];
 
   // Fetch player
   const { data: player, isLoading } = useQuery({
@@ -102,7 +120,7 @@ export default function SoloWorkoutBuilder() {
 
     setTitle(template.title);
     const templateTasks = getTasksForDay(templateId);
-    
+
     setTasks(templateTasks.map((task, index) => ({
       id: `new-${Date.now()}-${index}`,
       sort_order: index,
@@ -183,7 +201,7 @@ export default function SoloWorkoutBuilder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['solo-dashboard', playerId] });
-      toast.success("Workout created!");
+      toast.success(t('solo.workoutCreated'));
       navigate(`/solo/dashboard/${playerId}`);
     },
     onError: (error: Error) => {
@@ -191,7 +209,7 @@ export default function SoloWorkoutBuilder() {
     },
   });
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <AppShell>
         <div className="p-5 space-y-4">
@@ -201,6 +219,8 @@ export default function SoloWorkoutBuilder() {
       </AppShell>
     );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <AppShell>
@@ -217,7 +237,7 @@ export default function SoloWorkoutBuilder() {
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground">New Workout</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('solo.newWorkout')}</h1>
               <Popover open={showCalendar} onOpenChange={setShowCalendar}>
                 <PopoverTrigger asChild>
                   <button className="text-sm text-primary font-medium">
@@ -244,7 +264,7 @@ export default function SoloWorkoutBuilder() {
           {tasks.length === 0 && (
             <div>
               <h2 className="text-sm font-medium text-muted-foreground mb-3">
-                Start with a template
+                {t('practice.startWithTemplate')}
               </h2>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {QUICK_TEMPLATES.map((template) => (
@@ -263,10 +283,10 @@ export default function SoloWorkoutBuilder() {
 
           {/* Title */}
           <div>
-            <Label className="text-sm font-medium">Workout Title</Label>
+            <Label className="text-sm font-medium">{t('practice.workoutTitle')}</Label>
             <Input
               className="mt-2"
-              placeholder="e.g., Morning Shooting Session"
+              placeholder={t('practice.workoutTitlePlaceholder')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
@@ -275,10 +295,10 @@ export default function SoloWorkoutBuilder() {
           {/* Tasks */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <Label className="text-sm font-medium">Tasks</Label>
+              <Label className="text-sm font-medium">{t('practice.tasks')}</Label>
               <Button variant="ghost" size="sm" onClick={addTask}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Task
+                {t('practice.addTask')}
               </Button>
             </div>
 
@@ -296,14 +316,14 @@ export default function SoloWorkoutBuilder() {
                       <div className="text-muted-foreground mt-2">
                         <GripVertical className="h-4 w-4" />
                       </div>
-                      
+
                       <div className="flex-1 space-y-3">
                         <Input
-                          placeholder="Task name (e.g., Wrist shots)"
+                          placeholder={t('practice.taskNamePlaceholder')}
                           value={task.label}
                           onChange={(e) => updateTask(task.id, { label: e.target.value })}
                         />
-                        
+
                         <div className="grid grid-cols-2 gap-3">
                           <Select
                             value={task.task_type}
@@ -327,10 +347,11 @@ export default function SoloWorkoutBuilder() {
                           {task.task_type === 'shooting' && (
                             <Input
                               type="number"
-                              placeholder="Shots"
+                              inputMode="numeric"
+                              placeholder={t('practice.shots')}
                               value={task.shots_expected || ''}
-                              onChange={(e) => updateTask(task.id, { 
-                                shots_expected: e.target.value ? parseInt(e.target.value) : null 
+                              onChange={(e) => updateTask(task.id, {
+                                shots_expected: e.target.value ? parseInt(e.target.value) : null
                               })}
                             />
                           )}
@@ -339,10 +360,11 @@ export default function SoloWorkoutBuilder() {
                             <div className="flex gap-2">
                               <Input
                                 type="number"
-                                placeholder="Value"
+                                inputMode="numeric"
+                                placeholder={t('practice.value')}
                                 value={task.target_value || ''}
-                                onChange={(e) => updateTask(task.id, { 
-                                  target_value: e.target.value ? parseInt(e.target.value) : null 
+                                onChange={(e) => updateTask(task.id, {
+                                  target_value: e.target.value ? parseInt(e.target.value) : null
                                 })}
                                 className="flex-1"
                               />
@@ -355,9 +377,9 @@ export default function SoloWorkoutBuilder() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="none">-</SelectItem>
-                                  <SelectItem value="reps">reps</SelectItem>
-                                  <SelectItem value="minutes">min</SelectItem>
-                                  <SelectItem value="seconds">sec</SelectItem>
+                                  <SelectItem value="reps">{t('practice.reps')}</SelectItem>
+                                  <SelectItem value="minutes">{t('practice.min')}</SelectItem>
+                                  <SelectItem value="seconds">{t('practice.sec')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -384,7 +406,7 @@ export default function SoloWorkoutBuilder() {
                   className="w-full border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-muted/50 transition-colors"
                 >
                   <Plus className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Add your first task</p>
+                  <p className="text-sm text-muted-foreground">{t('practice.addFirstTask')}</p>
                 </button>
               )}
             </div>
@@ -398,10 +420,10 @@ export default function SoloWorkoutBuilder() {
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || tasks.length === 0}
             >
-              {saveMutation.isPending ? "Saving..." : (
+              {saveMutation.isPending ? t('common.saving') : (
                 <>
                   <Check className="w-5 h-5 mr-2" />
-                  Save Workout
+                  {t('practice.saveWorkout')}
                 </>
               )}
             </Button>

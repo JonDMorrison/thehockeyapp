@@ -1,27 +1,30 @@
 import React from "react";
 import { Sparkles, Plus, Target, Dumbbell, Heart, Clock, GripVertical } from "lucide-react";
-
-const taskTypes = [
-  { icon: Target, label: "Shooting", color: "bg-blue-500" },
-  { icon: Dumbbell, label: "Conditioning", color: "bg-orange-500" },
-  { icon: Heart, label: "Mobility", color: "bg-pink-500" },
-];
-
-const draftTasks = [
-  { label: "Stickhandling warmup", time: "5 min", type: "prep" },
-  { label: "Wrist shots - targets", time: "25 reps", type: "shooting" },
-];
+import { useTranslation } from 'react-i18next';
 
 export const FeatureBuilder: React.FC = () => {
+  const { t } = useTranslation();
+
+  const taskTypes = [
+    { icon: Target, label: t('marketing.builder_shooting'), color: "bg-blue-500" },
+    { icon: Dumbbell, label: t('marketing.builder_conditioning'), color: "bg-orange-500" },
+    { icon: Heart, label: t('marketing.builder_mobility'), color: "bg-pink-500" },
+  ];
+
+  const draftTasks = [
+    { label: t('marketing.ai_preview_stickhandling_warmup'), time: "5 min", type: "prep" },
+    { label: t('marketing.ai_preview_wrist_shots'), time: "25 reps", type: "shooting" },
+  ];
+
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-base font-bold text-foreground">Build Practice</h1>
+          <h1 className="text-base font-bold text-foreground">{t('marketing.builder_build_practice')}</h1>
           <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-600 px-2 py-1 rounded-full">
             <Sparkles className="w-3 h-3" />
-            <span className="text-[10px] font-semibold">AI Assist</span>
+            <span className="text-[10px] font-semibold">{t('marketing.builder_ai_assist')}</span>
           </div>
         </div>
       </div>
@@ -30,11 +33,11 @@ export const FeatureBuilder: React.FC = () => {
         {/* Date & tier */}
         <div className="flex gap-2">
           <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
-            <p className="text-[9px] text-muted-foreground uppercase">Date</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.builder_date')}</p>
             <p className="text-xs font-medium">Mon, Jan 6</p>
           </div>
           <div className="flex-1 bg-purple-500/10 rounded-lg p-2.5 border border-purple-500/30">
-            <p className="text-[9px] text-purple-600 uppercase">Tier</p>
+            <p className="text-[9px] text-purple-600 uppercase">{t('marketing.builder_tier')}</p>
             <p className="text-xs font-medium text-purple-600">REP</p>
           </div>
         </div>
@@ -42,7 +45,7 @@ export const FeatureBuilder: React.FC = () => {
         {/* Quick add */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-            Quick Add
+            {t('marketing.builder_quick_add')}
           </p>
           <div className="flex gap-2">
             {taskTypes.map((type) => (
@@ -63,14 +66,14 @@ export const FeatureBuilder: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Tasks
+              {t('marketing.builder_tasks')}
             </p>
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
               <Clock className="w-3 h-3" />
               <span>~20 min</span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             {draftTasks.map((task) => (
               <div
@@ -84,11 +87,11 @@ export const FeatureBuilder: React.FC = () => {
                 </div>
               </div>
             ))}
-            
+
             {/* Add button */}
             <button className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border-2 border-dashed border-muted-foreground/30 text-muted-foreground hover:border-primary hover:text-primary transition-colors">
               <Plus className="w-4 h-4" />
-              <span className="text-xs font-medium">Add Task</span>
+              <span className="text-xs font-medium">{t('marketing.builder_add_task')}</span>
             </button>
           </div>
         </div>
@@ -96,7 +99,7 @@ export const FeatureBuilder: React.FC = () => {
         {/* AI button */}
         <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-3 flex items-center justify-center gap-2">
           <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-semibold">Generate with AI</span>
+          <span className="text-sm font-semibold">{t('marketing.builder_generate_with_ai')}</span>
         </button>
       </div>
     </div>

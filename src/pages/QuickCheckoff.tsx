@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -75,6 +76,7 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
 };
 
 const QuickCheckoff: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const playerId = searchParams.get("player_id");
   const navigate = useNavigate();
@@ -194,7 +196,7 @@ const QuickCheckoff: React.FC = () => {
         .eq("player_id", playerId!);
 
       if (error) throw error;
-      
+
       const completions: Record<string, LocalCompletion> = {};
       data?.forEach((c) => {
         completions[c.practice_task_id] = {
@@ -351,7 +353,7 @@ const QuickCheckoff: React.FC = () => {
   // Complete session handler
   const handleCompleteSession = async () => {
     const now = new Date().toISOString();
-    
+
     if (isOnline) {
       try {
         await supabase
@@ -363,11 +365,11 @@ const QuickCheckoff: React.FC = () => {
             completed_at: now,
             completed_by: 'quick_checkoff',
           }, { onConflict: 'practice_card_id,player_id' });
-        
-        toast.success("Session complete!", "Great work today!");
+
+        toast.success(t('solo.sessionComplete'), t('solo.greatWorkToday'));
         navigate(`/players/${playerId}/home`);
       } catch {
-        toast.error("Error completing session");
+        toast.error(t('common.error'));
       }
     } else {
       await queueOfflineEvent({
@@ -387,7 +389,7 @@ const QuickCheckoff: React.FC = () => {
         },
         status: 'pending',
       });
-      toast.success("Saved offline", "Will sync when online");
+      toast.success(t('solo.savedOffline'), t('solo.willSyncWhenOnline'));
       navigate(`/players/${playerId}/home`);
     }
   };
@@ -395,7 +397,7 @@ const QuickCheckoff: React.FC = () => {
   if (!playerId) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">No player selected</p>
+        <p className="text-muted-foreground">{t('solo.noPlayerSelected')}</p>
       </div>
     );
   }
@@ -418,9 +420,9 @@ const QuickCheckoff: React.FC = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">No workout published today</p>
+          <p className="text-muted-foreground">{t('solo.noWorkoutPublishedToday')}</p>
           <Button variant="outline" onClick={() => navigate(`/players/${playerId}/home`)}>
-            Back to Home
+            {t('solo.backToHome')}
           </Button>
         </div>
       </div>
@@ -432,7 +434,7 @@ const QuickCheckoff: React.FC = () => {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <button 
+          <button
             onClick={() => navigate(`/players/${playerId}/today`)}
             className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
           >
@@ -440,7 +442,7 @@ const QuickCheckoff: React.FC = () => {
           </button>
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-sm">Quick Mode</span>
+            <span className="font-semibold text-sm">{t('solo.quickMode')}</span>
             <OfflineDot status={offlineStatus} />
           </div>
           <div className="w-9" /> {/* Spacer for centering */}
@@ -484,10 +486,10 @@ const QuickCheckoff: React.FC = () => {
       {undoAction && (
         <div className="fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-4">
           <div className="bg-card border border-border rounded-lg shadow-lg p-3 flex items-center justify-between">
-            <span className="text-sm">Task updated</span>
+            <span className="text-sm">{t('solo.taskUpdated')}</span>
             <Button variant="ghost" size="sm" onClick={handleUndo}>
               <Undo2 className="w-4 h-4 mr-1" />
-              Undo
+              {t('common.undo')}
             </Button>
           </div>
         </div>
@@ -500,7 +502,7 @@ const QuickCheckoff: React.FC = () => {
           className="w-full h-14 text-lg font-semibold"
           disabled={!allDone}
         >
-          {allDone ? "Complete Session" : `${requiredTasks.length - completedCount} tasks remaining`}
+          {allDone ? t('solo.completeSession') : t('solo.nTasksRemaining', { n: requiredTasks.length - completedCount })}
         </Button>
       </footer>
     </div>

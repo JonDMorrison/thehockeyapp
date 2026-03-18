@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
@@ -26,6 +27,7 @@ interface TeamPreview {
 }
 
 const JoinTeam: React.FC = () => {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -52,8 +54,8 @@ const JoinTeam: React.FC = () => {
     }
   }, [preview, setTeamTheme]);
 
-  const palette = preview?.palette_id 
-    ? teamPalettes.find((p) => p.id === preview.palette_id) 
+  const palette = preview?.palette_id
+    ? teamPalettes.find((p) => p.id === preview.palette_id)
     : null;
 
   if (isLoading || authLoading) {
@@ -77,10 +79,10 @@ const JoinTeam: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={AlertCircle}
-                title="Invalid Invite"
-                description="This invite link is no longer valid. Ask your coach for a new one."
+                title={t("auth.invite.invalidTitle")}
+                description={t("auth.joinTeam.invalidDescription")}
                 action={{
-                  label: "Go Home",
+                  label: t("common.goHome"),
                   onClick: () => navigate("/"),
                 }}
               />
@@ -130,8 +132,7 @@ const JoinTeam: React.FC = () => {
 
             <div className="p-4 rounded-lg bg-surface-muted mb-6">
               <p className="text-sm text-text-muted">
-                You've been invited to join this team's training hub. Add your
-                player to get started.
+                {t("auth.joinTeam.invitePrompt")}
               </p>
             </div>
 
@@ -142,15 +143,15 @@ const JoinTeam: React.FC = () => {
               onClick={handleJoin}
             >
               <Users className="w-5 h-5" />
-              Join Team
+              {t("auth.joinTeam.joinTeamButton")}
               <ChevronRight className="w-4 h-4" />
             </Button>
           </AppCard>
 
           <p className="text-xs text-text-muted text-center mt-4">
             {isAuthenticated
-              ? "You'll select which player to add next."
-              : "You'll sign in or create an account first."}
+              ? t("auth.joinTeam.nextStepAuthenticated")
+              : t("auth.joinTeam.nextStepUnauthenticated")}
           </p>
         </div>
       </PageContainer>

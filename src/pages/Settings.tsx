@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { getPlanLabel, FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
 import { BETA_MODE } from "@/core/constants";
-import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2 } from "lucide-react";
+import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
@@ -343,7 +343,7 @@ export default function Settings() {
         {BETA_MODE && (
         <section>
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center space-y-1">
-            <p className="text-sm font-medium text-foreground">🎉 Beta Access — All Features Unlocked</p>
+            <p className="text-sm font-medium text-foreground flex items-center justify-center gap-1.5"><Sparkles className="w-4 h-4" /> Beta Access — All Features Unlocked</p>
             <p className="text-xs text-muted-foreground">You have full access to every feature during the beta period.</p>
           </div>
         </section>
@@ -408,7 +408,7 @@ function SettingsRow({ icon: Icon, label, sublabel, onClick, disabled }: Setting
         <p className="text-sm font-medium">{label}</p>
         {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
       </div>
-      {!disabled && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+      {!disabled && <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
     </button>
   );
 }

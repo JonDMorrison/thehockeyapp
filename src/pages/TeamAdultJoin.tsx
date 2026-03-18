@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -18,6 +19,7 @@ const roleLabels: Record<string, string> = {
 };
 
 const TeamAdultJoin: React.FC = () => {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -65,14 +67,14 @@ const TeamAdultJoin: React.FC = () => {
     },
     onSuccess: (result) => {
       setRedeemStatus("success");
-      toast.success("Welcome to the team!", "You now have access.");
+      toast.success(t("auth.teamAdultJoin.welcomeTitle"), t("auth.teamAdultJoin.welcomeMessage"));
       setTimeout(() => {
         navigate(`/teams/${result.team_id}`, { replace: true });
       }, 1500);
     },
     onError: (error: Error) => {
       setRedeemStatus("error");
-      toast.error("Failed to join", error.message);
+      toast.error(t("auth.guardianJoin.failedToJoinTitle"), error.message);
     },
   });
 
@@ -103,10 +105,10 @@ const TeamAdultJoin: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={AlertCircle}
-                title="Invalid Invite"
-                description="This invite link is invalid or has been removed."
+                title={t("auth.invite.invalidTitle")}
+                description={t("auth.invite.invalidDescription")}
                 action={{
-                  label: "Go Home",
+                  label: t("common.goHome"),
                   onClick: () => navigate("/"),
                 }}
               />
@@ -125,10 +127,10 @@ const TeamAdultJoin: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={AlertCircle}
-                title="Invite Expired"
-                description="This invite has expired. Ask the team admin for a new invite."
+                title={t("auth.invite.expiredTitle")}
+                description={t("auth.teamAdultJoin.expiredDescription")}
                 action={{
-                  label: "Go Home",
+                  label: t("common.goHome"),
                   onClick: () => navigate("/"),
                 }}
               />
@@ -147,10 +149,10 @@ const TeamAdultJoin: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={AlertCircle}
-                title="Invite Revoked"
-                description="This invite has been cancelled. Contact the team for access."
+                title={t("auth.invite.revokedTitle")}
+                description={t("auth.teamAdultJoin.revokedDescription")}
                 action={{
-                  label: "Go Home",
+                  label: t("common.goHome"),
                   onClick: () => navigate("/"),
                 }}
               />
@@ -169,10 +171,10 @@ const TeamAdultJoin: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={CheckCircle}
-                title="Already Accepted"
-                description="This invite has already been used."
+                title={t("auth.invite.alreadyAcceptedTitle")}
+                description={t("auth.invite.alreadyAcceptedDescription")}
                 action={{
-                  label: "View Teams",
+                  label: t("auth.teamAdultJoin.viewTeamsButton"),
                   onClick: () => navigate("/teams"),
                 }}
               />
@@ -183,7 +185,7 @@ const TeamAdultJoin: React.FC = () => {
     );
   }
 
-  const teamName = invite.teams?.name || "the team";
+  const teamName = invite.teams?.name || t("auth.teamAdultJoin.theTeamFallback");
 
   if (!isAuthenticated) {
     return (
@@ -194,11 +196,9 @@ const TeamAdultJoin: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-team-primary" />
               </div>
-              <AppCardTitle className="text-xl mb-2">Team Invite</AppCardTitle>
+              <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.inviteTitle")}</AppCardTitle>
               <AppCardDescription className="mb-4">
-                You've been invited to join <strong>{teamName}</strong> as a{" "}
-                <strong>{roleLabels[invite.role]}</strong>. Sign in or create an
-                account to continue.
+                {t("auth.teamAdultJoin.invitePrompt", { teamName, role: roleLabels[invite.role] })}
               </AppCardDescription>
               <Button
                 variant="team"
@@ -206,7 +206,7 @@ const TeamAdultJoin: React.FC = () => {
                 className="w-full"
                 onClick={() => navigate("/auth")}
               >
-                Sign In or Create Account
+                {t("auth.signInOrCreateAccount")}
               </Button>
             </AppCard>
           </div>
@@ -225,9 +225,9 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-success" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">You're In!</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">{t("auth.invite.youreInTitle")}</AppCardTitle>
                 <AppCardDescription>
-                  You've joined {teamName}. Redirecting...
+                  {t("auth.teamAdultJoin.joinedRedirectingMessage", { teamName })}
                 </AppCardDescription>
               </>
             ) : redeemStatus === "error" ? (
@@ -235,9 +235,9 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-destructive" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">Something Went Wrong</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">{t("common.somethingWentWrong")}</AppCardTitle>
                 <AppCardDescription className="mb-4">
-                  We couldn't add you to the team. Please try again.
+                  {t("auth.teamAdultJoin.couldNotAddMessage")}
                 </AppCardDescription>
                 <Button
                   variant="team"
@@ -246,7 +246,7 @@ const TeamAdultJoin: React.FC = () => {
                     redeemInvite.mutate();
                   }}
                 >
-                  Try Again
+                  {t("common.tryAgain")}
                 </Button>
               </>
             ) : (
@@ -254,9 +254,9 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-team-primary" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">Joining Team</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.joiningTitle")}</AppCardTitle>
                 <AppCardDescription className="mb-4">
-                  Adding you to {teamName} as {roleLabels[invite.role]}...
+                  {t("auth.teamAdultJoin.joiningMessage", { teamName, role: roleLabels[invite.role] })}
                 </AppCardDescription>
                 <Loader2 className="w-8 h-8 animate-spin text-team-primary mx-auto" />
               </>

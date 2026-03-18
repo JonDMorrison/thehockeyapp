@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface NavigationHeaderProps {
   /** Page title */
@@ -36,7 +37,7 @@ const routeHierarchy: Record<string, string> = {
   "/teams/:id/assign": "/teams/:id",
   "/teams/:id": "/teams",
   "/teams/new": "/teams",
-  
+
   // Player routes
   "/players/:id/today": "/players/:id/home",
   "/players/:id/history": "/players/:id/home",
@@ -45,7 +46,7 @@ const routeHierarchy: Record<string, string> = {
   "/players/:id/home": "/players",
   "/players/:id": "/players",
   "/players/new": "/players",
-  
+
   // Solo routes
   "/solo/today/:playerId": "/solo/dashboard/:playerId",
   "/solo/badges/:playerId": "/solo/dashboard/:playerId",
@@ -63,11 +64,11 @@ const rootPages = ["/today", "/teams", "/players", "/settings", "/", "/welcome",
 function matchRoute(pathname: string, pattern: string): Record<string, string> | null {
   const patternParts = pattern.split("/");
   const pathParts = pathname.split("/");
-  
+
   if (patternParts.length !== pathParts.length) return null;
-  
+
   const params: Record<string, string> = {};
-  
+
   for (let i = 0; i < patternParts.length; i++) {
     if (patternParts[i].startsWith(":")) {
       params[patternParts[i].slice(1)] = pathParts[i];
@@ -75,14 +76,14 @@ function matchRoute(pathname: string, pattern: string): Record<string, string> |
       return null;
     }
   }
-  
+
   return params;
 }
 
 function getBackPath(pathname: string): string | null {
   // Check if root page
   if (rootPages.includes(pathname)) return null;
-  
+
   // Try to match against hierarchy
   for (const [pattern, parentPattern] of Object.entries(routeHierarchy)) {
     const params = matchRoute(pathname, pattern);
@@ -95,40 +96,40 @@ function getBackPath(pathname: string): string | null {
       return backPath;
     }
   }
-  
+
   // Fallback: go up one level
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length > 1) {
     return "/" + parts.slice(0, -1).join("/");
   }
-  
+
   return null;
 }
 
 // Get breadcrumb from pathname
 function getBreadcrumb(pathname: string): string[] {
   const parts = pathname.split("/").filter(Boolean);
-  
+
   // Transform route segments into readable labels
   const labels: string[] = [];
-  
+
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
-    
+
     // Skip IDs (UUIDs or numeric)
     if (part.match(/^[0-9a-f-]{36}$/i) || part.match(/^\d+$/)) {
       continue;
     }
-    
+
     // Capitalize and clean up
     const label = part
       .split("-")
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
-    
+
     labels.push(label);
   }
-  
+
   return labels;
 }
 
@@ -142,13 +143,14 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   largeTitle = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const computedBackPath = backPath || getBackPath(location.pathname);
   const shouldShowBack = showBack && !isRoot && computedBackPath;
   const breadcrumb = getBreadcrumb(location.pathname);
-  
+
   const handleBack = () => {
     if (computedBackPath) {
       navigate(computedBackPath);
@@ -175,14 +177,14 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
                 size="icon"
                 onClick={handleBack}
                 className="shrink-0 -ml-2 w-10 h-10 rounded-full hover:bg-muted/80"
-                aria-label="Go back"
+                aria-label={t("common.goBack")}
               >
                 <ChevronLeft className="w-5 h-5" />
               </Button>
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Title Area */}
         <div className="flex-1 min-w-0">
           {!largeTitle && title && (
@@ -195,7 +197,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
               {title}
             </motion.h1>
           )}
-          
+
           {/* Breadcrumb (shown when there's a subtitle or no title) */}
           {breadcrumb.length > 1 && !title && (
             <motion.div
@@ -215,7 +217,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
             </motion.div>
           )}
         </div>
-        
+
         {/* Right Action */}
         {rightAction && (
           <div className="shrink-0">
@@ -223,7 +225,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           </div>
         )}
       </div>
-      
+
       {/* Large Title (iOS-style) */}
       {largeTitle && title && (
         <motion.div
@@ -237,7 +239,7 @@ export const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           )}
         </motion.div>
       )}
-      
+
       {/* Subtitle (for compact mode) */}
       {!largeTitle && subtitle && (
         <p className="text-sm text-muted-foreground -mt-0.5">{subtitle}</p>

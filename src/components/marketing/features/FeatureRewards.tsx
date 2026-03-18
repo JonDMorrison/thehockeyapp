@@ -1,39 +1,42 @@
 import React from "react";
 import { Trophy, Star, Flame, Medal, Target, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
-
-const badges = [
-  { 
-    icon: Flame, 
-    label: "7 Day Streak", 
-    earned: true, 
-    gradient: "from-orange-500 via-red-500 to-rose-600",
-    glowColor: "shadow-orange-500/40"
-  },
-  { 
-    icon: Trophy, 
-    label: "Perfect Week", 
-    earned: true, 
-    gradient: "from-amber-400 via-yellow-500 to-orange-500",
-    glowColor: "shadow-amber-500/40"
-  },
-  { 
-    icon: Target, 
-    label: "100 Shots", 
-    earned: true, 
-    gradient: "from-blue-500 via-cyan-400 to-teal-500",
-    glowColor: "shadow-blue-500/40"
-  },
-  { 
-    icon: Medal, 
-    label: "First Month", 
-    earned: false, 
-    gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
-    glowColor: "shadow-purple-500/40"
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 export const FeatureRewards: React.FC = () => {
+  const { t } = useTranslation();
+
+  const badges = [
+    {
+      icon: Flame,
+      label: t('marketing.rewards_seven_day_streak'),
+      earned: true,
+      gradient: "from-orange-500 via-red-500 to-rose-600",
+      glowColor: "shadow-orange-500/40"
+    },
+    {
+      icon: Trophy,
+      label: t('marketing.rewards_perfect_week'),
+      earned: true,
+      gradient: "from-amber-400 via-yellow-500 to-orange-500",
+      glowColor: "shadow-amber-500/40"
+    },
+    {
+      icon: Target,
+      label: t('marketing.rewards_hundred_shots'),
+      earned: true,
+      gradient: "from-blue-500 via-cyan-400 to-teal-500",
+      glowColor: "shadow-blue-500/40"
+    },
+    {
+      icon: Medal,
+      label: t('marketing.rewards_first_month'),
+      earned: false,
+      gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
+      glowColor: "shadow-purple-500/40"
+    },
+  ];
+
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
@@ -42,13 +45,13 @@ export const FeatureRewards: React.FC = () => {
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
             <Trophy className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-base font-bold text-foreground">Badges & Rewards</h1>
+          <h1 className="text-base font-bold text-foreground">{t('marketing.rewards_badges_rewards')}</h1>
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
         {/* New badge celebration */}
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="relative bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-500 rounded-xl p-4 text-white overflow-hidden shadow-lg shadow-amber-500/30"
@@ -60,9 +63,9 @@ export const FeatureRewards: React.FC = () => {
           <div className="absolute bottom-3 left-4">
             <Star className="w-3 h-3 fill-white/30 animate-pulse" style={{ animationDelay: '150ms' }} />
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
@@ -71,9 +74,9 @@ export const FeatureRewards: React.FC = () => {
               <Trophy className="w-7 h-7" />
             </motion.div>
             <div>
-              <p className="text-xs text-white/80">🎉 New Badge!</p>
-              <p className="text-lg font-bold">Perfect Week</p>
-              <p className="text-[10px] text-white/80">All tasks done for 7 days</p>
+              <p className="text-xs text-white/80">{t('marketing.rewards_new_badge')}</p>
+              <p className="text-lg font-bold">{t('marketing.rewards_perfect_week')}</p>
+              <p className="text-[10px] text-white/80">{t('marketing.rewards_perfect_week_detail')}</p>
             </div>
           </div>
         </motion.div>
@@ -81,7 +84,7 @@ export const FeatureRewards: React.FC = () => {
         {/* Badge grid */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Your Badges
+            {t('marketing.rewards_badges_heading')}
           </p>
           <div className="grid grid-cols-2 gap-3">
             {badges.map((badge, index) => (
@@ -91,26 +94,26 @@ export const FeatureRewards: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className={`p-3 rounded-xl border ${
-                  badge.earned 
-                    ? "border-border bg-card hover:shadow-md transition-shadow" 
+                  badge.earned
+                    ? "border-border bg-card hover:shadow-md transition-shadow"
                     : "border-dashed border-muted-foreground/30 opacity-50"
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  badge.earned 
-                    ? `bg-gradient-to-br ${badge.gradient} shadow-lg ${badge.glowColor} ring-2 ring-white/20` 
+                  badge.earned
+                    ? `bg-gradient-to-br ${badge.gradient} shadow-lg ${badge.glowColor} ring-2 ring-white/20`
                     : "bg-muted"
                 }`}>
                   <badge.icon className={`w-5 h-5 ${badge.earned ? "text-white" : "text-muted-foreground"}`} />
                 </div>
                 <p className="text-xs font-medium">{badge.label}</p>
                 {!badge.earned && (
-                  <p className="text-[9px] text-muted-foreground">Keep going!</p>
+                  <p className="text-[9px] text-muted-foreground">{t('marketing.rewards_keep_going')}</p>
                 )}
                 {badge.earned && (
                   <div className="flex items-center gap-1 mt-1">
                     <CheckCircle className="w-3 h-3 text-primary" />
-                    <span className="text-[9px] text-primary font-medium">Earned</span>
+                    <span className="text-[9px] text-primary font-medium">{t('marketing.rewards_earned')}</span>
                   </div>
                 )}
               </motion.div>
@@ -119,7 +122,7 @@ export const FeatureRewards: React.FC = () => {
         </div>
 
         {/* Streak */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
@@ -130,7 +133,7 @@ export const FeatureRewards: React.FC = () => {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
                 <Flame className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-foreground">7 Day Streak!</span>
+              <span className="font-bold text-foreground">{t('marketing.rewards_seven_day_streak_badge')}</span>
             </div>
             <span className="text-2xl">🔥</span>
           </div>

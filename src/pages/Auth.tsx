@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
@@ -36,12 +38,18 @@ const authSchema = z.object({
 });
 
 const Auth: React.FC = () => {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<"signin" | "signup">(() => {
+    const m = searchParams.get("mode");
+    return m === "signup" ? "signup" : "signin";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
-  
+
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, signUp, isAuthenticated, loading: authLoading } = useAuth();
@@ -73,11 +81,33 @@ const Auth: React.FC = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrors({ email: t("auth.emailLabel") + " is required" });
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/auth?mode=reset",
+      });
+      if (error) {
+        toast.error(t("auth.forgotPasswordFailedTitle"), error.message);
+      } else {
+        toast.success(t("auth.forgotPasswordSentTitle"), t("auth.forgotPasswordSentMessage"));
+      }
+    } catch {
+      toast.error(t("common.somethingWentWrong"), t("common.pleaseTryAgain"));
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) return;
-    
+
     setLoading(true);
 
     try {
@@ -85,29 +115,29 @@ const Auth: React.FC = () => {
         const { error } = await signUp(email, password, displayName || undefined);
         if (error) {
           if (error.message.includes("already registered")) {
-            toast.error("Account exists", "Try signing in instead.");
+            toast.error(t("auth.accountExistsTitle"), t("auth.accountExistsMessage"));
           } else {
-            toast.error("Sign up failed", error.message);
+            toast.error(t("auth.signUpFailedTitle"), error.message);
           }
         } else {
-          toast.success("Welcome!", "Your account has been created.");
+          toast.success(t("auth.welcomeTitle"), t("auth.accountCreatedMessage"));
           navigate(getRedirectPath(), { replace: true });
         }
       } else {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes("Invalid login")) {
-            toast.error("Invalid credentials", "Please check your email and password.");
+            toast.error(t("auth.invalidCredentialsTitle"), t("auth.invalidCredentialsMessage"));
           } else {
-            toast.error("Sign in failed", error.message);
+            toast.error(t("auth.signInFailedTitle"), error.message);
           }
         } else {
-          toast.success("Welcome back!", "You're now signed in.");
+          toast.success(t("auth.welcomeBackTitle"), t("auth.signedInMessage"));
           navigate(getRedirectPath(), { replace: true });
         }
       }
     } catch {
-      toast.error("Something went wrong", "Please try again.");
+      toast.error(t("common.somethingWentWrong"), t("common.pleaseTryAgain"));
     } finally {
       setLoading(false);
     }
@@ -124,36 +154,36 @@ const Auth: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       <MarketingNav />
-      
+
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-primary/15 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
-      
+
       {/* Floating decorative elements */}
       <div className="absolute top-20 left-[10%] w-24 h-24 bg-primary/10 rounded-3xl rotate-12 blur-sm" />
       <div className="absolute bottom-32 right-[15%] w-16 h-16 bg-primary/15 rounded-2xl -rotate-12 blur-sm" />
-      
+
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-6 py-12 pt-24">
         <div className="max-w-md mx-auto w-full">
           {/* Header */}
           <div className="text-center mb-10">
             <div className="flex flex-col items-center gap-2 mb-6">
-              <img src={logoImage} alt="The Hockey App" className="w-16 h-16 object-contain" />
-              <span className="font-bold text-xl text-foreground">The Hockey App</span>
+              <img src={logoImage} alt={t("auth.logoAlt")} className="w-16 h-16 object-contain" />
+              <span className="font-bold text-xl text-foreground">{t("auth.appName")}</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              {mode === "signin" ? "Welcome back" : "Start training smarter"}
+              {mode === "signin" ? t("auth.signinHeadline") : t("auth.signupHeadline")}
             </h1>
             <p className="text-muted-foreground">
-              {mode === "signin" 
-                ? "Sign in to track your training progress" 
-                : "Create your free account and build better habits"}
+              {mode === "signin"
+                ? t("auth.signinSubheadline")
+                : t("auth.signupSubheadline")}
             </p>
             {mode === "signup" && (
               <p className="text-xs text-muted-foreground/70 mt-1">
-                Join hockey families building consistent off-ice training habits.
+                {t("auth.signupTagline")}
               </p>
             )}
           </div>
@@ -164,14 +194,14 @@ const Auth: React.FC = () => {
               {mode === "signup" && (
                 <div className="space-y-2">
                   <Label htmlFor="displayName" className="text-sm font-medium">
-                    Your Name
+                    {t("auth.yourNameLabel")}
                   </Label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
                       id="displayName"
                       type="text"
-                      placeholder="First and last name"
+                      placeholder={t("auth.yourNamePlaceholder")}
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.displayName ? "border-destructive" : ""}`}
@@ -186,14 +216,14 @@ const Auth: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  Email
+                  {t("auth.emailLabel")}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t("auth.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.email ? "border-destructive" : ""}`}
@@ -208,14 +238,14 @@ const Auth: React.FC = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t("auth.passwordLabel")}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t("auth.passwordPlaceholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
@@ -224,6 +254,18 @@ const Auth: React.FC = () => {
                 </div>
               {errors.password && (
                 <p className="text-xs text-destructive pl-1">{errors.password}</p>
+              )}
+              {mode === "signin" && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={forgotLoading}
+                    className="text-xs text-primary hover:text-primary/80 transition-colors mt-1"
+                  >
+                    {t("auth.forgotPassword")}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -236,7 +278,7 @@ const Auth: React.FC = () => {
                 disabled={loading}
                 loading={loading}
               >
-                {mode === "signin" ? "Sign In" : "Create Account"}
+                {mode === "signin" ? t("auth.signInButton") : t("auth.createAccountButton")}
               </AppleButton>
             </form>
 
@@ -246,7 +288,7 @@ const Auth: React.FC = () => {
                 <div className="w-full border-t border-border/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-3 text-muted-foreground">or</span>
+                <span className="bg-card px-3 text-muted-foreground">{t("common.or")}</span>
               </div>
             </div>
 
@@ -260,8 +302,8 @@ const Auth: React.FC = () => {
               className="w-full py-3 text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               {mode === "signin"
-                ? "Don't have an account? Sign up"
-                : "Already have an account? Sign in"}
+                ? t("auth.noAccountPrompt")
+                : t("auth.hasAccountPrompt")}
             </button>
           </div>
 
@@ -272,7 +314,7 @@ const Auth: React.FC = () => {
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              Back to home
+              {t("common.backToHome")}
             </button>
           </div>
         </div>

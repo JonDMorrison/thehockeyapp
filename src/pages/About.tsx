@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import founderImg from "@/assets/founder-about-headshot.png";
 import garageTrainingImg from "@/assets/girl-garage-training.jpg";
 import kidDrivewayImg from "@/assets/kid-driveway-shooting.jpg";
+import { useTranslation } from 'react-i18next';
 
 
 const About: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <MarketingNav />
@@ -20,13 +22,13 @@ const About: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.08] text-foreground">
-                I built this app because{" "}
+                {t('marketing.about_hero_heading_prefix')}{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                  my family needed it.
+                  {t('marketing.about_hero_heading_gradient')}
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto lg:mx-0">
-                I'm Jon Morrison. I coach minor hockey and I have three daughters who play. I kept running into the same problem every family faces: getting kids to train at home without it turning into a fight. So I built something to fix it.
+                {t('marketing.about_hero_p1')}
               </p>
               <Button
                 size="lg"
@@ -34,7 +36,7 @@ const About: React.FC = () => {
                 asChild
               >
                 <Link to="/demo">
-                  See How The Hockey App Works
+                  {t('marketing.about_hero_button')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
@@ -44,7 +46,7 @@ const About: React.FC = () => {
               <div className="rounded-2xl overflow-hidden shadow-subtle max-w-md w-full">
                 <img
                   src={founderImg}
-                  alt="Jon Morrison coaching youth hockey"
+                  alt={t('marketing.about_img_alt_founder')}
                   className="w-full h-auto object-cover aspect-[4/5]"
                 />
               </div>
@@ -60,73 +62,45 @@ const About: React.FC = () => {
             <div className="rounded-2xl overflow-hidden shadow-subtle sticky top-24 hidden lg:block">
               <img
                 src={kidDrivewayImg}
-                alt="Young hockey player practicing shooting in the driveway"
+                alt={t('marketing.about_img_alt_kid_driveway')}
                 className="w-full h-auto object-cover"
               />
             </div>
             <div className="space-y-6 text-base text-muted-foreground leading-relaxed">
-              <h2 className="text-2xl font-bold text-foreground">Where It Started</h2>
-              <p>
-                I grew up in the rink. I played junior hockey in the BCHL, lived in billets, trained year-round, and learned what it meant to be accountable to a team before I was old enough to vote.
-              </p>
-              <p>
-                Hockey taught me structure. It taught me that talent matters less than consistency. And it taught me that the players who develop the fastest are the ones who do the quiet work: the unglamorous reps at home, in the garage, in the basement, when nobody is watching.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground">{t('marketing.about_story_h2_started')}</h2>
+              <p>{t('marketing.about_story_p_started1')}</p>
+              <p>{t('marketing.about_story_p_started2')}</p>
 
               {/* Mobile-only image */}
               <div className="rounded-2xl overflow-hidden shadow-subtle lg:hidden">
                 <img
                   src={kidDrivewayImg}
-                  alt="Young hockey player practicing shooting in the driveway"
+                  alt={t('marketing.about_img_alt_kid_driveway')}
                   className="w-full h-auto object-cover"
                 />
               </div>
 
-              <h2 className="text-2xl font-bold text-foreground pt-4">The Pattern I Kept Seeing</h2>
-              <p>
-                Years later, I became a coach. I've coached Abbotsford Hawks U7, U9, and U11. I've worked with Fraser Valley Kings development groups and been part of the BC Stars development environment. I've coached dozens of kids across multiple age groups.
-              </p>
-              <p>
-                And I kept seeing the same pattern:
-              </p>
-              <p>
-                Coaches would assign off-ice training. Parents would try to make it happen. Kids would resist. And every night, the same argument would play out in kitchens across the country: "Did you do your training?"
-              </p>
-              <p>
-                The problem was never the kid's commitment. It was the lack of structure. There was no system. No clear plan. No way for the child to own it themselves.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_pattern')}</h2>
+              <p>{t('marketing.about_story_p_pattern1')}</p>
+              <p>{t('marketing.about_story_p_pattern2')}</p>
+              <p>{t('marketing.about_story_p_pattern3')}</p>
+              <p>{t('marketing.about_story_p_pattern4')}</p>
 
-              <h2 className="text-2xl font-bold text-foreground pt-4">Three Daughters in the Game</h2>
-              <p>
-                I'm also a hockey dad. I have three daughters who play. I've lived the exact tension I'm describing: trying to support without pushing, trying to encourage without nagging, trying to build discipline without creating resentment.
-              </p>
-              <p>
-                That's the hardest part of being a hockey parent: you care deeply, but if you push too hard, your child pulls away.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_daughters')}</h2>
+              <p>{t('marketing.about_story_p_daughters1')}</p>
+              <p>{t('marketing.about_story_p_daughters2')}</p>
 
-              <h2 className="text-2xl font-bold text-foreground pt-4">Why I Built This</h2>
-              <p>
-                The Hockey App exists because I needed it. As a coach, I needed a way to give families clear weekly plans without creating more work for parents. As a dad, I needed a system my daughters could follow on their own so training happened without me standing over them.
-              </p>
-              <p>
-                This isn't a tech company's idea of what hockey needs. It's a coach and father's answer to a problem I've lived with for over a decade.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_built')}</h2>
+              <p>{t('marketing.about_story_p_built1')}</p>
+              <p>{t('marketing.about_story_p_built2')}</p>
 
-              <h2 className="text-2xl font-bold text-foreground pt-4">What It Does</h2>
-              <p>
-                The Hockey App gives coaches a simple way to assign structured off-ice training. Kids open the app, see their tasks for the day, and check them off. Parents get visibility without having to manage anything. Everyone stays aligned.
-              </p>
-              <p>
-                No rankings. No pressure. No public leaderboards. Just quiet consistency, the kind that builds real athletes.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_what_it_does')}</h2>
+              <p>{t('marketing.about_story_p_what1')}</p>
+              <p>{t('marketing.about_story_p_what2')}</p>
 
-              <h2 className="text-2xl font-bold text-foreground pt-4">The Philosophy</h2>
-              <p>
-                I believe development happens through daily habits, not occasional intensity. I believe kids are more capable than we think, if we give them the structure to succeed. And I believe parents deserve to step back from being the enforcer and just be the supporter.
-              </p>
-              <p>
-                The Hockey App is designed around these beliefs. It's calm. It's structured. And it works because it removes friction instead of adding it.
-              </p>
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_philosophy')}</h2>
+              <p>{t('marketing.about_story_p_philosophy1')}</p>
+              <p>{t('marketing.about_story_p_philosophy2')}</p>
             </div>
           </div>
         </div>
@@ -139,27 +113,27 @@ const About: React.FC = () => {
             <div className="rounded-2xl overflow-hidden shadow-subtle">
               <img
                 src={garageTrainingImg}
-                alt="Young female hockey player training in her garage"
+                alt={t('marketing.about_img_alt_garage')}
                 className="w-full h-auto object-cover aspect-[4/5]"
               />
             </div>
             <div className="text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-[1.08] text-foreground">
-                The best players{" "}
-                <span className="text-primary">train at home.</span>
+                {t('marketing.about_section_cta_heading_prefix')}{" "}
+                <span className="text-primary">{t('marketing.about_section_cta_heading_gradient')}</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                The rink is where you compete. The garage, the basement, the driveway — that's where you get better. The players who separate themselves are the ones who put in the quiet reps when nobody's watching.
+                {t('marketing.about_section_cta_p1')}
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed mb-10">
-                The Hockey App makes that training easy, fun, and something kids actually want to do. No nagging. No pressure. Just a clear plan and the motivation to show up every day.
+                {t('marketing.about_section_cta_p2')}
               </p>
               <Button
                 size="lg"
                 className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 asChild
               >
-                <Link to="/auth">Get Started For Free</Link>
+                <Link to="/auth">{t('marketing.about_section_cta_get_started')}</Link>
               </Button>
             </div>
           </div>

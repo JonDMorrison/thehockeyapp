@@ -4,8 +4,10 @@ import { AppShell, PageContainer, EmptyState } from "@/components/app";
 import { Button } from "@/components/ui/button";
 import { Home, AlertCircle } from "lucide-react";
 import { logger } from "@/core";
+import { useTranslation } from "react-i18next";
 
 const NotFound = () => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
@@ -17,14 +19,14 @@ const NotFound = () => {
       <PageContainer className="flex flex-col items-center justify-center min-h-[80vh]">
         <EmptyState
           icon={AlertCircle}
-          title="Page not found"
-          description={`The page "${location.pathname}" doesn't exist or has been moved.`}
+          title={t("common.pageNotFound")}
+          description={t("common.pageNotFoundDescription", { path: location.pathname })}
         />
         <Button asChild variant="team" className="mt-4">
           {(
-            <Link to="/">
+            <Link to="/today">
               <Home className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("common.backToHome")}
             </Link>
           )}
         </Button>

@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
@@ -35,6 +36,7 @@ interface PlayerBadge {
 }
 
 const PlayerBadges: React.FC = () => {
+  const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -144,8 +146,8 @@ const PlayerBadges: React.FC = () => {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <PageHeader
-            title="Badges"
-            subtitle={player ? `${player.first_name}'s achievements` : undefined}
+            title={t("players.badges.title")}
+            subtitle={player ? t("players.badges.subtitle", { name: player.first_name }) : undefined}
           />
         </div>
       }
@@ -164,17 +166,17 @@ const PlayerBadges: React.FC = () => {
             {earnedBadges.length}
           </h2>
           <p className="text-text-muted">
-            badge{earnedBadges.length !== 1 ? "s" : ""} earned
+            {t("players.badges.badgeCount", { count: earnedBadges.length })}
           </p>
         </AppCard>
 
         {/* Earned Badges */}
-        {earnedBadges.length > 0 && (
-          <div>
-            <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              Earned
-            </AppCardTitle>
+        <div>
+          <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-500" />
+            {t("players.badges.earnedSection")}
+          </AppCardTitle>
+          {earnedBadges.length > 0 ? (
             <div className="grid grid-cols-3 gap-3">
               {earnedBadges.map((challenge, index) => (
                 <motion.div
@@ -196,15 +198,19 @@ const PlayerBadges: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm text-text-muted py-2">
+              {t("players.badges.noBadgesYet")}
+            </p>
+          )}
+        </div>
 
         {/* In Progress */}
         {inProgress.length > 0 && (
           <div>
             <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
               <Target className="w-4 h-4" />
-              In Progress
+              {t("players.badges.inProgressSection")}
             </AppCardTitle>
             <div className="space-y-3">
               {inProgress.map((challenge, index) => {
@@ -255,8 +261,8 @@ const PlayerBadges: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={Trophy}
-              title="No challenges available"
-              description="Check back soon for new challenges!"
+              title={t("players.badges.emptyTitle")}
+              description={t("players.badges.emptyDescription")}
             />
           </AppCard>
         )}

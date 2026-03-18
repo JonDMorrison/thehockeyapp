@@ -16,6 +16,7 @@ import {
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { TeamCheerButton } from "./TeamCheerButton";
 import { Users, Trophy, Target, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TeammateRosterProps {
   teamId: string;
@@ -52,6 +53,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
   teamId,
   currentPlayerId,
 }) => {
+  const { t } = useTranslation();
   const [selectedTeammate, setSelectedTeammate] = useState<Teammate | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -79,7 +81,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
 
       // Get badge counts for all players
       const playerIds = memberships?.map((m) => m.player_id) || [];
-      
+
       const { data: badges, error: badgeError } = await supabase
         .from("player_badges")
         .select("player_id")
@@ -101,7 +103,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
           photoUrl: m.players?.profile_photo_url || null,
           jerseyNumber: m.players?.jersey_number || null,
           badgeCount: badgeCounts.get(m.player_id) || 0,
-          currentStreak: 0, // We could add streak fetching later
+          currentStreak: 0,
         }))
         .sort((a, b) => b.badgeCount - a.badgeCount) as Teammate[];
     },
@@ -186,7 +188,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
         <div className="flex items-center justify-between mb-3">
           <AppCardTitle className="flex items-center gap-2 text-sm">
             <Users className="w-4 h-4 text-team-primary" />
-            Teammates ({otherTeammates.length})
+            {t("players.teammateRoster.title", { count: otherTeammates.length })}
           </AppCardTitle>
           {otherTeammates.length > 5 && (
             <Button
@@ -195,14 +197,14 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
               className="text-xs text-team-primary"
               onClick={() => setShowAll(!showAll)}
             >
-              {showAll ? "Show less" : "View all"}
+              {showAll ? t("common.showLess") : t("common.viewAll")}
             </Button>
           )}
         </div>
 
         {otherTeammates.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No other teammates on this team yet.
+            {t("players.teammateRoster.noTeammates")}
           </p>
         ) : (
           <div className="space-y-2">
@@ -287,7 +289,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-amber-500" />
-                  Badges Earned ({selectedBadges.length})
+                  {t("players.teammateRoster.badgesEarned", { count: selectedBadges.length })}
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                   {selectedBadges.map((badge) => (
@@ -314,7 +316,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                   <Target className="w-4 h-4" />
-                  Working On
+                  {t("players.teammateRoster.workingOn")}
                 </h3>
                 <div className="space-y-3">
                   {selectedProgress.slice(0, 3).map((progress) => {
@@ -350,7 +352,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
                 <div className="text-center py-8">
                   <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">
-                    No badges yet. They're just getting started!
+                    {t("players.teammateRoster.noBadgesYet")}
                   </p>
                 </div>
               )}

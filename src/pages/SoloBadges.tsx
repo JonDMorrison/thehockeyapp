@@ -1,10 +1,14 @@
+import { useTranslation } from 'react-i18next';
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, Trophy, Target, Calendar, Zap, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { BadgeIcon } from "@/components/app/BadgeIcon";
+import { EmptyState } from "@/components/app/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -29,37 +33,45 @@ interface PlayerBadge {
   awarded_at: string;
 }
 
-// Badge categories
-const BADGE_CATEGORIES = [
-  { 
-    id: 'consistency', 
-    label: 'Consistency', 
-    icon: Calendar,
-    metricTypes: ['sessions_completed'],
-    description: 'Show up and put in the work',
-    gradient: 'from-indigo-500 to-violet-600',
-  },
-  { 
-    id: 'shooting', 
-    label: 'Shooting', 
-    icon: Target,
-    metricTypes: ['total_shots'],
-    description: 'Master your shot with reps',
-    gradient: 'from-blue-500 to-cyan-500',
-  },
-  { 
-    id: 'gameday', 
-    label: 'Game Ready', 
-    icon: Zap,
-    metricTypes: ['game_day_completed', 'prep_tasks_completed'],
-    description: 'Be prepared for competition',
-    gradient: 'from-yellow-500 to-green-500',
-  },
-];
-
 export default function SoloBadges() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // Badge categories defined inside component so t() is available
+  const BADGE_CATEGORIES = [
+    {
+      id: 'consistency',
+      label: t('solo.badgeCategoryConsistency'),
+      icon: Calendar,
+      metricTypes: ['sessions_completed'],
+      description: t('solo.badgeCategoryConsistencyDesc'),
+      gradient: 'from-indigo-500 to-violet-600',
+    },
+    {
+      id: 'shooting',
+      label: t('solo.badgeCategoryShooting'),
+      icon: Target,
+      metricTypes: ['total_shots'],
+      description: t('solo.badgeCategoryShootingDesc'),
+      gradient: 'from-blue-500 to-cyan-500',
+    },
+    {
+      id: 'gameday',
+      label: t('solo.badgeCategoryGameReady'),
+      icon: Zap,
+      metricTypes: ['game_day_completed', 'prep_tasks_completed'],
+      description: t('solo.badgeCategoryGameReadyDesc'),
+      gradient: 'from-yellow-500 to-green-500',
+    },
+  ];
 
   // Fetch player
   const { data: player } = useQuery({
@@ -91,7 +103,7 @@ export default function SoloBadges() {
   });
 
   // Fetch player's progress
-  const { data: progress } = useQuery({
+  const { data: progress, isLoading: progressLoading } = useQuery({
     queryKey: ['player-challenge-progress', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -105,7 +117,7 @@ export default function SoloBadges() {
   });
 
   // Fetch player's earned badges
-  const { data: badges } = useQuery({
+  const { data: badges, isLoading: badgesLoading } = useQuery({
     queryKey: ['player-badges', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -125,7 +137,7 @@ export default function SoloBadges() {
   const totalEarned = badges?.length || 0;
   const totalChallenges = challenges?.length || 0;
 
-  if (isLoading) {
+  if (isLoading || authLoading || progressLoading || badgesLoading) {
     return (
       <AppShell>
         <div className="p-5 space-y-6">
@@ -135,6 +147,10 @@ export default function SoloBadges() {
         </div>
       </AppShell>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -152,9 +168,9 @@ export default function SoloBadges() {
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Badges</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('solo.badges')}</h1>
               <p className="text-sm text-muted-foreground">
-                {player?.first_name}'s achievements
+                {t('solo.playerAchievements', { name: player?.first_name })}
               </p>
             </div>
           </div>
@@ -172,12 +188,12 @@ export default function SoloBadges() {
               {totalEarned}
             </p>
             <p className="text-sm text-muted-foreground">
-              of {totalChallenges} badges earned
+              {t('solo.ofNBadgesEarned', { total: totalChallenges })}
             </p>
-            
+
             {/* Progress bar */}
             <div className="mt-4 w-full bg-muted rounded-full h-2 overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${totalChallenges > 0 ? (totalEarned / totalChallenges) * 100 : 0}%` }}
@@ -186,19 +202,30 @@ export default function SoloBadges() {
             </div>
           </motion.div>
 
+          {/* Empty state when no challenges exist across any category */}
+          {challenges !== undefined && BADGE_CATEGORIES.every(cat =>
+            (challenges?.filter(c => cat.metricTypes.includes(c.metric_type)) || []).length === 0
+          ) && (
+            <EmptyState
+              icon={Trophy}
+              title={t('solo.badgesEmptyTitle')}
+              description={t('solo.badgesEmptyDescription')}
+            />
+          )}
+
           {/* Categories */}
           {BADGE_CATEGORIES.map((category) => {
-            const categoryBadges = challenges?.filter(c => 
+            const categoryBadges = challenges?.filter(c =>
               category.metricTypes.includes(c.metric_type)
             ) || [];
-            
+
             if (categoryBadges.length === 0) return null;
 
             const earnedInCategory = categoryBadges.filter(c => badgeMap.has(c.id));
             const CategoryIcon = category.icon;
 
             return (
-              <motion.div 
+              <motion.div
                 key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -230,15 +257,15 @@ export default function SoloBadges() {
                     const percentage = Math.min((currentValue / challenge.target_value) * 100, 100);
 
                     return (
-                      <motion.div 
+                      <motion.div
                         key={challenge.id}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.05 * index }}
                         className={cn(
                           "bg-card border rounded-xl p-4 transition-all",
-                          isEarned 
-                            ? "border-primary/30 shadow-sm hover:shadow-md" 
+                          isEarned
+                            ? "border-primary/30 shadow-sm hover:shadow-md"
                             : "border-border hover:bg-accent/30"
                         )}
                       >
@@ -267,12 +294,12 @@ export default function SoloBadges() {
                             <p className="text-xs text-muted-foreground mb-2">
                               {challenge.description}
                             </p>
-                            
+
                             {/* Progress */}
                             {!isEarned && (
                               <div className="space-y-1">
                                 <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                                  <motion.div 
+                                  <motion.div
                                     className="bg-primary/60 h-1.5 rounded-full"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${percentage}%` }}

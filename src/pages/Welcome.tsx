@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
 
 const Welcome: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { activeView, activeTeamId, activePlayerId } = useActiveView();
@@ -152,8 +154,9 @@ const Welcome: React.FC = () => {
   
   if (authLoading || checkingData || isRedirecting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       </div>
     );
   }

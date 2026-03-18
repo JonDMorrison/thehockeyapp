@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell } from "@/components/app/AppShell";
@@ -23,8 +24,15 @@ import { format, parseISO } from "date-fns";
 const PAGE_SIZE = 20;
 
 const WeeklyReflections: React.FC = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
   const [page, setPage] = useState(0);
 
   // Access control: must not be a coach-only user (must own or guard a player)
@@ -87,7 +95,7 @@ const WeeklyReflections: React.FC = () => {
   const isLoading = authLoading || accessLoading || proLoading || summariesLoading;
 
   const header = (
-    <NavigationHeader title="Weekly Reflections" backPath="/players" />
+    <NavigationHeader title={t("players.reflections.title")} backPath="/players" />
   );
 
   // Loading state
@@ -106,6 +114,8 @@ const WeeklyReflections: React.FC = () => {
     );
   }
 
+  if (!isAuthenticated) return null;
+
   // Coach-only users blocked
   if (!hasPlayerAccess) {
     return (
@@ -116,8 +126,11 @@ const WeeklyReflections: React.FC = () => {
               <FileText className="w-6 h-6 text-muted-foreground" />
             </div>
             <p className="text-sm text-muted-foreground">
-              Weekly Reflections are available for parents and guardians only.
+              {t("players.reflections.coachOnlyBlocked")}
             </p>
+            <Button variant="outline" size="sm" onClick={() => navigate("/players")}>
+              {t("players.reflections.goToPlayers")}
+            </Button>
           </AppCard>
         </div>
       </AppShell>
@@ -129,6 +142,18 @@ const WeeklyReflections: React.FC = () => {
   return (
     <AppShell header={header}>
       <div className="px-5 py-6 space-y-4">
+        {/* Pro badge shown once at the top */}
+        {hasPro && items.length > 0 && (
+          <div className="flex justify-end">
+            <Badge
+              variant="outline"
+              className="gap-1 text-[10px] font-semibold border-primary/30 text-primary"
+            >
+              <Crown className="w-3 h-3" />
+              Pro
+            </Badge>
+          </div>
+        )}
         {items.length === 0 ? (
           // Empty state
           <AppCard className="p-6 text-center space-y-3">
@@ -136,28 +161,18 @@ const WeeklyReflections: React.FC = () => {
               <FileText className="w-6 h-6 text-muted-foreground" />
             </div>
             <p className="text-sm text-muted-foreground">
-              You haven't logged enough activity yet for a weekly reflection.
+              {t("players.reflections.emptyDescription")}
             </p>
           </AppCard>
         ) : (
           <>
             {items.map((s) => (
               <AppCard key={s.id} className="p-4 space-y-3">
-                {/* Week range + Pro badge */}
+                {/* Week range */}
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold text-muted-foreground">
-                    {format(parseISO(s.week_start), "MMM d")} –{" "}
-                    {format(parseISO(s.week_end), "MMM d, yyyy")}
+                    {format(parseISO(s.week_start), "MMM d")} – {format(parseISO(s.week_end), "MMM d, yyyy")}
                   </p>
-                  {hasPro && (
-                    <Badge
-                      variant="outline"
-                      className="gap-1 text-[10px] font-semibold border-primary/30 text-primary"
-                    >
-                      <Crown className="w-3 h-3" />
-                      Pro
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Metrics row */}
@@ -167,21 +182,21 @@ const WeeklyReflections: React.FC = () => {
                     className="gap-1 text-xs font-medium"
                   >
                     <Target className="w-3 h-3" />
-                    {(s.total_shots ?? 0).toLocaleString()} shots
+                    {t("players.reflections.shots", { count: (s.total_shots ?? 0).toLocaleString() })}
                   </Badge>
                   <Badge
                     variant="secondary"
                     className="gap-1 text-xs font-medium"
                   >
                     <Dumbbell className="w-3 h-3" />
-                    {s.total_workouts ?? 0} workouts
+                    {t("players.reflections.workouts", { count: s.total_workouts ?? 0 })}
                   </Badge>
                   <Badge
                     variant="secondary"
                     className="gap-1 text-xs font-medium"
                   >
                     <Flame className="w-3 h-3" />
-                    {s.longest_streak ?? 0} day streak
+                    {t("players.reflections.dayStreak", { count: s.longest_streak ?? 0 })}
                   </Badge>
                   {s.focus_areas && s.focus_areas.length > 0 && (
                     <Badge
@@ -210,10 +225,10 @@ const WeeklyReflections: React.FC = () => {
                   onClick={() => setPage((p) => p - 1)}
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
+                  {t("players.reflections.previous")}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  Page {page + 1} of {totalPages}
+                  {t("players.reflections.pageOf", { current: page + 1, total: totalPages })}
                 </span>
                 <Button
                   variant="ghost"
@@ -221,7 +236,7 @@ const WeeklyReflections: React.FC = () => {
                   disabled={page >= totalPages - 1}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Next
+                  {t("players.reflections.next")}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>

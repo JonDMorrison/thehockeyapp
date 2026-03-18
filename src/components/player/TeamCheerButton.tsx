@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/app/Toast";
 import { Heart, Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TeamCheerButtonProps {
   fromPlayerId: string;
@@ -28,6 +29,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
   teamId,
   variant = "icon",
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
   const queryClient = useQueryClient();
@@ -46,8 +48,8 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
     },
     onSuccess: (_, variables) => {
       toast.success(
-        "Cheer sent! 🎉",
-        `${toPlayerName} will see your encouragement!`
+        t("players.teamCheerButton.toast.cheerSent"),
+        t("players.teamCheerButton.toast.willSeeEncouragement", { name: toPlayerName })
       );
       setIsOpen(false);
       setCustomMessage("");
@@ -55,7 +57,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
       queryClient.invalidateQueries({ queryKey: ["received-cheers"] });
     },
     onError: (error: Error) => {
-      toast.error("Failed to send", error.message);
+      toast.error(t("players.teamCheerButton.toast.failedToSend"), error.message);
     },
   });
 
@@ -87,16 +89,16 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
             className="text-pink-500 border-pink-500/30 hover:bg-pink-500/10"
           >
             <Heart className="w-4 h-4 mr-1" />
-            Cheer
+            {t("players.teamCheerButton.cheer")}
           </Button>
         )}
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3" align="end">
         <div className="space-y-3">
           <p className="text-sm font-medium text-center">
-            Send a cheer to {toPlayerName}!
+            {t("players.teamCheerButton.sendCheerTo", { name: toPlayerName })}
           </p>
-          
+
           {/* Quick emoji buttons */}
           <div className="grid grid-cols-4 gap-2">
             {QUICK_EMOJIS.map((emoji) => (
@@ -116,7 +118,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
           {/* Custom message */}
           <div className="flex gap-2">
             <Input
-              placeholder="Or type a message..."
+              placeholder={t("players.teamCheerButton.orTypeMessage")}
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value.slice(0, 100))}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
@@ -131,9 +133,9 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
               <Send className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <p className="text-xs text-muted-foreground text-center">
-            {100 - customMessage.length} characters left
+            {t("players.teamCheerButton.charactersLeft", { n: 100 - customMessage.length })}
           </p>
         </div>
       </PopoverContent>

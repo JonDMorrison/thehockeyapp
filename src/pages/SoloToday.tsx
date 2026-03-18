@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,6 +67,7 @@ interface PersonalTaskCompletion {
 }
 
 const SoloToday: React.FC = () => {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -205,10 +207,10 @@ const SoloToday: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["personal-practice-card", playerId, todayStr] });
       setShowWorkoutPicker(false);
-      toast.success("Workout ready!", "Let's get to work 💪");
+      toast.success(t('solo.workoutReady'), t('solo.letsGetToWork'));
     },
     onError: (error: Error) => {
-      toast.error("Failed to create workout", error.message);
+      toast.error(t('solo.failedToCreateWorkout'), error.message);
     },
   });
 
@@ -244,15 +246,15 @@ const SoloToday: React.FC = () => {
     },
     onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
-      
+
       if (result?.completed) {
         // Check if this completes all tasks
         const newCompletedCount = (completions?.length || 0) + 1;
         const isNowAllDone = newCompletedCount === totalCount;
-        
+
         if (isNowAllDone && todayCard) {
-          toast.success("Workout Complete! 🎉", "Amazing work today!");
-          
+          toast.success(t('solo.workoutComplete'), t('solo.amazingWorkToday'));
+
           // Log session completion
           await supabase
             .from("personal_session_completions")
@@ -262,16 +264,16 @@ const SoloToday: React.FC = () => {
               status: "complete",
               completed_at: new Date().toISOString(),
             }, { onConflict: "player_id,personal_practice_card_id" });
-          
+
           // Invalidate dashboard data
           queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
         } else {
-          toast.success("Nice! ✓", result.taskLabel || "Task completed");
+          toast.success(t('solo.niceCheck'), result.taskLabel || t('solo.taskCompleted'));
         }
       }
     },
     onError: (error: Error) => {
-      toast.error("Couldn't save", error.message);
+      toast.error(t('solo.couldntSave'), error.message);
     },
   });
 
@@ -306,9 +308,9 @@ const SoloToday: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={User}
-              title="Player not found"
-              description="This player doesn't exist or you don't have access."
-              action={{ label: "Go Back", onClick: () => navigate("/welcome") }}
+              title={t('solo.playerNotFound')}
+              description={t('solo.playerNotFoundDesc')}
+              action={{ label: t('common.back'), onClick: () => navigate("/welcome") }}
             />
           </AppCard>
         </PageContainer>
@@ -322,7 +324,7 @@ const SoloToday: React.FC = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <button
-            onClick={() => navigate("/solo/setup")}
+            onClick={() => navigate(`/solo/dashboard/${playerId}`)}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors -ml-1 p-1"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -334,7 +336,7 @@ const SoloToday: React.FC = () => {
               size="sm"
             />
             <div>
-              <p className="font-semibold">{player.first_name}'s Training</p>
+              <p className="font-semibold">{t('solo.playersTraining', { name: player.first_name })}</p>
               <p className="text-xs text-muted-foreground">
                 {format(new Date(), "EEEE, MMM d")}
               </p>
@@ -374,8 +376,8 @@ const SoloToday: React.FC = () => {
             <div className="flex-1">
               {todayCard ? (
                 <>
-                  <p className="text-sm text-muted-foreground">Today's Workout</p>
-                  <p className="font-bold text-lg">{todayCard.title || "Training Session"}</p>
+                  <p className="text-sm text-muted-foreground">{t('solo.todaysWorkout')}</p>
+                  <p className="font-bold text-lg">{todayCard.title || t('solo.trainingSession')}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <ProgressBar value={progressPercent} className="flex-1 h-2" />
                     <span className="text-xs font-medium text-muted-foreground">
@@ -385,9 +387,9 @@ const SoloToday: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <p className="font-bold text-lg">Ready to train?</p>
+                  <p className="font-bold text-lg">{t('solo.readyToTrain')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Pick a workout to get started
+                    {t('solo.pickAWorkoutToGetStarted')}
                   </p>
                 </>
               )}
@@ -399,7 +401,7 @@ const SoloToday: React.FC = () => {
         {todayCard && tasks && tasks.length > 0 ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <p className="text-sm font-semibold text-muted-foreground">Tasks</p>
+              <p className="text-sm font-semibold text-muted-foreground">{t('solo.tasks')}</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -407,16 +409,16 @@ const SoloToday: React.FC = () => {
                 onClick={() => setShowWorkoutPicker(true)}
               >
                 <RotateCcw className="w-3 h-3" />
-                Change
+                {t('solo.change')}
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               {tasks.map((task) => {
                 const isCompleted = completions?.some(
                   (c) => c.personal_practice_task_id === task.id
                 );
-                
+
                 // Look up description from task library
                 const taskTemplate = TASK_LIBRARY.find(t => t.label === task.label);
                 const description = taskTemplate?.description;
@@ -431,10 +433,10 @@ const SoloToday: React.FC = () => {
                   other: <MoreHorizontal className="w-6 h-6" />,
                 };
 
-                const target = task.shots_expected 
+                const target = task.shots_expected
                   ? `${task.shots_expected} shots`
-                  : task.is_required 
-                    ? "Required"
+                  : task.is_required
+                    ? t('solo.required')
                     : undefined;
 
                 return (
@@ -454,15 +456,15 @@ const SoloToday: React.FC = () => {
             {isAllDone && (
               <AppCard className="bg-green-500/10 border-green-500/30 text-center py-6">
                 <Trophy className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                <p className="font-bold text-lg">Workout Complete! 🎉</p>
+                <p className="font-bold text-lg">{t('solo.workoutComplete')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Great work, {player.first_name}! See you tomorrow.
+                  {t('solo.greatWorkSeeYouTomorrow', { name: player.first_name })}
                 </p>
                 <Button
                   className="mt-4"
                   onClick={() => navigate(`/solo/dashboard/${playerId}`)}
                 >
-                  Return to Dashboard
+                  {t('solo.returnToDashboard')}
                 </Button>
               </AppCard>
             )}
@@ -470,7 +472,7 @@ const SoloToday: React.FC = () => {
         ) : (
           <div className="space-y-3">
             <p className="text-sm font-semibold text-muted-foreground px-1">
-              Pick a Workout
+              {t('solo.pickAWorkout')}
             </p>
             <div className="grid gap-3">
               {DAY_TEMPLATES.slice(0, 6).map((template) => (
@@ -505,21 +507,13 @@ const SoloToday: React.FC = () => {
 
         {/* Quick Stats */}
         <AppCard>
-          <AppCardTitle className="text-base mb-3">This Week</AppCardTitle>
-          <div className="grid grid-cols-3 gap-4 text-center">
+          <AppCardTitle className="text-base mb-3">{t('solo.thisWeek')}</AppCardTitle>
+          <div className="flex justify-center text-center">
             <div>
               <p className="text-2xl font-bold text-orange-500">
                 {trainingPlan?.days_per_week || 4}
               </p>
-              <p className="text-xs text-muted-foreground">Day Goal</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">--</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">--</p>
-              <p className="text-xs text-muted-foreground">Streak</p>
+              <p className="text-xs text-muted-foreground">{t('solo.dayGoal')}</p>
             </div>
           </div>
         </AppCard>
@@ -529,9 +523,9 @@ const SoloToday: React.FC = () => {
       <Sheet open={showWorkoutPicker} onOpenChange={setShowWorkoutPicker}>
         <SheetContent side="bottom" className="h-[70vh]">
           <SheetHeader>
-            <SheetTitle>Change Today's Workout</SheetTitle>
+            <SheetTitle>{t('solo.changeTodaysWorkout')}</SheetTitle>
             <SheetDescription>
-              Pick a different workout template
+              {t('solo.pickDifferentWorkoutTemplate')}
             </SheetDescription>
           </SheetHeader>
           <div className="py-4 space-y-3 overflow-y-auto max-h-[50vh]">
@@ -539,9 +533,18 @@ const SoloToday: React.FC = () => {
               <AppCard
                 key={template.id}
                 className="cursor-pointer hover:shadow-medium transition-all"
-                onClick={() => {
-                  // Would need to delete existing and create new
-                  toast.info("Coming soon", "Workout change feature is being built.");
+                onClick={async () => {
+                  if (!todayCard) return;
+                  // Delete the existing card (cascades to tasks and completions)
+                  const { error: deleteError } = await supabase
+                    .from("personal_practice_cards")
+                    .delete()
+                    .eq("id", todayCard.id);
+                  if (deleteError) {
+                    toast.error(t('solo.failedToCreateWorkout'), deleteError.message);
+                    return;
+                  }
+                  createWorkout.mutate(template.id);
                 }}
               >
                 <div className="flex items-center gap-4">

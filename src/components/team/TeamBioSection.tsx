@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
   description: initialDescription,
   valuesText: initialValuesText,
 }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [description, setDescription] = useState(initialDescription || "");
   const [valuesText, setValuesText] = useState(initialValuesText || "");
@@ -43,10 +45,10 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team", teamId] });
-      toast.success("Saved", "Team bio updated.");
+      toast.success(t("teams.bio.toastSavedTitle"), t("teams.bio.toastSavedDescription"));
     },
     onError: (error: Error) => {
-      toast.error("Failed to save", error.message);
+      toast.error(t("teams.bio.toastFailedTitle"), error.message);
     },
   });
 
@@ -54,15 +56,15 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
     <AppCard>
       <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
         <FileText className="w-4 h-4 text-team-primary" />
-        Team Bio
+        {t("teams.bio.title")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">
-        Tell parents about your team
+        {t("teams.bio.description")}
       </AppCardDescription>
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t("teams.bio.descriptionLabel")}</Label>
           <Textarea
             id="description"
             value={description}
@@ -77,7 +79,7 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="values">Team Values</Label>
+          <Label htmlFor="values">{t("teams.bio.valuesLabel")}</Label>
           <Textarea
             id="values"
             value={valuesText}
@@ -97,7 +99,7 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
           disabled={updateBio.isPending}
         >
           {updateBio.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-          Save Bio
+          {t("teams.bio.saveButton")}
         </Button>
       </div>
     </AppCard>
@@ -111,6 +113,7 @@ interface TeamChallengesToggleProps {
 export const TeamChallengesToggle: React.FC<TeamChallengesToggleProps> = ({
   teamId,
 }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [enabled, setEnabled] = useState(false);
 
@@ -151,14 +154,14 @@ export const TeamChallengesToggle: React.FC<TeamChallengesToggleProps> = ({
     onSuccess: (_, challengesEnabled) => {
       queryClient.invalidateQueries({ queryKey: ["team-settings", teamId] });
       toast.success(
-        challengesEnabled ? "Challenges enabled" : "Challenges disabled",
+        challengesEnabled ? t("teams.bio.toastChallengesEnabled") : t("teams.bio.toastChallengesDisabled"),
         challengesEnabled
-          ? "Parents can now opt players into national challenges."
-          : "Challenge participation is now disabled for this team."
+          ? t("teams.bio.toastChallengesEnabledDescription")
+          : t("teams.bio.toastChallengesDisabledDescription")
       );
     },
     onError: (error: Error) => {
-      toast.error("Failed to update", error.message);
+      toast.error(t("teams.bio.toastChallengesFailedTitle"), error.message);
       setEnabled(!enabled);
     },
   });
@@ -172,20 +175,19 @@ export const TeamChallengesToggle: React.FC<TeamChallengesToggleProps> = ({
     <AppCard>
       <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
         <Trophy className="w-4 h-4 text-team-primary" />
-        National Challenges
+        {t("teams.bio.challengesTitle")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">
-        Allow parents to opt in to challenges
+        {t("teams.bio.challengesDescription")}
       </AppCardDescription>
 
       <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-surface-muted">
         <div className="space-y-1 flex-1">
           <Label htmlFor="challenges-toggle" className="font-medium">
-            Enable challenges
+            {t("teams.bio.challengesToggleLabel")}
           </Label>
           <p className="text-sm text-text-muted">
-            When enabled, parents can opt their players into standards-based national challenges.
-            No public rankings or profiles.
+            {t("teams.bio.challengesToggleDescription")}
           </p>
         </div>
         <Switch

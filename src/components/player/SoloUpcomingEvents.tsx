@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays, differenceInHours, isToday, isTomorrow } from "date-fns";
 import { Calendar, Zap, Users, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface SoloUpcomingEventsProps {
   playerId: string;
@@ -10,6 +11,8 @@ interface SoloUpcomingEventsProps {
 }
 
 export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcomingEventsProps) {
+  const { t } = useTranslation();
+
   // Check if schedule is connected
   const { data: source } = useQuery({
     queryKey: ["solo-schedule-source", playerId],
@@ -55,8 +58,8 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
             <Calendar className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">Connect your schedule</p>
-            <p className="text-xs text-muted-foreground">Smart training around games</p>
+            <p className="text-sm font-medium text-foreground">{t("players.soloUpcomingEvents.connectSchedule")}</p>
+            <p className="text-xs text-muted-foreground">{t("players.soloUpcomingEvents.smartTraining")}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
@@ -70,7 +73,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
       <div className="p-4 bg-card border border-border rounded-xl">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          <span className="text-sm">No upcoming games or practices</span>
+          <span className="text-sm">{t("players.soloUpcomingEvents.noUpcoming")}</span>
         </div>
       </div>
     );
@@ -82,8 +85,8 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
 
   const formatCountdown = (dateStr: string) => {
     const date = new Date(dateStr);
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
+    if (isToday(date)) return t("common.today");
+    if (isTomorrow(date)) return t("common.tomorrow");
     const days = differenceInDays(date, new Date());
     if (days === 0) {
       const hours = differenceInHours(date, new Date());
@@ -96,7 +99,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
     <div className="p-4 bg-card border border-border rounded-xl space-y-3">
       <div className="flex items-center gap-2">
         <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium text-muted-foreground">Schedule</span>
+        <span className="text-sm font-medium text-muted-foreground">{t("players.soloUpcomingEvents.schedule")}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -105,7 +108,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
           <div className="p-3 bg-amber-500/10 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
               <Zap className="h-3.5 w-3.5 text-amber-600" />
-              <span className="text-xs font-medium text-amber-600">Game</span>
+              <span className="text-xs font-medium text-amber-600">{t("players.soloUpcomingEvents.game")}</span>
             </div>
             <p className="text-lg font-bold text-amber-600">{formatCountdown(nextGame.start_time)}</p>
             <p className="text-xs text-muted-foreground truncate">
@@ -116,7 +119,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
           <div className="p-3 bg-muted/50 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
               <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">Game</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("players.soloUpcomingEvents.game")}</span>
             </div>
             <p className="text-sm text-muted-foreground">—</p>
           </div>
@@ -127,7 +130,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
           <div className="p-3 bg-blue-500/10 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
               <Users className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-xs font-medium text-blue-600">Practice</span>
+              <span className="text-xs font-medium text-blue-600">{t("players.soloUpcomingEvents.practice")}</span>
             </div>
             <p className="text-lg font-bold text-blue-600">{formatCountdown(nextPractice.start_time)}</p>
             <p className="text-xs text-muted-foreground truncate">
@@ -138,7 +141,7 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
           <div className="p-3 bg-muted/50 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground">Practice</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("players.soloUpcomingEvents.practice")}</span>
             </div>
             <p className="text-sm text-muted-foreground">—</p>
           </div>

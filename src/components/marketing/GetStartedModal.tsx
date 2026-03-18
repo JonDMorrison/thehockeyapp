@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Users, UserCircle, Dumbbell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 
 interface GetStartedModalProps {
   open: boolean;
@@ -33,55 +34,56 @@ export const clearSelectedRole = () => {
   localStorage.removeItem(SELECTED_ROLE_KEY);
 };
 
-const options = [
-  {
-    id: "coach",
-    role: "coach" as SelectedRole,
-    title: "I'm a Coach",
-    description: BETA_MODE
-      ? "Create your team and assign off-ice workouts — completely free during the beta."
-      : "Create your team and assign off-ice workouts — always free. Upgrade to a Team Plan ($500/yr) to cover your entire roster.",
-    icon: Users,
-    buttonLabel: "Start Coaching — Free",
-    buttonVariant: "default" as const,
-    smallText: "No credit card required.",
-    directHref: null as string | null,
-    iconBgClass: "bg-gradient-to-br from-primary to-[hsl(221,70%,60%)]",
-    hoverClass: "hover:border-primary/50",
-  },
-  {
-    id: "parent",
-    role: "solo" as SelectedRole,
-    title: "I'm a Parent",
-    description: BETA_MODE
-      ? "Build consistent off-ice habits at home. All features free during the beta period."
-      : "Build consistent off-ice habits at home. 7-day free trial, then $15/mo. If your team has a plan, you're already covered.",
-    icon: Dumbbell,
-    buttonLabel: BETA_MODE ? "Get Started Free" : "Start 7-Day Free Trial",
-    buttonVariant: "default" as const,
-    smallText: BETA_MODE ? "No credit card required." : "Credit card required · Cancel anytime",
-    directHref: null,
-    iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
-    hoverClass: "hover:border-orange-500/50",
-  },
-  {
-    id: "player-team",
-    role: "player" as SelectedRole,
-    title: "I'm Joining a Team",
-    description: "Your coach invited you. If your team has a plan, everything is included — no extra cost.",
-    icon: UserCircle,
-    buttonLabel: "Join My Team",
-    buttonVariant: "outline" as const,
-    smallText: null as string | null,
-    directHref: "/join" as string | null,
-    iconBgClass: "bg-gradient-to-br from-success to-[hsl(160,60%,40%)]",
-    hoverClass: "hover:border-success/50",
-  },
-];
-
 export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
   ({ open, onOpenChange }, ref) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+
+    const options = [
+      {
+        id: "coach",
+        role: "coach" as SelectedRole,
+        title: t('marketing.get_started_coach_title'),
+        description: BETA_MODE
+          ? t('marketing.get_started_coach_desc_beta')
+          : t('marketing.get_started_coach_desc_normal'),
+        icon: Users,
+        buttonLabel: t('marketing.get_started_coach_button'),
+        buttonVariant: "default" as const,
+        smallText: t('marketing.get_started_coach_small') as string | null,
+        directHref: null as string | null,
+        iconBgClass: "bg-gradient-to-br from-primary to-[hsl(221,70%,60%)]",
+        hoverClass: "hover:border-primary/50",
+      },
+      {
+        id: "parent",
+        role: "solo" as SelectedRole,
+        title: t('marketing.get_started_parent_title'),
+        description: BETA_MODE
+          ? t('marketing.get_started_parent_desc_beta')
+          : t('marketing.get_started_parent_desc_normal'),
+        icon: Dumbbell,
+        buttonLabel: BETA_MODE ? t('marketing.get_started_parent_button_beta') : t('marketing.get_started_parent_button_normal'),
+        buttonVariant: "default" as const,
+        smallText: (BETA_MODE ? t('marketing.get_started_parent_small_beta') : t('marketing.get_started_parent_small_normal')) as string | null,
+        directHref: null,
+        iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
+        hoverClass: "hover:border-orange-500/50",
+      },
+      {
+        id: "player-team",
+        role: "player" as SelectedRole,
+        title: t('marketing.get_started_player_title'),
+        description: t('marketing.get_started_player_desc'),
+        icon: UserCircle,
+        buttonLabel: t('marketing.get_started_player_button'),
+        buttonVariant: "outline" as const,
+        smallText: null as string | null,
+        directHref: "/join" as string | null,
+        iconBgClass: "bg-gradient-to-br from-success to-[hsl(160,60%,40%)]",
+        hoverClass: "hover:border-success/50",
+      },
+    ];
 
     const handleSelect = (option: (typeof options)[0]) => {
       onOpenChange(false);
@@ -100,12 +102,12 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 text-center">
             <DialogTitle className="text-xl">
-              {BETA_MODE ? "Get started free during the beta." : "Start free. Choose your role."}
+              {BETA_MODE ? t('marketing.get_started_heading_beta') : t('marketing.get_started_heading_normal')}
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {BETA_MODE
-                ? "All features unlocked. No credit card required."
-                : "Coaches use it free. Parents start with a 7-day trial. Teams can cover everyone."}
+                ? t('marketing.get_started_all_features_unlocked_beta')
+                : t('marketing.get_started_coaches_subtitle')}
             </p>
           </DialogHeader>
 
@@ -144,14 +146,14 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
                       {option.smallText}
                     </p>
                   )}
-
-
-            <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
-              {BETA_MODE ? "All features free during the beta. No hidden fees." : "Free for coaches. Teams can cover families. No hidden fees."}
-            </p>
-          </div>
+                </div>
               );
             })}
+
+            {/* Disclaimer shown once, below all option cards */}
+            <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
+              {BETA_MODE ? t('marketing.get_started_all_features_beta') : t('marketing.get_started_coaches_free')}
+            </p>
           </div>
         </DialogContent>
       </Dialog>

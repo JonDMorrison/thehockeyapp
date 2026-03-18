@@ -1,11 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Flame, 
-  Target, 
-  Users, 
+import {
+  TrendingUp,
+  Flame,
+  Target,
+  Users,
   Zap,
   Trophy,
   Star,
@@ -33,10 +32,6 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
   const engagementRate = playersCount > 0 
     ? Math.round((activeToday / playersCount) * 100) 
     : 0;
-
-  // Simulate weekly trend (in production, this would come from real data)
-  const weeklyTrend = sessionsComplete > 3 ? "up" : sessionsComplete > 0 ? "stable" : "down";
-  const trendPercentage = weeklyTrend === "up" ? 12 : weeklyTrend === "down" ? -8 : 0;
 
   // Calculate team momentum score
   const momentumScore = Math.min(
@@ -119,21 +114,6 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-muted-foreground">Team Momentum</span>
-            <div className="flex items-center gap-1">
-              {weeklyTrend === "up" ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
-              ) : weeklyTrend === "down" ? (
-                <TrendingDown className="w-4 h-4 text-red-500" />
-              ) : null}
-              {trendPercentage !== 0 && (
-                <span className={cn(
-                  "text-xs font-medium",
-                  trendPercentage > 0 ? "text-green-500" : "text-red-500"
-                )}>
-                  {trendPercentage > 0 ? "+" : ""}{trendPercentage}%
-                </span>
-              )}
-            </div>
           </div>
           
           {/* Progress bar with glow effect */}

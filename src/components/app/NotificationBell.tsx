@@ -10,6 +10,7 @@ import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 function NotificationIcon({ type }: { type: string }) {
   switch (type) {
@@ -22,19 +23,19 @@ function NotificationIcon({ type }: { type: string }) {
   }
 }
 
-function NotificationItem({ 
-  notification, 
-  onMarkRead, 
+function NotificationItem({
+  notification,
+  onMarkRead,
   onDelete,
-  onClick 
-}: { 
+  onClick
+}: {
   notification: Notification;
   onMarkRead: () => void;
   onDelete: () => void;
   onClick: () => void;
 }) {
   return (
-    <div 
+    <div
       className={cn(
         "p-3 border-b last:border-b-0 hover:bg-muted/50 transition-colors cursor-pointer",
         !notification.is_read && "bg-primary/5"
@@ -67,9 +68,9 @@ function NotificationItem({
         </div>
         <div className="flex items-center gap-1">
           {!notification.is_read && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-6 w-6"
               onClick={(e) => {
                 e.stopPropagation();
@@ -79,9 +80,9 @@ function NotificationItem({
               <Check className="w-3 h-3" />
             </Button>
           )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={(e) => {
               e.stopPropagation();
@@ -97,27 +98,29 @@ function NotificationItem({
 }
 
 export function NotificationBell() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { 
-    notifications, 
-    unreadCount, 
-    isLoading, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
   } = useNotifications();
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.is_read) {
       markAsRead(notification.id);
     }
-    
+
     // Navigate based on notification type
-    const metadata = notification.metadata as { goal_id?: string; team_id?: string };
+    const metadata = notification.metadata as { goal_id?: string; team_id?: string; player_id?: string };
     if (notification.notification_type === 'goal_created' || notification.notification_type === 'goal_achieved') {
-      if (metadata.goal_id) {
-        // Navigate to goals page - we need to find the player for this team
-        // For now, just mark as read
+      if (metadata.player_id) {
+        navigate(`/players/${metadata.player_id}/goals`);
+      } else {
+        navigate('/players');
       }
     }
   };
@@ -136,31 +139,31 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between p-3 border-b">
-          <h3 className="font-semibold text-sm">Notifications</h3>
+          <h3 className="font-semibold text-sm">{t("common.notifications")}</h3>
           {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="h-7 text-xs gap-1"
               onClick={() => markAllAsRead()}
             >
               <CheckCheck className="w-3 h-3" />
-              Mark all read
+              {t("common.markAllRead")}
             </Button>
           )}
         </div>
-        
+
         <ScrollArea className="h-[300px]">
           {isLoading ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              Loading...
+              {t("common.loading")}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">No notifications yet</p>
+              <p className="text-sm text-muted-foreground">{t("common.noNotificationsYet")}</p>
               <p className="text-xs text-muted-foreground/60 mt-1">
-                You'll see alerts here when your team sets new goals
+                {t("common.notificationsGoalAlert")}
               </p>
             </div>
           ) : (

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 import { logger } from "@/core";
 import { format, addWeeks, startOfWeek, addDays } from "date-fns";
@@ -78,30 +79,31 @@ interface GeneratedProgram {
 
 type Step = "setup" | "goals" | "generating" | "preview" | "reward";
 
-const focusOptions = [
-  { id: "shooting_accuracy", label: "Shooting accuracy", icon: Target },
-  { id: "shot_volume", label: "Shot volume", icon: Zap },
-  { id: "conditioning", label: "Conditioning", icon: Dumbbell },
-  { id: "mobility", label: "Mobility & flexibility", icon: Heart },
-  { id: "game_prep", label: "Game-day prep", icon: Timer },
-];
-
-const generatingSteps = [
-  "Analyzing team preferences...",
-  "Building week 1...",
-  "Optimizing training load...",
-  "Adding variety...",
-  "Finalizing program...",
-];
-
 export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   open,
   onOpenChange,
   teamId,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
+  const focusOptions = [
+    { id: "shooting_accuracy", label: t('practice.focusShootingAccuracy'), icon: Target },
+    { id: "shot_volume", label: t('practice.focusShotVolume'), icon: Zap },
+    { id: "conditioning", label: t('practice.focusConditioning'), icon: Dumbbell },
+    { id: "mobility", label: t('practice.focusMobilityFlexibility'), icon: Heart },
+    { id: "game_prep", label: t('practice.focusGameDayPrep'), icon: Timer },
+  ];
+
+  const generatingSteps = [
+    t('practice.generatingStep1'),
+    t('practice.generatingStep2'),
+    t('practice.generatingStep3'),
+    t('practice.generatingStep4'),
+    t('practice.generatingStep5'),
+  ];
+
   // Step 1: Setup
   const [programName, setProgramName] = useState("Pre-Season Training");
   const [startDate, setStartDate] = useState<Date | undefined>(
@@ -109,12 +111,12 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   );
   const [duration, setDuration] = useState<number>(4);
   const [daysPerWeek, setDaysPerWeek] = useState<number>(5);
-  
+
   // Step 2: Goals
   const [tier, setTier] = useState<"rec" | "rep" | "elite">("rep");
   const [timeBudget, setTimeBudget] = useState<number>(25);
   const [selectedFocus, setSelectedFocus] = useState<string[]>(["shooting_accuracy", "conditioning"]);
-  
+
   // Wizard state
   const [step, setStep] = useState<Step>("setup");
   const [generatingStep, setGeneratingStep] = useState(0);
@@ -131,7 +133,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   const generateMutation = useMutation({
     mutationFn: async () => {
       if (!startDate) throw new Error("Start date required");
-      
+
       // Simulate progress steps
       for (let i = 0; i < generatingSteps.length; i++) {
         setGeneratingStep(i);
@@ -140,10 +142,10 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
 
       // Generate each week
       const weeks: GeneratedProgram["weeks"] = [];
-      
+
       for (let weekNum = 0; weekNum < duration; weekNum++) {
         const weekStart = addWeeks(startDate, weekNum);
-        
+
         const { data, error } = await supabase.functions.invoke("generate-workout-ai", {
           body: {
             type: "week_plan",
@@ -187,7 +189,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     },
     onError: (error: Error) => {
       logger.error("Program generation error", { error });
-      toast.error("Generation failed", error.message);
+      toast.error(t('practice.generationFailed'), error.message);
       setStep("goals");
     },
   });
@@ -279,12 +281,12 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["training-programs", teamId] });
-      toast.success("Program created!", `${duration} weeks of training ready to go.`);
+      toast.success(t('practice.programCreated'), t('practice.nWeeksOfTrainingReady', { n: duration }));
       handleClose();
     },
     onError: (error: Error) => {
       logger.error("Apply program error", { error });
-      toast.error("Failed to save", error.message);
+      toast.error(t('practice.failedToSave'), error.message);
     },
   });
 
@@ -326,7 +328,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     >
       {/* Program Name */}
       <div>
-        <Label className="text-sm font-medium">Program Name</Label>
+        <Label className="text-sm font-medium">{t('practice.programName')}</Label>
         <Input
           className="mt-2"
           placeholder="e.g., Pre-Season Power"
@@ -337,7 +339,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
 
       {/* Start Date */}
       <div>
-        <Label className="text-sm font-medium mb-2 block">Start Date</Label>
+        <Label className="text-sm font-medium mb-2 block">{t('practice.startDate')}</Label>
         <div className="flex justify-center">
           <Calendar
             mode="single"
@@ -351,33 +353,33 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
 
       {/* Duration */}
       <div>
-        <Label className="text-sm font-medium">Duration</Label>
+        <Label className="text-sm font-medium">{t('practice.duration')}</Label>
         <Select value={duration.toString()} onValueChange={(v) => setDuration(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="2">2 weeks</SelectItem>
-            <SelectItem value="4">4 weeks</SelectItem>
-            <SelectItem value="6">6 weeks</SelectItem>
-            <SelectItem value="8">8 weeks</SelectItem>
+            <SelectItem value="2">{t('practice.nWeeks', { n: 2 })}</SelectItem>
+            <SelectItem value="4">{t('practice.nWeeks', { n: 4 })}</SelectItem>
+            <SelectItem value="6">{t('practice.nWeeks', { n: 6 })}</SelectItem>
+            <SelectItem value="8">{t('practice.nWeeks', { n: 8 })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Days per Week */}
       <div>
-        <Label className="text-sm font-medium">Training Days per Week</Label>
+        <Label className="text-sm font-medium">{t('practice.trainingDaysPerWeek')}</Label>
         <Select value={daysPerWeek.toString()} onValueChange={(v) => setDaysPerWeek(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="3">3 days</SelectItem>
-            <SelectItem value="4">4 days</SelectItem>
-            <SelectItem value="5">5 days</SelectItem>
-            <SelectItem value="6">6 days</SelectItem>
-            <SelectItem value="7">7 days</SelectItem>
+            <SelectItem value="3">{t('practice.nDays', { n: 3 })}</SelectItem>
+            <SelectItem value="4">{t('practice.nDays', { n: 4 })}</SelectItem>
+            <SelectItem value="5">{t('practice.nDays', { n: 5 })}</SelectItem>
+            <SelectItem value="6">{t('practice.nDays', { n: 6 })}</SelectItem>
+            <SelectItem value="7">{t('practice.nDays', { n: 7 })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -393,38 +395,38 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     >
       {/* Tier Selection */}
       <div>
-        <Label className="text-sm font-medium">Training Tier</Label>
+        <Label className="text-sm font-medium">{t('practice.trainingTier')}</Label>
         <Select value={tier} onValueChange={(v) => setTier(v as typeof tier)}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rec">Rec — Shorter, simpler</SelectItem>
-            <SelectItem value="rep">Rep — Balanced</SelectItem>
-            <SelectItem value="elite">Elite — Higher volume</SelectItem>
+            <SelectItem value="rec">{t('practice.tierRecDesc')}</SelectItem>
+            <SelectItem value="rep">{t('practice.tierRepDesc')}</SelectItem>
+            <SelectItem value="elite">{t('practice.tierEliteDesc')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Time Budget */}
       <div>
-        <Label className="text-sm font-medium">Time per Session</Label>
+        <Label className="text-sm font-medium">{t('practice.timePerSession')}</Label>
         <Select value={timeBudget.toString()} onValueChange={(v) => setTimeBudget(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="15">15 minutes</SelectItem>
-            <SelectItem value="25">25 minutes</SelectItem>
-            <SelectItem value="35">35 minutes</SelectItem>
-            <SelectItem value="45">45 minutes</SelectItem>
+            <SelectItem value="15">{t('practice.nMinutes', { n: 15 })}</SelectItem>
+            <SelectItem value="25">{t('practice.nMinutes', { n: 25 })}</SelectItem>
+            <SelectItem value="35">{t('practice.nMinutes', { n: 35 })}</SelectItem>
+            <SelectItem value="45">{t('practice.nMinutes', { n: 45 })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Focus Areas */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Focus Areas</Label>
+        <Label className="text-sm font-medium mb-3 block">{t('practice.focusAreas')}</Label>
         <div className="space-y-2">
           {focusOptions.map((option) => {
             const isSelected = selectedFocus.includes(option.id);
@@ -460,11 +462,11 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     >
       {/* Animated Icon */}
       <motion.div
-        animate={{ 
+        animate={{
           rotate: [0, 360],
           scale: [1, 1.1, 1],
         }}
-        transition={{ 
+        transition={{
           rotate: { duration: 3, repeat: Infinity, ease: "linear" },
           scale: { duration: 1.5, repeat: Infinity },
         }}
@@ -486,7 +488,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
           <motion.div
             key={stepText}
             initial={{ opacity: 0, x: -10 }}
-            animate={{ 
+            animate={{
               opacity: i <= generatingStep ? 1 : 0.4,
               x: 0,
             }}
@@ -508,7 +510,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       </div>
 
       <p className="text-sm text-muted-foreground text-center">
-        Building {duration} weeks of personalized training...
+        {t('practice.buildingNWeeksOfTraining', { n: duration })}
       </p>
     </motion.div>
   );
@@ -535,29 +537,29 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
           </div>
 
           {/* Calendar Preview */}
-          <ProgramPreviewCalendar 
+          <ProgramPreviewCalendar
             weeks={generatedProgram.weeks}
             startDate={startDate!}
           />
 
           {/* Apply Button */}
           <div className="flex gap-3 pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1"
               onClick={() => {
                 setStep("goals");
                 setGeneratedProgram(null);
               }}
             >
-              Regenerate
+              {t('practice.regenerate')}
             </Button>
-            <Button 
+            <Button
               className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               onClick={() => setStep("reward")}
             >
               <Rocket className="w-4 h-4 mr-2" />
-              Continue
+              {t('common.continue')}
             </Button>
           </div>
         </>
@@ -597,21 +599,21 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            Create a Program
+            {t('practice.createAProgram')}
             <span className="ml-auto text-xs font-normal text-muted-foreground">
-              {step === "setup" && "Step 1/4"}
-              {step === "goals" && "Step 2/4"}
-              {step === "generating" && "Generating..."}
-              {step === "preview" && "Step 3/4"}
-              {step === "reward" && "Step 4/4"}
+              {step === "setup" && t('practice.step1of4')}
+              {step === "goals" && t('practice.step2of4')}
+              {step === "generating" && t('practice.generatingEllipsis')}
+              {step === "preview" && t('practice.step3of4')}
+              {step === "reward" && t('practice.step4of4')}
             </span>
           </SheetTitle>
           <SheetDescription>
-            {step === "setup" && "Set up your training program basics"}
-            {step === "goals" && "Define training goals and focus areas"}
-            {step === "generating" && "AI is building your program"}
-            {step === "preview" && "Review your generated program"}
-            {step === "reward" && "Motivate your team with a goal"}
+            {step === "setup" && t('practice.setupTrainingProgramBasics')}
+            {step === "goals" && t('practice.defineTrainingGoals')}
+            {step === "generating" && t('practice.aiIsBuildingProgram')}
+            {step === "preview" && t('practice.reviewGeneratedProgram')}
+            {step === "reward" && t('practice.motivateTeamWithGoal')}
           </SheetDescription>
         </SheetHeader>
 
@@ -631,10 +633,10 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             {step !== "setup" && (
               <Button variant="outline" onClick={handleBack}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                {t('common.back')}
               </Button>
             )}
-            <Button 
+            <Button
               className="flex-1"
               onClick={handleNext}
               disabled={!canProceed()}
@@ -642,11 +644,11 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
               {step === "goals" ? (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Program
+                  {t('practice.generateProgram')}
                 </>
               ) : (
                 <>
-                  Continue
+                  {t('common.continue')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}

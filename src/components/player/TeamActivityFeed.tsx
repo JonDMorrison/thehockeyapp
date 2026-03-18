@@ -6,6 +6,7 @@ import { Avatar } from "@/components/app/Avatar";
 import { SkeletonActivityFeed } from "@/components/app/Skeleton";
 import { format } from "date-fns";
 import { CheckCircle, Flame, Activity } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TeamActivityFeedProps {
   teamId: string;
@@ -24,6 +25,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
   teamId,
   currentPlayerId,
 }) => {
+  const { t } = useTranslation();
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const { data: activities, isLoading } = useQuery({
@@ -99,18 +101,18 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
       <div className="flex items-center justify-between mb-3">
         <AppCardTitle className="flex items-center gap-2 text-sm">
           <Activity className="w-4 h-4 text-team-primary" />
-          Team Activity Today
+          {t("players.teamActivityFeed.title")}
         </AppCardTitle>
         {totalPlayers > 0 && (
           <span className="text-xs text-muted-foreground">
-            {completedCount}/{totalPlayers} done
+            {completedCount}/{totalPlayers} {t("players.teamActivityFeed.done")}
           </span>
         )}
       </div>
 
       {completedCount === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No teammates have completed yet. Be the first! 💪
+          {t("players.teamActivityFeed.noTeammatesYet")}
         </p>
       ) : (
         <div className="space-y-3">
@@ -153,7 +155,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
               >
                 <CheckCircle className="w-3.5 h-3.5 text-success" />
                 <span>
-                  {activity.isCurrentPlayer ? "You" : activity.playerName}
+                  {activity.isCurrentPlayer ? t("common.you") : activity.playerName}
                 </span>
                 <span className="text-xs opacity-70">
                   {activity.completedAt
@@ -169,7 +171,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
             <div className="flex items-center gap-2 pt-2 border-t border-border">
               <Flame className="w-4 h-4 text-orange-500" />
               <span className="text-xs text-muted-foreground">
-                Team is on fire today!
+                {t("players.teamActivityFeed.teamOnFire")}
               </span>
             </div>
           )}

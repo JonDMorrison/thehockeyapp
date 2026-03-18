@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
@@ -39,6 +40,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
   teamId,
   teamName,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showSheet, setShowSheet] = useState(false);
@@ -147,7 +149,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
       queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
       queryClient.invalidateQueries({ queryKey: ["user-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
-      toast.success("Added to team!", "Your child has been added to the roster.");
+      toast.success(t("teams.addChild.toastAddedTitle"), t("teams.addChild.toastAddedDescription"));
       resetForm();
       setShowSheet(false);
     },
@@ -161,7 +163,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
         });
         setErrors(newErrors);
       } else {
-        toast.error("Failed to add", error.message);
+        toast.error(t("teams.addChild.toastFailedTitle"), error.message);
       }
     },
   });
@@ -188,10 +190,10 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
       <AppCard>
         <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
           <Baby className="w-4 h-4 text-team-primary" />
-          Add My Child
+          {t("teams.addChild.title")}
         </AppCardTitle>
         <AppCardDescription className="mb-4">
-          Add your child to the team roster in one step.
+          {t("teams.addChild.description")}
         </AppCardDescription>
 
         {hasChildrenOnTeam && (
@@ -200,8 +202,8 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
               <Check className="w-4 h-4" />
               <span>
                 {childrenData!.childrenOnTeam.length === 1
-                  ? `${childrenData!.childrenOnTeam[0].first_name} is on the team`
-                  : `${childrenData!.childrenOnTeam.length} children on team`}
+                  ? t("teams.addChild.onTeamSingle", { name: childrenData!.childrenOnTeam[0].first_name })
+                  : t("teams.addChild.onTeamMultiple", { count: childrenData!.childrenOnTeam.length })}
               </span>
             </div>
           </div>
@@ -217,18 +219,18 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
           className="w-full"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Child to Team
+          {t("teams.addChild.button")}
         </Button>
       </AppCard>
 
       <Sheet open={showSheet} onOpenChange={setShowSheet}>
         <SheetContent side="bottom" className="h-auto max-h-[85vh]">
           <SheetHeader>
-            <SheetTitle>Add Child to {teamName}</SheetTitle>
+            <SheetTitle>{t("teams.addChild.sheetTitle", { teamName })}</SheetTitle>
             <SheetDescription>
               {hasChildrenNotOnTeam
-                ? "Select an existing child or create a new profile."
-                : "Create your child's player profile."}
+                ? t("teams.addChild.sheetDescriptionExisting")
+                : t("teams.addChild.sheetDescriptionNew")}
             </SheetDescription>
           </SheetHeader>
 
@@ -236,7 +238,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
             {/* Existing children not on team */}
             {hasChildrenNotOnTeam && (
               <div className="space-y-2">
-                <Label>Select Existing Child</Label>
+                <Label>{t("teams.addChild.selectExisting")}</Label>
                 <div className="space-y-2">
                   {childrenData!.childrenNotOnTeam.map((child) => (
                     <button
@@ -252,7 +254,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                       <p className="font-medium text-sm">
                         {child.first_name} {child.last_initial && `${child.last_initial}.`}
                       </p>
-                      <p className="text-xs text-muted-foreground">Born {child.birth_year}</p>
+                      <p className="text-xs text-muted-foreground">{t("teams.addChild.bornYear", { year: child.birth_year })}</p>
                     </button>
                   ))}
                 </div>
@@ -263,7 +265,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-background px-2 text-muted-foreground">
-                      Or create new
+                      {t("teams.addChild.orCreateNew")}
                     </span>
                   </div>
                 </div>
@@ -274,7 +276,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
             {!selectedChildId && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="childFirstName">Child's First Name</Label>
+                  <Label htmlFor="childFirstName">{t("teams.addChild.firstName")}</Label>
                   <Input
                     id="childFirstName"
                     value={firstName}
@@ -288,7 +290,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="childBirthYear">Birth Year</Label>
+                  <Label htmlFor="childBirthYear">{t("teams.addChild.birthYear")}</Label>
                   <Select
                     value={String(birthYear)}
                     onValueChange={(v) => setBirthYear(Number(v))}
@@ -307,15 +309,15 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Shoots</Label>
+                  <Label>{t("teams.addChild.shoots")}</Label>
                   <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                      <SelectItem value="unknown">Not sure yet</SelectItem>
+                      <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
+                      <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
+                      <SelectItem value="unknown">{t("teams.addChild.shootsUnknown")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -329,7 +331,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
               disabled={addChildMutation.isPending || (!selectedChildId && !firstName.trim())}
             >
               {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-              {selectedChildId ? "Add to Team" : "Create & Add to Team"}
+              {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}
             </Button>
           </div>
         </SheetContent>

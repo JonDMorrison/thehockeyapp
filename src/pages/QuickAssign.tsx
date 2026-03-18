@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ExercisePreset {
   id: string;
@@ -43,110 +54,8 @@ interface ExercisePreset {
   description: string;
 }
 
-const EXERCISE_PRESETS: ExercisePreset[] = [
-  {
-    id: "wrist_shots",
-    label: "Wrist Shots",
-    task_type: "shooting",
-    icon: <Target className="w-5 h-5" />,
-    target_value: 50,
-    target_type: "reps",
-    shot_type: "wrist",
-    description: "50 shots",
-  },
-  {
-    id: "snap_shots",
-    label: "Snap Shots",
-    task_type: "shooting",
-    icon: <Target className="w-5 h-5" />,
-    target_value: 30,
-    target_type: "reps",
-    shot_type: "snap",
-    description: "30 shots",
-  },
-  {
-    id: "slap_shots",
-    label: "Slap Shots",
-    task_type: "shooting",
-    icon: <Target className="w-5 h-5" />,
-    target_value: 25,
-    target_type: "reps",
-    shot_type: "slap",
-    description: "25 shots",
-  },
-  {
-    id: "backhand",
-    label: "Backhand",
-    task_type: "shooting",
-    icon: <Target className="w-5 h-5" />,
-    target_value: 25,
-    target_type: "reps",
-    shot_type: "backhand",
-    description: "25 shots",
-  },
-  {
-    id: "pushups",
-    label: "Push-ups",
-    task_type: "conditioning",
-    icon: <Dumbbell className="w-5 h-5" />,
-    target_value: 20,
-    target_type: "reps",
-    shot_type: "none",
-    description: "20 reps",
-  },
-  {
-    id: "squats",
-    label: "Squats",
-    task_type: "conditioning",
-    icon: <Dumbbell className="w-5 h-5" />,
-    target_value: 25,
-    target_type: "reps",
-    shot_type: "none",
-    description: "25 reps",
-  },
-  {
-    id: "planks",
-    label: "Planks",
-    task_type: "conditioning",
-    icon: <Timer className="w-5 h-5" />,
-    target_value: 60,
-    target_type: "seconds",
-    shot_type: "none",
-    description: "60 seconds",
-  },
-  {
-    id: "stretching",
-    label: "Stretching",
-    task_type: "mobility",
-    icon: <Heart className="w-5 h-5" />,
-    target_value: 5,
-    target_type: "minutes",
-    shot_type: "none",
-    description: "5 minutes",
-  },
-  {
-    id: "stickhandling",
-    label: "Stickhandling",
-    task_type: "shooting",
-    icon: <Target className="w-5 h-5" />,
-    target_value: 5,
-    target_type: "minutes",
-    shot_type: "none",
-    description: "5 minutes",
-  },
-  {
-    id: "lunges",
-    label: "Lunges",
-    task_type: "conditioning",
-    icon: <Dumbbell className="w-5 h-5" />,
-    target_value: 20,
-    target_type: "reps",
-    shot_type: "none",
-    description: "20 reps (10 each leg)",
-  },
-];
-
 const QuickAssign: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -155,12 +64,117 @@ const QuickAssign: React.FC = () => {
   const { setTeamTheme } = useTeamTheme();
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
   const [copySheetOpen, setCopySheetOpen] = useState(false);
+  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
+  const [pendingPublish, setPendingPublish] = useState<boolean | null>(null);
+
+  const EXERCISE_PRESETS: ExercisePreset[] = [
+    {
+      id: "wrist_shots",
+      label: t('practice.exerciseWristShots'),
+      task_type: "shooting",
+      icon: <Target className="w-5 h-5" />,
+      target_value: 50,
+      target_type: "reps",
+      shot_type: "wrist",
+      description: t('practice.exercise50Shots'),
+    },
+    {
+      id: "snap_shots",
+      label: t('practice.exerciseSnapShots'),
+      task_type: "shooting",
+      icon: <Target className="w-5 h-5" />,
+      target_value: 30,
+      target_type: "reps",
+      shot_type: "snap",
+      description: t('practice.exercise30Shots'),
+    },
+    {
+      id: "slap_shots",
+      label: t('practice.exerciseSlapShots'),
+      task_type: "shooting",
+      icon: <Target className="w-5 h-5" />,
+      target_value: 25,
+      target_type: "reps",
+      shot_type: "slap",
+      description: t('practice.exercise25Shots'),
+    },
+    {
+      id: "backhand",
+      label: t('practice.exerciseBackhand'),
+      task_type: "shooting",
+      icon: <Target className="w-5 h-5" />,
+      target_value: 25,
+      target_type: "reps",
+      shot_type: "backhand",
+      description: t('practice.exercise25Shots'),
+    },
+    {
+      id: "pushups",
+      label: t('practice.exercisePushUps'),
+      task_type: "conditioning",
+      icon: <Dumbbell className="w-5 h-5" />,
+      target_value: 20,
+      target_type: "reps",
+      shot_type: "none",
+      description: t('practice.exercise20Reps'),
+    },
+    {
+      id: "squats",
+      label: t('practice.exerciseSquats'),
+      task_type: "conditioning",
+      icon: <Dumbbell className="w-5 h-5" />,
+      target_value: 25,
+      target_type: "reps",
+      shot_type: "none",
+      description: t('practice.exercise25Reps'),
+    },
+    {
+      id: "planks",
+      label: t('practice.exercisePlanks'),
+      task_type: "conditioning",
+      icon: <Timer className="w-5 h-5" />,
+      target_value: 60,
+      target_type: "seconds",
+      shot_type: "none",
+      description: t('practice.exercise60Seconds'),
+    },
+    {
+      id: "stretching",
+      label: t('practice.exerciseStretching'),
+      task_type: "mobility",
+      icon: <Heart className="w-5 h-5" />,
+      target_value: 5,
+      target_type: "minutes",
+      shot_type: "none",
+      description: t('practice.exercise5Minutes'),
+    },
+    {
+      id: "stickhandling",
+      label: t('practice.exerciseStickhandling'),
+      task_type: "shooting",
+      icon: <Target className="w-5 h-5" />,
+      target_value: 5,
+      target_type: "minutes",
+      shot_type: "none",
+      description: t('practice.exercise5Minutes'),
+    },
+    {
+      id: "lunges",
+      label: t('practice.exerciseLunges'),
+      task_type: "conditioning",
+      icon: <Dumbbell className="w-5 h-5" />,
+      target_value: 20,
+      target_type: "reps",
+      shot_type: "none",
+      description: t('practice.exercise20RepsEachLeg'),
+    },
+  ];
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
 
   const formatDateLabel = (date: Date) => {
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
+    if (isToday(date)) return t('common.today');
+    if (isTomorrow(date)) return t('common.tomorrow');
     return format(date, "EEEE");
   };
 
@@ -262,8 +276,8 @@ const QuickAssign: React.FC = () => {
       const { data, error } = await supabase
         .from("practice_cards")
         .select(`
-          id, 
-          date, 
+          id,
+          date,
           title,
           practice_tasks (
             id, task_type, label, target_type, target_value, shot_type, shots_expected, is_required, sort_order
@@ -316,7 +330,7 @@ const QuickAssign: React.FC = () => {
       if (practiceCardId) {
         // Delete existing tasks
         await supabase.from("practice_tasks").delete().eq("practice_card_id", practiceCardId);
-        
+
         // Update card
         const { error } = await supabase
           .from("practice_cards")
@@ -365,21 +379,21 @@ const QuickAssign: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
       queryClient.invalidateQueries({ queryKey: ["practice-card-date", id] });
-      
-      const dateLabel = isToday(selectedDate) ? "today" : formatDateLabel(selectedDate);
-      toast.success("Copied!", `${result.taskCount} tasks copied to ${dateLabel}.`);
+
+      const dateLabel = isToday(selectedDate) ? t('common.today').toLowerCase() : formatDateLabel(selectedDate);
+      toast.success(t('practice.copied'), t('practice.nTasksCopiedTo', { n: result.taskCount, dateLabel }));
       setCopySheetOpen(false);
-      navigate(`/teams/${id}`);
+      navigate(-1);
     },
     onError: (error: Error) => {
-      toast.error("Failed", error.message);
+      toast.error(t('common.failed'), error.message);
     },
   });
 
   const assignMutation = useMutation({
     mutationFn: async (publish: boolean) => {
       if (selectedExercises.size === 0) {
-        throw new Error("Select at least one exercise");
+        throw new Error(t('practice.selectAtLeastOneExercise'));
       }
 
       let practiceCardId = existingCard?.id;
@@ -388,7 +402,7 @@ const QuickAssign: React.FC = () => {
       if (practiceCardId) {
         // Delete existing tasks
         await supabase.from("practice_tasks").delete().eq("practice_card_id", practiceCardId);
-        
+
         // Update card
         const { error } = await supabase
           .from("practice_cards")
@@ -439,18 +453,20 @@ const QuickAssign: React.FC = () => {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", id] });
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
-      
+
       if (result.published) {
-        const dateLabel = isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s";
-        toast.success("Published!", `Players can now see ${dateLabel} workout.`);
+        const dateLabel = isToday(selectedDate)
+          ? t('common.todays')
+          : formatDateLabel(selectedDate) + "'s";
+        toast.success(t('practice.published'), t('practice.playersCanNowSeeWorkout', { dateLabel }));
       } else {
-        toast.success("Saved", "Workout saved as draft.");
+        toast.success(t('common.saved'), t('practice.workoutSavedAsDraft'));
       }
-      
-      navigate(`/teams/${id}`);
+
+      navigate(-1);
     },
     onError: (error: Error) => {
-      toast.error("Failed", error.message);
+      toast.error(t('common.failed'), error.message);
     },
   });
 
@@ -485,7 +501,7 @@ const QuickAssign: React.FC = () => {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold">Assign Workout</h1>
+              <h1 className="text-lg font-bold">{t('practice.assignWorkout')}</h1>
             </div>
           </div>
           {/* Date Picker */}
@@ -521,9 +537,9 @@ const QuickAssign: React.FC = () => {
             <div className="flex items-start gap-3">
               <Zap className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-amber-700 dark:text-amber-400">Game Day!</p>
+                <p className="font-medium text-amber-700 dark:text-amber-400">{t('practice.gameDay')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {gameEvent ? `${gameEvent.title || "Game"} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : "Keep workouts light."}
+                  {gameEvent ? `${gameEvent.title || t('practice.game')} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : t('practice.keepWorkoutsLight')}
                 </p>
               </div>
             </div>
@@ -536,9 +552,9 @@ const QuickAssign: React.FC = () => {
             <div className="flex items-start gap-3">
               <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-700 dark:text-blue-400">Practice Scheduled</p>
+                <p className="font-medium text-blue-700 dark:text-blue-400">{t('practice.practiceScheduled')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {practiceEvent.title || "Practice"} at {format(new Date(practiceEvent.start_time), "h:mm a")}
+                  {practiceEvent.title || t('practice.practice')} at {format(new Date(practiceEvent.start_time), "h:mm a")}
                   {practiceEvent.location && ` • ${practiceEvent.location}`}
                 </p>
               </div>
@@ -549,18 +565,18 @@ const QuickAssign: React.FC = () => {
         {/* Instructions and Copy Button */}
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            Tap exercises to build {isToday(selectedDate) ? "today's" : formatDateLabel(selectedDate) + "'s"} workout.
+            {t('practice.tapExercisesToBuild', { day: isToday(selectedDate) ? t('common.todays') : formatDateLabel(selectedDate) + "'s" })}
           </p>
           <Sheet open={copySheetOpen} onOpenChange={setCopySheetOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="shrink-0">
                 <Copy className="w-4 h-4 mr-1.5" />
-                Copy
+                {t('common.copy')}
               </Button>
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[70vh]">
               <SheetHeader>
-                <SheetTitle>Copy from another day</SheetTitle>
+                <SheetTitle>{t('practice.copyFromAnotherDay')}</SheetTitle>
               </SheetHeader>
               <div className="mt-4 space-y-3 overflow-y-auto max-h-[50vh]">
                 {recentCards && recentCards.length > 0 ? (
@@ -569,7 +585,7 @@ const QuickAssign: React.FC = () => {
                     const taskCount = card.practice_tasks?.length || 0;
                     const taskLabels = card.practice_tasks?.slice(0, 3).map(t => t.label).join(", ") || "";
                     const hasMore = taskCount > 3;
-                    
+
                     return (
                       <button
                         key={card.id}
@@ -579,10 +595,10 @@ const QuickAssign: React.FC = () => {
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-medium">{format(cardDate, "EEEE, MMM d")}</span>
-                          <span className="text-xs text-muted-foreground">{taskCount} tasks</span>
+                          <span className="text-xs text-muted-foreground">{t('practice.nTasksCount', { n: taskCount })}</span>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">
-                          {taskLabels}{hasMore && `, +${taskCount - 3} more`}
+                          {taskLabels}{hasMore && `, +${taskCount - 3} ${t('common.more')}`}
                         </p>
                       </button>
                     );
@@ -590,7 +606,7 @@ const QuickAssign: React.FC = () => {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Copy className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No recent workouts to copy</p>
+                    <p className="text-sm">{t('practice.noRecentWorkoutsToCopy')}</p>
                   </div>
                 )}
               </div>
@@ -608,8 +624,8 @@ const QuickAssign: React.FC = () => {
                 onClick={() => toggleExercise(exercise.id)}
                 className={`
                   relative p-4 rounded-xl text-left transition-all
-                  ${isSelected 
-                    ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                  ${isSelected
+                    ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background"
                     : "bg-card border border-border hover:border-primary/50"}
                 `}
               >
@@ -636,7 +652,7 @@ const QuickAssign: React.FC = () => {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
               <p className="text-sm text-muted-foreground">
-                You already have a workout for {isToday(selectedDate) ? "today" : formatDateLabel(selectedDate)}. This will replace it.
+                {t('practice.alreadyHaveWorkoutWillReplace', { day: isToday(selectedDate) ? t('common.today').toLowerCase() : formatDateLabel(selectedDate) })}
               </p>
             </div>
           </AppCard>
@@ -649,21 +665,61 @@ const QuickAssign: React.FC = () => {
           <Button
             variant="outline"
             className="flex-1"
-            onClick={() => assignMutation.mutate(false)}
+            onClick={() => {
+              if (existingCard?.published_at) {
+                setPendingPublish(false);
+                setShowOverwriteDialog(true);
+              } else {
+                assignMutation.mutate(false);
+              }
+            }}
             disabled={selectedExercises.size === 0 || assignMutation.isPending}
           >
-            Save Draft
+            {t('practice.saveDraft')}
           </Button>
           <Button
             className="flex-1"
-            onClick={() => assignMutation.mutate(true)}
+            onClick={() => {
+              if (existingCard?.published_at) {
+                setPendingPublish(true);
+                setShowOverwriteDialog(true);
+              } else {
+                assignMutation.mutate(true);
+              }
+            }}
             disabled={selectedExercises.size === 0 || assignMutation.isPending}
           >
             <Send className="w-4 h-4 mr-2" />
-            {assignMutation.isPending ? "Publishing..." : `Publish (${selectedExercises.size})`}
+            {assignMutation.isPending ? t('practice.publishing') : t('practice.publishCount', { n: selectedExercises.size })}
           </Button>
         </div>
       </div>
+      {/* Overwrite confirmation dialog */}
+      <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('practice.overwriteWorkoutTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('practice.overwriteWorkoutDescription', {
+                day: isToday(selectedDate) ? t('common.today').toLowerCase() : formatDateLabel(selectedDate),
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingPublish(null)}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingPublish !== null) {
+                  assignMutation.mutate(pendingPublish);
+                }
+                setPendingPublish(null);
+              }}
+            >
+              {t('practice.overwriteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 };

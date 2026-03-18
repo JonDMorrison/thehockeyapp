@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from "react";
 import { motion } from "framer-motion";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,11 +14,11 @@ import {
   Snowflake,
 } from "lucide-react";
 
-interface Exercise {
+interface ExerciseData {
   id: string;
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
-  category: string;
+  categoryKey: string;
 }
 
 interface ChallengeDayBuilderProps {
@@ -25,46 +26,63 @@ interface ChallengeDayBuilderProps {
   onToggleExercise: (id: string) => void;
 }
 
-const exercises: Exercise[] = [
+const exerciseData: ExerciseData[] = [
   // Shooting
-  { id: "wrist_shots", label: "Wrist Shots", icon: Target, category: "Shooting" },
-  { id: "snap_shots", label: "Snap Shots", icon: Zap, category: "Shooting" },
-  { id: "slap_shots", label: "Slap Shots", icon: Target, category: "Shooting" },
-  { id: "backhand_shots", label: "Backhand Shots", icon: Target, category: "Shooting" },
-  
+  { id: "wrist_shots", labelKey: "practice.exerciseWristShots", icon: Target, categoryKey: "practice.categoryShooting" },
+  { id: "snap_shots", labelKey: "practice.exerciseSnapShots", icon: Zap, categoryKey: "practice.categoryShooting" },
+  { id: "slap_shots", labelKey: "practice.exerciseSlapShots", icon: Target, categoryKey: "practice.categoryShooting" },
+  { id: "backhand_shots", labelKey: "practice.exerciseBackhandShots", icon: Target, categoryKey: "practice.categoryShooting" },
+
   // Stickhandling
-  { id: "basic_puck_control", label: "Basic Puck Control", icon: Repeat, category: "Stickhandling" },
-  { id: "figure_8s", label: "Figure 8s", icon: Repeat, category: "Stickhandling" },
-  { id: "toe_drags", label: "Toe Drags", icon: Repeat, category: "Stickhandling" },
-  { id: "quick_hands", label: "Quick Hands Drill", icon: Zap, category: "Stickhandling" },
-  
+  { id: "basic_puck_control", labelKey: "practice.exerciseBasicPuckControl", icon: Repeat, categoryKey: "practice.categoryStickhandling" },
+  { id: "figure_8s", labelKey: "practice.exerciseFigure8s", icon: Repeat, categoryKey: "practice.categoryStickhandling" },
+  { id: "toe_drags", labelKey: "practice.exerciseToedrags", icon: Repeat, categoryKey: "practice.categoryStickhandling" },
+  { id: "quick_hands", labelKey: "practice.exerciseQuickHandsDrill", icon: Zap, categoryKey: "practice.categoryStickhandling" },
+
   // Conditioning
-  { id: "sprints", label: "Sprints", icon: Footprints, category: "Conditioning" },
-  { id: "ladder_drills", label: "Ladder Drills", icon: Footprints, category: "Conditioning" },
-  { id: "box_jumps", label: "Box Jumps", icon: Dumbbell, category: "Conditioning" },
-  { id: "burpees", label: "Burpees", icon: Dumbbell, category: "Conditioning" },
-  
+  { id: "sprints", labelKey: "practice.exerciseSprints", icon: Footprints, categoryKey: "practice.categoryConditioning" },
+  { id: "ladder_drills", labelKey: "practice.exerciseLadderDrills", icon: Footprints, categoryKey: "practice.categoryConditioning" },
+  { id: "box_jumps", labelKey: "practice.exerciseBoxJumps", icon: Dumbbell, categoryKey: "practice.categoryConditioning" },
+  { id: "burpees", labelKey: "practice.exerciseBurpees", icon: Dumbbell, categoryKey: "practice.categoryConditioning" },
+
   // Flexibility & Recovery
-  { id: "dynamic_stretching", label: "Dynamic Stretching", icon: Heart, category: "Flexibility" },
-  { id: "static_stretching", label: "Static Stretching", icon: Heart, category: "Flexibility" },
-  { id: "foam_rolling", label: "Foam Rolling", icon: Heart, category: "Flexibility" },
-  
+  { id: "dynamic_stretching", labelKey: "practice.exerciseDynamicStretching", icon: Heart, categoryKey: "practice.categoryFlexibility" },
+  { id: "static_stretching", labelKey: "practice.exerciseStaticStretching", icon: Heart, categoryKey: "practice.categoryFlexibility" },
+  { id: "foam_rolling", labelKey: "practice.exerciseFoamRolling", icon: Heart, categoryKey: "practice.categoryFlexibility" },
+
   // Hockey IQ
-  { id: "video_study", label: "Video Study (15 min)", icon: Eye, category: "Hockey IQ" },
-  { id: "visualization", label: "Visualization", icon: Eye, category: "Hockey IQ" },
-  
+  { id: "video_study", labelKey: "practice.exerciseVideoStudy", icon: Eye, categoryKey: "practice.categoryHockeyIQ" },
+  { id: "visualization", labelKey: "practice.exerciseVisualization", icon: Eye, categoryKey: "practice.categoryHockeyIQ" },
+
   // Off-Ice Skills
-  { id: "ball_hockey", label: "Ball Hockey", icon: Snowflake, category: "Off-Ice" },
-  { id: "passing_wall", label: "Passing (Wall)", icon: Target, category: "Off-Ice" },
-  { id: "reaction_drills", label: "Reaction Drills", icon: Timer, category: "Off-Ice" },
+  { id: "ball_hockey", labelKey: "practice.exerciseBallHockey", icon: Snowflake, categoryKey: "practice.categoryOffIce" },
+  { id: "passing_wall", labelKey: "practice.exercisePassingWall", icon: Target, categoryKey: "practice.categoryOffIce" },
+  { id: "reaction_drills", labelKey: "practice.exerciseReactionDrills", icon: Timer, categoryKey: "practice.categoryOffIce" },
 ];
 
-const categories = [...new Set(exercises.map((e) => e.category))];
+// Exported interface for translated exercises (used by ThirtyDayChallengeWizard)
+export interface Exercise {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  category: string;
+}
 
 export const ChallengeDayBuilder: React.FC<ChallengeDayBuilderProps> = ({
   selectedExercises,
   onToggleExercise,
 }) => {
+  const { t } = useTranslation();
+
+  const exercises = exerciseData.map(e => ({
+    id: e.id,
+    label: t(e.labelKey),
+    icon: e.icon,
+    category: t(e.categoryKey),
+  }));
+
+  const categories = [...new Set(exercises.map((e) => e.category))];
+
   return (
     <div className="space-y-6">
       {categories.map((category) => {
@@ -102,5 +120,6 @@ export const ChallengeDayBuilder: React.FC<ChallengeDayBuilderProps> = ({
   );
 };
 
-export { exercises };
+// Export exercises as a hook-friendly getter for ThirtyDayChallengeWizard
+export { exerciseData };
 export type { Exercise };

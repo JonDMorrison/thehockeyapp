@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
@@ -20,13 +21,16 @@ export const DayPicker: React.FC<DayPickerProps> = ({
   open,
   onOpenChange,
   onSelect,
-  title = "Choose a day type",
+  title,
 }) => {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t('solo.chooseDayType');
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[70vh] rounded-t-3xl">
         <SheetHeader className="pb-4">
-          <SheetTitle>{title}</SheetTitle>
+          <SheetTitle>{resolvedTitle}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-3 overflow-y-auto max-h-[calc(70vh-100px)] pb-6">
@@ -61,7 +65,7 @@ export const DayPicker: React.FC<DayPickerProps> = ({
                   </div>
                 )}
               </div>
-              
+
               {template.taskIds.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
                   {template.taskIds.slice(0, 4).map((taskId) => (
@@ -74,7 +78,7 @@ export const DayPicker: React.FC<DayPickerProps> = ({
                   ))}
                   {template.taskIds.length > 4 && (
                     <span className="px-2 py-0.5 text-xs text-muted-foreground">
-                      +{template.taskIds.length - 4} more
+                      {t('common.plusNMore', { n: template.taskIds.length - 4 })}
                     </span>
                   )}
                 </div>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   onUpdateTeamName,
   isUpdating = false,
 }) => {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(teamName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -91,7 +93,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold tracking-wider text-text-muted">
-            TODAY — {formattedDate}
+            {t("common.today").toUpperCase()} — {formattedDate}
           </span>
         </div>
         
@@ -99,14 +101,14 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
         {isGameDay ? (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
             <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-            Game Day
+            {t("coach.todayHeader.gameDay")}
             {gameTime && <span className="text-destructive/70">· {gameTime}</span>}
             {gameDay.opponent && <span className="text-destructive/70">vs {gameDay.opponent}</span>}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
             <span className="w-1.5 h-1.5 rounded-full bg-success" />
-            Practice Day
+            {t("coach.todayHeader.practiceDay")}
           </span>
         )}
       </div>
@@ -161,8 +163,8 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
               {onUpdateTeamName && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
-                  aria-label="Edit team name"
+                  className="opacity-50 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
+                  aria-label={t("coach.todayHeader.editTeamName")}
                 >
                   <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>

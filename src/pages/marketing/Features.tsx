@@ -24,18 +24,20 @@ import {
   Dumbbell,
   Users,
 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const Features: React.FC = () => {
+  const { t } = useTranslation();
   const [showGetStarted, setShowGetStarted] = useState(false);
   const features = [
     {
       icon: ClipboardList,
-      title: "Clear expectations at home.",
+      title: t('marketing.features_title_clear'),
       bullets: [
-        "Coach assigns structured off-ice tasks",
-        "Simple enough for any age to follow",
-        "Your child knows exactly what to do each day",
-        "Works offline: garage, basement, anywhere",
+        t('marketing.features_bullet_coach_assigns'),
+        t('marketing.features_bullet_any_age'),
+        t('marketing.features_bullet_child_knows'),
+        t('marketing.features_bullet_works_offline'),
       ],
       Preview: FeatureTaskCard,
       glowColor: "primary" as const,
@@ -43,12 +45,12 @@ const Features: React.FC = () => {
     },
     {
       icon: CheckCircle,
-      title: "Ownership in seconds.",
+      title: t('marketing.features_title_ownership'),
       bullets: [
-        "Your child checks off tasks independently",
-        "Parents can verify if needed",
-        "No complicated tracking or data entry",
-        "Builds a daily habit loop naturally",
+        t('marketing.features_bullet_child_checks'),
+        t('marketing.features_bullet_parents_verify'),
+        t('marketing.features_bullet_no_complicated'),
+        t('marketing.features_bullet_builds_habit'),
       ],
       Preview: FeatureCheckoff,
       glowColor: "success" as const,
@@ -56,12 +58,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Trophy,
-      title: "Consistency gets recognized.",
+      title: t('marketing.features_title_consistency'),
       bullets: [
-        "Earn badges for showing up day after day",
-        "Milestones mark real progress",
-        "No public leaderboards or rankings",
-        "Effort-based recognition builds confidence",
+        t('marketing.features_bullet_badges'),
+        t('marketing.features_bullet_milestones'),
+        t('marketing.features_bullet_no_public_leaderboards'),
+        t('marketing.features_bullet_effort_based'),
       ],
       Preview: FeatureRewards,
       glowColor: "orange" as const,
@@ -69,12 +71,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Sparkles,
-      title: "Coaches build it. Families benefit.",
+      title: t('marketing.features_title_coaches_build'),
       bullets: [
-        "Simple task builder takes minutes",
-        "Smart suggestions help draft balanced weeks",
-        "Copy from templates or customize freely",
-        "Parents see what's assigned automatically",
+        t('marketing.features_bullet_task_builder'),
+        t('marketing.features_bullet_balanced'),
+        t('marketing.features_bullet_copy_templates'),
+        t('marketing.features_bullet_parents_see'),
       ],
       Preview: FeatureBuilder,
       glowColor: "purple" as const,
@@ -82,12 +84,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Users,
-      title: "Participation visibility.",
+      title: t('marketing.features_title_participation'),
       bullets: [
-        "Coaches see who completed today's tasks",
-        "Team-wide completion at a glance",
-        "No individual rankings or comparisons",
-        "Encourages participation, not competition",
+        t('marketing.features_bullet_who_completed'),
+        t('marketing.features_bullet_team_completion'),
+        t('marketing.features_bullet_no_individual'),
+        t('marketing.features_bullet_participation'),
       ],
       Preview: FeatureCoachView,
       glowColor: "cyan" as const,
@@ -95,12 +97,12 @@ const Features: React.FC = () => {
     },
     {
       icon: Shield,
-      title: "Parents own the account. Period.",
+      title: t('marketing.features_title_parents_own'),
       bullets: [
-        "You control your child's account entirely",
-        "Nothing is ever public",
-        "No social features or external sharing",
-        "You decide what coaches can see",
+        t('marketing.features_bullet_who_control'),
+        t('marketing.features_bullet_nothing_public'),
+        t('marketing.features_bullet_no_sharing'),
+        t('marketing.features_bullet_you_decide'),
       ],
       Preview: FeaturePrivacy,
       glowColor: "success" as const,
@@ -109,12 +111,12 @@ const Features: React.FC = () => {
   ];
 
   const featureLabels = [
-    "Structured Tasks",
-    "Quick Checkoff",
-    "Positive Reinforcement",
-    "Coach Task Builder",
-    "Participation Tracking",
-    "Parent Control",
+    t('marketing.features_label_structured'),
+    t('marketing.features_label_quick_checkoff'),
+    t('marketing.features_label_reinforcement'),
+    t('marketing.features_label_coach_builder'),
+    t('marketing.features_label_participation'),
+    t('marketing.features_label_parent_control'),
   ];
 
   return (
@@ -128,14 +130,14 @@ const Features: React.FC = () => {
             {/* Floating badge */}
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-card border border-border shadow-subtle mb-6">
               <Dumbbell className="w-4 h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-medium text-text-muted">Off-Ice Training for Hockey Families</span>
+              <span className="text-xs sm:text-sm font-medium text-text-muted">{t('marketing.features_hero_badge')}</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6 px-2 text-foreground">
-              Everything your hockey family needs. Nothing extra.
+              {t('marketing.features_hero_heading')}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto px-4">
-              Simple structure. Real accountability. Zero pressure.
+              {t('marketing.features_hero_subtext')}
             </p>
           </div>
         </div>
@@ -159,11 +161,11 @@ const Features: React.FC = () => {
                     </div>
                     <span className="text-xs sm:text-sm font-medium text-foreground">{featureLabels[i]}</span>
                   </div>
-                  
+
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
                     {feature.title}
                   </h2>
-                  
+
                   {/* Glassmorphism card for bullets */}
                   <div className="bg-card rounded-xl sm:rounded-2xl border border-border shadow-subtle p-4 sm:p-6">
                     <ul className="space-y-3 sm:space-y-4">
@@ -185,7 +187,7 @@ const Features: React.FC = () => {
                     i % 2 === 1 ? "lg:order-1" : ""
                   }`}
                 >
-                  <PhoneMockup 
+                  <PhoneMockup
                     showGlow={false}
                     className="w-60 sm:w-64 md:w-72 lg:w-auto"
                   >
@@ -203,28 +205,28 @@ const Features: React.FC = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-card rounded-2xl border border-border shadow-subtle p-6 sm:p-10 md:p-14">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-foreground">
-              Ready to simplify off-ice training?
+              {t('marketing.features_cta_heading')}
             </h2>
             <p className="text-base sm:text-lg text-text-secondary mb-6 sm:mb-10 max-w-2xl mx-auto">
-              Try one week of structured training. Then decide.
+              {t('marketing.features_cta_subtext')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
-                Get Started For Free
+                {t('marketing.features_cta_get_started')}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 className="border-2 border-primary text-primary hover:bg-primary/5 transition-colors h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl"
                 asChild
               >
                 <Link to="/demo">
-                  See How It Works
+                  {t('marketing.features_cta_see_how')}
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                 </Link>
               </Button>

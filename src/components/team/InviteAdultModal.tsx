@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -44,19 +45,20 @@ function generateToken(length = 32): string {
   return result;
 }
 
-const roleOptions = [
-  { value: "assistant_coach", label: "Assistant Coach" },
-  { value: "manager", label: "Manager" },
-];
-
 export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
   open,
   onOpenChange,
   teamId,
   teamName,
 }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+
+  const roleOptions = [
+    { value: "assistant_coach", label: t("teams.role.assistantCoach") },
+    { value: "manager", label: t("teams.role.manager") },
+  ];
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"assistant_coach" | "manager">("assistant_coach");
@@ -90,10 +92,10 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
       const link = `${window.location.origin}/team/adult/join/${token}`;
       setInviteLink(link);
       queryClient.invalidateQueries({ queryKey: ["team-invites", teamId] });
-      toast.success("Invite created", "Share the link with the coach or manager.");
+      toast.success(t("teams.inviteAdult.toastCreatedTitle"), t("teams.inviteAdult.toastCreatedDescription"));
     },
     onError: (error: Error) => {
-      toast.error("Failed to create invite", error.message);
+      toast.error(t("teams.inviteAdult.toastFailedTitle"), error.message);
     },
   });
 
@@ -117,10 +119,10 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
-      toast.success("Link copied", "Share it with the coach or manager.");
+      toast.success(t("teams.inviteAdult.toastLinkCopiedTitle"), t("teams.inviteAdult.toastLinkCopiedDescription"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy", "Please copy the link manually.");
+      toast.error(t("teams.inviteAdult.toastCopyFailedTitle"), t("teams.inviteAdult.toastCopyFailedDescription"));
     }
   };
 
@@ -137,9 +139,9 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite Coach or Manager</DialogTitle>
+          <DialogTitle>{t("teams.inviteAdult.title")}</DialogTitle>
           <DialogDescription>
-            Invite another adult to help manage {teamName}.
+            {t("teams.inviteAdult.description", { teamName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +150,7 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
             <div className="space-y-2">
               <Label htmlFor="invite-email" className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-text-muted" />
-                Email Address
+                {t("teams.inviteAdult.emailLabel")}
               </Label>
               <Input
                 id="invite-email"
@@ -165,7 +167,7 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
             <div className="space-y-2">
               <Label htmlFor="invite-role" className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-text-muted" />
-                Role
+                {t("teams.inviteAdult.roleLabel")}
               </Label>
               <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
                 <SelectTrigger>
@@ -183,7 +185,7 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
 
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={handleClose}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -191,7 +193,7 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
                 disabled={createInvite.isPending}
               >
                 {createInvite.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                Create Invite
+                {t("teams.inviteAdult.createButton")}
               </Button>
             </DialogFooter>
           </form>
@@ -200,10 +202,10 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
             <div className="p-4 rounded-lg bg-success-muted border border-success/20">
               <div className="flex items-center gap-2 mb-2">
                 <LinkIcon className="w-4 h-4 text-success" />
-                <p className="text-sm font-medium text-success">Invite Created!</p>
+                <p className="text-sm font-medium text-success">{t("teams.inviteAdult.inviteCreated")}</p>
               </div>
               <p className="text-xs text-text-muted mb-3">
-                This link expires in 14 days. Share it with the invited person.
+                {t("teams.inviteAdult.expiryNote")}
               </p>
               <div className="flex items-center gap-2">
                 <Input value={inviteLink} readOnly className="text-xs" />
@@ -223,8 +225,21 @@ export const InviteAdultModal: React.FC<InviteAdultModalProps> = ({
             </div>
 
             <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setEmail("");
+                  setRole("assistant_coach");
+                  setError("");
+                  setInviteLink(null);
+                  setCopied(false);
+                }}
+              >
+                {t("teams.inviteAdult.inviteAnother")}
+              </Button>
               <Button type="button" variant="team" onClick={handleClose}>
-                Done
+                {t("teams.inviteAdult.done")}
               </Button>
             </DialogFooter>
           </div>

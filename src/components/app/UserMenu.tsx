@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {
   /** Custom avatar image URL */
@@ -55,6 +56,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   settingsPath,
   className,
 }) => {
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -65,7 +67,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     const { error } = await signOut();
     if (error) {
       toast({
-        title: "Error signing out",
+        title: t("common.errorSigningOut"),
         description: error.message,
         variant: "destructive",
       });
@@ -108,8 +110,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     // Validate file
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Invalid file",
-        description: "Please select an image file",
+        title: t("common.invalidFile"),
+        description: t("common.selectImageFile"),
         variant: "destructive",
       });
       return;
@@ -117,8 +119,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Please select an image under 5MB",
+        title: t("common.fileTooLarge"),
+        description: t("common.selectImageUnder5MB"),
         variant: "destructive",
       });
       return;
@@ -130,7 +132,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${playerId}/profile.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('player-photos')
         .upload(fileName, file, { upsert: true });
@@ -151,16 +153,16 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       if (updateError) throw updateError;
 
       toast({
-        title: "Photo updated!",
-        description: "Your profile photo has been updated",
+        title: t("common.photoUpdated"),
+        description: t("common.profilePhotoUpdated"),
       });
 
       onPhotoUploaded?.(publicUrl);
     } catch (error: unknown) {
       logger.error('Photo upload error', { error });
       toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Could not upload photo",
+        title: t("common.uploadFailed"),
+        description: error instanceof Error ? error.message : t("common.couldNotUploadPhoto"),
         variant: "destructive",
       });
     } finally {
@@ -182,7 +184,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button 
+          <button
             className={cn(
               "relative flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2",
               isUploading && "opacity-50 pointer-events-none",
@@ -197,9 +199,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             </Avatar>
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          className="w-56 bg-card border border-border shadow-depth z-50" 
-          align="start" 
+        <DropdownMenuContent
+          className="w-56 bg-card border border-border shadow-depth z-50"
+          align="start"
           sideOffset={8}
         >
           <DropdownMenuLabel className="font-normal">
@@ -209,38 +211,38 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           {/* Photo upload option - only show if playerId is provided */}
           {playerId && (
             <>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => fileInputRef.current?.click()}
                 className="cursor-pointer"
               >
                 <Camera className="mr-2 h-4 w-4" />
-                <span>Change Photo</span>
+                <span>{t("settings.settings.changePhoto")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
           )}
-          
+
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
               <Link to="/players" className="flex items-center cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
-                <span>My Players</span>
+                <span>{t("nav.myPlayers")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to={settingsPath || "/settings"} className="flex items-center cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>{t("nav.settings")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/settings/notifications" className="flex items-center cursor-pointer">
                 <Bell className="mr-2 h-4 w-4" />
-                <span>Notifications</span>
+                <span>{t("settings.settings.notifications")}</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -249,29 +251,29 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             <DropdownMenuItem asChild>
               <Link to="/settings/billing" className="flex items-center cursor-pointer">
                 <CreditCard className="mr-2 h-4 w-4" />
-                <span>Billing</span>
+                <span>{t("settings.settings.billing")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/settings/privacy" className="flex items-center cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
-                <span>Privacy</span>
+                <span>{t("settings.settings.privacy")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/help" className="flex items-center cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
-                <span>Help & Support</span>
+                <span>{t("common.helpAndSupport")}</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleSignOut}
             className="text-destructive focus:text-destructive cursor-pointer"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Log out</span>
+            <span>{t("common.logOut")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

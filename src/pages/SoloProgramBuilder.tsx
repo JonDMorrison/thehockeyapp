@@ -1,11 +1,13 @@
-import { useState, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
+import { useState, useMemo, useEffect } from "react";
 import { logger } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, addWeeks, startOfWeek } from "date-fns";
-import { 
-  ChevronLeft, ArrowRight, ArrowLeft, Target, Dumbbell, Heart, 
+import {
+  ChevronLeft, ArrowRight, ArrowLeft, Target, Dumbbell, Heart,
   Timer, Zap, Brain, Loader2, CheckCircle, Sparkles, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,25 +58,33 @@ interface GeneratedProgram {
 }
 
 const focusOptions = [
-  { id: "shooting_accuracy", label: "Shooting accuracy", icon: Target },
-  { id: "shot_volume", label: "Shot volume", icon: Zap },
-  { id: "conditioning", label: "Conditioning", icon: Dumbbell },
-  { id: "mobility", label: "Mobility & flexibility", icon: Heart },
-  { id: "game_prep", label: "Game-day prep", icon: Timer },
-];
-
-const generatingSteps = [
-  "Analyzing your goals...",
-  "Building week 1...",
-  "Optimizing training load...",
-  "Adding variety...",
-  "Finalizing your program...",
+  { id: "shooting_accuracy", labelKey: "solo.focusShootingAccuracy", icon: Target },
+  { id: "shot_volume", labelKey: "solo.focusShotVolume", icon: Zap },
+  { id: "conditioning", labelKey: "solo.focusConditioning", icon: Dumbbell },
+  { id: "mobility", labelKey: "solo.focusMobility", icon: Heart },
+  { id: "game_prep", labelKey: "solo.focusGamePrep", icon: Timer },
 ];
 
 export default function SoloProgramBuilder() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  const generatingSteps = [
+    t('solo.generatingStep1'),
+    t('solo.generatingStep2'),
+    t('solo.generatingStep3'),
+    t('solo.generatingStep4'),
+    t('solo.generatingStep5'),
+  ];
 
   // Step 1: Setup
   const [programName, setProgramName] = useState("My Training Program");
@@ -83,12 +93,12 @@ export default function SoloProgramBuilder() {
   );
   const [duration, setDuration] = useState<number>(4);
   const [daysPerWeek, setDaysPerWeek] = useState<number>(5);
-  
+
   // Step 2: Goals
   const [tier, setTier] = useState<"rec" | "rep" | "elite">("rep");
   const [timeBudget, setTimeBudget] = useState<number>(25);
   const [selectedFocus, setSelectedFocus] = useState<string[]>(["shooting_accuracy", "conditioning"]);
-  
+
   // Wizard state
   const [step, setStep] = useState<Step>("setup");
   const [generatingStep, setGeneratingStep] = useState(0);
@@ -119,7 +129,7 @@ export default function SoloProgramBuilder() {
   const generateMutation = useMutation({
     mutationFn: async () => {
       if (!startDate) throw new Error("Start date required");
-      
+
       // Simulate progress steps
       for (let i = 0; i < generatingSteps.length; i++) {
         setGeneratingStep(i);
@@ -128,10 +138,10 @@ export default function SoloProgramBuilder() {
 
       // Generate each week using AI
       const weeks: GeneratedProgram["weeks"] = [];
-      
+
       for (let weekNum = 0; weekNum < duration; weekNum++) {
         const weekStart = addWeeks(startDate, weekNum);
-        
+
         const { data, error } = await supabase.functions.invoke("generate-workout-ai", {
           body: {
             type: "week_plan",
@@ -168,7 +178,7 @@ export default function SoloProgramBuilder() {
     },
     onError: (error: Error) => {
       logger.error("Program generation error", { error });
-      toast.error("Generation failed: " + error.message);
+      toast.error(t('solo.generationFailed') + ": " + error.message);
       setStep("goals");
     },
   });
@@ -238,12 +248,12 @@ export default function SoloProgramBuilder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
-      toast.success("Program created!", { description: `${duration} weeks of training ready to go!` });
+      toast.success(t('solo.programCreated'), { description: `${duration} ${t('solo.weeksOfTrainingReady')}` });
       navigate(`/solo/dashboard/${playerId}`);
     },
     onError: (error: Error) => {
       logger.error("Apply program error", { error });
-      toast.error("Failed to save: " + error.message);
+      toast.error(t('solo.failedToSave') + ": " + error.message);
     },
   });
 
@@ -265,7 +275,7 @@ export default function SoloProgramBuilder() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <AppShell>
         <div className="p-5 space-y-4">
@@ -274,6 +284,10 @@ export default function SoloProgramBuilder() {
         </div>
       </AppShell>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   const renderSetup = () => (
@@ -285,7 +299,7 @@ export default function SoloProgramBuilder() {
     >
       {/* Program Name */}
       <div>
-        <Label className="text-sm font-medium">Program Name</Label>
+        <Label className="text-sm font-medium">{t('solo.programName')}</Label>
         <Input
           className="mt-2"
           placeholder="e.g., Pre-Season Training"
@@ -296,7 +310,7 @@ export default function SoloProgramBuilder() {
 
       {/* Start Date */}
       <div>
-        <Label className="text-sm font-medium mb-2 block">Start Date</Label>
+        <Label className="text-sm font-medium mb-2 block">{t('solo.startDate')}</Label>
         <div className="flex justify-center">
           <Calendar
             mode="single"
@@ -310,33 +324,33 @@ export default function SoloProgramBuilder() {
 
       {/* Duration */}
       <div>
-        <Label className="text-sm font-medium">Duration</Label>
+        <Label className="text-sm font-medium">{t('solo.duration')}</Label>
         <Select value={duration.toString()} onValueChange={(v) => setDuration(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="2">2 weeks</SelectItem>
-            <SelectItem value="4">4 weeks</SelectItem>
-            <SelectItem value="6">6 weeks</SelectItem>
-            <SelectItem value="8">8 weeks</SelectItem>
+            <SelectItem value="2">2 {t('solo.weeks')}</SelectItem>
+            <SelectItem value="4">4 {t('solo.weeks')}</SelectItem>
+            <SelectItem value="6">6 {t('solo.weeks')}</SelectItem>
+            <SelectItem value="8">8 {t('solo.weeks')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Days per Week */}
       <div>
-        <Label className="text-sm font-medium">Training Days per Week</Label>
+        <Label className="text-sm font-medium">{t('solo.trainingDaysPerWeek')}</Label>
         <Select value={daysPerWeek.toString()} onValueChange={(v) => setDaysPerWeek(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="3">3 days</SelectItem>
-            <SelectItem value="4">4 days</SelectItem>
-            <SelectItem value="5">5 days</SelectItem>
-            <SelectItem value="6">6 days</SelectItem>
-            <SelectItem value="7">7 days</SelectItem>
+            <SelectItem value="3">3 {t('solo.days')}</SelectItem>
+            <SelectItem value="4">4 {t('solo.days')}</SelectItem>
+            <SelectItem value="5">5 {t('solo.days')}</SelectItem>
+            <SelectItem value="6">6 {t('solo.days')}</SelectItem>
+            <SelectItem value="7">7 {t('solo.days')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -352,38 +366,38 @@ export default function SoloProgramBuilder() {
     >
       {/* Tier Selection */}
       <div>
-        <Label className="text-sm font-medium">Training Intensity</Label>
+        <Label className="text-sm font-medium">{t('solo.trainingIntensity')}</Label>
         <Select value={tier} onValueChange={(v) => setTier(v as typeof tier)}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rec">Rec — Shorter, simpler</SelectItem>
-            <SelectItem value="rep">Rep — Balanced</SelectItem>
-            <SelectItem value="elite">Elite — Higher volume</SelectItem>
+            <SelectItem value="rec">{t('solo.tierRec')}</SelectItem>
+            <SelectItem value="rep">{t('solo.tierRep')}</SelectItem>
+            <SelectItem value="elite">{t('solo.tierElite')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Time Budget */}
       <div>
-        <Label className="text-sm font-medium">Time per Session</Label>
+        <Label className="text-sm font-medium">{t('solo.timePerSession')}</Label>
         <Select value={timeBudget.toString()} onValueChange={(v) => setTimeBudget(parseInt(v))}>
           <SelectTrigger className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="15">15 minutes</SelectItem>
-            <SelectItem value="25">25 minutes</SelectItem>
-            <SelectItem value="35">35 minutes</SelectItem>
-            <SelectItem value="45">45 minutes</SelectItem>
+            <SelectItem value="15">15 {t('solo.minutes')}</SelectItem>
+            <SelectItem value="25">25 {t('solo.minutes')}</SelectItem>
+            <SelectItem value="35">35 {t('solo.minutes')}</SelectItem>
+            <SelectItem value="45">45 {t('solo.minutes')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Focus Areas */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">What do you want to improve?</Label>
+        <Label className="text-sm font-medium mb-3 block">{t('solo.whatDoYouWantToImprove')}</Label>
         <div className="space-y-2">
           {focusOptions.map((option) => {
             const isSelected = selectedFocus.includes(option.id);
@@ -403,7 +417,7 @@ export default function SoloProgramBuilder() {
                   onCheckedChange={() => toggleFocus(option.id)}
                 />
                 <option.icon className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm font-medium">{option.label}</span>
+                <span className="text-sm font-medium">{t(option.labelKey)}</span>
               </div>
             );
           })}
@@ -420,11 +434,11 @@ export default function SoloProgramBuilder() {
     >
       {/* Animated Icon */}
       <motion.div
-        animate={{ 
+        animate={{
           rotate: [0, 360],
           scale: [1, 1.1, 1],
         }}
-        transition={{ 
+        transition={{
           rotate: { duration: 3, repeat: Infinity, ease: "linear" },
           scale: { duration: 1.5, repeat: Infinity },
         }}
@@ -446,7 +460,7 @@ export default function SoloProgramBuilder() {
           <motion.div
             key={stepText}
             initial={{ opacity: 0, x: -10 }}
-            animate={{ 
+            animate={{
               opacity: i <= generatingStep ? 1 : 0.4,
               x: 0,
             }}
@@ -483,32 +497,32 @@ export default function SoloProgramBuilder() {
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Sparkles className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-xl font-bold text-foreground">Program Ready!</h2>
+        <h2 className="text-xl font-bold text-foreground">{t('solo.programReady')}</h2>
         <p className="text-muted-foreground mt-1">
-          {duration} weeks of training created for you
+          {duration} {t('solo.weeksOfTrainingCreated')}
         </p>
       </div>
 
       {/* Week Preview */}
       <div className="space-y-3">
         {generatedProgram?.weeks.map((week) => (
-          <div 
+          <div
             key={week.weekNumber}
             className="bg-card border border-border rounded-xl p-4"
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-foreground">Week {week.weekNumber}</h3>
+              <h3 className="font-semibold text-foreground">{t('solo.weekNum', { num: week.weekNumber })}</h3>
               <span className="text-xs text-muted-foreground">
                 {format(new Date(week.startDate), "MMM d")}
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {week.days.length} training days
+              {week.days.length} {t('solo.trainingDays')}
             </p>
             <div className="flex gap-1 mt-2">
               {week.days.slice(0, 5).map((day, i) => (
-                <div 
-                  key={i}
+                <div
+                  key={day.date}
                   className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-medium text-primary"
                 >
                   {format(new Date(day.date), "E")[0]}
@@ -544,13 +558,13 @@ export default function SoloProgramBuilder() {
             </Button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground">
-                {step === "setup" && "Create Program"}
-                {step === "goals" && "Training Goals"}
-                {step === "generating" && "Building..."}
-                {step === "preview" && "Review Program"}
+                {step === "setup" && t('solo.createProgram')}
+                {step === "goals" && t('solo.trainingGoals')}
+                {step === "generating" && t('solo.buildingProgram')}
+                {step === "preview" && t('solo.reviewProgram')}
               </h1>
               <p className="text-sm text-muted-foreground">
-                AI-powered training plan
+                {t('solo.aiPoweredTrainingPlan')}
               </p>
             </div>
           </div>
@@ -574,10 +588,10 @@ export default function SoloProgramBuilder() {
                   onClick={() => applyMutation.mutate()}
                   disabled={applyMutation.isPending}
                 >
-                  {applyMutation.isPending ? "Saving..." : (
+                  {applyMutation.isPending ? t('common.saving') : (
                     <>
                       <Check className="w-5 h-5 mr-2" />
-                      Start Training
+                      {t('solo.startTraining')}
                     </>
                   )}
                 </Button>
@@ -591,7 +605,7 @@ export default function SoloProgramBuilder() {
                     (step === "goals" && selectedFocus.length === 0)
                   }
                 >
-                  Continue
+                  {t('solo.continue')}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
   value,
   onChange,
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const parsed = parseHSL(value);
   const [hue, setHue] = useState(parsed.h);
@@ -70,7 +72,7 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 space-y-4" align="start">
         <div className="text-sm font-medium">{label}</div>
-        
+
         {/* Color preview */}
         <div
           className="w-full h-12 rounded-lg border shadow-inner"
@@ -79,17 +81,17 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
 
         {/* Hue slider */}
         <div className="space-y-2">
-          <Label className="text-xs text-text-muted">Hue</Label>
+          <Label className="text-xs text-text-muted">{t("teams.colorPicker.hue")}</Label>
           <div
             className="h-3 rounded-full"
             style={{
-              background: `linear-gradient(to right, 
-                hsl(0, ${saturation}%, ${lightness}%), 
-                hsl(60, ${saturation}%, ${lightness}%), 
-                hsl(120, ${saturation}%, ${lightness}%), 
-                hsl(180, ${saturation}%, ${lightness}%), 
-                hsl(240, ${saturation}%, ${lightness}%), 
-                hsl(300, ${saturation}%, ${lightness}%), 
+              background: `linear-gradient(to right,
+                hsl(0, ${saturation}%, ${lightness}%),
+                hsl(60, ${saturation}%, ${lightness}%),
+                hsl(120, ${saturation}%, ${lightness}%),
+                hsl(180, ${saturation}%, ${lightness}%),
+                hsl(240, ${saturation}%, ${lightness}%),
+                hsl(300, ${saturation}%, ${lightness}%),
                 hsl(360, ${saturation}%, ${lightness}%)
               )`,
             }}
@@ -105,12 +107,12 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
 
         {/* Saturation slider */}
         <div className="space-y-2">
-          <Label className="text-xs text-text-muted">Saturation</Label>
+          <Label className="text-xs text-text-muted">{t("teams.colorPicker.saturation")}</Label>
           <div
             className="h-3 rounded-full"
             style={{
-              background: `linear-gradient(to right, 
-                hsl(${hue}, 0%, ${lightness}%), 
+              background: `linear-gradient(to right,
+                hsl(${hue}, 0%, ${lightness}%),
                 hsl(${hue}, 100%, ${lightness}%)
               )`,
             }}
@@ -126,13 +128,13 @@ export const ColorPickerPopover: React.FC<ColorPickerPopoverProps> = ({
 
         {/* Lightness slider */}
         <div className="space-y-2">
-          <Label className="text-xs text-text-muted">Lightness</Label>
+          <Label className="text-xs text-text-muted">{t("teams.colorPicker.lightness")}</Label>
           <div
             className="h-3 rounded-full"
             style={{
-              background: `linear-gradient(to right, 
-                hsl(${hue}, ${saturation}%, 0%), 
-                hsl(${hue}, ${saturation}%, 50%), 
+              background: `linear-gradient(to right,
+                hsl(${hue}, ${saturation}%, 0%),
+                hsl(${hue}, ${saturation}%, 50%),
                 hsl(${hue}, ${saturation}%, 100%)
               )`,
             }}

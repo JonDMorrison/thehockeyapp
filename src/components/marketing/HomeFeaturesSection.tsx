@@ -5,39 +5,38 @@ import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachVi
 import { FeatureProgramCalendar } from "@/components/marketing/features/FeatureProgramCalendar";
 import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
 import { FeaturePlayerProgress } from "@/components/marketing/features/FeaturePlayerProgress";
-
-const features = [
-  {
-    icon: Users,
-    title: "Perfect for coaches",
-    description:
-      "Give your team a structured off-ice program without adding to your workload. See who is putting in the work at a glance.",
-    preview: FeatureCoachView,
-  },
-  {
-    icon: Calendar,
-    title: "Run a spring or summer program",
-    description:
-      "Set up a 30-day challenge or off-season program in minutes. Players stay sharp between seasons with a plan that runs itself.",
-    preview: FeatureProgramCalendar,
-  },
-  {
-    icon: HomeIcon,
-    title: "Set up your family",
-    description:
-      "Create a home development plan for your child. They follow their checklist, you follow their progress. No nagging required.",
-    preview: FeatureCheckoff,
-  },
-  {
-    icon: TrendingUp,
-    title: "Works for any age or level",
-    description:
-      "From first-year players building basics to competitive athletes grinding every day. The app scales to fit your player.",
-    preview: FeaturePlayerProgress,
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 export const HomeFeaturesSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: Users,
+      title: t('marketing.home_features_coaches_title'),
+      description: t('marketing.home_features_coaches_desc'),
+      preview: FeatureCoachView,
+    },
+    {
+      icon: Calendar,
+      title: t('marketing.home_features_spring_title'),
+      description: t('marketing.home_features_spring_desc'),
+      preview: FeatureProgramCalendar,
+    },
+    {
+      icon: HomeIcon,
+      title: t('marketing.home_features_family_title'),
+      description: t('marketing.home_features_family_desc'),
+      preview: FeatureCheckoff,
+    },
+    {
+      icon: TrendingUp,
+      title: t('marketing.home_features_level_title'),
+      description: t('marketing.home_features_level_desc'),
+      preview: FeaturePlayerProgress,
+    },
+  ];
+
   return (
     <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
       {/* Decorative elements */}
@@ -61,11 +60,10 @@ export const HomeFeaturesSection: React.FC = () => {
         {/* Section header */}
         <div className="text-center mb-16 lg:mb-20">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-            It works where your kid actually trains.
+            {t('marketing.home_features_heading')}
           </h2>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            In the garage. In the basement. On the driveway before dinner. The
-            Hockey App was built for real life, not ideal conditions.
+            {t('marketing.home_features_description')}
           </p>
         </div>
 
@@ -76,9 +74,7 @@ export const HomeFeaturesSection: React.FC = () => {
             return (
               <div
                 key={i}
-                className={`grid lg:grid-cols-2 gap-8 lg:gap-16 items-center ${
-                  isReversed ? "lg:direction-rtl" : ""
-                }`}
+                className={`grid lg:grid-cols-2 gap-8 lg:gap-16 items-center`}
               >
                 {/* Text column */}
                 <div

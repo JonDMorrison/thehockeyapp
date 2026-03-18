@@ -84,6 +84,12 @@ interface GoalRewardPromptProps {
   context?: "workout" | "week" | "program";
 }
 
+const contextText: Record<"workout" | "week" | "program", string> = {
+  workout: "this workout",
+  week: "this week",
+  program: "this program",
+};
+
 export const GoalRewardPrompt: React.FC<GoalRewardPromptProps> = ({
   onSetGoal,
   onSkip,
@@ -92,12 +98,6 @@ export const GoalRewardPrompt: React.FC<GoalRewardPromptProps> = ({
   const [selectedReward, setSelectedReward] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [customReward, setCustomReward] = useState("");
-
-  const contextText = {
-    workout: "this workout",
-    week: "this week",
-    program: "this program",
-  };
 
   const handleContinue = () => {
     if (selectedReward === "custom") {

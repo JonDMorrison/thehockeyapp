@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useTranslation } from 'react-i18next';
+import { useState, useMemo, useEffect } from "react";
 import { logger } from "@/core";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek } from "date-fns";
@@ -12,8 +14,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-import { 
-  WEEK_THEMES, 
+import {
+  WEEK_THEMES,
   DAY_TEMPLATES,
   THEME_SCHEDULES,
   WeekThemeId,
@@ -34,9 +36,17 @@ interface DayPlan {
 }
 
 export default function SoloWeekPlanner() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   const [step, setStep] = useState<Step>("theme");
   const [selectedTheme, setSelectedTheme] = useState<WeekThemeId | null>(null);
@@ -49,7 +59,10 @@ export default function SoloWeekPlanner() {
     return startOfWeek(addDays(new Date(), 7), { weekStartsOn: 1 });
   }, []);
 
-  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const dayNames = [
+    t('common.monday'), t('common.tuesday'), t('common.wednesday'),
+    t('common.thursday'), t('common.friday'), t('common.saturday'), t('common.sunday'),
+  ];
 
   // Fetch player
   const { data: player, isLoading } = useQuery({
@@ -69,7 +82,7 @@ export default function SoloWeekPlanner() {
   // Generate week plan when theme is selected
   const handleThemeSelect = (themeId: WeekThemeId) => {
     setSelectedTheme(themeId);
-    
+
     const schedule = THEME_SCHEDULES[themeId];
     const newWeekPlan: DayPlan[] = schedule.map((dayTemplateId, index) => {
       const template = DAY_TEMPLATES.find(d => d.id === dayTemplateId)!;
@@ -80,7 +93,7 @@ export default function SoloWeekPlanner() {
         template,
       };
     });
-    
+
     setWeekPlan(newWeekPlan);
     setStep("customize");
   };
@@ -94,7 +107,7 @@ export default function SoloWeekPlanner() {
   // Delete a day (make it rest day)
   const handleDeleteDay = (dayIndex: number) => {
     const restDay = DAY_TEMPLATES.find(d => d.id === "rest_day")!;
-    setWeekPlan(prev => prev.map(day => 
+    setWeekPlan(prev => prev.map(day =>
       day.dayIndex === dayIndex ? { ...day, template: restDay } : day
     ));
   };
@@ -108,11 +121,11 @@ export default function SoloWeekPlanner() {
   // Select a new day template
   const handleDaySelect = (template: DayTemplate) => {
     if (editingDayIndex === null) return;
-    
+
     const existingDay = weekPlan.find(d => d.dayIndex === editingDayIndex);
-    
+
     if (existingDay) {
-      setWeekPlan(prev => prev.map(day => 
+      setWeekPlan(prev => prev.map(day =>
         day.dayIndex === editingDayIndex ? { ...day, template } : day
       ));
     } else {
@@ -123,7 +136,7 @@ export default function SoloWeekPlanner() {
         template,
       }].sort((a, b) => a.dayIndex - b.dayIndex));
     }
-    
+
     setEditingDayIndex(null);
   };
 
@@ -177,12 +190,12 @@ export default function SoloWeekPlanner() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
-      toast.success("Week plan created!");
+      toast.success(t('solo.weekPlanCreated'));
       navigate(`/solo/dashboard/${playerId}`);
     },
     onError: (error: Error) => {
       logger.error("Save error", { error });
-      toast.error("Failed to save plan");
+      toast.error(t('solo.failedToSavePlan'));
     },
   });
 
@@ -196,6 +209,8 @@ export default function SoloWeekPlanner() {
       </AppShell>
     );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <AppShell>
@@ -219,7 +234,7 @@ export default function SoloWeekPlanner() {
             </Button>
             <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground">
-                {step === "theme" ? "Weekly Routine" : "Customize Week"}
+                {step === "theme" ? t('solo.weeklyRoutine') : t('solo.customizeWeek')}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {format(startDate, "MMM d")} – {format(addDays(startDate, 6), "MMM d")}
@@ -234,10 +249,10 @@ export default function SoloWeekPlanner() {
               {/* Question */}
               <div className="text-center py-4">
                 <h2 className="text-xl font-bold text-foreground mb-2">
-                  What do you want to focus on?
+                  {t('solo.whatDoYouWantToFocusOn')}
                 </h2>
                 <p className="text-muted-foreground">
-                  Pick a theme and we'll set up your week
+                  {t('solo.pickThemeAndWellSetUpYourWeek')}
                 </p>
               </div>
 
@@ -264,7 +279,7 @@ export default function SoloWeekPlanner() {
               <div className="space-y-3">
                 {dayNames.slice(0, 7).map((dayName, index) => {
                   const dayPlan = weekPlan.find(d => d.dayIndex === index);
-                  
+
                   if (dayPlan) {
                     return (
                       <DayCardPreview
@@ -277,7 +292,7 @@ export default function SoloWeekPlanner() {
                       />
                     );
                   }
-                  
+
                   return (
                     <DayCardEmpty
                       key={index}
@@ -297,11 +312,11 @@ export default function SoloWeekPlanner() {
                   disabled={saveMutation.isPending || weekPlan.filter(d => d.template.id !== "rest_day").length === 0}
                 >
                   {saveMutation.isPending ? (
-                    "Saving..."
+                    t('common.saving')
                   ) : (
                     <>
                       <Check className="w-5 h-5 mr-2" />
-                      Save Week Plan
+                      {t('solo.saveWeekPlan')}
                     </>
                   )}
                 </Button>
@@ -315,7 +330,7 @@ export default function SoloWeekPlanner() {
           open={pickerOpen}
           onOpenChange={setPickerOpen}
           onSelect={handleDaySelect}
-          title={editingDayIndex !== null ? `${dayNames[editingDayIndex]} - Choose type` : "Choose day type"}
+          title={editingDayIndex !== null ? `${dayNames[editingDayIndex]} - ${t('solo.chooseType')}` : t('solo.chooseDayType')}
         />
       </div>
     </AppShell>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useMemo } from "react";
 import { logger } from "@/core";
 import { useNavigate, useParams } from "react-router-dom";
@@ -13,8 +14,8 @@ import { format, addDays, startOfWeek } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-import { 
-  WEEK_THEMES, 
+import {
+  WEEK_THEMES,
   DAY_TEMPLATES,
   THEME_SCHEDULES,
   WeekThemeId,
@@ -35,6 +36,7 @@ interface DayPlan {
 }
 
 const WeekPlannerNew: React.FC = () => {
+  const { t } = useTranslation();
   const { id: teamId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -52,7 +54,10 @@ const WeekPlannerNew: React.FC = () => {
     return startOfWeek(addDays(new Date(), 7), { weekStartsOn: 1 });
   }, []);
 
-  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const dayNames = [
+    t('common.monday'), t('common.tuesday'), t('common.wednesday'),
+    t('common.thursday'), t('common.friday'), t('common.saturday'), t('common.sunday'),
+  ];
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -84,7 +89,7 @@ const WeekPlannerNew: React.FC = () => {
   // Generate week plan when theme is selected
   const handleThemeSelect = (themeId: WeekThemeId) => {
     setSelectedTheme(themeId);
-    
+
     const schedule = THEME_SCHEDULES[themeId];
     const newWeekPlan: DayPlan[] = schedule.map((dayTemplateId, index) => {
       const template = DAY_TEMPLATES.find(d => d.id === dayTemplateId)!;
@@ -95,7 +100,7 @@ const WeekPlannerNew: React.FC = () => {
         template,
       };
     });
-    
+
     setWeekPlan(newWeekPlan);
     setStep("customize");
   };
@@ -109,7 +114,7 @@ const WeekPlannerNew: React.FC = () => {
   // Delete a day (make it rest day)
   const handleDeleteDay = (dayIndex: number) => {
     const restDay = DAY_TEMPLATES.find(d => d.id === "rest_day")!;
-    setWeekPlan(prev => prev.map(day => 
+    setWeekPlan(prev => prev.map(day =>
       day.dayIndex === dayIndex ? { ...day, template: restDay } : day
     ));
   };
@@ -123,12 +128,12 @@ const WeekPlannerNew: React.FC = () => {
   // Select a new day template
   const handleDaySelect = (template: DayTemplate) => {
     if (editingDayIndex === null) return;
-    
+
     const existingDay = weekPlan.find(d => d.dayIndex === editingDayIndex);
-    
+
     if (existingDay) {
       // Update existing day
-      setWeekPlan(prev => prev.map(day => 
+      setWeekPlan(prev => prev.map(day =>
         day.dayIndex === editingDayIndex ? { ...day, template } : day
       ));
     } else {
@@ -140,7 +145,7 @@ const WeekPlannerNew: React.FC = () => {
         template,
       }].sort((a, b) => a.dayIndex - b.dayIndex));
     }
-    
+
     setEditingDayIndex(null);
   };
 
@@ -150,7 +155,7 @@ const WeekPlannerNew: React.FC = () => {
       if (!user || !teamId) throw new Error("Missing user or team");
 
       const theme = WEEK_THEMES.find(t => t.id === selectedTheme);
-      
+
       // Create the week plan
       const { data: plan, error: planError } = await supabase
         .from("team_week_plans")
@@ -209,12 +214,12 @@ const WeekPlannerNew: React.FC = () => {
     },
     onSuccess: (plan) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
-      toast.success("Week plan created!");
+      toast.success(t('practice.weekPlanCreated'));
       navigate(`/teams/${teamId}/builder/${plan.id}`);
     },
     onError: (error) => {
       logger.error("Save error", { error });
-      toast.error("Failed to save plan");
+      toast.error(t('practice.failedToSavePlan'));
     },
   });
 
@@ -228,6 +233,8 @@ const WeekPlannerNew: React.FC = () => {
       </AppShell>
     );
   }
+
+  if (!isAuthenticated) return null;
 
   return (
     <AppShell
@@ -249,7 +256,7 @@ const WeekPlannerNew: React.FC = () => {
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-bold">
-              {step === "theme" ? "New Week Plan" : "Customize Week"}
+              {step === "theme" ? t('practice.newWeekPlan') : t('practice.customizeWeek')}
             </h1>
             <p className="text-xs text-muted-foreground">
               {format(startDate, "MMM d")} – {format(addDays(startDate, 6), "MMM d")}
@@ -264,10 +271,10 @@ const WeekPlannerNew: React.FC = () => {
             {/* Question */}
             <div className="text-center py-4">
               <h2 className="text-xl font-bold text-foreground mb-2">
-                What do you want to work on?
+                {t('practice.whatDoYouWantToWorkOn')}
               </h2>
               <p className="text-muted-foreground">
-                Pick a focus and we'll set up your week
+                {t('practice.pickFocusAndWellSetUpYourWeek')}
               </p>
             </div>
 
@@ -294,7 +301,7 @@ const WeekPlannerNew: React.FC = () => {
             <div className="space-y-3">
               {dayNames.slice(0, 7).map((dayName, index) => {
                 const dayPlan = weekPlan.find(d => d.dayIndex === index);
-                
+
                 if (dayPlan) {
                   return (
                     <DayCardPreview
@@ -307,7 +314,7 @@ const WeekPlannerNew: React.FC = () => {
                     />
                   );
                 }
-                
+
                 return (
                   <DayCardEmpty
                     key={index}
@@ -327,11 +334,11 @@ const WeekPlannerNew: React.FC = () => {
                 disabled={saveMutation.isPending || weekPlan.filter(d => d.template.id !== "rest_day").length === 0}
               >
                 {saveMutation.isPending ? (
-                  "Saving..."
+                  t('common.saving')
                 ) : (
                   <>
                     <Check className="w-5 h-5 mr-2" />
-                    Save Week Plan
+                    {t('solo.saveWeekPlan')}
                   </>
                 )}
               </Button>
@@ -345,7 +352,7 @@ const WeekPlannerNew: React.FC = () => {
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         onSelect={handleDaySelect}
-        title={editingDayIndex !== null ? `${dayNames[editingDayIndex]} - Choose type` : "Choose day type"}
+        title={editingDayIndex !== null ? `${dayNames[editingDayIndex]} - ${t('solo.chooseType')}` : t('solo.chooseDayType')}
       />
     </AppShell>
   );

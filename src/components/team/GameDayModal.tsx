@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -9,6 +10,16 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -94,12 +105,14 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
   teamId,
   teamName,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [notes, setNotes] = useState("");
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
 
   // Check if game day is already enabled for selected date
   const { data: gameDay, isLoading } = useQuery({
@@ -124,7 +137,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
     queryFn: async () => {
       const dateStart = `${selectedDate}T00:00:00`;
       const dateEnd = `${selectedDate}T23:59:59`;
-      
+
       const { data, error } = await supabase
         .from("team_events")
         .select("*")
@@ -229,16 +242,16 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["team-game-day", teamId] });
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
       toast.success(
-        "Game Day enabled",
-        `${teamName} is in Game Day mode for ${format(
-          parseISO(selectedDate),
-          "MMM d"
-        )}`
+        t("teams.gameDay.toastEnabledTitle"),
+        t("teams.gameDay.toastEnabledDescription", {
+          teamName,
+          date: format(parseISO(selectedDate), "MMM d"),
+        })
       );
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to enable Game Day", error.message);
+      toast.error(t("teams.gameDay.toastEnableFailedTitle"), error.message);
     },
   });
 
@@ -264,17 +277,17 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-game-day", teamId] });
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
-      toast.success("Game Day disabled", "Normal training resumes.");
+      toast.success(t("teams.gameDay.toastDisabledTitle"), t("teams.gameDay.toastDisabledDescription"));
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to disable Game Day", error.message);
+      toast.error(t("teams.gameDay.toastDisableFailedTitle"), error.message);
     },
   });
 
   const handleToggle = () => {
     if (isEnabled) {
-      disableMutation.mutate();
+      setShowDisableConfirm(true);
     } else {
       enableMutation.mutate();
     }
@@ -283,22 +296,23 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
   const isPending = enableMutation.isPending || disableMutation.isPending;
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[80vh]">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-team-primary" />
-            Game Day Mode
+            {t("teams.gameDay.title")}
           </SheetTitle>
           <SheetDescription>
-            Replace normal training with a game day prep checklist
+            {t("teams.gameDay.description")}
           </SheetDescription>
         </SheetHeader>
 
         <div className="py-6 space-y-6">
           {/* Date Selector */}
           <div>
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">{t("teams.gameDay.dateLabel")}</Label>
             <div className="mt-1.5 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-text-muted" />
               <input
@@ -321,7 +335,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
               />
               <div>
                 <p className="font-medium">
-                  {isEnabled ? "Game Day Active" : "Normal Training"}
+                  {isEnabled ? t("teams.gameDay.statusActive") : t("teams.gameDay.statusNormal")}
                 </p>
                 <p className="text-sm text-text-muted">
                   {format(parseISO(selectedDate), "EEEE, MMMM d")}
@@ -337,7 +351,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
 
           {/* Notes */}
           <div>
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes">{t("teams.gameDay.notesLabel")}</Label>
             <Textarea
               id="notes"
               value={notes}
@@ -354,7 +368,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
               <div className="flex gap-3">
                 <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
                 <div className="text-sm">
-                  <p className="font-medium text-primary">Game Detected from TeamSnap</p>
+                  <p className="font-medium text-primary">{t("teams.gameDay.syncedGameTitle")}</p>
                   <p className="text-text-muted mt-1">
                     {syncedGame.title}
                     {syncedGame.location && ` • ${syncedGame.location}`}
@@ -369,10 +383,9 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
             <div className="flex gap-3">
               <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-warning">Game Day Prep Only</p>
+                <p className="font-medium text-warning">{t("teams.gameDay.infoTitle")}</p>
                 <p className="text-text-muted mt-1">
-                  Parents will see a light prep checklist instead of the normal
-                  workout. Focus on readiness, not conditioning.
+                  {t("teams.gameDay.infoDescription")}
                 </p>
               </div>
             </div>
@@ -385,7 +398,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               className="flex-1"
@@ -393,14 +406,38 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
               disabled={isLoading || isPending}
             >
               {isPending
-                ? "Saving..."
+                ? t("teams.gameDay.saving")
                 : isEnabled
-                ? "Disable Game Day"
-                : "Enable Game Day"}
+                ? t("teams.gameDay.disable")
+                : t("teams.gameDay.enable")}
             </Button>
           </div>
         </div>
       </SheetContent>
     </Sheet>
+
+    <AlertDialog open={showDisableConfirm} onOpenChange={setShowDisableConfirm}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("teams.gameDay.disableConfirmTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("teams.gameDay.disableConfirmDescription")}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setShowDisableConfirm(false);
+              disableMutation.mutate();
+            }}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {t("teams.gameDay.disable")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };

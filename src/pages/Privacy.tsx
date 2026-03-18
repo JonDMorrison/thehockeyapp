@@ -1,23 +1,33 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { useAuth } from "@/hooks/useAuth";
 
 const Privacy: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <MarketingNav />
-      
-      <main className="flex-1 pt-24 pb-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 group"
+      {/* Sticky back bar */}
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <button
+            onClick={() => isAuthenticated ? navigate("/settings") : navigate("/")}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground group"
           >
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back to home
-          </Link>
+            {isAuthenticated ? "Back to Settings" : "Back to home"}
+          </button>
+        </div>
+      </div>
+
+      <MarketingNav />
+
+      <main className="flex-1 pt-8 pb-16">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
           <p className="text-sm text-muted-foreground mb-8">Last updated: January 2026</p>
@@ -70,8 +80,15 @@ const Privacy: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
               <p className="text-muted-foreground">
-                If you have questions about this Privacy Policy or wish to exercise your rights regarding 
-                your data, please contact us.
+                If you have questions about this Privacy Policy or wish to exercise your rights regarding
+                your data — including requests to review, delete, or restrict processing of your child's
+                personal information under COPPA — please contact us:
+              </p>
+              <p className="text-muted-foreground mt-2">
+                <strong>Email:</strong>{" "}
+                <a href="mailto:privacy@thehockeyapp.com" className="text-primary hover:underline">
+                  privacy@thehockeyapp.com
+                </a>
               </p>
             </section>
           </div>

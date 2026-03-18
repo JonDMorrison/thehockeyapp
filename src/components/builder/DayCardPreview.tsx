@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Clock, MoreVertical, X } from "lucide-react";
@@ -24,6 +25,7 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
   onDelete,
   onClick,
 }) => {
+  const { t } = useTranslation();
   const isRestDay = template.id === "rest_day";
 
   return (
@@ -31,8 +33,8 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
       className={cn(
         "relative rounded-2xl p-4 transition-all duration-200 cursor-pointer",
         "hover:shadow-medium active:scale-[0.98]",
-        isRestDay 
-          ? "bg-muted border border-dashed border-border" 
+        isRestDay
+          ? "bg-muted border border-dashed border-border"
           : "bg-card border border-border"
       )}
       onClick={onClick}
@@ -45,7 +47,7 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
           </p>
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger 
+          <DropdownMenuTrigger
             onClick={(e) => e.stopPropagation()}
             className="p-1 rounded-lg hover:bg-muted -mr-1 -mt-1"
           >
@@ -53,13 +55,13 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onSwap(); }}>
-              Swap day
+              {t('practice.swapDay')}
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               className="text-destructive"
             >
-              Make rest day
+              {t('practice.makeRestDay')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -89,9 +91,9 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
       {!isRestDay && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3 pt-3 border-t border-border">
           <Clock className="w-3 h-3" />
-          <span>{template.estimatedMinutes} min</span>
+          <span>{t('practice.nMin', { n: template.estimatedMinutes })}</span>
           <span className="mx-1">•</span>
-          <span>{template.taskIds.length} tasks</span>
+          <span>{t('practice.nTasksCount', { n: template.taskIds.length })}</span>
         </div>
       )}
     </div>
@@ -103,6 +105,8 @@ export const DayCardEmpty: React.FC<{ dayName: string; onAdd: () => void }> = ({
   dayName,
   onAdd,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <button
       onClick={onAdd}
@@ -119,7 +123,7 @@ export const DayCardEmpty: React.FC<{ dayName: string; onAdd: () => void }> = ({
       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-2">
         <span className="text-2xl text-muted-foreground">+</span>
       </div>
-      <p className="text-sm text-muted-foreground">Add day</p>
+      <p className="text-sm text-muted-foreground">{t('practice.addDay')}</p>
     </button>
   );
 };

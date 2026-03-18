@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { logger } from "@/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
@@ -20,6 +21,7 @@ import {
   Check,
   CheckCircle,
   AlertCircle,
+  Info,
   Users,
   Loader2,
 } from "lucide-react";
@@ -44,6 +46,7 @@ interface JoinResult {
 }
 
 const JoinTeamPlayer: React.FC = () => {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,6 +56,7 @@ const JoinTeamPlayer: React.FC = () => {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [joinedPlayerName, setJoinedPlayerName] = useState("");
+  const returnToJoin = sessionStorage.getItem("returnToJoin");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -130,7 +134,7 @@ const JoinTeamPlayer: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["player-preferences", selectedPlayerId] });
 
       const player = players?.find((p) => p.id === selectedPlayerId);
-      setJoinedPlayerName(player?.first_name || "Player");
+      setJoinedPlayerName(player?.first_name || t("auth.joinTeamPlayer.playerFallback"));
       setJoinSuccess(true);
 
       // Auto-set this team as active for the player
@@ -150,22 +154,22 @@ const JoinTeamPlayer: React.FC = () => {
       }
 
       if (result.already_member) {
-        toast.info("Already joined", "This player is already on the team.");
+        toast.info(t("auth.joinTeamPlayer.alreadyJoinedTitle"), t("auth.joinTeamPlayer.alreadyJoinedMessage"));
       } else {
-        toast.success("Welcome!", "Player joined the team.");
+        toast.success(t("auth.welcomeTitle"), t("auth.joinTeamPlayer.playerJoinedMessage"));
       }
 
       // Clear pending token
       sessionStorage.removeItem("pendingJoinToken");
     },
     onError: (error: Error) => {
-      toast.error("Failed to join", error.message);
+      toast.error(t("auth.joinTeamPlayer.failedToJoinTitle"), error.message);
     },
   });
 
   const handleJoin = () => {
     if (!selectedPlayerId) {
-      toast.error("Select a player", "Choose which player to add to the team.");
+      toast.error(t("auth.joinTeamPlayer.selectPlayerTitle"), t("auth.joinTeamPlayer.selectPlayerMessage"));
       return;
     }
     joinTeam.mutate(selectedPlayerId);
@@ -200,10 +204,10 @@ const JoinTeamPlayer: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={AlertCircle}
-                title="Invalid Invite"
-                description="This invite link is no longer valid. Ask your coach for a new one."
+                title={t("auth.invite.invalidTitle")}
+                description={t("auth.joinTeam.invalidDescription")}
                 action={{
-                  label: "Go Home",
+                  label: t("common.goHome"),
                   onClick: () => navigate("/"),
                 }}
               />
@@ -225,10 +229,10 @@ const JoinTeamPlayer: React.FC = () => {
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
               <AppCardTitle className="text-xl mb-2">
-                {joinedPlayerName} Joined!
+                {t("auth.joinTeamPlayer.joinedTitle", { name: joinedPlayerName })}
               </AppCardTitle>
               <AppCardDescription className="mb-6">
-                Successfully joined {preview.team_name}.
+                {t("auth.joinTeamPlayer.joinedDescription", { teamName: preview.team_name })}
               </AppCardDescription>
               <div className="space-y-3">
                 <Button
@@ -237,7 +241,7 @@ const JoinTeamPlayer: React.FC = () => {
                   className="w-full"
                   onClick={() => navigate(`/players/${selectedPlayerId}/today`)}
                 >
-                  Go to Today's Workout
+                  {t("auth.joinTeamPlayer.goToWorkoutButton")}
                 </Button>
                 <Button
                   variant="outline"
@@ -245,7 +249,7 @@ const JoinTeamPlayer: React.FC = () => {
                   className="w-full"
                   onClick={() => navigate(`/players/${selectedPlayerId}/home`)}
                 >
-                  View Dashboard
+                  {t("auth.joinTeamPlayer.viewDashboardButton")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -255,7 +259,7 @@ const JoinTeamPlayer: React.FC = () => {
                     setSelectedPlayerId(null);
                   }}
                 >
-                  Add Another Player
+                  {t("auth.joinTeamPlayer.addAnotherPlayerButton")}
                 </Button>
               </div>
             </AppCard>
@@ -281,11 +285,21 @@ const JoinTeamPlayer: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title="Select Player" subtitle={`Join ${preview.team_name}`} />
+          <PageHeader title={t("auth.joinTeamPlayer.selectPlayerTitle")} subtitle={`${t("auth.joinTeamPlayer.joinSubtitle")} ${preview.team_name}`} />
         </div>
       }
     >
       <PageContainer>
+        {/* Return-to-join context banner */}
+        {returnToJoin && (
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+            <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-primary">
+              {t("auth.joinTeamPlayer.returnToJoinBanner")}
+            </p>
+          </div>
+        )}
+
         {/* Team preview */}
         <AppCard
           className="flex items-center gap-3"
@@ -311,7 +325,7 @@ const JoinTeamPlayer: React.FC = () => {
         {/* Player selection */}
         <div>
           <h2 className="text-sm font-semibold text-text-secondary mb-3">
-            Which player is joining?
+            {t("auth.joinTeamPlayer.whichPlayerLabel")}
           </h2>
 
           {players && players.length > 0 ? (
@@ -338,7 +352,7 @@ const JoinTeamPlayer: React.FC = () => {
                       </p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Tag variant="neutral" size="sm">
-                          Born {player.birth_year}
+                          {t("auth.joinTeamPlayer.bornLabel")} {player.birth_year}
                         </Tag>
                         {player.jersey_number && (
                           <Tag variant="tier" size="sm">
@@ -360,10 +374,10 @@ const JoinTeamPlayer: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={Users}
-                title="No players yet"
-                description="Create a player profile to join this team."
+                title={t("auth.joinTeamPlayer.noPlayersTitle")}
+                description={t("auth.joinTeamPlayer.noPlayersDescription")}
                 action={{
-                  label: "Add Player",
+                  label: t("auth.joinTeamPlayer.addPlayerButton"),
                   onClick: handleAddNewPlayer,
                 }}
               />
@@ -375,11 +389,12 @@ const JoinTeamPlayer: React.FC = () => {
         {players && players.length > 0 && (
           <Button
             variant="outline"
+            size="lg"
             className="w-full"
             onClick={handleAddNewPlayer}
           >
             <Plus className="w-4 h-4" />
-            Add New Player
+            {t("auth.joinTeamPlayer.addNewPlayerButton")}
           </Button>
         )}
 
@@ -387,13 +402,13 @@ const JoinTeamPlayer: React.FC = () => {
         {players && players.length > 0 && (
           <Button
             variant="team"
-            size="xl"
+            size="lg"
             className="w-full"
             onClick={handleJoin}
             disabled={!selectedPlayerId || joinTeam.isPending}
           >
             {joinTeam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Join Team
+            {t("auth.joinTeam.joinTeamButton")}
           </Button>
         )}
       </PageContainer>

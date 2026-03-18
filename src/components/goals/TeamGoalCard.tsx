@@ -10,7 +10,6 @@ import { GoalThermometer } from './GoalThermometer';
 import { ContributorLeaderboard } from './ContributorLeaderboard';
 import { GoalCreatorSheet } from './GoalCreatorSheet';
 import { SmartGoalSuggestions, GoalSuggestion } from './SmartGoalSuggestions';
-import { GoalImpactPreview } from './GoalImpactPreview';
 import { QuickGoalTemplates, QuickTemplate } from './QuickGoalTemplates';
 import { GoalCelebration } from './GoalCelebration';
 import { useTeamGoal, useGoalContributions, useRefreshGoalProgress, useUpdateGoal, TeamGoal } from '@/hooks/useTeamGoal';

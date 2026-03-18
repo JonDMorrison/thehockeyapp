@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { TeamTier } from "../CoachOnboardingWizard";
 
@@ -6,31 +7,32 @@ interface TeamLevelStepProps {
   onChange: (tier: TeamTier) => void;
 }
 
-const TIERS: { tier: TeamTier; title: string; description: string }[] = [
+const TIERS: { tier: TeamTier; titleKey: string; descriptionKey: string }[] = [
   {
     tier: "rec",
-    title: "Rec",
-    description: "House league, beginner, or casual players",
+    titleKey: "welcome.teamLevel.recTitle",
+    descriptionKey: "welcome.teamLevel.recDescription",
   },
   {
     tier: "rep",
-    title: "Rep",
-    description: "Travel team, competitive, or select players",
+    titleKey: "welcome.teamLevel.repTitle",
+    descriptionKey: "welcome.teamLevel.repDescription",
   },
   {
     tier: "elite",
-    title: "Elite",
-    description: "AAA, high-performance, or academy players",
+    titleKey: "welcome.teamLevel.eliteTitle",
+    descriptionKey: "welcome.teamLevel.eliteDescription",
   },
 ];
 
 export function TeamLevelStep({ value, onChange }: TeamLevelStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">What level is your team?</h1>
+        <h1 className="text-2xl font-bold">{t("welcome.teamLevel.title")}</h1>
         <p className="text-muted-foreground">
-          This adjusts targets automatically (shots, time, reps)
+          {t("welcome.teamLevel.subtitle")}
         </p>
       </div>
 
@@ -47,9 +49,9 @@ export function TeamLevelStep({ value, onChange }: TeamLevelStepProps) {
                 : "border-border bg-card"
             )}
           >
-            <h3 className="font-semibold text-lg">{option.title}</h3>
+            <h3 className="font-semibold text-lg">{t(option.titleKey)}</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {option.description}
+              {t(option.descriptionKey)}
             </p>
           </button>
         ))}

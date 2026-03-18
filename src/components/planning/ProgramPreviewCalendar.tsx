@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,14 +53,23 @@ const taskTypeColors: Record<string, string> = {
   other: "bg-gray-500",
 };
 
-const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
 export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
   weeks,
   startDate,
 }) => {
+  const { t } = useTranslation();
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState<Day | null>(null);
+
+  const dayNames = [
+    t('common.mondayShort'),
+    t('common.tuesdayShort'),
+    t('common.wednesdayShort'),
+    t('common.thursdayShort'),
+    t('common.fridayShort'),
+    t('common.saturdayShort'),
+    t('common.sundayShort'),
+  ];
 
   const currentWeek = weeks[currentWeekIndex];
 
@@ -101,14 +111,14 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
-        
+
         <div className="text-center">
-          <p className="font-semibold">Week {currentWeek.weekNumber}</p>
+          <p className="font-semibold">{t('practice.weekNum', { n: currentWeek.weekNumber })}</p>
           <p className="text-xs text-muted-foreground">
             {format(parseISO(currentWeek.startDate), "MMM d")} - {format(parseISO(currentWeek.days[currentWeek.days.length - 1]?.date || currentWeek.startDate), "MMM d")}
           </p>
         </div>
-        
+
         <Button
           variant="ghost"
           size="icon"
@@ -146,7 +156,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
             {name}
           </div>
         ))}
-        
+
         {/* Day cells */}
         {weekGrid.map((day, i) => (
           <motion.button
@@ -181,7 +191,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
                 </div>
               </>
             ) : (
-              <span className="text-xs text-muted-foreground">Rest</span>
+              <span className="text-xs text-muted-foreground">{t('practice.rest')}</span>
             )}
           </motion.button>
         ))}
@@ -205,7 +215,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
                   </p>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
-                  {selectedDay.tasks.length} tasks
+                  {t('practice.nTasksCount', { n: selectedDay.tasks.length })}
                 </span>
               </div>
 
@@ -224,7 +234,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
                     </div>
                     <span className="flex-1 truncate">{task.label}</span>
                     {task.shots_expected && (
-                      <span className="text-xs text-muted-foreground">{task.shots_expected} shots</span>
+                      <span className="text-xs text-muted-foreground">{t('practice.nShots', { n: task.shots_expected })}</span>
                     )}
                   </div>
                 ))}
@@ -238,19 +248,19 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
       <div className="grid grid-cols-3 gap-2 pt-2">
         <div className="text-center p-2 rounded-lg bg-muted/50">
           <p className="text-lg font-bold text-purple-500">{weeks.length}</p>
-          <p className="text-xs text-muted-foreground">Weeks</p>
+          <p className="text-xs text-muted-foreground">{t('practice.weeks')}</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/50">
           <p className="text-lg font-bold text-purple-500">
             {weeks.reduce((acc, w) => acc + w.days.length, 0)}
           </p>
-          <p className="text-xs text-muted-foreground">Sessions</p>
+          <p className="text-xs text-muted-foreground">{t('practice.sessions')}</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/50">
           <p className="text-lg font-bold text-purple-500">
             {weeks.reduce((acc, w) => acc + w.days.reduce((a, d) => a + (d.tasks.filter(t => t.shots_expected).reduce((s, t) => s + (t.shots_expected || 0), 0)), 0), 0)}
           </p>
-          <p className="text-xs text-muted-foreground">Total Shots</p>
+          <p className="text-xs text-muted-foreground">{t('practice.totalShots')}</p>
         </div>
       </div>
     </div>

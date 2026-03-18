@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
@@ -36,26 +37,28 @@ import {
   Gamepad2,
 } from "lucide-react";
 
-// Reward display config
-const rewardConfig: Record<string, { emoji: string; label: string; icon: React.ComponentType<any>; color: string }> = {
-  badges: { emoji: "🏅", label: "Badge Hunt", icon: Medal, color: "from-amber-500 to-yellow-500" },
-  scrimmage: { emoji: "🏒", label: "Scrimmage Game", icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
-  pizza: { emoji: "🍕", label: "Pizza Party", icon: Pizza, color: "from-red-500 to-orange-500" },
-  trophy: { emoji: "🏆", label: "Team Trophy", icon: Trophy, color: "from-yellow-500 to-amber-600" },
-  stars: { emoji: "⭐", label: "Star Stickers", icon: Star, color: "from-purple-500 to-pink-500" },
-  surprise: { emoji: "🎁", label: "Mystery Prize", icon: Gift, color: "from-emerald-500 to-teal-500" },
-  custom: { emoji: "🎯", label: "Custom Reward", icon: Gift, color: "from-indigo-500 to-purple-500" },
-};
+// rewardConfig is defined inside the component to access t()
 
 const rankIcons = [Trophy, Medal, Award];
 const rankColors = ["text-amber-500", "text-slate-400", "text-amber-700"];
 
 const PlayerTeamGoals: React.FC = () => {
+  const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+
+  const rewardConfig: Record<string, { emoji: string; label: string; icon: React.ComponentType<any>; color: string }> = {
+    badges: { emoji: "🏅", label: t("players.goals.rewardBadgeHunt"), icon: Medal, color: "from-amber-500 to-yellow-500" },
+    scrimmage: { emoji: "🏒", label: t("players.goals.rewardScrimmage"), icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
+    pizza: { emoji: "🍕", label: t("players.goals.rewardPizza"), icon: Pizza, color: "from-red-500 to-orange-500" },
+    trophy: { emoji: "🏆", label: t("players.goals.rewardTrophy"), icon: Trophy, color: "from-yellow-500 to-amber-600" },
+    stars: { emoji: "⭐", label: t("players.goals.rewardStars"), icon: Star, color: "from-purple-500 to-pink-500" },
+    surprise: { emoji: "🎁", label: t("players.goals.rewardSurprise"), icon: Gift, color: "from-emerald-500 to-teal-500" },
+    custom: { emoji: "🎯", label: t("players.goals.rewardCustom"), icon: Gift, color: "from-indigo-500 to-purple-500" },
+  };
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -183,6 +186,8 @@ const PlayerTeamGoals: React.FC = () => {
     );
   }
 
+  if (!isAuthenticated) return null;
+
   const progress = goal ? Math.min((goal.current_value / goal.target_value) * 100, 100) : 0;
   const daysLeft = goal ? differenceInDays(new Date(goal.end_date), new Date()) : 0;
   const reward = goal?.reward_type ? rewardConfig[goal.reward_type] || rewardConfig.custom : null;
@@ -199,7 +204,7 @@ const PlayerTeamGoals: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title="Team Goals" subtitle={teamName || "Team"} />
+          <PageHeader title={t("players.goals.title")} subtitle={teamName || t("players.goals.teamFallback")} />
         </div>
       }
     >
@@ -208,10 +213,10 @@ const PlayerTeamGoals: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={Users}
-              title="No Active Team"
-              description="Join a team to see team goals and contribute to shared achievements."
+              title={t("players.goals.noTeamTitle")}
+              description={t("players.goals.noTeamDescription")}
               action={{
-                label: "Join a Team",
+                label: t("players.goals.joinButton"),
                 onClick: () => navigate(`/join?player=${playerId}`),
               }}
             />
@@ -220,8 +225,8 @@ const PlayerTeamGoals: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={Target}
-              title="No Active Goal"
-              description="Your coach hasn't set a team goal yet. Check back soon!"
+              title={t("players.goals.noGoalTitle")}
+              description={t("players.goals.noGoalDescription")}
             />
           </AppCard>
         ) : (
@@ -262,12 +267,12 @@ const PlayerTeamGoals: React.FC = () => {
                     {goal.status === "completed" ? (
                       <Badge className="bg-success/10 text-success border-success/20">
                         <Trophy className="w-3 h-3 mr-1" />
-                        Achieved!
+                        {t("players.goals.statusAchieved")}
                       </Badge>
                     ) : (
                       <Badge variant="secondary">
                         <Clock className="w-3 h-3 mr-1" />
-                        {daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Last day!" : "Ended"}
+                        {daysLeft > 0 ? t("players.goals.daysLeft", { count: daysLeft }) : daysLeft === 0 ? t("players.goals.lastDay") : t("players.goals.ended")}
                       </Badge>
                     )}
                   </div>
@@ -286,14 +291,14 @@ const PlayerTeamGoals: React.FC = () => {
                       {/* Progress Stats */}
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-text-muted">Progress</span>
+                          <span className="text-text-muted">{t("players.goals.progress")}</span>
                           <span className="font-bold">
                             {goal.current_value.toLocaleString()} / {goal.target_value.toLocaleString()}
                           </span>
                         </div>
                         <Progress value={progress} className="h-3" />
                         <p className="text-xs text-text-muted mt-1">
-                          {Math.round(progress)}% complete
+                          {t("players.goals.percentComplete", { percent: Math.round(progress) })}
                         </p>
                       </div>
 
@@ -302,7 +307,7 @@ const PlayerTeamGoals: React.FC = () => {
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-team-primary/10 to-accent/10 border border-team-primary/20">
                           <span className="text-2xl">{reward.emoji}</span>
                           <div>
-                            <p className="text-xs text-text-muted">Reward</p>
+                            <p className="text-xs text-text-muted">{t("players.goals.reward")}</p>
                             <p className="font-semibold">
                               {goal.reward_description || reward.label}
                             </p>
@@ -343,23 +348,23 @@ const PlayerTeamGoals: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-text-muted uppercase font-medium">
-                      Your Contribution
+                      {t("players.goals.yourContribution")}
                     </p>
                     <p className="text-2xl font-bold">
                       {myContribution?.contribution_value.toLocaleString() || 0}
                       <span className="text-sm font-normal text-text-muted ml-1">
-                        {goal.goal_type === "shots" ? "shots" : goal.goal_type === "sessions" ? "sessions" : "points"}
+                        {goal.goal_type === "shots" ? t("players.goals.unitShots") : goal.goal_type === "sessions" ? t("players.goals.unitSessions") : t("players.goals.unitPoints")}
                       </span>
                     </p>
                     {myRank !== undefined && myRank >= 0 && (
                       <p className="text-sm text-text-muted">
-                        Ranked #{myRank + 1} on the team
+                        {t("players.goals.ranked", { rank: myRank + 1 })}
                       </p>
                     )}
                   </div>
                   {myContribution && myContribution.contribution_value > 0 && (
                     <div className="text-right">
-                      <p className="text-xs text-text-muted">Team Impact</p>
+                      <p className="text-xs text-text-muted">{t("players.goals.teamImpact")}</p>
                       <p className="text-lg font-bold text-team-primary">
                         {Math.round((myContribution.contribution_value / goal.current_value) * 100)}%
                       </p>
@@ -379,7 +384,7 @@ const PlayerTeamGoals: React.FC = () => {
                 <AppCard>
                   <AppCardTitle className="flex items-center gap-2 mb-4">
                     <Users className="w-5 h-5 text-team-primary" />
-                    Team Leaderboard
+                    {t("players.goals.leaderboardTitle")}
                   </AppCardTitle>
 
                   <div className="space-y-2">
@@ -422,7 +427,7 @@ const PlayerTeamGoals: React.FC = () => {
                               <p className={cn("font-medium truncate", isMe && "text-team-primary")}>
                                 {contribution.player?.first_name}{" "}
                                 {contribution.player?.last_initial && `${contribution.player.last_initial}.`}
-                                {isMe && " (You)"}
+                                {isMe && ` ${t("players.goals.youSuffix")}`}
                               </p>
                             </div>
 
@@ -452,7 +457,7 @@ const PlayerTeamGoals: React.FC = () => {
                 transition={{ duration: 0.3, delay: 0.3 }}
               >
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-text-secondary">Past Goals</h3>
+                  <h3 className="text-sm font-semibold text-text-secondary">{t("players.goals.pastGoalsTitle")}</h3>
                 </div>
                 <div className="space-y-2">
                   {goalHistory.map((pastGoal) => (
@@ -486,7 +491,7 @@ const PlayerTeamGoals: React.FC = () => {
                             variant={pastGoal.status === "completed" ? "accent" : "neutral"}
                             size="sm"
                           >
-                            {pastGoal.status === "completed" ? "Achieved" : "Missed"}
+                            {pastGoal.status === "completed" ? t("players.goals.tagAchieved") : t("players.goals.tagMissed")}
                           </Tag>
                         </div>
                       </div>

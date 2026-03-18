@@ -1,5 +1,6 @@
 import React from "react";
 import { Calendar, Check, Flame } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const days = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
@@ -8,6 +9,7 @@ const days = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 export const FeatureProgramCalendar: React.FC = () => {
+  const { t } = useTranslation();
   const completedCount = days.filter(d => d.completed).length;
 
   return (
@@ -17,13 +19,13 @@ export const FeatureProgramCalendar: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              30-Day Challenge
+              {t('marketing.program_calendar_thirty_day')}
             </p>
-            <h1 className="text-base font-bold text-foreground">Summer Skills</h1>
+            <h1 className="text-base font-bold text-foreground">{t('marketing.program_calendar_summer_skills')}</h1>
           </div>
           <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Calendar className="w-3 h-3" />
-            <span className="text-[10px] font-semibold">Day {completedCount + 1}</span>
+            <span className="text-[10px] font-semibold">{t('marketing.program_calendar_day_header', { day: completedCount + 1 })}</span>
           </div>
         </div>
       </div>
@@ -32,7 +34,7 @@ export const FeatureProgramCalendar: React.FC = () => {
         {/* Progress bar */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-medium text-muted-foreground">Progress</span>
+            <span className="text-[10px] font-medium text-muted-foreground">{t('marketing.program_calendar_progress')}</span>
             <span className="text-[10px] font-bold text-primary">{Math.round((completedCount / 30) * 100)}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -46,7 +48,7 @@ export const FeatureProgramCalendar: React.FC = () => {
         {/* Calendar grid */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            June 2026
+            {t('marketing.program_calendar_june')}
           </p>
           <div className="grid grid-cols-7 gap-1.5">
             {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
@@ -83,8 +85,8 @@ export const FeatureProgramCalendar: React.FC = () => {
             <Flame className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-xs font-medium">12 day streak!</p>
-            <p className="text-[10px] text-muted-foreground">Keep it going</p>
+            <p className="text-xs font-medium">{t('marketing.program_calendar_streak')}</p>
+            <p className="text-[10px] text-muted-foreground">{t('marketing.program_calendar_keep_going')}</p>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,22 +68,8 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   other: <MoreHorizontal className="w-4 h-4" />,
 };
 
-const taskTypeLabels: Record<string, string> = {
-  shooting: "Shooting",
-  conditioning: "Conditioning",
-  mobility: "Mobility",
-  recovery: "Recovery",
-  prep: "Prep",
-  other: "Other",
-};
-
-const tierOptions = [
-  { value: "rec", label: "Rec" },
-  { value: "rep", label: "Rep" },
-  { value: "elite", label: "Elite" },
-];
-
 const PracticeCardEditor: React.FC = () => {
+  const { t } = useTranslation();
   const { id, cardId } = useParams<{ id: string; cardId?: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -92,6 +79,21 @@ const PracticeCardEditor: React.FC = () => {
 
   const isEditing = !!cardId;
   const dateParam = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
+
+  const tierOptions = [
+    { value: "rec", label: t('practice.tierRec') },
+    { value: "rep", label: t('practice.tierRep') },
+    { value: "elite", label: t('practice.tierElite') },
+  ];
+
+  const taskTypeLabels: Record<string, string> = {
+    shooting: t('practice.taskTypeShooting'),
+    conditioning: t('practice.taskTypeConditioning'),
+    mobility: t('practice.taskTypeMobility'),
+    recovery: t('practice.taskTypeRecovery'),
+    prep: t('practice.taskTypePrep'),
+    other: t('practice.taskTypeOther'),
+  };
 
   // Form state
   const [tier, setTier] = useState("rep");
@@ -184,7 +186,13 @@ const PracticeCardEditor: React.FC = () => {
   const saveMutation = useMutation({
     mutationFn: async (publish: boolean) => {
       if (isLocked && isEditing) {
-        throw new Error("Card is locked and cannot be edited");
+        throw new Error(t('practice.cardLockedError'));
+      }
+
+      // Validate all tasks have labels
+      const emptyLabelTask = tasks.find((task) => !task.label.trim());
+      if (emptyLabelTask) {
+        throw new Error(t('practice.taskLabelRequired'));
       }
 
       let practiceCardId = cardId;
@@ -253,17 +261,17 @@ const PracticeCardEditor: React.FC = () => {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
       queryClient.invalidateQueries({ queryKey: ["practice-card", cardId] });
-      
+
       if (result.published) {
-        toast.success("Published!", "Parents can now see this practice card.");
+        toast.success(t('practice.published'), t('practice.publishedDesc'));
       } else {
-        toast.success("Saved", "Practice card saved as draft.");
+        toast.success(t('common.saved'), t('practice.savedAsDraft'));
       }
-      
+
       navigate(`/teams/${id}/practice`);
     },
     onError: (error: Error) => {
-      toast.error("Failed to save", error.message);
+      toast.error(t('practice.failedToSave'), error.message);
     },
   });
 
@@ -280,10 +288,10 @@ const PracticeCardEditor: React.FC = () => {
     onSuccess: (_, lock) => {
       setIsLocked(lock);
       queryClient.invalidateQueries({ queryKey: ["practice-card", cardId] });
-      toast.success(lock ? "Card locked" : "Card unlocked");
+      toast.success(lock ? t('practice.cardLocked') : t('practice.cardUnlocked'));
     },
     onError: (error: Error) => {
-      toast.error("Failed to update", error.message);
+      toast.error(t('practice.failedToUpdate'), error.message);
     },
   });
 
@@ -350,7 +358,7 @@ const PracticeCardEditor: React.FC = () => {
         }))
       );
     }
-    toast.success("Draft applied", "Review and edit before publishing.");
+    toast.success(t('practice.draftApplied'), t('practice.draftAppliedDesc'));
   };
 
   // Show loading state while auth or data is loading
@@ -385,7 +393,7 @@ const PracticeCardEditor: React.FC = () => {
             </Button>
             <div className="min-w-0">
               <h1 className="text-lg font-bold truncate">
-                {isEditing ? "Edit Card" : "New Card"}
+                {isEditing ? t('practice.editCard') : t('practice.newCard')}
               </h1>
               <p className="text-xs text-text-muted">
                 {format(cardDate, "EEEE, MMM d")}
@@ -424,7 +432,7 @@ const PracticeCardEditor: React.FC = () => {
           <AppCard variant="muted" className="border-warning/30 bg-warning-muted">
             <div className="flex items-center gap-2 text-sm">
               <Lock className="w-4 h-4 text-warning" />
-              <span>This card is locked. Unlock to make changes.</span>
+              <span>{t('practice.cardLockedMessage')}</span>
             </div>
           </AppCard>
         )}
@@ -434,9 +442,9 @@ const PracticeCardEditor: React.FC = () => {
             <div className="flex gap-3">
               <Zap className="w-5 h-5 text-team-primary flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-team-primary">Game Day Prep Card</p>
+                <p className="font-medium text-team-primary">{t('practice.gameDayPrepCard')}</p>
                 <p className="text-text-muted mt-1">
-                  Keep tasks light and focused on readiness. Avoid conditioning-heavy exercises.
+                  {t('practice.gameDayPrepCardDesc')}
                 </p>
               </div>
             </div>
@@ -445,11 +453,11 @@ const PracticeCardEditor: React.FC = () => {
 
         {/* Card Settings */}
         <AppCard>
-          <AppCardTitle className="text-base mb-4">Card Settings</AppCardTitle>
-          
+          <AppCardTitle className="text-base mb-4">{t('practice.cardSettings')}</AppCardTitle>
+
           <div className="space-y-4">
             <div>
-              <Label>Tier</Label>
+              <Label>{t('practice.tier')}</Label>
               <Select value={tier} onValueChange={setTier} disabled={isLocked}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
@@ -465,22 +473,22 @@ const PracticeCardEditor: React.FC = () => {
             </div>
 
             <div>
-              <Label>Title (optional)</Label>
+              <Label>{t('practice.titleOptional')}</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Focus on wrist shots"
+                placeholder={t('practice.titlePlaceholder')}
                 className="mt-1.5"
                 disabled={isLocked}
               />
             </div>
 
             <div>
-              <Label>Notes (optional)</Label>
+              <Label>{t('practice.notesOptional')}</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional notes for parents..."
+                placeholder={t('practice.notesPlaceholder')}
                 className="mt-1.5"
                 rows={2}
                 disabled={isLocked}
@@ -493,7 +501,7 @@ const PracticeCardEditor: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-text-secondary">
-              Tasks ({tasks.length})
+              {t('practice.tasksCount', { n: tasks.length })}
             </h2>
             <Button
               variant="ghost"
@@ -502,14 +510,14 @@ const PracticeCardEditor: React.FC = () => {
               disabled={isLocked}
             >
               <Plus className="w-4 h-4 mr-1" />
-              Add Task
+              {t('practice.addTask')}
             </Button>
           </div>
 
           {tasks.length > 0 ? (
             <div className="space-y-3">
               {tasks.map((task, index) => (
-                <AppCard key={index} className="relative">
+                <AppCard key={task.id ?? index} className="relative">
                   <div className="flex gap-3">
                     {/* Reorder buttons */}
                     <div className="flex flex-col gap-1 pt-2">
@@ -534,9 +542,9 @@ const PracticeCardEditor: React.FC = () => {
                     </div>
 
                     {/* Task content */}
-                    <div className="flex-1 space-y-3">
+                    <div className="flex-1 min-w-0 space-y-3">
                       <div className="flex gap-2">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <Select
                             value={task.task_type}
                             onValueChange={(v) => updateTask(index, { task_type: v })}
@@ -570,7 +578,8 @@ const PracticeCardEditor: React.FC = () => {
                       <Input
                         value={task.label}
                         onChange={(e) => updateTask(index, { label: e.target.value })}
-                        placeholder="Task description..."
+                        placeholder={t('practice.taskDescPlaceholder')}
+                        className="min-w-0 truncate"
                         disabled={isLocked}
                       />
 
@@ -581,26 +590,27 @@ const PracticeCardEditor: React.FC = () => {
                           disabled={isLocked}
                         >
                           <SelectTrigger className="w-28">
-                            <SelectValue placeholder="Target" />
+                            <SelectValue placeholder={t('practice.target')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">No target</SelectItem>
-                            <SelectItem value="reps">Reps</SelectItem>
-                            <SelectItem value="seconds">Seconds</SelectItem>
-                            <SelectItem value="minutes">Minutes</SelectItem>
+                            <SelectItem value="none">{t('practice.noTarget')}</SelectItem>
+                            <SelectItem value="reps">{t('practice.reps')}</SelectItem>
+                            <SelectItem value="seconds">{t('practice.seconds')}</SelectItem>
+                            <SelectItem value="minutes">{t('practice.minutes')}</SelectItem>
                           </SelectContent>
                         </Select>
 
                         {task.target_type !== "none" && (
                           <Input
                             type="number"
+                            inputMode="numeric"
                             value={task.target_value || ""}
                             onChange={(e) =>
                               updateTask(index, {
                                 target_value: e.target.value ? parseInt(e.target.value) : null,
                               })
                             }
-                            placeholder="Value"
+                            placeholder={t('practice.value')}
                             className="w-24"
                             disabled={isLocked}
                           />
@@ -615,27 +625,28 @@ const PracticeCardEditor: React.FC = () => {
                             disabled={isLocked}
                           >
                             <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Shot type" />
+                              <SelectValue placeholder={t('practice.shotType')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">Any type</SelectItem>
-                              <SelectItem value="wrist">Wrist</SelectItem>
-                              <SelectItem value="snap">Snap</SelectItem>
-                              <SelectItem value="slap">Slap</SelectItem>
-                              <SelectItem value="backhand">Backhand</SelectItem>
-                              <SelectItem value="mixed">Mixed</SelectItem>
+                              <SelectItem value="none">{t('practice.shotTypeAny')}</SelectItem>
+                              <SelectItem value="wrist">{t('practice.shotTypeWrist')}</SelectItem>
+                              <SelectItem value="snap">{t('practice.shotTypeSnap')}</SelectItem>
+                              <SelectItem value="slap">{t('practice.shotTypeSlap')}</SelectItem>
+                              <SelectItem value="backhand">{t('practice.shotTypeBackhand')}</SelectItem>
+                              <SelectItem value="mixed">{t('practice.shotTypeMixed')}</SelectItem>
                             </SelectContent>
                           </Select>
 
                           <Input
                             type="number"
+                            inputMode="numeric"
                             value={task.shots_expected || ""}
                             onChange={(e) =>
                               updateTask(index, {
                                 shots_expected: e.target.value ? parseInt(e.target.value) : null,
                               })
                             }
-                            placeholder="Expected shots"
+                            placeholder={t('practice.expectedShots')}
                             className="w-32"
                             disabled={isLocked}
                           />
@@ -657,13 +668,13 @@ const PracticeCardEditor: React.FC = () => {
                           disabled={isLocked}
                         >
                           <MessageSquare className="w-3 h-3" />
-                          {task.coach_notes ? "Edit note" : "Add coach note"}
+                          {task.coach_notes ? t('practice.editNote') : t('practice.addCoachNote')}
                         </button>
                         <Input
                           id={`task-notes-${index}`}
                           value={task.coach_notes}
                           onChange={(e) => updateTask(index, { coach_notes: e.target.value })}
-                          placeholder="Tips or instructions for this task..."
+                          placeholder={t('practice.coachNotesPlaceholder')}
                           className={`mt-2 text-sm ${!task.coach_notes ? "hidden" : ""}`}
                           disabled={isLocked}
                         />
@@ -680,7 +691,7 @@ const PracticeCardEditor: React.FC = () => {
             >
               <div className="text-center py-4">
                 <Plus className="w-8 h-8 mx-auto text-text-muted mb-2" />
-                <p className="text-sm text-text-muted">Add your first task</p>
+                <p className="text-sm text-text-muted">{t('practice.addFirstTask')}</p>
               </div>
             </AppCard>
           )}
@@ -695,7 +706,7 @@ const PracticeCardEditor: React.FC = () => {
             disabled={saveMutation.isPending || isLocked}
           >
             <Save className="w-4 h-4 mr-2" />
-            Save Draft
+            {t('practice.saveDraft')}
           </Button>
           <Button
             className="flex-1"
@@ -703,11 +714,11 @@ const PracticeCardEditor: React.FC = () => {
             disabled={saveMutation.isPending || isLocked || tasks.length === 0}
           >
             <Send className="w-4 h-4 mr-2" />
-            {isPublished ? "Update" : "Publish"}
+            {isPublished ? t('common.update') : t('practice.publish')}
           </Button>
         </div>
       </PageContainer>
-      
+
       {/* AI Assist Sheet */}
       <AIAssistSheet
         open={showAIAssist}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -53,12 +54,12 @@ const PlanningCard: React.FC<PlanningCardProps> = ({
       {/* Shimmer effect for premium badge */}
       {(badgeVariant === "premium" || badgeVariant === "challenge") && (
         <div className="absolute inset-0 overflow-hidden">
-          <div 
+          <div
             className="absolute -inset-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
           />
         </div>
       )}
-      
+
       <div className="relative z-10 flex flex-col gap-3">
         <div className="flex items-start justify-between">
           <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
@@ -77,7 +78,7 @@ const PlanningCard: React.FC<PlanningCardProps> = ({
             </span>
           )}
         </div>
-        
+
         <div>
           <h3 className="text-lg font-bold text-white">{title}</h3>
           <p className="text-sm text-white/80 mt-0.5">{subtitle}</p>
@@ -95,23 +96,25 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
   onStartChallenge,
   weekPlanCount = 0,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       {/* Top row: Add Workout + 30 Day Challenge */}
       <div className="grid grid-cols-2 gap-3">
         <PlanningCard
-          title="Add Workout"
-          subtitle="One workout for one day"
+          title={t('practice.addWorkout')}
+          subtitle={t('practice.oneWorkoutForOneDay')}
           icon={<CalendarPlus className="w-6 h-6 text-white" />}
           gradient="from-emerald-500 to-teal-500"
-          badge={weekPlanCount > 0 ? `${weekPlanCount} this week` : undefined}
+          badge={weekPlanCount > 0 ? t('practice.nThisWeek', { n: weekPlanCount }) : undefined}
           onClick={onAddWorkout}
           delay={0}
         />
-        
+
         <PlanningCard
-          title="30 Day Challenge"
-          subtitle="Daily exercises for 30 days"
+          title={t('practice.thirtyDayChallenge')}
+          subtitle={t('practice.dailyExercisesFor30Days')}
           icon={<Flame className="w-6 h-6 text-white" />}
           gradient="from-orange-500 to-red-500"
           badge="🔥"
@@ -120,21 +123,21 @@ export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
           delay={0.1}
         />
       </div>
-      
+
       {/* Bottom row: Plan Week + Create Program */}
       <div className="grid grid-cols-2 gap-3">
         <PlanningCard
-          title="Plan the Week"
-          subtitle="Set up Mon–Sun, reuse it"
+          title={t('practice.planTheWeek')}
+          subtitle={t('practice.setUpMonSunReuseIt')}
           icon={<CalendarRange className="w-6 h-6 text-white" />}
           gradient="from-blue-500 to-indigo-500"
           onClick={onPlanWeek}
           delay={0.2}
         />
-        
+
         <PlanningCard
-          title="Create a Program"
-          subtitle="AI builds 4–8 weeks"
+          title={t('practice.createAProgram')}
+          subtitle={t('practice.aiBuilds4To8Weeks')}
           icon={
             <div className="flex items-center gap-0.5">
               <Sparkles className="w-5 h-5 text-white" />

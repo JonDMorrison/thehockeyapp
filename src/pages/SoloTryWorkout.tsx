@@ -1,16 +1,18 @@
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { 
-  Gift, Calendar, Dumbbell, CheckCircle2, ArrowRight, 
-  Clock, Target, AlertCircle 
+import {
+  Gift, Calendar, Dumbbell, CheckCircle2, ArrowRight,
+  Clock, Target, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export default function SoloTryWorkout() {
+  const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
@@ -87,13 +89,13 @@ export default function SoloTryWorkout() {
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
           <h1 className="text-xl font-bold text-foreground mb-2">
-            Invite Not Found
+            {t('solo.inviteNotFound')}
           </h1>
           <p className="text-muted-foreground mb-6">
-            This invite link doesn't exist or may have been removed.
+            {t('solo.inviteNotFoundDesc')}
           </p>
           <Button onClick={() => navigate('/')} variant="outline">
-            Go to Homepage
+            {t('solo.goToHomepage')}
           </Button>
         </div>
       </div>
@@ -108,23 +110,23 @@ export default function SoloTryWorkout() {
             <Clock className="h-8 w-8 text-muted-foreground" />
           </div>
           <h1 className="text-xl font-bold text-foreground mb-2">
-            {isRedeemed ? "Already Used" : "Link Expired"}
+            {isRedeemed ? t('solo.alreadyUsed') : t('solo.linkExpired')}
           </h1>
           <p className="text-muted-foreground mb-6">
-            {isRedeemed 
-              ? "This invite has already been used." 
-              : "This invite link has expired."
+            {isRedeemed
+              ? t('solo.alreadyUsedDesc')
+              : t('solo.linkExpiredDesc')
             }
           </p>
           <Button onClick={() => navigate('/')} variant="outline">
-            Go to Homepage
+            {t('solo.goToHomepage')}
           </Button>
         </div>
       </div>
     );
   }
 
-  const referrerName = invite.referrer?.first_name || "A friend";
+  const referrerName = invite.referrer?.first_name || t('solo.aFriend');
   const isWorkout = invite.share_type === 'workout';
   const workout = invite.workout;
   const plan = invite.plan;
@@ -137,14 +139,14 @@ export default function SoloTryWorkout() {
           {/* Gift Badge */}
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
             <Gift className="h-4 w-4" />
-            <span className="text-sm font-medium">7 Days Free</span>
+            <span className="text-sm font-medium">{t('solo.sevenDaysFree')}</span>
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {referrerName} invited you!
+            {t('solo.referrerInvitedYou', { name: referrerName })}
           </h1>
           <p className="text-muted-foreground">
-            Try this {isWorkout ? "workout" : "training program"} free for 7 days
+            {t('solo.tryFreeForSevenDays', { type: isWorkout ? t('solo.workout') : t('solo.trainingProgram') })}
           </p>
         </div>
       </div>
@@ -161,10 +163,10 @@ export default function SoloTryWorkout() {
                   </div>
                   <div>
                     <h2 className="font-bold text-foreground">
-                      {workout.title || "Training Workout"}
+                      {workout.title || t('solo.trainingWorkout')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {workout.tasks?.length || 0} tasks
+                      {t('solo.nTasks', { n: workout.tasks?.length || 0 })}
                     </p>
                   </div>
                 </div>
@@ -173,7 +175,7 @@ export default function SoloTryWorkout() {
                 {workout.tasks && workout.tasks.length > 0 && (
                   <div className="space-y-2 mb-4">
                     {workout.tasks.slice(0, 3).map((task: { id: string; label: string; task_type: string }) => (
-                      <div 
+                      <div
                         key={task.id}
                         className="flex items-center gap-2 text-sm text-muted-foreground"
                       >
@@ -183,7 +185,7 @@ export default function SoloTryWorkout() {
                     ))}
                     {workout.tasks.length > 3 && (
                       <p className="text-xs text-muted-foreground pl-6">
-                        +{workout.tasks.length - 3} more tasks
+                        {t('solo.nMoreTasks', { n: workout.tasks.length - 3 })}
                       </p>
                     )}
                   </div>
@@ -197,10 +199,10 @@ export default function SoloTryWorkout() {
                   </div>
                   <div>
                     <h2 className="font-bold text-foreground">
-                      {plan.name || "Training Program"}
+                      {plan.name || t('solo.trainingProgram')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {plan.days_per_week} days per week
+                      {t('solo.nDaysPerWeek', { n: plan.days_per_week })}
                     </p>
                   </div>
                 </div>
@@ -209,7 +211,7 @@ export default function SoloTryWorkout() {
                 {plan.training_focus && plan.training_focus.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {plan.training_focus.map((focus: string) => (
-                      <span 
+                      <span
                         key={focus}
                         className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium"
                       >
@@ -225,20 +227,20 @@ export default function SoloTryWorkout() {
             {/* What You Get */}
             <div className="border-t border-border pt-4 mt-4">
               <p className="text-sm font-medium text-foreground mb-3">
-                What you'll get:
+                {t('solo.whatYoullGet')}
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
-                  Full access for 7 days
+                  {t('solo.fullAccessForSevenDays')}
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
-                  Track your workouts
+                  {t('solo.trackYourWorkouts')}
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
-                  Earn badges as you train
+                  {t('solo.earnBadgesAsYouTrain')}
                 </li>
               </ul>
             </div>
@@ -251,13 +253,13 @@ export default function SoloTryWorkout() {
               size="lg"
               className="w-full"
             >
-              Get Started Free
+              {t('solo.getStartedFree')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Already have an account?{" "}
+              {t('solo.alreadyHaveAccount')}{" "}
               <Link to="/auth" className="text-primary font-medium">
-                Sign in
+                {t('solo.signIn')}
               </Link>
             </p>
           </div>
@@ -268,7 +270,7 @@ export default function SoloTryWorkout() {
       <div className="px-6 py-12 mt-8">
         <div className="max-w-md mx-auto text-center">
           <p className="text-xs text-muted-foreground">
-            No credit card required. Free during the beta.
+            {t('solo.noCreditCardRequired')}
           </p>
         </div>
       </div>

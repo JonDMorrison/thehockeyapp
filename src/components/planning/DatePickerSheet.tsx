@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
@@ -30,6 +31,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
   showGoalPrompt = true,
   onOpenGoalCreator,
 }) => {
+  const { t } = useTranslation();
   const today = startOfToday();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
   const [showGoal, setShowGoal] = useState(false);
@@ -65,9 +67,9 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
 
   // Quick date options
   const quickDates = [
-    { label: "Today", date: today },
-    { label: "Tomorrow", date: addDays(today, 1) },
-    { label: "Day After", date: addDays(today, 2) },
+    { label: t('common.today'), date: today },
+    { label: t('common.tomorrow'), date: addDays(today, 1) },
+    { label: t('practice.dayAfter'), date: addDays(today, 2) },
   ];
 
   // Check if a date has an existing workout
@@ -87,19 +89,19 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
             {showGoal ? (
               <>
                 <Trophy className="w-5 h-5 text-amber-500" />
-                Add a Team Goal?
+                {t('practice.addATeamGoal')}
               </>
             ) : (
               <>
                 <CalendarPlus className="w-5 h-5 text-emerald-500" />
-                Pick a Date
+                {t('practice.pickADate')}
               </>
             )}
           </SheetTitle>
           <SheetDescription>
             {showGoal
-              ? "Motivate players with a reward to work towards"
-              : "Select a date to add or edit a workout"
+              ? t('practice.motivatePlayersWithReward')
+              : t('practice.selectDateToAddOrEdit')
             }
           </SheetDescription>
         </SheetHeader>
@@ -154,7 +156,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                   <div className="text-center text-sm text-muted-foreground">
                     {format(selectedDate, "EEEE, MMMM d, yyyy")}
                     {hasWorkout(selectedDate) && (
-                      <span className="text-amber-600 ml-2">(has workout)</span>
+                      <span className="text-amber-600 ml-2">{t('practice.hasWorkout')}</span>
                     )}
                   </div>
                 )}
@@ -166,7 +168,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                   onClick={handleConfirm}
                   disabled={!selectedDate}
                 >
-                  Continue
+                  {t('common.continue')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
@@ -181,7 +183,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                   onSetGoal={handleSetGoal}
                   onDismiss={handleSkipGoal}
                 />
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -189,7 +191,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                   onClick={() => setShowGoal(false)}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to calendar
+                  {t('practice.backToCalendar')}
                 </Button>
               </motion.div>
             )}

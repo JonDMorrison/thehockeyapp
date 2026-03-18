@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -68,13 +69,8 @@ interface ConflictInfo {
   hasGameDay: boolean;
 }
 
-const tierOptions = [
-  { value: "rec", label: "Rec" },
-  { value: "rep", label: "Rep" },
-  { value: "elite", label: "Elite" },
-];
-
 const WeekPlanEditor: React.FC = () => {
+  const { t } = useTranslation();
   const { id: teamId, planId } = useParams<{ id: string; planId?: string }>();
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -82,6 +78,12 @@ const WeekPlanEditor: React.FC = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
+
+  const tierOptions = [
+    { value: "rec", label: t('practice.tierRec') },
+    { value: "rep", label: t('practice.tierRep') },
+    { value: "elite", label: t('practice.tierElite') },
+  ];
 
   const isEditing = !!planId && planId !== "new";
   const templateId = searchParams.get("template");
@@ -98,6 +100,8 @@ const WeekPlanEditor: React.FC = () => {
   const [status, setStatus] = useState("draft");
 
   // Editor state
+  const [isDirty, setIsDirty] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [editingDay, setEditingDay] = useState<DayData | null>(null);
   const [editingDayLabel, setEditingDayLabel] = useState("");
   const [showPublishDialog, setShowPublishDialog] = useState(false);
@@ -199,7 +203,7 @@ const WeekPlanEditor: React.FC = () => {
     if (!isEditing && !existingPlan) {
       const start = parseISO(startDate);
       const newDays: PlanDay[] = [];
-      
+
       for (let i = 0; i < 7; i++) {
         const date = format(addDays(start, i), "yyyy-MM-dd");
         newDays.push({
@@ -209,7 +213,7 @@ const WeekPlanEditor: React.FC = () => {
           tasks: [],
         });
       }
-      
+
       setDays(newDays);
     }
   }, [startDate, isEditing, existingPlan]);
@@ -222,15 +226,15 @@ const WeekPlanEditor: React.FC = () => {
       setTier(existingPlan.plan.tier);
       setUseTierScaling(existingPlan.plan.use_tier_scaling);
       setStatus(existingPlan.plan.status);
-      
+
       // Ensure we have all 7 days
       const start = parseISO(existingPlan.plan.start_date);
       const fullDays: PlanDay[] = [];
-      
+
       for (let i = 0; i < 7; i++) {
         const date = format(addDays(start, i), "yyyy-MM-dd");
         const existingDay = existingPlan.days.find((d) => d.date === date);
-        
+
         fullDays.push(
           existingDay || {
             date,
@@ -240,7 +244,7 @@ const WeekPlanEditor: React.FC = () => {
           }
         );
       }
-      
+
       setDays(fullDays);
     }
   }, [existingPlan]);
@@ -250,15 +254,15 @@ const WeekPlanEditor: React.FC = () => {
     if (template && !isEditing) {
       setName(template.template.name);
       setTier(template.template.tier);
-      
+
       const start = parseISO(startDate);
       const newDays: PlanDay[] = [];
-      
+
       for (let i = 0; i < 7; i++) {
         const date = format(addDays(start, i), "yyyy-MM-dd");
         const dayOfWeek = (i + 1) % 7; // Monday = 1, Sunday = 0
         const templateDay = template.days.find((d: { day_of_week: number }) => d.day_of_week === dayOfWeek);
-        
+
         newDays.push({
           date,
           title: templateDay?.title || "",
@@ -275,7 +279,7 @@ const WeekPlanEditor: React.FC = () => {
           })) || [],
         });
       }
-      
+
       setDays(newDays);
     }
   }, [template, startDate, isEditing]);
@@ -286,7 +290,7 @@ const WeekPlanEditor: React.FC = () => {
       if (aiDraft.name) setName(aiDraft.name);
       if (aiDraft.tier) setTier(aiDraft.tier);
       if (aiDraft.start_date) setStartDate(aiDraft.start_date);
-      
+
       if (aiDraft.days && Array.isArray(aiDraft.days)) {
         const newDays: PlanDay[] = aiDraft.days.map((d: AIGeneratedDay) => ({
           date: d.date,
@@ -402,19 +406,20 @@ const WeekPlanEditor: React.FC = () => {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-week-plan", result.weekPlanId] });
-      toast.success("Saved", "Week plan saved as draft.");
+      toast.success(t('common.saved'), t('practice.weekPlanSavedAsDraft'));
+      setIsDirty(false);
       // Navigate back to dashboard after saving
       navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
-      toast.error("Failed to save", error.message);
+      toast.error(t('practice.failedToSave'), error.message);
     },
   });
 
   // Check for conflicts before publishing
   const checkConflicts = async () => {
     const conflictList: ConflictInfo[] = [];
-    
+
     for (const day of days) {
       if (day.tasks.length === 0) continue;
 
@@ -545,14 +550,14 @@ const WeekPlanEditor: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
-      toast.success("Published!", "Practice cards created for the week.");
+      toast.success(t('practice.published'), t('practice.practiceCardsCreated'));
       setShowPublishDialog(false);
       setStatus("published");
       // Navigate back to dashboard after publishing
       navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
-      toast.error("Failed to publish", error.message);
+      toast.error(t('practice.failedToPublish'), error.message);
     },
   });
 
@@ -566,6 +571,7 @@ const WeekPlanEditor: React.FC = () => {
     setDays((prev) =>
       prev.map((d) => (d.date === updatedDay.date ? updatedDay : d))
     );
+    setIsDirty(true);
     setEditingDay(null);
   };
 
@@ -603,13 +609,13 @@ const WeekPlanEditor: React.FC = () => {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => navigate(`/teams/${teamId}/builder`)}
+              onClick={() => isDirty ? setShowLeaveDialog(true) : navigate(`/teams/${teamId}/builder`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="min-w-0">
               <h1 className="text-lg font-bold truncate">
-                {isEditing ? "Edit Plan" : "New Week Plan"}
+                {isEditing ? t('practice.editPlan') : t('practice.newWeekPlan')}
               </h1>
               <p className="text-xs text-text-muted">{team?.name}</p>
             </div>
@@ -622,7 +628,7 @@ const WeekPlanEditor: React.FC = () => {
               disabled={saveMutation.isPending || !name}
             >
               <Save className="w-4 h-4 mr-1" />
-              Save
+              {t('common.save')}
             </Button>
             <Button
               size="sm"
@@ -630,7 +636,7 @@ const WeekPlanEditor: React.FC = () => {
               disabled={saveMutation.isPending || publishMutation.isPending || !name || daysWithTasks === 0}
             >
               <Send className="w-4 h-4 mr-1" />
-              Publish
+              {t('practice.publish')}
             </Button>
           </div>
         </div>
@@ -642,37 +648,36 @@ const WeekPlanEditor: React.FC = () => {
           <AppCard variant="muted" className="border-success/30 bg-success/5">
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="w-4 h-4 text-success" />
-              <span className="text-success font-medium">Published</span>
-              <span className="text-text-muted">— Parents can see the workouts</span>
+              <span className="text-success font-medium">{t('practice.publishedStatus')}</span>
+              <span className="text-text-muted">— {t('practice.parentsCanSee')}</span>
             </div>
           </AppCard>
         )}
 
         {/* Basics */}
         <AppCard>
-          <AppCardTitle className="text-base mb-4">Plan Settings</AppCardTitle>
+          <AppCardTitle className="text-base mb-4">{t('practice.planSettings')}</AppCardTitle>
 
           <div className="space-y-4">
             <div>
-              <Label>Plan Name</Label>
+              <Label>{t('practice.planName')}</Label>
               <Input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Week 1 - Shooting Focus"
+                onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
+                placeholder={t('practice.planNamePlaceholder')}
                 className="mt-1.5"
               />
             </div>
 
             {!isEditing && (
               <div>
-                <Label>Week Starting</Label>
+                <Label>{t('practice.weekStarting')}</Label>
                 <div className="mt-1.5 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-text-muted" />
-                  <input
+                  <Input
                     type="date"
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onChange={(e) => { setStartDate(e.target.value); setIsDirty(true); }}
                   />
                 </div>
               </div>
@@ -680,8 +685,8 @@ const WeekPlanEditor: React.FC = () => {
 
             <div className="flex gap-4">
               <div className="flex-1">
-                <Label>Tier</Label>
-                <Select value={tier} onValueChange={setTier}>
+                <Label>{t('practice.tier')}</Label>
+                <Select value={tier} onValueChange={(v) => { setTier(v); setIsDirty(true); }}>
                   <SelectTrigger className="mt-1.5">
                     <SelectValue />
                   </SelectTrigger>
@@ -699,9 +704,9 @@ const WeekPlanEditor: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={useTierScaling}
-                    onCheckedChange={setUseTierScaling}
+                    onCheckedChange={(v) => { setUseTierScaling(v); setIsDirty(true); }}
                   />
-                  <span className="text-sm">Scale targets</span>
+                  <span className="text-sm">{t('practice.scaleTargets')}</span>
                 </div>
               </div>
             </div>
@@ -711,7 +716,7 @@ const WeekPlanEditor: React.FC = () => {
         {/* Week Grid */}
         <div>
           <h2 className="text-sm font-semibold text-text-secondary mb-3">
-            Week Schedule
+            {t('practice.weekSchedule')}
           </h2>
 
           <div className="grid grid-cols-1 gap-2">
@@ -737,8 +742,8 @@ const WeekPlanEditor: React.FC = () => {
                       </p>
                       <p className="text-sm text-text-muted">
                         {taskCount === 0
-                          ? "No tasks"
-                          : `${taskCount} task${taskCount !== 1 ? "s" : ""}`}
+                          ? t('practice.noTasks')
+                          : t('practice.nTasks', { n: taskCount })}
                       </p>
                     </div>
                     {taskCount > 0 && (
@@ -770,12 +775,11 @@ const WeekPlanEditor: React.FC = () => {
       <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Publish Week Plan?</AlertDialogTitle>
+            <AlertDialogTitle>{t('practice.publishWeekPlanTitle')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
                 <p>
-                  This will create practice cards for {daysWithTasks} day
-                  {daysWithTasks !== 1 ? "s" : ""} that parents can see.
+                  {t('practice.publishWeekPlanDesc', { count: daysWithTasks })}
                 </p>
 
                 {conflicts.length > 0 && (
@@ -784,7 +788,7 @@ const WeekPlanEditor: React.FC = () => {
                       <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
                       <div className="text-sm">
                         <p className="font-medium text-warning">
-                          {conflicts.length} date{conflicts.length !== 1 ? "s" : ""} have existing content:
+                          {t('practice.conflictsWarning', { count: conflicts.length })}
                         </p>
                         <ul className="mt-1 space-y-1 text-text-muted">
                           {conflicts.map((c) => (
@@ -792,11 +796,11 @@ const WeekPlanEditor: React.FC = () => {
                               {format(parseISO(c.date), "MMM d")}
                               {c.hasGameDay && (
                                 <span className="ml-1 text-warning">
-                                  <Zap className="w-3 h-3 inline" /> Game Day
+                                  <Zap className="w-3 h-3 inline" /> {t('practice.gameDay')}
                                 </span>
                               )}
                               {c.hasPublishedCard && !c.hasGameDay && (
-                                <span className="ml-1"> — will be replaced</span>
+                                <span className="ml-1"> — {t('practice.willBeReplaced')}</span>
                               )}
                             </li>
                           ))}
@@ -809,12 +813,30 @@ const WeekPlanEditor: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => publishMutation.mutate()}
               disabled={publishMutation.isPending}
             >
-              {publishMutation.isPending ? "Publishing..." : "Publish"}
+              {publishMutation.isPending ? t('practice.publishing') : t('practice.publish')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Leave without saving confirmation */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('practice.unsavedChangesTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('practice.unsavedChangesDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate(`/teams/${teamId}/builder`)}>
+              {t('practice.discardChanges')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

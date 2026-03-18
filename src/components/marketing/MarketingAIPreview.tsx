@@ -1,37 +1,40 @@
 import React from "react";
-import { 
-  Brain, 
-  CheckCircle, 
-  Loader2, 
-  Target, 
-  Dumbbell, 
-  Heart, 
+import {
+  Brain,
+  CheckCircle,
+  Loader2,
+  Target,
+  Dumbbell,
+  Heart,
   Sparkles,
   Calendar,
   Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const generatingSteps = [
-  { text: "Analyzing team preferences...", done: true },
-  { text: "Building week 1...", done: true },
-  { text: "Optimizing training load...", done: true },
-  { text: "Adding variety...", active: true },
-  { text: "Finalizing program...", done: false },
-];
-
-const previewTasks = [
-  { label: "Stickhandling warmup", type: "prep", time: "5 min" },
-  { label: "Wrist shots - targets", type: "shooting", time: "25 reps" },
-  { label: "Quick release drill", type: "shooting", time: "15 reps" },
-];
+import { useTranslation } from 'react-i18next';
 
 export const MarketingAIPreview: React.FC = () => {
+  const { t } = useTranslation();
+
+  const generatingSteps = [
+    { text: t('marketing.ai_preview_analyzing'), done: true },
+    { text: t('marketing.ai_preview_building_week1'), done: true },
+    { text: t('marketing.ai_preview_optimizing'), done: true },
+    { text: t('marketing.ai_preview_adding_variety'), active: true },
+    { text: t('marketing.ai_preview_finalizing'), done: false },
+  ];
+
+  const previewTasks = [
+    { label: t('marketing.ai_preview_stickhandling_warmup'), type: "prep", time: "5 min" },
+    { label: t('marketing.ai_preview_wrist_shots'), type: "shooting", time: "25 reps" },
+    { label: t('marketing.ai_preview_quick_release'), type: "shooting", time: "15 reps" },
+  ];
+
   return (
     <div className="h-full w-full bg-background text-foreground overflow-hidden">
       {/* Safe area padding for phone notch */}
       <div className="h-6 bg-background" />
-      
+
       {/* Scrollable content */}
       <div className="h-[calc(100%-1.5rem)] overflow-y-auto">
       {/* Header */}
@@ -39,11 +42,11 @@ export const MarketingAIPreview: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-purple-500" />
-            <h1 className="text-base font-bold text-foreground">Offline Program Builder</h1>
+            <h1 className="text-base font-bold text-foreground">{t('marketing.ai_preview_offline_program_builder')}</h1>
           </div>
           <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-600 px-2 py-1 rounded-full">
             <Brain className="w-3 h-3" />
-            <span className="text-[10px] font-semibold">Generating</span>
+            <span className="text-[10px] font-semibold">{t('marketing.ai_preview_generating')}</span>
           </div>
         </div>
       </div>
@@ -52,7 +55,7 @@ export const MarketingAIPreview: React.FC = () => {
       <div className="px-4 py-4 space-y-5">
         {/* Program Config Summary */}
         <div className="bg-muted/30 rounded-xl p-3 space-y-2">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Program Settings</p>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t('marketing.ai_preview_program_settings')}</p>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2 text-xs">
               <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
@@ -64,7 +67,7 @@ export const MarketingAIPreview: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 text-xs">
               <Target className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Shooting focus</span>
+              <span>{t('marketing.ai_preview_shooting_focus')}</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
               <Dumbbell className="w-3.5 h-3.5 text-muted-foreground" />
@@ -119,17 +122,17 @@ export const MarketingAIPreview: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Live Preview — Day 1</p>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t('marketing.ai_preview_live_preview')}</p>
           </div>
-          
+
           <div className="bg-card rounded-xl border border-border p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Monday — Shooting Focus</p>
+              <p className="text-sm font-semibold">{t('marketing.ai_preview_monday_shooting')}</p>
               <span className="text-[10px] font-medium text-purple-600 bg-purple-500/10 px-2 py-0.5 rounded-full">
                 REP
               </span>
             </div>
-            
+
             <div className="space-y-1.5">
               {previewTasks.map((task, i) => (
                 <div
@@ -150,12 +153,12 @@ export const MarketingAIPreview: React.FC = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="flex items-center justify-center gap-1 pt-1">
               <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
               <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
               <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
-              <span className="text-[9px] text-muted-foreground ml-1">+2 more tasks</span>
+              <span className="text-[9px] text-muted-foreground ml-1">{t('marketing.ai_preview_more_tasks')}</span>
             </div>
           </div>
         </div>
@@ -164,17 +167,17 @@ export const MarketingAIPreview: React.FC = () => {
         <div className="flex items-center justify-around bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-xl p-3">
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">20</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Days</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.ai_preview_days')}</p>
           </div>
           <div className="w-px h-8 bg-border" />
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">85</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Tasks</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.ai_preview_tasks')}</p>
           </div>
           <div className="w-px h-8 bg-border" />
           <div className="text-center">
             <p className="text-lg font-bold text-purple-500">✨</p>
-            <p className="text-[9px] text-muted-foreground uppercase">AI Built</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.ai_preview_ai_built')}</p>
           </div>
         </div>
       </div>

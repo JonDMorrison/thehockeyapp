@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { teamPalettes } from "@/lib/themes";
@@ -26,6 +27,7 @@ interface ActiveTeam {
 }
 
 const Players: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -72,7 +74,7 @@ const Players: React.FC = () => {
       const activeTeamIds = preferencesData
         ?.filter((p) => p.active_team_id)
         .map((p) => p.active_team_id) || [];
-      
+
       let teamsData: ActiveTeam[] = [];
       if (activeTeamIds.length > 0) {
         const { data } = await supabase
@@ -122,8 +124,8 @@ const Players: React.FC = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <PageHeader
-            title="Players"
-            subtitle="Manage your player profiles"
+            title={t("players.list.title")}
+            subtitle={t("players.list.subtitle")}
           />
           <div className="flex items-center gap-2">
             <ContextSwitcher />
@@ -133,7 +135,7 @@ const Players: React.FC = () => {
               onClick={() => navigate("/players/new")}
             >
               <Plus className="w-4 h-4" />
-              Add
+              {t("players.list.addButton")}
             </Button>
           </div>
         </div>
@@ -188,7 +190,7 @@ const Players: React.FC = () => {
                             </Tag>
                           ) : (
                             <Tag variant="neutral" size="sm">
-                              Born {player.birth_year}
+                              {t("teams.addChild.bornYear", { year: player.birth_year })}
                             </Tag>
                           )}
                           {player.jersey_number && (
@@ -198,7 +200,7 @@ const Players: React.FC = () => {
                           )}
                           {!isOwner && (
                             <Tag variant="neutral" size="sm">
-                              Guardian
+                              {t("players.list.guardianTag")}
                             </Tag>
                           )}
                         </div>
@@ -213,10 +215,10 @@ const Players: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={UserPlus}
-                title="No players yet"
-                description="Add your first player to start tracking their training and development."
+                title={t("players.list.emptyTitle")}
+                description={t("players.list.emptyDescription")}
                 action={{
-                  label: "Add Player",
+                  label: t("players.list.emptyAction"),
                   onClick: () => navigate("/players/new"),
                 }}
               />

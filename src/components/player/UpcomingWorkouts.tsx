@@ -5,15 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronRight, 
-  Dumbbell, 
-  Calendar, 
+import {
+  ChevronRight,
+  Dumbbell,
+  Calendar,
   CheckCircle,
   Trophy,
-  Clock 
 } from "lucide-react";
 import { format, parseISO, isToday, isTomorrow, isThisWeek } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface UpcomingWorkoutsProps {
   playerId: string;
@@ -37,6 +37,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
   playerId,
   compact = false,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { data: workouts, isLoading } = useQuery({
@@ -120,9 +121,9 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
 
   const formatWorkoutDate = (dateStr: string) => {
     const date = parseISO(dateStr);
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
-    if (isThisWeek(date)) return format(date, "EEEE"); // Day name
+    if (isToday(date)) return t("common.today");
+    if (isTomorrow(date)) return t("common.tomorrow");
+    if (isThisWeek(date)) return format(date, "EEEE");
     return format(date, "MMM d");
   };
 
@@ -134,7 +135,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
   if (isLoading) {
     return (
       <AppCard>
-        <AppCardTitle>Your Workouts</AppCardTitle>
+        <AppCardTitle>{t("players.upcomingWorkouts.title")}</AppCardTitle>
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((i) => (
             <div
@@ -150,12 +151,12 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
   if (!workouts || workouts.length === 0) {
     return (
       <AppCard>
-        <AppCardTitle>Your Workouts</AppCardTitle>
+        <AppCardTitle>{t("players.upcomingWorkouts.title")}</AppCardTitle>
         <div className="mt-4 flex flex-col items-center justify-center py-6 text-center">
           <Calendar className="w-10 h-10 text-text-muted mb-2" />
-          <p className="text-text-muted text-sm">No upcoming workouts scheduled</p>
+          <p className="text-text-muted text-sm">{t("players.upcomingWorkouts.noUpcoming")}</p>
           <p className="text-text-muted text-xs mt-1">
-            Your coach will add workouts soon!
+            {t("players.upcomingWorkouts.coachWillAdd")}
           </p>
         </div>
       </AppCard>
@@ -175,9 +176,9 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
   return (
     <AppCard>
       <div className="flex items-center justify-between">
-        <AppCardTitle>Your Workouts</AppCardTitle>
+        <AppCardTitle>{t("players.upcomingWorkouts.title")}</AppCardTitle>
         {!compact && workouts.length > 0 && (
-          <Tag variant="neutral">{workouts.length} upcoming</Tag>
+          <Tag variant="neutral">{t("players.upcomingWorkouts.nUpcoming", { n: workouts.length })}</Tag>
         )}
       </div>
       <div className="mt-4 space-y-4">
@@ -189,13 +190,15 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
             <div className="space-y-2">
                   {dayWorkouts.map((workout) => {
                     const Icon = getModeIcon(workout.mode);
-                    
+                    const isWorkoutToday = isToday(parseISO(workout.date));
+
                     return (
                       <Button
                     key={workout.id}
                     variant="ghost"
                     className="w-full justify-start h-auto p-3 hover:bg-surface-muted"
-                    onClick={() => navigate(`/players/${playerId}/today`)}
+                    onClick={isWorkoutToday ? () => navigate(`/players/${playerId}/today`) : undefined}
+                    disabled={!isWorkoutToday}
                   >
                     <div className="flex items-center gap-3 w-full">
                       <div
@@ -213,7 +216,9 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                       </div>
                       <div className="flex-1 text-left min-w-0">
                         <p className="font-medium text-sm truncate">
-                          {workout.title || (workout.mode === "challenge" ? "Challenge Workout" : "Daily Workout")}
+                          {workout.title || (workout.mode === "challenge"
+                            ? t("players.upcomingWorkouts.challengeWorkout")
+                            : t("players.upcomingWorkouts.dailyWorkout"))}
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-text-muted">
@@ -223,7 +228,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                             <>
                               <span className="text-text-muted">•</span>
                               <span className="text-xs text-text-muted">
-                                {workout.task_count} tasks
+                                {t("players.upcomingWorkouts.nTasks", { n: workout.task_count })}
                               </span>
                             </>
                           )}
@@ -231,7 +236,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                             <>
                               <span className="text-text-muted">•</span>
                               <Tag variant="tier" className="text-[10px] py-0 px-1.5">
-                                Challenge
+                                {t("players.upcomingWorkouts.challenge")}
                               </Tag>
                             </>
                           )}
@@ -239,7 +244,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                       </div>
                       {workout.is_complete ? (
                         <Tag variant="success" className="text-xs">
-                          Done
+                          {t("common.done")}
                         </Tag>
                       ) : (
                         <ChevronRight className="w-4 h-4 text-text-muted flex-shrink-0" />

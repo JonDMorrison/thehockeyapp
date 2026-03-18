@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { format, differenceInDays, isAfter, isBefore, startOfDay } from "date-fns";
+import { format, differenceInDays, isAfter, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard } from "@/components/app/AppCard";
 import { SkeletonProgramCard } from "@/components/app/Skeleton";

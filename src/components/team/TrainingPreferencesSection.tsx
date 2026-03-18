@@ -1,5 +1,6 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
@@ -27,30 +28,31 @@ interface TrainingPreferences {
   use_ai_assist: boolean;
 }
 
-const MODE_OPTIONS: { mode: TrainingMode; icon: React.ReactNode; label: string }[] = [
-  { mode: "shooting_only", icon: <Target className="h-4 w-4" />, label: "Shooting Only" },
-  { mode: "balanced", icon: <Scale className="h-4 w-4" />, label: "Balanced" },
-  { mode: "performance", icon: <Rocket className="h-4 w-4" />, label: "Performance" },
-];
-
-const TIER_OPTIONS: { tier: TeamTier; label: string }[] = [
-  { tier: "rec", label: "Rec" },
-  { tier: "rep", label: "Rep" },
-  { tier: "elite", label: "Elite" },
-];
-
-const TASK_TYPE_LABELS: Record<TaskType, string> = {
-  shooting: "Shooting",
-  mobility: "Mobility",
-  conditioning: "Conditioning",
-  recovery: "Recovery",
-  prep: "Game Prep",
-};
-
 export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProps> = ({
   teamId,
 }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  const MODE_OPTIONS: { mode: TrainingMode; icon: React.ReactNode; label: string }[] = [
+    { mode: "shooting_only", icon: <Target className="h-4 w-4" />, label: t("teams.trainingPrefs.modeShootingOnly") },
+    { mode: "balanced", icon: <Scale className="h-4 w-4" />, label: t("teams.trainingPrefs.modeBalanced") },
+    { mode: "performance", icon: <Rocket className="h-4 w-4" />, label: t("teams.trainingPrefs.modePerformance") },
+  ];
+
+  const TIER_OPTIONS: { tier: TeamTier; label: string }[] = [
+    { tier: "rec", label: t("teams.practice.tierRec") },
+    { tier: "rep", label: t("teams.practice.tierRep") },
+    { tier: "elite", label: t("teams.practice.tierElite") },
+  ];
+
+  const TASK_TYPE_LABELS: Record<TaskType, string> = {
+    shooting: t("teams.trainingPrefs.taskShooting"),
+    mobility: t("teams.trainingPrefs.taskMobility"),
+    conditioning: t("teams.trainingPrefs.taskConditioning"),
+    recovery: t("teams.trainingPrefs.taskRecovery"),
+    prep: t("teams.trainingPrefs.taskGamePrep"),
+  };
 
   const { data: preferences, isLoading } = useQuery({
     queryKey: ["team-preferences", teamId],
@@ -80,10 +82,10 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-preferences", teamId] });
-      toast.success("Preferences updated");
+      toast.success(t("teams.trainingPrefs.toastUpdated"));
     },
     onError: () => {
-      toast.error("Failed to update preferences");
+      toast.error(t("teams.trainingPrefs.toastFailed"));
     },
   });
 
@@ -107,16 +109,16 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
     <AppCard>
       <div className="flex items-center gap-2 mb-4">
         <Settings2 className="h-5 w-5 text-team-primary" />
-        <AppCardTitle className="text-lg">Training Preferences</AppCardTitle>
+        <AppCardTitle className="text-lg">{t("teams.trainingPrefs.title")}</AppCardTitle>
       </div>
       <AppCardDescription className="mb-4">
-        These settings control how workouts are generated and what exercises are included.
+        {t("teams.trainingPrefs.description")}
       </AppCardDescription>
 
       <div className="space-y-6">
         {/* Training Mode */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Training Mode</Label>
+          <Label className="text-sm font-medium">{t("teams.trainingPrefs.modeLabel")}</Label>
           <div className="grid grid-cols-3 gap-2">
             {MODE_OPTIONS.map((option) => (
               <button
@@ -145,7 +147,7 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
 
         {/* Default Tier */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Default Tier</Label>
+          <Label className="text-sm font-medium">{t("teams.trainingPrefs.tierLabel")}</Label>
           <div className="flex gap-2">
             {TIER_OPTIONS.map((option) => (
               <button
@@ -168,7 +170,7 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
 
         {/* Allowed Task Types */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Allowed Exercise Types</Label>
+          <Label className="text-sm font-medium">{t("teams.trainingPrefs.taskTypesLabel")}</Label>
           <div className="flex flex-wrap gap-2">
             {(Object.entries(TASK_TYPE_LABELS) as [TaskType, string][]).map(([type, label]) => {
               const isSelected = currentTaskTypes.includes(type);
@@ -210,12 +212,12 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
           <div className="space-y-0.5">
             <Label className="font-medium flex items-center gap-2">
               {useAiAssist ? <Bot className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
-              AI Workout Generation
+              {t("teams.trainingPrefs.aiLabel")}
             </Label>
             <p className="text-xs text-muted-foreground">
               {useAiAssist
-                ? "AI will help generate workout drafts"
-                : "You'll build workouts manually"}
+                ? t("teams.trainingPrefs.aiDescriptionEnabled")
+                : t("teams.trainingPrefs.aiDescriptionDisabled")}
             </p>
           </div>
           <Switch

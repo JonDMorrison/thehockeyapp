@@ -1,5 +1,6 @@
 import React from "react";
 import { Flame, Target, Trophy, TrendingUp } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const weekDays = [
   { day: "M", level: 3 },
@@ -12,6 +13,7 @@ const weekDays = [
 ];
 
 export const FeaturePlayerProgress: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
@@ -19,7 +21,7 @@ export const FeaturePlayerProgress: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              Player Profile
+              {t('marketing.player_progress_player_profile')}
             </p>
             <h1 className="text-base font-bold text-foreground">Alex M.</h1>
           </div>
@@ -35,24 +37,24 @@ export const FeaturePlayerProgress: React.FC = () => {
           <div className="bg-primary/10 rounded-xl p-3 text-center">
             <Flame className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">7</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Streak</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_streak')}</p>
           </div>
           <div className="bg-emerald-500/10 rounded-xl p-3 text-center">
             <Target className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">142</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Shots</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_shots')}</p>
           </div>
           <div className="bg-amber-500/10 rounded-xl p-3 text-center">
             <Trophy className="w-4 h-4 text-amber-600 mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">5</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Badges</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_badges')}</p>
           </div>
         </div>
 
         {/* Weekly activity */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            This Week
+            {t('marketing.player_progress_this_week')}
           </p>
           <div className="flex items-end justify-between gap-2 h-24 px-2">
             {weekDays.map((d, i) => (
@@ -78,8 +80,8 @@ export const FeaturePlayerProgress: React.FC = () => {
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 flex items-center gap-3">
           <TrendingUp className="w-5 h-5 text-primary" />
           <div>
-            <p className="text-xs font-medium">Level: Competitive</p>
-            <p className="text-[10px] text-muted-foreground">Training 5x per week avg</p>
+            <p className="text-xs font-medium">{t('marketing.player_progress_competitive')}</p>
+            <p className="text-[10px] text-muted-foreground">{t('marketing.player_progress_training_avg')}</p>
           </div>
         </div>
       </div>

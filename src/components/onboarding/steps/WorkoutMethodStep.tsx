@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Bot, Pencil } from "lucide-react";
 
@@ -6,29 +7,30 @@ interface WorkoutMethodStepProps {
   onChange: (useAi: boolean) => void;
 }
 
-const OPTIONS = [
+const OPTIONS: { useAi: boolean; icon: React.ReactNode; titleKey: string; descriptionKey: string; tagKey?: string }[] = [
   {
     useAi: true,
     icon: <Bot className="h-8 w-8" />,
-    title: "Help me build them with AI",
-    description: "Generates drafts based on your preferences. You review and publish.",
-    tag: "Recommended",
+    titleKey: "welcome.workoutMethod.aiTitle",
+    descriptionKey: "welcome.workoutMethod.aiDescription",
+    tagKey: "welcome.trainingMode.recommendedTag",
   },
   {
     useAi: false,
     icon: <Pencil className="h-8 w-8" />,
-    title: "I'll build them myself",
-    description: "Use the manual workout builder only.",
+    titleKey: "welcome.workoutMethod.manualTitle",
+    descriptionKey: "welcome.workoutMethod.manualDescription",
   },
 ];
 
 export function WorkoutMethodStep({ value, onChange }: WorkoutMethodStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">How do you want to create workouts?</h1>
+        <h1 className="text-2xl font-bold">{t("welcome.workoutMethod.title")}</h1>
         <p className="text-muted-foreground">
-          You can always change your mind later
+          {t("welcome.workoutMethod.subtitle")}
         </p>
       </div>
 
@@ -54,15 +56,15 @@ export function WorkoutMethodStep({ value, onChange }: WorkoutMethodStepProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{option.title}</h3>
-                  {option.tag && (
+                  <h3 className="font-semibold">{t(option.titleKey)}</h3>
+                  {option.tagKey && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                      {option.tag}
+                      {t(option.tagKey)}
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {option.description}
+                  {t(option.descriptionKey)}
                 </p>
               </div>
             </div>

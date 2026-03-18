@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { teamPalettes } from "@/lib/themes";
@@ -29,6 +30,7 @@ const teamSchema = z.object({
 type TeamFormData = z.infer<typeof teamSchema>;
 
 const TeamNew: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -78,13 +80,13 @@ const TeamNew: React.FC = () => {
     },
     onSuccess: (team) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      toast.success("Team created", `${team.name} is ready!`);
+      toast.success(t("teams.new.toastSuccess"), `${team.name} ${t("teams.new.toastSuccessReady")}`);
       // Redirect to team home with onboarding flag
       navigate(`/teams/${team.id}?onboarding=true`);
     },
     onError: (error: Error) => {
       if (error.message.includes("row-level security") || error.message.includes("permission")) {
-        setBackendError("We couldn't save your team due to a permissions issue. This is on us — please try again or contact support.");
+        setBackendError(t("teams.new.permissionsError"));
       } else {
         setBackendError(error.message);
       }
@@ -153,18 +155,18 @@ const TeamNew: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title="Create Team" />
+          <PageHeader title={t("teams.new.title")} />
         </div>
       }
     >
       <PageContainer>
         <form onSubmit={handleSubmit} className="space-y-6">
           <AppCard>
-            <AppCardTitle className="text-lg mb-4">Team Details</AppCardTitle>
+            <AppCardTitle className="text-lg mb-4">{t("teams.new.detailsTitle")}</AppCardTitle>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Team Name *</Label>
+                <Label htmlFor="name">{t("teams.new.teamNameLabel")}</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -179,7 +181,7 @@ const TeamNew: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="season_label">Season Label</Label>
+                <Label htmlFor="season_label">{t("teams.new.seasonLabel")}</Label>
                 <Input
                   id="season_label"
                   value={formData.season_label}
@@ -193,10 +195,10 @@ const TeamNew: React.FC = () => {
           <AppCard>
             <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
               <Palette className="w-4 h-4 text-team-primary" />
-              Team Colors
+              {t("teams.new.colorsTitle")}
             </AppCardTitle>
             <AppCardDescription className="mb-4">
-              Choose your team's color palette
+              {t("teams.new.colorsDescription")}
             </AppCardDescription>
 
             <div className="space-y-4">
@@ -221,17 +223,17 @@ const TeamNew: React.FC = () => {
                   <div
                     className="w-10 h-10 rounded-lg shadow-sm"
                     style={{ backgroundColor: `hsl(${selectedPalette.primary})` }}
-                    title="Primary"
+                    title={t("teams.new.colorPrimary")}
                   />
                   <div
                     className="w-10 h-10 rounded-lg shadow-sm border"
                     style={{ backgroundColor: `hsl(${selectedPalette.secondary})` }}
-                    title="Secondary"
+                    title={t("teams.new.colorSecondary")}
                   />
                   <div
                     className="w-10 h-10 rounded-lg shadow-sm"
                     style={{ backgroundColor: `hsl(${selectedPalette.tertiary})` }}
-                    title="Tertiary"
+                    title={t("teams.new.colorTertiary")}
                   />
                   <span className="text-sm text-text-muted ml-2">
                     {selectedPalette.displayName}
@@ -246,7 +248,7 @@ const TeamNew: React.FC = () => {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-destructive">Something went wrong</p>
+                  <p className="text-sm font-medium text-destructive">{t("teams.new.errorTitle")}</p>
                   <p className="text-sm text-muted-foreground">{backendError}</p>
                 </div>
               </div>
@@ -262,7 +264,7 @@ const TeamNew: React.FC = () => {
                   disabled={createTeam.isPending}
                 >
                   <RefreshCw className="w-4 h-4 mr-1.5" />
-                  Try Again
+                  {t("teams.new.tryAgain")}
                 </Button>
                 <a
                   href="https://lovable.dev/support"
@@ -270,7 +272,7 @@ const TeamNew: React.FC = () => {
                   rel="noopener noreferrer"
                   className="text-sm text-primary hover:underline"
                 >
-                  Contact Support
+                  {t("teams.new.contactSupport")}
                 </a>
               </div>
             </div>
@@ -284,7 +286,7 @@ const TeamNew: React.FC = () => {
             disabled={createTeam.isPending}
           >
             {createTeam.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Create Team
+            {t("teams.new.submit")}
           </Button>
         </form>
       </PageContainer>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import {
   Sheet,
@@ -67,15 +68,6 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   other: <MoreHorizontal className="w-4 h-4" />,
 };
 
-const taskTypeLabels: Record<string, string> = {
-  shooting: "Shooting",
-  conditioning: "Conditioning",
-  mobility: "Mobility",
-  recovery: "Recovery",
-  prep: "Prep",
-  other: "Other",
-};
-
 export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   open,
   onOpenChange,
@@ -83,6 +75,17 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   dayLabel,
   onSave,
 }) => {
+  const { t } = useTranslation();
+
+  const taskTypeLabels: Record<string, string> = {
+    shooting: t('practice.taskTypeShooting'),
+    conditioning: t('practice.taskTypeConditioning'),
+    mobility: t('practice.taskTypeMobility'),
+    recovery: t('practice.taskTypeRecovery'),
+    prep: t('practice.taskTypePrep'),
+    other: t('practice.taskTypeOther'),
+  };
+
   const [title, setTitle] = useState(day.title);
   const [notes, setNotes] = useState(day.notes);
   const [tasks, setTasks] = useState<PlanTask[]>(day.tasks);
@@ -154,20 +157,20 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
           {/* Day Settings */}
           <div className="space-y-4">
             <div>
-              <Label>Day Title (optional)</Label>
+              <Label>{t('practice.dayTitleOptional')}</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Focus on shooting"
+                placeholder={t('practice.dayTitlePlaceholder')}
                 className="mt-1.5"
               />
             </div>
             <div>
-              <Label>Notes (optional)</Label>
+              <Label>{t('practice.notesOptional')}</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any notes for this day..."
+                placeholder={t('practice.dayNotesPlaceholder')}
                 className="mt-1.5"
                 rows={2}
               />
@@ -177,10 +180,10 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
           {/* Tasks */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Tasks ({tasks.length})</h3>
+              <h3 className="font-semibold">{t('practice.tasksCount', { n: tasks.length })}</h3>
               <Button variant="ghost" size="sm" onClick={addTask}>
                 <Plus className="w-4 h-4 mr-1" />
-                Add
+                {t('common.add')}
               </Button>
             </div>
 
@@ -243,7 +246,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                       <Input
                         value={task.label}
                         onChange={(e) => updateTask(index, { label: e.target.value })}
-                        placeholder="Task description"
+                        placeholder={t('practice.taskDescPlaceholder')}
                       />
 
                       <div className="flex gap-2 flex-wrap">
@@ -252,13 +255,13 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                           onValueChange={(v) => updateTask(index, { target_type: v })}
                         >
                           <SelectTrigger className="w-24">
-                            <SelectValue placeholder="Target" />
+                            <SelectValue placeholder={t('practice.target')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            <SelectItem value="reps">Reps</SelectItem>
-                            <SelectItem value="seconds">Seconds</SelectItem>
-                            <SelectItem value="minutes">Minutes</SelectItem>
+                            <SelectItem value="none">{t('practice.targetNone')}</SelectItem>
+                            <SelectItem value="reps">{t('practice.reps')}</SelectItem>
+                            <SelectItem value="seconds">{t('practice.seconds')}</SelectItem>
+                            <SelectItem value="minutes">{t('practice.minutes')}</SelectItem>
                           </SelectContent>
                         </Select>
 
@@ -271,7 +274,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                                 target_value: e.target.value ? parseInt(e.target.value) : null,
                               })
                             }
-                            placeholder="Value"
+                            placeholder={t('practice.value')}
                             className="w-20"
                           />
                         )}
@@ -283,15 +286,15 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                               onValueChange={(v) => updateTask(index, { shot_type: v })}
                             >
                               <SelectTrigger className="w-24">
-                                <SelectValue placeholder="Shot" />
+                                <SelectValue placeholder={t('practice.shotType')} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">Any</SelectItem>
-                                <SelectItem value="wrist">Wrist</SelectItem>
-                                <SelectItem value="snap">Snap</SelectItem>
-                                <SelectItem value="slap">Slap</SelectItem>
-                                <SelectItem value="backhand">Backhand</SelectItem>
-                                <SelectItem value="mixed">Mixed</SelectItem>
+                                <SelectItem value="none">{t('practice.shotTypeAny')}</SelectItem>
+                                <SelectItem value="wrist">{t('practice.shotTypeWrist')}</SelectItem>
+                                <SelectItem value="snap">{t('practice.shotTypeSnap')}</SelectItem>
+                                <SelectItem value="slap">{t('practice.shotTypeSlap')}</SelectItem>
+                                <SelectItem value="backhand">{t('practice.shotTypeBackhand')}</SelectItem>
+                                <SelectItem value="mixed">{t('practice.shotTypeMixed')}</SelectItem>
                               </SelectContent>
                             </Select>
                             <Input
@@ -302,7 +305,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                                   shots_expected: e.target.value ? parseInt(e.target.value) : null,
                                 })
                               }
-                              placeholder="Shots"
+                              placeholder={t('practice.shots')}
                               className="w-20"
                             />
                           </>
@@ -314,7 +317,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                           checked={task.is_required}
                           onCheckedChange={(v) => updateTask(index, { is_required: v })}
                         />
-                        <span className="text-sm text-text-muted">Required</span>
+                        <span className="text-sm text-text-muted">{t('practice.required')}</span>
                       </div>
                     </div>
                   </div>
@@ -323,7 +326,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
 
               {tasks.length === 0 && (
                 <p className="text-center text-text-muted py-4">
-                  No tasks yet. Add some!
+                  {t('practice.noTasksYetAddSome')}
                 </p>
               )}
             </div>
@@ -336,10 +339,10 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button className="flex-1" onClick={handleSave}>
-              Save Day
+              {t('practice.saveDay')}
             </Button>
           </div>
         </div>

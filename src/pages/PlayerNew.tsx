@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { teamPalettes } from "@/lib/themes";
@@ -36,6 +37,7 @@ const playerSchema = z.object({
 type PlayerFormData = z.infer<typeof playerSchema>;
 
 const PlayerNew: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -66,7 +68,7 @@ const PlayerNew: React.FC = () => {
     queryKey: ["players-check", user?.id, formData.first_name, formData.birth_year],
     queryFn: async () => {
       if (!formData.first_name.trim()) return [];
-      
+
       const { data } = await supabase
         .from("players")
         .select("id, first_name, birth_year")
@@ -120,12 +122,12 @@ const PlayerNew: React.FC = () => {
     },
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
-      toast.success("Player added", `${player.first_name} has been added.`);
-      
+      toast.success(t("players.new.toastAddedTitle"), t("players.new.toastAddedDescription", { name: player.first_name }));
+
       // Check if we need to return to team join flow
       const returnToJoin = sessionStorage.getItem("returnToJoin");
       const pendingToken = sessionStorage.getItem("pendingJoinToken");
-      
+
       if (returnToJoin && pendingToken) {
         sessionStorage.removeItem("returnToJoin");
         // Keep pendingJoinToken so the join flow can use it
@@ -135,7 +137,7 @@ const PlayerNew: React.FC = () => {
       }
     },
     onError: (error: Error) => {
-      toast.error("Failed to add player", error.message);
+      toast.error(t("players.new.toastFailedTitle"), error.message);
     },
   });
 
@@ -183,7 +185,7 @@ const PlayerNew: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title="Add Player" />
+          <PageHeader title={t("players.new.title")} />
         </div>
       }
     >
@@ -191,12 +193,12 @@ const PlayerNew: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
           <AppCard>
-            <AppCardTitle className="text-lg mb-4">Basic Information</AppCardTitle>
-            
+            <AppCardTitle className="text-lg mb-4">{t("players.new.basicInfoTitle")}</AppCardTitle>
+
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
+                  <Label htmlFor="first_name">{t("players.new.firstNameLabel")}</Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
@@ -210,7 +212,7 @@ const PlayerNew: React.FC = () => {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_initial">Last Initial</Label>
+                  <Label htmlFor="last_initial">{t("players.new.lastInitialLabel")}</Label>
                   <Input
                     id="last_initial"
                     value={formData.last_initial}
@@ -225,9 +227,9 @@ const PlayerNew: React.FC = () => {
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-muted text-warning-foreground">
                   <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
-                    <p className="font-medium">Possible duplicate</p>
+                    <p className="font-medium">{t("players.new.duplicateWarningTitle")}</p>
                     <p className="text-xs opacity-80">
-                      You already have a player named "{formData.first_name}" born in {formData.birth_year}.
+                      {t("players.new.duplicateWarningDescription", { name: formData.first_name, year: formData.birth_year })}
                     </p>
                   </div>
                 </div>
@@ -235,7 +237,7 @@ const PlayerNew: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="birth_year">Birth Year *</Label>
+                  <Label htmlFor="birth_year">{t("players.new.birthYearLabel")}</Label>
                   <Select
                     value={String(formData.birth_year)}
                     onValueChange={(v) => updateField("birth_year", parseInt(v))}
@@ -253,7 +255,7 @@ const PlayerNew: React.FC = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shoots">Shoots</Label>
+                  <Label htmlFor="shoots">{t("players.new.shootsLabel")}</Label>
                   <Select
                     value={formData.shoots}
                     onValueChange={(v) => updateField("shoots", v as "left" | "right" | "unknown")}
@@ -262,16 +264,16 @@ const PlayerNew: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
-                      <SelectItem value="unknown">Unknown</SelectItem>
+                      <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
+                      <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
+                      <SelectItem value="unknown">{t("players.new.shootsUnknown")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="jersey_number">Jersey Number</Label>
+                <Label htmlFor="jersey_number">{t("players.new.jerseyNumberLabel")}</Label>
                 <Input
                   id="jersey_number"
                   value={formData.jersey_number}
@@ -286,21 +288,21 @@ const PlayerNew: React.FC = () => {
 
           {/* Fun Stuff */}
           <AppCard>
-            <AppCardTitle className="text-lg mb-1">Fun Stuff</AppCardTitle>
+            <AppCardTitle className="text-lg mb-1">{t("players.new.funStuffTitle")}</AppCardTitle>
             <AppCardDescription className="mb-4">
-              Optional - helps personalize the experience
+              {t("players.new.funStuffDescription")}
             </AppCardDescription>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="fav_nhl_city">Favorite NHL City</Label>
+                  <Label htmlFor="fav_nhl_city">{t("players.new.favNhlCityLabel")}</Label>
                   <Select
                     value={formData.fav_nhl_city || ""}
                     onValueChange={(v) => updateField("fav_nhl_city", v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select..." />
+                      <SelectValue placeholder={t("players.new.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
                       {teamPalettes.map((p) => (
@@ -312,7 +314,7 @@ const PlayerNew: React.FC = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fav_nhl_player">Favorite Player</Label>
+                  <Label htmlFor="fav_nhl_player">{t("players.new.favPlayerLabel")}</Label>
                   <Input
                     id="fav_nhl_player"
                     value={formData.fav_nhl_player}
@@ -323,7 +325,7 @@ const PlayerNew: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hockey_love">What do they love most about hockey?</Label>
+                <Label htmlFor="hockey_love">{t("players.new.hockeyLoveLabel")}</Label>
                 <Textarea
                   id="hockey_love"
                   value={formData.hockey_love}
@@ -334,7 +336,7 @@ const PlayerNew: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="season_goals">Season goals</Label>
+                <Label htmlFor="season_goals">{t("players.new.seasonGoalsLabel")}</Label>
                 <Textarea
                   id="season_goals"
                   value={formData.season_goals}
@@ -355,7 +357,7 @@ const PlayerNew: React.FC = () => {
             disabled={createPlayer.isPending}
           >
             {createPlayer.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Player
+            {t("players.new.saveButton")}
           </Button>
         </form>
       </PageContainer>

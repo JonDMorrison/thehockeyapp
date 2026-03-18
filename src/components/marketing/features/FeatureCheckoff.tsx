@@ -1,5 +1,6 @@
 import React from "react";
 import { Check, Sparkles } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const tasks = [
   { label: "Stickhandling", target: "15 min", completed: true },
@@ -10,6 +11,7 @@ const tasks = [
 ];
 
 export const FeatureCheckoff: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
@@ -17,9 +19,9 @@ export const FeatureCheckoff: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              Today — Mon, Jan 6
+              {t('marketing.checkoff_today_header')}
             </p>
-            <h1 className="text-base font-bold text-foreground">Practice Day</h1>
+            <h1 className="text-base font-bold text-foreground">{t('marketing.checkoff_practice_day')}</h1>
           </div>
           <div className="text-right">
             <p className="text-lg font-bold text-emerald-500">60%</p>
@@ -33,10 +35,10 @@ export const FeatureCheckoff: React.FC = () => {
           <div
             key={task.label}
             className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
-              task.active 
-                ? "bg-emerald-500/10 border-2 border-emerald-500 scale-[1.02]" 
-                : task.completed 
-                  ? "bg-muted/30" 
+              task.active
+                ? "bg-emerald-500/10 border-2 border-emerald-500 scale-[1.02]"
+                : task.completed
+                  ? "bg-muted/30"
                   : "bg-card border border-border"
             }`}
           >
@@ -73,7 +75,7 @@ export const FeatureCheckoff: React.FC = () => {
         {/* Hint */}
         <div className="text-center pt-4">
           <p className="text-xs text-muted-foreground">
-            Tap any task to mark complete
+            {t('marketing.checkoff_tap_hint')}
           </p>
         </div>
       </div>

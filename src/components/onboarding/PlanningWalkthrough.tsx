@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { logger } from "@/core";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { X, ArrowRight, CalendarPlus, CalendarRange, Sparkles, Users, CalendarSync, BarChart3, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,43 +17,43 @@ interface WalkthroughStep {
 const steps: WalkthroughStep[] = [
   {
     id: "welcome",
-    title: "Welcome to Your Dashboard",
-    description: "This is your command center. From here you'll create workouts, track your players' progress, and keep everyone motivated. Let's show you around.",
+    title: "welcome.walkthrough.step1Title",
+    description: "welcome.walkthrough.step1Description",
     icon: <Sparkles className="w-6 h-6" />,
     gradient: "from-amber-500 to-orange-500",
   },
   {
     id: "add-workout",
-    title: "Create Your First Workout",
-    description: "Start here—add a workout for today or any date. Pick the drills, set shot counts, and your players will see it instantly. Takes just a minute.",
+    title: "welcome.walkthrough.step2Title",
+    description: "welcome.walkthrough.step2Description",
     icon: <CalendarPlus className="w-6 h-6" />,
     gradient: "from-emerald-500 to-teal-500",
   },
   {
     id: "plan-week",
-    title: "Plan the Whole Week",
-    description: "Set up Monday through Sunday once, then reuse it. Perfect for establishing a consistent training routine your players can follow every week.",
+    title: "welcome.walkthrough.step3Title",
+    description: "welcome.walkthrough.step3Description",
     icon: <CalendarRange className="w-6 h-6" />,
     gradient: "from-blue-500 to-indigo-500",
   },
   {
     id: "create-program",
-    title: "Let AI Build Your Program",
-    description: "Tell us your goals and timeline, and AI creates 4–8 weeks of progressive training. No planning required—just review and apply.",
+    title: "welcome.walkthrough.step4Title",
+    description: "welcome.walkthrough.step4Description",
     icon: <Sparkles className="w-6 h-6" />,
     gradient: "from-purple-500 to-pink-500",
   },
   {
     id: "invite-players",
-    title: "Invite Players & Families",
-    description: "Share your team code with players and parents. They'll join in seconds, see assigned workouts, and start checking off tasks right away.",
+    title: "welcome.walkthrough.step5Title",
+    description: "welcome.walkthrough.step5Description",
     icon: <Users className="w-6 h-6" />,
     gradient: "from-cyan-500 to-blue-500",
   },
   {
     id: "track-progress",
-    title: "Track Progress",
-    description: "See who's training and who needs encouragement. Connect your team calendar to auto-detect game days, and watch completion rates in real time.",
+    title: "welcome.walkthrough.step6Title",
+    description: "welcome.walkthrough.step6Description",
     icon: <BarChart3 className="w-6 h-6" />,
     gradient: "from-rose-500 to-red-500",
   },
@@ -67,6 +68,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
   onComplete,
   onSkip,
 }) => {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const step = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
@@ -100,7 +102,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center"
     >
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onSkip}
       />
@@ -119,7 +121,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
           onClick={onSkip}
           className="absolute -top-12 right-0 text-white/60 hover:text-white flex items-center gap-1 text-sm transition-colors"
         >
-          Skip tour
+          {t("welcome.walkthrough.skipTour")}
           <X className="w-4 h-4" />
         </button>
 
@@ -136,9 +138,9 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
               </div>
               <div>
                 <p className="text-white/70 text-sm font-medium">
-                  Step {currentStep + 1} of {steps.length}
+                  {t("welcome.walkthrough.stepCounter", { current: currentStep + 1, total: steps.length })}
                 </p>
-                <h3 className="text-xl font-bold">{step.title}</h3>
+                <h3 className="text-xl font-bold">{t(step.title)}</h3>
               </div>
             </div>
           </div>
@@ -146,7 +148,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
           {/* Body */}
           <div className="p-6 space-y-6">
             <p className="text-muted-foreground text-base leading-relaxed">
-              {step.description}
+              {t(step.description)}
             </p>
 
             {/* Progress dots */}
@@ -174,7 +176,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
                 className="flex-1"
                 onClick={onSkip}
               >
-                Skip
+                {t("common.skip")}
               </Button>
               <Button
                 className={cn(
@@ -183,7 +185,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
                 )}
                 onClick={handleNext}
               >
-                {isLastStep ? "Get Started" : "Next"}
+                {isLastStep ? t("welcome.walkthrough.getStarted") : t("welcome.walkthrough.next")}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -192,7 +194,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
 
         {/* Hint text */}
         <p className="text-center text-white/50 text-xs mt-4">
-          Press → or Enter to continue • Esc to skip
+          {t("welcome.walkthrough.keyboardHint")}
         </p>
       </motion.div>
     </motion.div>
@@ -202,7 +204,7 @@ export const PlanningWalkthrough: React.FC<PlanningWalkthroughProps> = ({
 // Hook to manage walkthrough state
 export const usePlanningWalkthrough = (teamId: string) => {
   const storageKey = `planning-walkthrough-seen-${teamId}`;
-  
+
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [isReady, setIsReady] = useState(false);
 

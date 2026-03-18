@@ -2,11 +2,22 @@ import { useState } from "react";
 import { logger } from "@/core";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { TrainingModeStep } from "./steps/TrainingModeStep";
 import { TaskTypesStep } from "./steps/TaskTypesStep";
 import { TeamLevelStep } from "./steps/TeamLevelStep";
@@ -37,10 +48,12 @@ export function CoachOnboardingWizard({
   onComplete,
   onSkip,
 }: CoachOnboardingWizardProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showSkipDialog, setShowSkipDialog] = useState(false);
 
   // Form state
   const [trainingMode, setTrainingMode] = useState<TrainingMode>("balanced");
@@ -51,6 +64,14 @@ export function CoachOnboardingWizard({
 
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
+
+  const stepTitles = [
+    t("welcome.onboarding.step1Title"),
+    t("welcome.onboarding.step2Title"),
+    t("welcome.onboarding.step3Title"),
+    t("welcome.onboarding.step4Title"),
+    t("welcome.onboarding.step5Title"),
+  ];
 
   // Update task types when training mode changes
   const handleTrainingModeChange = (mode: TrainingMode) => {
@@ -93,7 +114,7 @@ export function CoachOnboardingWizard({
     },
     onError: (error) => {
       logger.error("Error saving preferences", { error });
-      toast.error("Failed to save preferences");
+      toast.error(t("welcome.onboarding.failedToSavePreferences"));
     },
   });
 
@@ -155,17 +176,21 @@ export function CoachOnboardingWizard({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
-            Step {currentStep} of {totalSteps}
-          </span>
+          <div>
+            <span className="text-sm text-muted-foreground">
+              {t("welcome.onboarding.stepCounter", { current: currentStep, total: totalSteps })}
+            </span>
+            <p className="text-base font-semibold leading-tight">
+              {stepTitles[currentStep - 1]}
+            </p>
+          </div>
         </div>
         <Button
           variant="ghost"
-          size="sm"
-          onClick={onSkip}
+          onClick={() => setShowSkipDialog(true)}
           className="text-muted-foreground"
         >
-          Skip for now
+          {t("welcome.onboarding.skipForNow")}
           <X className="ml-1 h-4 w-4" />
         </Button>
       </div>
@@ -212,6 +237,11 @@ export function CoachOnboardingWizard({
 
       {/* Footer */}
       <div className="p-4 border-t bg-background">
+        {savePreferencesMutation.isError && (
+          <p className="text-sm text-destructive text-center mb-2">
+            {t("welcome.onboarding.failedToSavePreferences")}
+          </p>
+        )}
         <div className="max-w-lg mx-auto flex gap-3">
           {currentStep > 1 && (
             <Button
@@ -220,7 +250,7 @@ export function CoachOnboardingWizard({
               className="flex-1"
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
-              Back
+              {t("common.back")}
             </Button>
           )}
           <Button
@@ -229,16 +259,34 @@ export function CoachOnboardingWizard({
             disabled={savePreferencesMutation.isPending}
           >
             {currentStep === totalSteps ? (
-              savePreferencesMutation.isPending ? "Saving..." : "Finish setup"
+              savePreferencesMutation.isPending ? t("common.saving") : t("welcome.onboarding.finishSetup")
             ) : (
               <>
-                Continue
+                {t("common.continue")}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </>
             )}
           </Button>
         </div>
       </div>
+
+      {/* Skip confirmation */}
+      <AlertDialog open={showSkipDialog} onOpenChange={setShowSkipDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("welcome.onboarding.skipConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("welcome.onboarding.skipConfirmDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={onSkip}>
+              {t("welcome.onboarding.skipForNow")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

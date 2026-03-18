@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Flame, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from 'react-i18next';
 
 interface DemoTask {
   id: string;
@@ -21,6 +22,7 @@ const completedCount = demoTasks.filter((t) => t.completed).length;
 const progressPercent = (completedCount / demoTasks.length) * 100;
 
 export const MarketingAppPreview: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
@@ -28,15 +30,15 @@ export const MarketingAppPreview: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
-              Today — Mon, Jan 6
+              {t('marketing.app_preview_today_header')}
             </p>
             <h1 className="text-base font-bold text-foreground mt-0.5">
-              Northside Wolves
+              {t('marketing.app_preview_northside_wolves')}
             </h1>
           </div>
           <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Calendar className="w-3 h-3" />
-            <span className="text-[10px] font-semibold">Practice Day</span>
+            <span className="text-[10px] font-semibold">{t('marketing.app_preview_practice_day')}</span>
           </div>
         </div>
       </div>
@@ -51,7 +53,7 @@ export const MarketingAppPreview: React.FC = () => {
                 <Flame className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Today's Progress</p>
+                <p className="text-xs font-semibold text-foreground">{t('marketing.app_preview_today_progress')}</p>
                 <p className="text-[10px] text-muted-foreground">
                   {completedCount} of {demoTasks.length} complete
                 </p>
@@ -70,7 +72,7 @@ export const MarketingAppPreview: React.FC = () => {
         {/* Tasks Section */}
         <div>
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            Today's Practice
+            {t('marketing.app_preview_today_practice')}
           </h2>
           <div className="space-y-2">
             {demoTasks.map((task) => (
@@ -118,17 +120,17 @@ export const MarketingAppPreview: React.FC = () => {
         <div className="flex items-center justify-around bg-muted/30 rounded-xl p-3 mt-2">
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">7</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Day Streak</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.app_preview_day_streak')}</p>
           </div>
           <div className="w-px h-8 bg-border" />
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">142</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Total Shots</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.app_preview_total_shots')}</p>
           </div>
           <div className="w-px h-8 bg-border" />
           <div className="text-center">
             <p className="text-lg font-bold text-primary">🔥</p>
-            <p className="text-[9px] text-muted-foreground uppercase">On Fire!</p>
+            <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.app_preview_on_fire')}</p>
           </div>
         </div>
       </div>

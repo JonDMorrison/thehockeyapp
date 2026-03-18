@@ -1,6 +1,7 @@
 import React from "react";
 import { Check, Clock, Target, Dumbbell, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from 'react-i18next';
 
 const tasks = [
   { label: "Stickhandling", target: "15 min", icon: Target, completed: false },
@@ -11,14 +12,15 @@ const tasks = [
 ];
 
 export const FeatureTaskCard: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-          Today — Mon, Jan 6
+          {t('marketing.task_card_today_header')}
         </p>
-        <h1 className="text-base font-bold text-foreground">Practice Day</h1>
+        <h1 className="text-base font-bold text-foreground">{t('marketing.task_card_practice_day')}</h1>
       </div>
 
       <div className="px-4 py-4 space-y-3">
@@ -26,10 +28,10 @@ export const FeatureTaskCard: React.FC = () => {
         <div className="bg-primary/5 rounded-xl p-3 border border-primary/20">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-foreground">~25 min total</span>
+            <span className="text-xs font-medium text-foreground">{t('marketing.task_card_time_total')}</span>
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">
-            Complete all tasks to earn today's badge
+            {t('marketing.rewards_task_badge_info')}
           </p>
         </div>
 

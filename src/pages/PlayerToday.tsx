@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -16,6 +17,7 @@ import {
   getCompletionSnapshot,
 } from "@/lib/offlineStorage";
 import { startSyncInterval, stopSyncInterval, syncPendingEvents } from "@/lib/syncEngine";
+import { logger } from "@/core";
 import { fireGoalConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -115,17 +117,20 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   other: <MoreHorizontal className="w-5 h-5" />,
 };
 
-const tierLabels: Record<string, string> = {
-  rec: "Rec",
-  rep: "Rep",
-  elite: "Elite",
-};
+// tierLabels is defined inside the component to access t()
 
 const PlayerToday: React.FC = () => {
+  const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  const tierLabels: Record<string, string> = {
+    rec: t("teams.practice.tierRec"),
+    rep: t("teams.practice.tierRep"),
+    elite: t("teams.practice.tierElite"),
+  };
   const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const { isOnline, status: offlineStatus, pendingCount, triggerSync } = useOffline();
@@ -428,7 +433,7 @@ const PlayerToday: React.FC = () => {
         const existingCompletion = taskCompletions?.find((c) => c.practice_task_id === taskId);
         
         if (existingCompletion) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("task_completions")
             .update({
               completed,
@@ -436,8 +441,9 @@ const PlayerToday: React.FC = () => {
               updated_at: now,
             })
             .eq("id", existingCompletion.id);
+          if (updateError) logger.error("Failed to update task completion", { updateError });
         } else {
-          await supabase
+          const { error: insertError } = await supabase
             .from("task_completions")
             .insert({
               practice_task_id: taskId,
@@ -446,16 +452,19 @@ const PlayerToday: React.FC = () => {
               completed_at: completed ? now : null,
               completed_by: "parent",
             });
+          if (insertError) logger.error("Failed to insert task completion", { insertError });
         }
-        
+
         queryClient.invalidateQueries({ queryKey: ["task-completions", practiceCard?.id, playerId] });
       } catch (err) {
         // Queue for offline sync
         await queueForSync('task_toggle', taskId, completed, existingShots, now);
+        toast.info(t("common.savedOffline"));
       }
     } else {
       // Queue for offline sync
       await queueForSync('task_toggle', taskId, completed, existingShots, now);
+      toast.info(t("common.savedOffline"));
     }
   }, [completionMap, localCompletions, tasks, taskCompletions, playerId, practiceCard?.id, isOnline, queryClient, saveLocalSnapshot]);
 
@@ -552,15 +561,16 @@ const PlayerToday: React.FC = () => {
         const existingCompletion = taskCompletions?.find((c) => c.practice_task_id === selectedTaskId);
         
         if (existingCompletion) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("task_completions")
             .update({
               shots_logged: shots,
               updated_at: now,
             })
             .eq("id", existingCompletion.id);
+          if (updateError) logger.error("Failed to update shots logged", { updateError });
         } else {
-          await supabase
+          const { error: insertError } = await supabase
             .from("task_completions")
             .insert({
               practice_task_id: selectedTaskId,
@@ -569,17 +579,18 @@ const PlayerToday: React.FC = () => {
               shots_logged: shots,
               completed_by: "parent",
             });
+          if (insertError) logger.error("Failed to insert shots logged", { insertError });
         }
-        
+
         queryClient.invalidateQueries({ queryKey: ["task-completions", practiceCard?.id, playerId] });
-        toast.success("Shots logged");
+        toast.success(t("players.today.shotsLogged"));
       } catch (err) {
         await queueForSync('shots_update', selectedTaskId, undefined, shots, now);
-        toast.info("Saved on device");
+        toast.info(t("players.today.savedOnDevice"));
       }
     } else {
       await queueForSync('shots_update', selectedTaskId, undefined, shots, now);
-      toast.info("Saved on device");
+      toast.info(t("players.today.savedOnDevice"));
     }
   }, [selectedTaskId, shotsInput, completionMap, localCompletions, localSessionStatus, taskCompletions, playerId, practiceCard?.id, isOnline, queryClient, saveLocalSnapshot]);
 
@@ -604,7 +615,7 @@ const PlayerToday: React.FC = () => {
         setIsFirstWorkout(isFirst);
 
         if (sessionCompletion) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("session_completions")
             .update({
               status: "complete",
@@ -612,8 +623,9 @@ const PlayerToday: React.FC = () => {
               updated_at: now,
             })
             .eq("id", sessionCompletion.id);
+          if (updateError) logger.error("Failed to update session completion", { updateError });
         } else {
-          await supabase
+          const { error: insertError } = await supabase
             .from("session_completions")
             .insert({
               practice_card_id: practiceCard!.id,
@@ -622,6 +634,7 @@ const PlayerToday: React.FC = () => {
               completed_at: now,
               completed_by: "parent",
             });
+          if (insertError) logger.error("Failed to insert session completion", { insertError });
         }
         
         queryClient.invalidateQueries({ queryKey: ["session-completion", practiceCard?.id, playerId] });
@@ -631,22 +644,22 @@ const PlayerToday: React.FC = () => {
         fireGoalConfetti();
         
         if (isFirst) {
-          toast.success("First workout complete! 🏆", "Amazing start to the journey!");
+          toast.success(t("players.today.firstWorkoutTitle"), t("players.today.firstWorkoutDescription"));
         } else {
-          toast.success("Session complete! 🎉");
+          toast.success(t("players.today.sessionCompleteToast"));
         }
-        
+
         // Evaluate badges after session completion
         evaluateBadges();
       } catch (err) {
         await queueForSync('session_complete', undefined, undefined, undefined, now);
         setShowSuccess(true);
-        toast.info("Saved on device");
+        toast.info(t("players.today.savedOnDevice"));
       }
     } else {
       await queueForSync('session_complete', undefined, undefined, undefined, now);
       setShowSuccess(true);
-      toast.info("Session saved on device");
+      toast.info(t("players.today.sessionSavedOnDevice"));
     }
   }, [localCompletions, sessionCompletion, practiceCard?.id, playerId, isOnline, queryClient, saveLocalSnapshot, evaluateBadges]);
 
@@ -669,21 +682,21 @@ const PlayerToday: React.FC = () => {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => navigate("/today")}
+              onClick={() => navigate(`/players/${playerId}/home`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-bold">Today</h1>
+            <h1 className="text-lg font-bold">{t("players.today.pageTitle")}</h1>
             <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} />
           </div>
           <AppCard>
             <EmptyState
               icon={WifiOff}
-              title="Offline - No cached data"
-              description="Open this screen once while online to use offline mode."
+              title={t("players.today.offlineNoCacheTitle")}
+              description={t("players.today.offlineNoCacheDescription")}
               action={{
-                label: "Go Back",
-                onClick: () => navigate("/today"),
+                label: t("players.today.goBack"),
+                onClick: () => navigate(`/players/${playerId}/home`),
               }}
             />
           </AppCard>
@@ -697,8 +710,9 @@ const PlayerToday: React.FC = () => {
     return (
       <AppShell hideNav>
         <PageContainer>
-          <SkeletonCard />
-          <SkeletonCard />
+          <SkeletonCard className="h-16" />
+          <SkeletonCard className="h-24" />
+          <SkeletonCard className="h-64" />
         </PageContainer>
       </AppShell>
     );
@@ -717,20 +731,20 @@ const PlayerToday: React.FC = () => {
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => navigate("/today")}
+              onClick={() => navigate(`/players/${playerId}/home`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-bold">Today</h1>
+            <h1 className="text-lg font-bold">{t("players.today.pageTitle")}</h1>
           </div>
           <AppCard>
             <EmptyState
               icon={Calendar}
-              title="No practice today"
-              description="There's no workout published for today. Check back later!"
+              title={t("players.today.noPracticeTitle")}
+              description={t("players.today.noPracticeDescription")}
               action={{
-                label: "Go Back",
-                onClick: () => navigate("/today"),
+                label: t("players.today.goBack"),
+                onClick: () => navigate(`/players/${playerId}/home`),
               }}
             />
           </AppCard>
@@ -775,14 +789,14 @@ const PlayerToday: React.FC = () => {
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={() => navigate("/today")}
+            onClick={() => navigate(`/players/${playerId}/home`)}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold truncate">
-                {practiceCard.mode === "game_day" ? "Game Day" : "Today"}
+                {practiceCard.mode === "game_day" ? t("players.today.gameDay") : t("players.today.pageTitle")}
               </h1>
               <OfflineIndicator status={offlineStatus} pendingCount={pendingCount} />
             </div>
@@ -790,7 +804,7 @@ const PlayerToday: React.FC = () => {
               {practiceCard.mode === "game_day" ? (
                 <Tag variant="accent" size="sm">
                   <Zap className="w-3 h-3" />
-                  Prep
+                  {t("players.today.gameDayPrepTag")}
                 </Tag>
               ) : (
                 <Tag variant="tier" size="sm">{tierLabels[practiceCard.tier]}</Tag>
@@ -799,7 +813,7 @@ const PlayerToday: React.FC = () => {
                 <span className="text-xs text-text-muted truncate">{teamData.name}</span>
               )}
               {usingCache && (
-                <span className="text-xs text-warning">Cached</span>
+                <span className="text-xs text-warning">{t("players.today.cached")}</span>
               )}
             </div>
           </div>
@@ -809,7 +823,7 @@ const PlayerToday: React.FC = () => {
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/quick-checkoff?player_id=${playerId}`)}
-              title="Quick Mode"
+              title={t("players.today.quickModeTitle")}
             >
               <Zap className="w-4 h-4" />
             </Button>
@@ -840,9 +854,9 @@ const PlayerToday: React.FC = () => {
         {/* Progress */}
         <AppCard>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">Progress</span>
+            <span className="text-sm font-medium">{t("players.today.progress")}</span>
             <span className="text-sm text-text-muted">
-              {completedCount}/{tasks.length} tasks
+              {completedCount}/{tasks.length} {t("teams.practice.tasks")}
             </span>
           </div>
           <ProgressBar value={progress} />
@@ -863,32 +877,34 @@ const PlayerToday: React.FC = () => {
               const isShooting = task.task_type === "shooting" || task.shots_expected;
 
               return (
-                <div key={task.id} className="relative">
-                  <WorkoutCheckItem
-                    id={task.id}
-                    label={task.label}
-                    target={
-                      task.target_type !== "none" && task.target_value
-                        ? `${task.target_value} ${task.target_type}`
-                        : isShooting
-                          ? `${completion?.shotsLogged || 0} shots logged`
-                          : undefined
-                    }
-                    icon={taskTypeIcons[task.task_type]}
-                    completed={isCompleted}
-                    disabled={isSessionComplete}
-                    onToggle={handleTaskToggle}
-                  />
+                <div key={task.id} className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <WorkoutCheckItem
+                      id={task.id}
+                      label={task.label}
+                      target={
+                        task.target_type !== "none" && task.target_value
+                          ? `${task.target_value} ${task.target_type}`
+                          : isShooting
+                            ? t("players.today.shotsLoggedCount", { count: completion?.shotsLogged || 0 })
+                            : undefined
+                      }
+                      icon={taskTypeIcons[task.task_type]}
+                      completed={isCompleted}
+                      disabled={isSessionComplete}
+                      onToggle={handleTaskToggle}
+                    />
+                  </div>
                   {isShooting && (
                     <button
-                      className="absolute right-16 top-1/2 -translate-y-1/2 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
+                      className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleShotsClick(task.id);
                       }}
                       disabled={isSessionComplete}
                     >
-                      {completion?.shotsLogged || 0} shots
+                      {t("players.today.shotsCount", { count: completion?.shotsLogged || 0 })}
                     </button>
                   )}
                 </div>
@@ -912,7 +928,7 @@ const PlayerToday: React.FC = () => {
           {totalShots > 0 && (
             <AppCard variant="muted">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-text-muted">Total Shots</span>
+                <span className="text-sm text-text-muted">{t("players.today.totalShots")}</span>
                 <span className="font-semibold">{totalShots}</span>
               </div>
             </AppCard>
@@ -925,7 +941,7 @@ const PlayerToday: React.FC = () => {
               onClick={handleSessionComplete}
             >
               <Trophy className="w-5 h-5 mr-2" />
-              Complete Session
+              {t("players.today.completeSession")}
             </Button>
           )}
 
@@ -941,10 +957,10 @@ const PlayerToday: React.FC = () => {
                   className="w-8 h-8 mx-auto mb-2"
                   style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
                 />
-                <p className="font-semibold">Session Complete! 🎉</p>
+                <p className="font-semibold">{t("players.today.sessionCompleteMessage")}</p>
                 {sessionCompletion?.completed_at && (
                   <p className="text-sm text-text-muted">
-                    Finished at {format(new Date(sessionCompletion.completed_at), "h:mm a")}
+                    {t("players.today.finishedAt", { time: format(new Date(sessionCompletion.completed_at), "h:mm a") })}
                   </p>
                 )}
               </AppCard>
@@ -954,7 +970,7 @@ const PlayerToday: React.FC = () => {
                 size="lg"
                 onClick={() => navigate(`/players/${playerId}/home`)}
               >
-                Done
+                {t("players.today.done")}
               </Button>
             </div>
           )}
@@ -963,28 +979,29 @@ const PlayerToday: React.FC = () => {
 
       {/* Shots Input Sheet */}
       <Sheet open={showShotsSheet} onOpenChange={setShowShotsSheet}>
-        <SheetContent side="bottom" className="h-auto">
+        <SheetContent side="bottom" className="h-auto pb-safe">
           <SheetHeader>
-            <SheetTitle>Log Shots</SheetTitle>
+            <SheetTitle>{t("players.today.logShotsTitle")}</SheetTitle>
             <SheetDescription>
-              How many shots did {player?.first_name} take?
+              {t("players.today.logShotsDescription", { name: player?.first_name })}
             </SheetDescription>
           </SheetHeader>
           <div className="py-6 space-y-4">
             <Input
               type="number"
+              inputMode="numeric"
               value={shotsInput}
               onChange={(e) => setShotsInput(e.target.value)}
               placeholder="0"
-              className="text-center text-2xl h-16"
+              className="text-center text-2xl h-16 w-full"
               autoFocus
             />
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {[10, 25, 50, 100].map((num) => (
                 <Button
                   key={num}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 h-12 text-base"
                   onClick={() => setShotsInput(num.toString())}
                 >
                   {num}
@@ -992,11 +1009,11 @@ const PlayerToday: React.FC = () => {
               ))}
             </div>
             <Button
-              className="w-full"
+              className="w-full h-12 text-base"
               onClick={handleShotsSubmit}
               disabled={!shotsInput}
             >
-              Save
+              {t("players.today.saveShots")}
             </Button>
           </div>
         </SheetContent>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 import { logger } from "@/core";
 import { format, addDays } from "date-fns";
@@ -29,7 +30,7 @@ import {
   Send,
   Sparkles,
 } from "lucide-react";
-import { ChallengeDayBuilder, exercises } from "./ChallengeDayBuilder";
+import { ChallengeDayBuilder, exerciseData } from "./ChallengeDayBuilder";
 
 interface ThirtyDayChallengeWizardProps {
   open: boolean;
@@ -39,20 +40,21 @@ interface ThirtyDayChallengeWizardProps {
 
 type Step = "name" | "dates" | "exercises" | "review" | "sending";
 
-const sendingSteps = [
-  "Creating challenge...",
-  "Building 30-day calendar...",
-  "Assigning exercises...",
-  "Sending to players...",
-];
-
 export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> = ({
   open,
   onOpenChange,
   teamId,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  const sendingSteps = [
+    t('practice.sendingStep1'),
+    t('practice.sendingStep2'),
+    t('practice.sendingStep3'),
+    t('practice.sendingStep4'),
+  ];
 
   // Step 1: Name
   const [challengeName, setChallengeName] = useState("30 Day Skills Challenge");
@@ -117,10 +119,15 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       setSendingStep(1);
       await new Promise((r) => setTimeout(r, 400));
 
-      // Get selected exercise details
-      const selectedExerciseDetails = exercises.filter((e) =>
-        selectedExercises.includes(e.id)
-      );
+      // Get selected exercise details (use exerciseData with translated labels for storage)
+      const selectedExerciseDetails = exerciseData
+        .filter((e) => selectedExercises.includes(e.id))
+        .map(e => ({
+          id: e.id,
+          label: t(e.labelKey),
+          icon: e.icon,
+          category: t(e.categoryKey),
+        }));
 
       // Create all practice cards in one batch
       const cardInserts = [];
@@ -172,9 +179,9 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
             label: exercise.label,
             task_type: getTaskType(exercise.category),
             sort_order: index,
-            shots_expected: exercise.category === "Shooting" ? 25 : null,
-            target_type: exercise.category === "Shooting" ? "shots" : "time",
-            target_value: exercise.category === "Shooting" ? 25 : 5,
+            shots_expected: exercise.category === t('practice.categoryShooting') ? 25 : null,
+            target_type: exercise.category === t('practice.categoryShooting') ? "shots" : "time",
+            target_value: exercise.category === t('practice.categoryShooting') ? 25 : 5,
             is_required: true,
           });
         });
@@ -197,7 +204,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       queryClient.invalidateQueries({ queryKey: ["training-programs", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", teamId] });
       fireGoalConfetti();
-      toast.success("Challenge sent! 🔥", "30 days of training is now live for your players.");
+      toast.success(t('practice.challengeSent'), t('practice.thirtyDaysNowLive'));
       // Close modal after short delay so user sees completion
       setTimeout(() => {
         handleClose();
@@ -205,28 +212,19 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
     },
     onError: (error: Error) => {
       logger.error("Challenge creation error", { error });
-      toast.error("Failed to create challenge", error.message);
+      toast.error(t('practice.failedToCreateChallenge'), error.message);
       setStep("review");
     },
   });
 
   const getTaskType = (category: string): string => {
-    switch (category) {
-      case "Shooting":
-        return "shooting";
-      case "Stickhandling":
-        return "stickhandling";
-      case "Conditioning":
-        return "conditioning";
-      case "Flexibility":
-        return "mobility";
-      case "Hockey IQ":
-        return "video";
-      case "Off-Ice":
-        return "other";
-      default:
-        return "other";
-    }
+    if (category === t('practice.categoryShooting')) return "shooting";
+    if (category === t('practice.categoryStickhandling')) return "stickhandling";
+    if (category === t('practice.categoryConditioning')) return "conditioning";
+    if (category === t('practice.categoryFlexibility')) return "mobility";
+    if (category === t('practice.categoryHockeyIQ')) return "video";
+    if (category === t('practice.categoryOffIce')) return "other";
+    return "other";
   };
 
   const handleClose = () => {
@@ -274,17 +272,17 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4">
           <Flame className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-lg font-bold">Create a 30 Day Challenge</h3>
+        <h3 className="text-lg font-bold">{t('practice.createA30DayChallenge')}</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Set daily exercises for your players to complete over 30 days
+          {t('practice.setDailyExercisesFor30Days')}
         </p>
       </div>
 
       <div>
-        <Label className="text-sm font-medium">Challenge Name</Label>
+        <Label className="text-sm font-medium">{t('practice.challengeName')}</Label>
         <Input
           className="mt-2"
-          placeholder="e.g., Summer Skills Challenge"
+          placeholder={t('practice.challengeNamePlaceholder')}
           value={challengeName}
           onChange={(e) => setChallengeName(e.target.value)}
         />
@@ -301,9 +299,9 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
     >
       <div className="text-center pb-2">
         <CalendarIcon className="w-8 h-8 mx-auto text-orange-500 mb-2" />
-        <h3 className="text-lg font-bold">Pick a Start Date</h3>
+        <h3 className="text-lg font-bold">{t('practice.pickAStartDate')}</h3>
         <p className="text-sm text-muted-foreground">
-          The challenge will run for exactly 30 days
+          {t('practice.challengeWillRunFor30Days')}
         </p>
       </div>
 
@@ -322,7 +320,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
           <p className="text-sm font-medium">
             {format(startDate, "MMM d")} → {format(endDate, "MMM d, yyyy")}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">30 days of training</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('practice.thirtyDaysOfTraining')}</p>
         </div>
       )}
     </motion.div>
@@ -336,12 +334,12 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       className="space-y-4"
     >
       <div className="text-center pb-2">
-        <h3 className="text-lg font-bold">Select Daily Exercises</h3>
+        <h3 className="text-lg font-bold">{t('practice.selectDailyExercises')}</h3>
         <p className="text-sm text-muted-foreground">
-          Players will do these exercises every day
+          {t('practice.playersWillDoTheseExercisesEveryDay')}
         </p>
         <p className="text-xs text-orange-500 font-medium mt-1">
-          {selectedExercises.length} selected
+          {t('practice.nSelected', { n: selectedExercises.length })}
         </p>
       </div>
 
@@ -353,7 +351,14 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
   );
 
   const renderReview = () => {
-    const selectedDetails = exercises.filter((e) => selectedExercises.includes(e.id));
+    const selectedDetails = exerciseData
+      .filter((e) => selectedExercises.includes(e.id))
+      .map(e => ({
+        id: e.id,
+        label: t(e.labelKey),
+        icon: e.icon,
+        category: t(e.categoryKey),
+      }));
     return (
       <motion.div
         initial={{ opacity: 0, x: 20 }}
@@ -363,26 +368,26 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       >
         <div className="text-center pb-2">
           <Trophy className="w-10 h-10 mx-auto text-orange-500 mb-2" />
-          <h3 className="text-lg font-bold">Review Your Challenge</h3>
+          <h3 className="text-lg font-bold">{t('practice.reviewYourChallenge')}</h3>
         </div>
 
         <div className="space-y-4">
           <div className="bg-muted/50 rounded-xl p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Challenge</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('practice.challenge')}</p>
             <p className="font-semibold">{challengeName}</p>
           </div>
 
           <div className="bg-muted/50 rounded-xl p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Duration</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('practice.duration')}</p>
             <p className="font-semibold">
               {startDate && format(startDate, "MMM d")} – {endDate && format(endDate, "MMM d, yyyy")}
             </p>
-            <p className="text-sm text-muted-foreground">30 consecutive days</p>
+            <p className="text-sm text-muted-foreground">{t('practice.thirtyConsecutiveDays')}</p>
           </div>
 
           <div className="bg-muted/50 rounded-xl p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
-              Daily Exercises ({selectedDetails.length})
+              {t('practice.dailyExercisesCount', { n: selectedDetails.length })}
             </p>
             <div className="flex flex-wrap gap-2">
               {selectedDetails.map((ex) => (
@@ -460,8 +465,8 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl overflow-hidden">
         <SheetHeader className="sr-only">
-          <SheetTitle>30 Day Challenge</SheetTitle>
-          <SheetDescription>Create a 30 day challenge for your team</SheetDescription>
+          <SheetTitle>{t('practice.thirtyDayChallenge')}</SheetTitle>
+          <SheetDescription>{t('practice.createA30DayChallengeForTeam')}</SheetDescription>
         </SheetHeader>
 
         <div className="flex flex-col h-full">
@@ -500,7 +505,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
               {step !== "name" && (
                 <Button variant="outline" className="flex-1" onClick={handleBack}>
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  {t('common.back')}
                 </Button>
               )}
               <Button
@@ -512,11 +517,11 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
                 {step === "review" ? (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Send Challenge
+                    {t('practice.sendChallenge')}
                   </>
                 ) : (
                   <>
-                    Continue
+                    {t('common.continue')}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}

@@ -13,17 +13,18 @@ import { Avatar } from "@/components/app/Avatar";
 import { useUserRoles, UserRole } from "@/hooks/useUserRoles";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { teamPalettes } from "@/lib/themes";
-import { 
-  Users, 
-  User, 
-  Dumbbell, 
-  ChevronDown, 
+import {
+  Users,
+  User,
+  Dumbbell,
+  ChevronDown,
   Check,
   Loader2,
   Shield,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface ContextSwitcherProps {
   /** Current team ID (for highlighting) */
@@ -36,10 +37,10 @@ interface ContextSwitcherProps {
   className?: string;
 }
 
-const roleConfig: Record<UserRole, { label: string; icon: React.ElementType }> = {
-  coach: { label: "Coach", icon: Users },
-  parent: { label: "Parent", icon: User },
-  player: { label: "Training", icon: Dumbbell },
+const roleConfig: Record<UserRole, { labelKey: string; icon: React.ElementType }> = {
+  coach: { labelKey: "nav.roleCoach", icon: Users },
+  parent: { labelKey: "nav.roleParent", icon: User },
+  player: { labelKey: "nav.roleTraining", icon: Dumbbell },
 };
 
 export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
@@ -48,13 +49,14 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   compact = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { 
-    availableRoles, 
-    isLoading, 
-    coachTeams, 
-    guardedPlayers, 
+  const {
+    availableRoles,
+    isLoading,
+    coachTeams,
+    guardedPlayers,
     ownPlayer,
     isCoach,
     isParent,
@@ -78,25 +80,25 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
       const team = coachTeams.find(t => t.teamId === currentTeamId);
       if (team) return team.teamName;
     }
-    
+
     // If on a player page, find player name
     if (currentPlayerId) {
       // Check guarded players
       const guarded = guardedPlayers.find(p => p.playerId === currentPlayerId);
       if (guarded) return guarded.playerName;
-      
+
       // Check if it's own player
       if (ownPlayer?.id === currentPlayerId) {
         return `${ownPlayer.firstName} ${ownPlayer.lastName || ""}`.trim();
       }
     }
-    
+
     // Default to active view label
     if (activeView) {
-      return roleConfig[activeView]?.label || "Switch";
+      return t(roleConfig[activeView]?.labelKey) || t("nav.switch");
     }
-    
-    return "Switch";
+
+    return t("nav.switch");
   };
 
   const handleTeamSelect = (teamId: string) => {
@@ -124,8 +126,8 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size={compact ? "icon-sm" : "sm"}
           className={cn("gap-1.5 max-w-[180px]", className)}
         >
@@ -139,18 +141,18 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-y-auto">
-        
+
         {/* Coach Teams Section */}
         {isCoach && coachTeams.length > 0 && (
           <>
             <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
               <Shield className="w-3 h-3" />
-              My Teams
+              {t("nav.myTeams")}
             </DropdownMenuLabel>
             {coachTeams.map((team) => {
               const isActive = currentTeamId === team.teamId && activeView === "coach";
               const palette = teamPalettes.find(p => p.id === team.teamId);
-              
+
               return (
                 <DropdownMenuItem
                   key={team.teamId}
@@ -176,7 +178,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               className="cursor-pointer text-muted-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create New Team
+              {t("nav.createNewTeam")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -187,11 +189,11 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <>
             <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
               <User className="w-3 h-3" />
-              My Players
+              {t("nav.myPlayers")}
             </DropdownMenuLabel>
             {guardedPlayers.map((player) => {
               const isActive = currentPlayerId === player.playerId && activeView === "parent";
-              
+
               return (
                 <DropdownMenuItem
                   key={player.playerId}
@@ -217,7 +219,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               className="cursor-pointer text-muted-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Add Player
+              {t("nav.addPlayer")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -228,7 +230,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           <>
             <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
               <Dumbbell className="w-3 h-3" />
-              My Training
+              {t("nav.myTraining")}
             </DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => handlePlayerSelect(ownPlayer.id, true)}
@@ -243,7 +245,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   <p className="font-medium text-sm truncate">
                     {ownPlayer.firstName} {ownPlayer.lastName || ""}
                   </p>
-                  <p className="text-xs text-muted-foreground">Solo Training</p>
+                  <p className="text-xs text-muted-foreground">{t("nav.soloTraining")}</p>
                 </div>
                 {currentPlayerId === ownPlayer.id && activeView === "player" && (
                   <Check className="w-4 h-4 text-primary shrink-0" />
@@ -257,28 +259,28 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
         {(coachTeams.length === 0 && guardedPlayers.length === 0 && !ownPlayer) && (
           <>
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Get Started
+              {t("nav.getStarted")}
             </DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => navigate("/teams/new")}
               className="cursor-pointer"
             >
               <Users className="w-4 h-4 mr-2" />
-              Create a Team
+              {t("nav.createATeam")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigate("/players/new")}
               className="cursor-pointer"
             >
               <User className="w-4 h-4 mr-2" />
-              Add a Player
+              {t("nav.addAPlayer")}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => navigate("/solo/setup")}
               className="cursor-pointer"
             >
               <Dumbbell className="w-4 h-4 mr-2" />
-              Solo Training
+              {t("nav.soloTraining")}
             </DropdownMenuItem>
           </>
         )}

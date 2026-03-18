@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -57,6 +58,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   teamName,
   initialTab = "invite",
 }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -136,21 +138,21 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       });
 
       if (error) throw error;
-      
+
       const result = data as { success: boolean; error?: string; token?: string; expires_at?: string };
       if (!result.success) {
         throw new Error(result.error || "Failed to generate invite");
       }
-      
+
       return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-parent-invite", teamId] });
-      toast.success("Invite created", "Share the link with parents.");
+      toast.success(t("teams.inviteParents.toastCreatedTitle"), t("teams.inviteParents.toastCreatedDescription"));
       setShowRegenerateConfirm(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to generate invite", error.message);
+      toast.error(t("teams.inviteParents.toastGenerateFailedTitle"), error.message);
     },
   });
 
@@ -214,7 +216,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", teamId] });
       queryClient.invalidateQueries({ queryKey: ["user-roles"] });
-      toast.success("Added to team!", "Your child has been added to the roster.");
+      toast.success(t("teams.inviteParents.toastAddedTitle"), t("teams.inviteParents.toastAddedDescription"));
       resetChildForm();
       onOpenChange(false);
     },
@@ -228,7 +230,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         });
         setErrors(newErrors);
       } else {
-        toast.error("Failed to add", error.message);
+        toast.error(t("teams.inviteParents.toastAddFailedTitle"), error.message);
       }
     },
   });
@@ -241,8 +243,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     setErrors({});
   };
 
-  const inviteLink = invite?.token 
-    ? `${window.location.origin}/join/${invite.token}` 
+  const inviteLink = invite?.token
+    ? `${window.location.origin}/join/${invite.token}`
     : null;
 
   const handleCopy = async () => {
@@ -251,10 +253,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     try {
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
-      toast.success("Link copied", "Share it with parents.");
+      toast.success(t("teams.inviteParents.toastLinkCopiedTitle"), t("teams.inviteParents.toastLinkCopiedDescription"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy", "Please copy the link manually.");
+      toast.error(t("teams.inviteParents.toastCopyFailedTitle"), t("teams.inviteParents.toastCopyFailedDescription"));
     }
   };
 
@@ -266,10 +268,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     try {
       await navigator.clipboard.writeText(message);
       setCopied(true);
-      toast.success("Message copied", "Ready to paste in TeamSnap or email.");
+      toast.success(t("teams.inviteParents.toastMessageCopiedTitle"), t("teams.inviteParents.toastMessageCopiedDescription"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy", "Please copy the link manually.");
+      toast.error(t("teams.inviteParents.toastCopyFailedTitle"), t("teams.inviteParents.toastCopyFailedDescription"));
     }
   };
 
@@ -288,9 +290,9 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Players</DialogTitle>
+            <DialogTitle>{t("teams.inviteParents.title")}</DialogTitle>
             <DialogDescription>
-              Add your own child or invite other families to join {teamName}.
+              {t("teams.inviteParents.description", { teamName })}
             </DialogDescription>
           </DialogHeader>
 
@@ -298,11 +300,11 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="add-child" className="gap-2">
                 <Baby className="w-4 h-4" />
-                My Child
+                {t("teams.inviteParents.tabMyChild")}
               </TabsTrigger>
               <TabsTrigger value="invite" className="gap-2">
                 <Users className="w-4 h-4" />
-                Invite Parents
+                {t("teams.inviteParents.tabInviteParents")}
               </TabsTrigger>
             </TabsList>
 
@@ -318,8 +320,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                         <Check className="w-4 h-4" />
                         <span>
                           {childrenData!.childrenOnTeam.length === 1
-                            ? `${childrenData!.childrenOnTeam[0].first_name} is on the team`
-                            : `${childrenData!.childrenOnTeam.length} children on team`}
+                            ? t("teams.addChild.onTeamSingle", { name: childrenData!.childrenOnTeam[0].first_name })
+                            : t("teams.addChild.onTeamMultiple", { count: childrenData!.childrenOnTeam.length })}
                         </span>
                       </div>
                     </div>
@@ -328,7 +330,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   {/* Existing children not on team */}
                   {hasChildrenNotOnTeam && (
                     <div className="space-y-2">
-                      <Label>Select Existing Child</Label>
+                      <Label>{t("teams.addChild.selectExisting")}</Label>
                       <div className="space-y-2">
                         {childrenData!.childrenNotOnTeam.map((child) => (
                           <button
@@ -344,7 +346,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                             <p className="font-medium text-sm">
                               {child.first_name} {child.last_initial && `${child.last_initial}.`}
                             </p>
-                            <p className="text-xs text-muted-foreground">Born {child.birth_year}</p>
+                            <p className="text-xs text-muted-foreground">{t("teams.addChild.bornYear", { year: child.birth_year })}</p>
                           </button>
                         ))}
                       </div>
@@ -355,7 +357,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                           <span className="bg-background px-2 text-muted-foreground">
-                            Or create new
+                            {t("teams.addChild.orCreateNew")}
                           </span>
                         </div>
                       </div>
@@ -366,7 +368,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   {!selectedChildId && (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="childFirstName">Child's First Name</Label>
+                        <Label htmlFor="childFirstName">{t("teams.addChild.firstName")}</Label>
                         <Input
                           id="childFirstName"
                           value={firstName}
@@ -380,7 +382,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="childBirthYear">Birth Year</Label>
+                        <Label htmlFor="childBirthYear">{t("teams.addChild.birthYear")}</Label>
                         <Select
                           value={String(birthYear)}
                           onValueChange={(v) => setBirthYear(Number(v))}
@@ -399,15 +401,15 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Shoots</Label>
+                        <Label>{t("teams.addChild.shoots")}</Label>
                         <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="left">Left</SelectItem>
-                            <SelectItem value="right">Right</SelectItem>
-                            <SelectItem value="unknown">Not sure yet</SelectItem>
+                            <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
+                            <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
+                            <SelectItem value="unknown">{t("teams.addChild.shootsUnknown")}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -421,7 +423,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     disabled={addChildMutation.isPending || (!selectedChildId && !firstName.trim())}
                   >
                     {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                    {selectedChildId ? "Add to Team" : "Create & Add to Team"}
+                    {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}
                   </Button>
                 </>
               )}
@@ -437,9 +439,9 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     <LinkIcon className="w-6 h-6 text-primary" />
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {isExpired 
-                      ? "Your invite link has expired. Generate a new one."
-                      : "Generate an invite link to share with parents."}
+                    {isExpired
+                      ? t("teams.inviteParents.linkExpired")
+                      : t("teams.inviteParents.noLink")}
                   </p>
                   <Button
                     variant="team"
@@ -447,7 +449,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     disabled={regenerateInvite.isPending}
                   >
                     {regenerateInvite.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Generate Invite Link
+                    {t("teams.inviteParents.generateLink")}
                   </Button>
                 </div>
               ) : (
@@ -455,7 +457,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   {/* Short Code - Large & Easy to Read */}
                   {invite.short_code && (
                     <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Team Code (say it at the rink)</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t("teams.inviteParents.teamCode")}</p>
                       <p className="text-2xl font-bold font-mono tracking-wider text-primary">
                         {invite.short_code}
                       </p>
@@ -466,12 +468,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                         onClick={async () => {
                           await navigator.clipboard.writeText(invite.short_code);
                           setCopied(true);
-                          toast.success("Code copied");
+                          toast.success(t("teams.inviteParents.toastCodeCopied"));
                           setTimeout(() => setCopied(false), 2000);
                         }}
                       >
                         {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
-                        Copy Code
+                        {t("teams.inviteParents.copyCode")}
                       </Button>
                     </div>
                   )}
@@ -480,11 +482,11 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                     <div className="flex items-center gap-2 mb-2">
                       <LinkIcon className="w-4 h-4 text-green-600" />
-                      <p className="text-sm font-medium text-green-700 dark:text-green-400">Invite Link</p>
+                      <p className="text-sm font-medium text-green-700 dark:text-green-400">{t("teams.inviteParents.inviteLink")}</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                       <Calendar className="w-3 h-3" />
-                      Expires {new Date(invite.expires_at).toLocaleDateString()}
+                      {t("teams.inviteParents.expires", { date: new Date(invite.expires_at).toLocaleDateString() })}
                     </div>
                     <div className="flex items-center gap-2">
                       <Input value={inviteLink || ""} readOnly className="text-xs" />
@@ -509,7 +511,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     className="w-full"
                     onClick={async () => {
                       const shareText = `Join ${teamName} on The Hockey App!\n\nTeam Code: ${invite.short_code}\n\nOr use this link: ${inviteLink}`;
-                      
+
                       // Check if native share is available (mobile)
                       if (navigator.share) {
                         try {
@@ -518,31 +520,31 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                             text: shareText,
                             url: inviteLink || undefined,
                           });
-                          toast.success("Shared!", "Invite sent successfully.");
+                          toast.success(t("teams.inviteParents.toastSharedTitle"), t("teams.inviteParents.toastSharedDescription"));
                         } catch (err) {
                           // User cancelled or share failed - ignore AbortError
                           if ((err as Error).name !== "AbortError") {
                             // Fall back to copy
                             await navigator.clipboard.writeText(shareText);
-                            toast.success("Copied!", "Message copied to clipboard.");
+                            toast.success(t("teams.inviteParents.toastCopiedTitle"), t("teams.inviteParents.toastCopiedDescription"));
                           }
                         }
                       } else {
                         // Desktop fallback - copy to clipboard
                         await navigator.clipboard.writeText(shareText);
                         setCopied(true);
-                        toast.success("Copied!", "Message copied to clipboard.");
+                        toast.success(t("teams.inviteParents.toastCopiedTitle"), t("teams.inviteParents.toastCopiedDescription"));
                         setTimeout(() => setCopied(false), 2000);
                       }
                     }}
                   >
                     <Share2 className="w-4 h-4" />
-                    Share Invite
+                    {t("teams.inviteParents.shareInvite")}
                   </Button>
 
                   <div className="p-3 rounded-lg bg-muted">
                     <p className="text-xs text-muted-foreground mb-2">
-                      Or copy a ready-to-send message:
+                      {t("teams.inviteParents.orCopyMessage")}
                     </p>
                     <Button
                       variant="secondary"
@@ -551,7 +553,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       onClick={handleCopyWithMessage}
                     >
                       <Copy className="w-3 h-3" />
-                      Copy Message
+                      {t("teams.inviteParents.copyMessage")}
                     </Button>
                   </div>
 
@@ -563,10 +565,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       className="text-destructive hover:bg-destructive/10"
                     >
                       <RefreshCw className="w-4 h-4" />
-                      Regenerate
+                      {t("teams.inviteParents.regenerate")}
                     </Button>
                     <Button variant="team" onClick={() => onOpenChange(false)}>
-                      Done
+                      {t("teams.inviteParents.done")}
                     </Button>
                   </DialogFooter>
                 </div>
@@ -579,20 +581,19 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       <AlertDialog open={showRegenerateConfirm} onOpenChange={setShowRegenerateConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Regenerate Invite Link?</AlertDialogTitle>
+            <AlertDialogTitle>{t("teams.inviteParents.regenerateTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will invalidate the current link. Anyone who hasn't joined yet
-              will need the new link.
+              {t("teams.inviteParents.regenerateDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => regenerateInvite.mutate()}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {regenerateInvite.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Regenerate
+              {t("teams.inviteParents.regenerate")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

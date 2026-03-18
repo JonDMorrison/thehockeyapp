@@ -11,31 +11,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { useUserRoles, UserRole } from "@/hooks/useUserRoles";
 import { useActiveView } from "@/contexts/ActiveViewContext";
-import { 
-  Users, 
-  User, 
-  Dumbbell, 
-  ChevronDown, 
+import {
+  Users,
+  User,
+  Dumbbell,
+  ChevronDown,
   Check,
-  Loader2 
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
-const roleConfig: Record<UserRole, { label: string; icon: React.ElementType; description: string }> = {
+const roleConfig: Record<UserRole, { labelKey: string; icon: React.ElementType; descriptionKey: string }> = {
   coach: {
-    label: "Coach View",
+    labelKey: "nav.roleCoachView",
     icon: Users,
-    description: "Manage team & workouts",
+    descriptionKey: "nav.roleCoachDesc",
   },
   parent: {
-    label: "Parent View", 
+    labelKey: "nav.roleParentView",
     icon: User,
-    description: "Monitor your player",
+    descriptionKey: "nav.roleParentDesc",
   },
   player: {
-    label: "My Training",
+    labelKey: "nav.roleMyTraining",
     icon: Dumbbell,
-    description: "Do your workouts",
+    descriptionKey: "nav.rolePlayerDesc",
   },
 };
 
@@ -56,6 +57,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   compact = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { availableRoles, isLoading, coachTeams, guardedPlayers, ownPlayer } = useUserRoles();
@@ -94,16 +96,16 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
         break;
       case "parent":
         if (playerId) {
-          navigate(`/players/${playerId}/today`);
+          navigate(`/players/${playerId}/home`);
         } else if (guardedPlayers.length > 0) {
-          navigate(`/players/${guardedPlayers[0].playerId}/today`);
+          navigate(`/players/${guardedPlayers[0].playerId}/home`);
         } else {
           navigate("/players");
         }
         break;
       case "player":
         if (ownPlayer) {
-          navigate(`/players/${ownPlayer.id}/today`);
+          navigate(`/players/${ownPlayer.id}/home`);
         }
         break;
     }
@@ -112,22 +114,22 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size={compact ? "icon-sm" : "sm"}
           className={cn("gap-1.5", className)}
         >
           <CurrentIcon className="w-4 h-4" />
           {!compact && (
             <>
-              <span className="hidden sm:inline">{roleConfig[currentRole]?.label}</span>
+              <span className="hidden sm:inline">{t(roleConfig[currentRole]?.labelKey)}</span>
               <ChevronDown className="w-3 h-3 opacity-50" />
             </>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Switch View</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("nav.switchView")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {availableRoles.map((role) => {
           const config = roleConfig[role];
@@ -148,8 +150,8 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">{config.label}</p>
-                  <p className="text-xs text-muted-foreground">{config.description}</p>
+                  <p className="font-medium text-sm">{t(config.labelKey)}</p>
+                  <p className="text-xs text-muted-foreground">{t(config.descriptionKey)}</p>
                 </div>
                 {isActive && <Check className="w-4 h-4 text-primary" />}
               </div>

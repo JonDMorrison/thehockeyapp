@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { 
+import {
   ChevronLeft, CalendarPlus, CalendarRange, Sparkles, Rocket,
   ChevronRight, Calendar, CheckCircle2
 } from "lucide-react";
@@ -25,12 +28,12 @@ interface PlanningCardProps {
   iconBg: string;
 }
 
-const PlanningCard = ({ 
-  title, 
-  subtitle, 
+const PlanningCard = ({
+  title,
+  subtitle,
   description,
-  icon, 
-  onClick, 
+  icon,
+  onClick,
   badge,
   badgeVariant = 'default',
   delay = 0,
@@ -53,13 +56,13 @@ const PlanningCard = ({
     {/* Decorative background elements */}
     <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8" />
     <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/5 translate-y-6 -translate-x-6" />
-    
+
     {/* Badge */}
     {badge && (
       <div className="absolute top-3 right-3">
         <span className={cn(
           "text-[10px] font-bold px-2 py-1 rounded-full",
-          badgeVariant === 'premium' 
+          badgeVariant === 'premium'
             ? "bg-white/20 text-white backdrop-blur-sm border border-white/30"
             : "bg-white/90 text-foreground"
         )}>
@@ -86,8 +89,16 @@ const PlanningCard = ({
 );
 
 export default function SoloPlanningHub() {
+  const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch player
   const { data: player, isLoading } = useQuery({
@@ -105,7 +116,7 @@ export default function SoloPlanningHub() {
   });
 
   // Fetch active training plan
-  const { data: activePlan } = useQuery({
+  const { data: activePlan, isLoading: activePlanLoading } = useQuery({
     queryKey: ['solo-active-plan', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -120,22 +131,23 @@ export default function SoloPlanningHub() {
     enabled: !!playerId,
   });
 
-  // Fetch recent workout count
-  const { data: recentWorkouts } = useQuery({
+  // Fetch recent workout count — only cards scheduled for today
+  const { data: recentWorkouts, isLoading: recentWorkoutsLoading } = useQuery({
     queryKey: ['solo-recent-workouts', playerId],
     queryFn: async () => {
+      const today = format(new Date(), 'yyyy-MM-dd');
       const { count, error } = await supabase
         .from('personal_practice_cards')
         .select('*', { count: 'exact', head: true })
         .eq('player_id', playerId!)
-        .gte('date', format(new Date(), 'yyyy-MM-dd'));
+        .eq('scheduled_date', today);
       if (error) throw error;
       return count || 0;
     },
     enabled: !!playerId,
   });
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <AppShell>
         <div className="p-5 space-y-4">
@@ -146,6 +158,10 @@ export default function SoloPlanningHub() {
         </div>
       </AppShell>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -163,9 +179,9 @@ export default function SoloPlanningHub() {
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Plan Training</h1>
+              <h1 className="text-xl font-bold text-foreground">{t('solo.planTraining')}</h1>
               <p className="text-sm text-muted-foreground">
-                Build your workouts
+                {t('solo.buildYourWorkouts')}
               </p>
             </div>
           </div>
@@ -173,7 +189,9 @@ export default function SoloPlanningHub() {
 
         <div className="px-5 space-y-4 pb-8">
           {/* Current Status */}
-          {activePlan && (
+          {activePlanLoading || recentWorkoutsLoading ? (
+            <Skeleton className="h-16 w-full rounded-xl" />
+          ) : activePlan && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -188,7 +206,7 @@ export default function SoloPlanningHub() {
                     {activePlan.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Active plan · {activePlan.days_per_week} days/week
+                    {t('solo.activePlanDays', { days: activePlan.days_per_week })}
                   </p>
                 </div>
                 <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -199,14 +217,14 @@ export default function SoloPlanningHub() {
           {/* Planning Options */}
           <div className="pt-2">
             <h2 className="text-sm font-medium text-muted-foreground mb-4">
-              What would you like to create?
+              {t('solo.whatWouldYouLikeToCreate')}
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <PlanningCard
-                title="Workout"
-                subtitle="Single Day"
-                description="Build a focused session for today or pick any date"
+                title={t('solo.planCardWorkoutTitle')}
+                subtitle={t('solo.planCardWorkoutSubtitle')}
+                description={t('solo.planCardWorkoutDescription')}
                 icon={<CalendarPlus className="w-6 h-6 text-white" />}
                 badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts} today` : undefined}
                 onClick={() => navigate(`/solo/workout/${playerId}`)}
@@ -216,9 +234,9 @@ export default function SoloPlanningHub() {
               />
 
               <PlanningCard
-                title="Weekly"
-                subtitle="7-Day Routine"
-                description="Plan Mon–Sun and repeat every week automatically"
+                title={t('solo.planCardWeeklyTitle')}
+                subtitle={t('solo.planCardWeeklySubtitle')}
+                description={t('solo.planCardWeeklyDescription')}
                 icon={<CalendarRange className="w-6 h-6 text-white" />}
                 onClick={() => navigate(`/solo/week-planner/${playerId}`)}
                 delay={0.1}
@@ -227,9 +245,9 @@ export default function SoloPlanningHub() {
               />
 
               <PlanningCard
-                title="Program"
-                subtitle="Multi-Week Plan"
-                description="AI builds 2–8 weeks of progressive training for you"
+                title={t('solo.planCardProgramTitle')}
+                subtitle={t('solo.planCardProgramSubtitle')}
+                description={t('solo.planCardProgramDescription')}
                 icon={<Sparkles className="w-6 h-6 text-white" />}
                 badge="✨ AI"
                 badgeVariant="premium"
@@ -249,19 +267,19 @@ export default function SoloPlanningHub() {
             className="pt-4"
           >
             <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-              <h3 className="text-sm font-medium text-foreground">How it works</h3>
+              <h3 className="text-sm font-medium text-foreground">{t('solo.howItWorks')}</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex gap-3">
                   <span className="font-medium text-foreground">1.</span>
-                  <span>Pick a workout type or let AI build your plan</span>
+                  <span>{t('solo.howItWorksStep1')}</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="font-medium text-foreground">2.</span>
-                  <span>Complete daily tasks to build consistency</span>
+                  <span>{t('solo.howItWorksStep2')}</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="font-medium text-foreground">3.</span>
-                  <span>Earn badges as you hit milestones</span>
+                  <span>{t('solo.howItWorksStep3')}</span>
                 </div>
               </div>
             </div>

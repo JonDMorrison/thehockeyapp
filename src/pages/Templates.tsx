@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -57,16 +58,17 @@ interface Template {
   updated_at: string;
 }
 
-const tierOptions = [
-  { value: "rec", label: "Rec" },
-  { value: "rep", label: "Rep" },
-  { value: "elite", label: "Elite" },
-];
-
 const Templates: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  const tierOptions = [
+    { value: "rec", label: t('practice.tierRec') },
+    { value: "rep", label: t('practice.tierRep') },
+    { value: "elite", label: t('practice.tierElite') },
+  ];
 
   const [showCreateSheet, setShowCreateSheet] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
@@ -142,12 +144,12 @@ const Templates: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-templates", user?.id] });
-      toast.success(editingTemplate ? "Template updated" : "Template created");
+      toast.success(editingTemplate ? t('practice.templateUpdated') : t('practice.templateCreated'));
       setShowCreateSheet(false);
       setEditingTemplate(null);
     },
     onError: (error: Error) => {
-      toast.error("Failed to save", error.message);
+      toast.error(t('practice.failedToSave'), error.message);
     },
   });
 
@@ -163,11 +165,11 @@ const Templates: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-templates", user?.id] });
-      toast.success("Template deleted");
+      toast.success(t('practice.templateDeleted'));
       setDeleteTemplate(null);
     },
     onError: (error: Error) => {
-      toast.error("Failed to delete", error.message);
+      toast.error(t('practice.failedToDelete'), error.message);
     },
   });
 
@@ -194,7 +196,7 @@ const Templates: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-bold">My Templates</h1>
+          <h1 className="text-lg font-bold">{t('practice.myTemplates')}</h1>
         </div>
       }
     >
@@ -206,7 +208,7 @@ const Templates: React.FC = () => {
           onClick={() => setShowCreateSheet(true)}
         >
           <Plus className="w-4 h-4 mr-2" />
-          New Template
+          {t('practice.newTemplate')}
         </Button>
 
         {/* Templates List */}
@@ -214,10 +216,10 @@ const Templates: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={FileText}
-              title="No templates yet"
-              description="Create templates to quickly build week plans."
+              title={t('practice.noTemplatesYet')}
+              description={t('practice.noTemplatesDesc')}
               action={{
-                label: "Create Template",
+                label: t('practice.createTemplate'),
                 onClick: () => setShowCreateSheet(true),
               }}
             />
@@ -243,7 +245,7 @@ const Templates: React.FC = () => {
                       </p>
                     )}
                     <p className="text-xs text-text-muted mt-2">
-                      Updated {format(new Date(template.updated_at), "MMM d, yyyy")}
+                      {t('practice.updatedDate', { date: format(new Date(template.updated_at), "MMM d, yyyy") })}
                     </p>
                   </div>
                   <div className="flex gap-1">
@@ -283,37 +285,37 @@ const Templates: React.FC = () => {
         <SheetContent side="bottom" className="h-auto">
           <SheetHeader>
             <SheetTitle>
-              {editingTemplate ? "Edit Template" : "New Template"}
+              {editingTemplate ? t('practice.editTemplate') : t('practice.newTemplate')}
             </SheetTitle>
             <SheetDescription>
-              Save your workout structure to reuse later
+              {t('practice.templateSheetDesc')}
             </SheetDescription>
           </SheetHeader>
 
           <div className="py-6 space-y-4">
             <div>
-              <Label>Name</Label>
+              <Label>{t('common.name')}</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Standard Week"
+                placeholder={t('practice.templateNamePlaceholder')}
                 className="mt-1.5"
               />
             </div>
 
             <div>
-              <Label>Description (optional)</Label>
+              <Label>{t('practice.descriptionOptional')}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What's this template for?"
+                placeholder={t('practice.descriptionPlaceholder')}
                 className="mt-1.5"
                 rows={2}
               />
             </div>
 
             <div>
-              <Label>Default Tier</Label>
+              <Label>{t('practice.defaultTier')}</Label>
               <Select value={tier} onValueChange={setTier}>
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
@@ -337,14 +339,14 @@ const Templates: React.FC = () => {
                   setEditingTemplate(null);
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 className="flex-1"
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending || !name}
               >
-                {saveMutation.isPending ? "Saving..." : "Save"}
+                {saveMutation.isPending ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </div>
@@ -355,18 +357,18 @@ const Templates: React.FC = () => {
       <AlertDialog open={!!deleteTemplate} onOpenChange={() => setDeleteTemplate(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Template?</AlertDialogTitle>
+            <AlertDialogTitle>{t('practice.deleteTemplateTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "{deleteTemplate?.name}". This action cannot be undone.
+              {t('practice.deleteTemplateDesc', { name: deleteTemplate?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate()}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { logger } from "@/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppCard } from "@/components/app/AppCard";
@@ -108,9 +109,10 @@ const TIMEZONES = [
 ];
 
 export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId, onConnected }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   const [showSheet, setShowSheet] = useState(false);
   const [icalUrl, setIcalUrl] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
@@ -170,11 +172,11 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
     onSuccess: (data) => {
       setPreview(data);
       if (!data.success) {
-        toast.error(data.error || "Failed to preview schedule");
+        toast.error(data.error || t("teams.scheduleSync.toastPreviewFailed"));
       }
     },
     onError: (error) => {
-      toast.error("Failed to preview schedule");
+      toast.error(t("teams.scheduleSync.toastPreviewFailed"));
       logger.error("Failed to preview schedule", { error });
     },
   });
@@ -206,11 +208,11 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       setShowSheet(false);
       setPreview(null);
       setIcalUrl("");
-      toast.success("Schedule connected!", "Events will sync automatically");
+      toast.success(t("teams.scheduleSync.toastConnectedTitle"), t("teams.scheduleSync.toastConnectedDescription"));
       onConnected?.();
     },
     onError: (error) => {
-      toast.error("Failed to connect schedule");
+      toast.error(t("teams.scheduleSync.toastConnectFailed"));
       logger.error("Failed to connect schedule", { error });
     },
   });
@@ -228,10 +230,10 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-schedule-source", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-upcoming-events", teamId] });
-      toast.success("Schedule synced");
+      toast.success(t("teams.scheduleSync.toastSynced"));
     },
     onError: () => {
-      toast.error("Sync failed");
+      toast.error(t("teams.scheduleSync.toastSyncFailed"));
     },
   });
 
@@ -256,10 +258,10 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-schedule-source", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-upcoming-events", teamId] });
-      toast.success("Schedule disconnected");
+      toast.success(t("teams.scheduleSync.toastDisconnected"));
     },
     onError: () => {
-      toast.error("Failed to disconnect");
+      toast.error(t("teams.scheduleSync.toastDisconnectFailed"));
     },
   });
 
@@ -275,13 +277,13 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-schedule-source", teamId] });
-      toast.success("Settings updated");
+      toast.success(t("teams.scheduleSync.toastSettingsUpdated"));
     },
   });
 
   const handlePreview = async () => {
     if (!icalUrl.trim()) {
-      toast.error("Please paste the iCal link");
+      toast.error(t("teams.scheduleSync.toastPasteLink"));
       return;
     }
     setIsPreviewing(true);
@@ -317,11 +319,11 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
               <Check className="w-4 h-4 text-green-500" />
             </div>
             <div>
-              <h3 className="font-semibold">TeamSnap Schedule Connected</h3>
+              <h3 className="font-semibold">{t("teams.scheduleSync.connectedTitle")}</h3>
               <p className="text-sm text-muted-foreground">
                 {source.last_synced_at
-                  ? `Last synced ${format(new Date(source.last_synced_at), "MMM d 'at' h:mm a")}`
-                  : "Syncing..."}
+                  ? t("teams.scheduleSync.lastSynced", { date: format(new Date(source.last_synced_at), "MMM d 'at' h:mm a") })
+                  : t("teams.scheduleSync.syncing")}
               </p>
             </div>
           </div>
@@ -362,7 +364,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 )}
               </div>
               <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full shrink-0">
-                Next Game
+                {t("teams.scheduleSync.nextGame")}
               </span>
             </div>
           )}
@@ -377,14 +379,14 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 </p>
               </div>
               <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full shrink-0">
-                Practice
+                {t("teams.scheduleSync.practice")}
               </span>
             </div>
           )}
 
           {!nextGame && !nextPractice && (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No upcoming events found
+              {t("teams.scheduleSync.noUpcoming")}
             </p>
           )}
         </div>
@@ -395,9 +397,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label className="font-medium">Auto Game Day Prep</Label>
+              <Label className="font-medium">{t("teams.scheduleSync.autoGameDayLabel")}</Label>
               <p className="text-xs text-muted-foreground">
-                Automatically enable prep mode on game days
+                {t("teams.scheduleSync.autoGameDayDescription")}
               </p>
             </div>
             <Switch
@@ -408,9 +410,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
 
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label className="font-medium">Show Practices</Label>
+              <Label className="font-medium">{t("teams.scheduleSync.showPracticesLabel")}</Label>
               <p className="text-xs text-muted-foreground">
-                Display practice times as reminders
+                {t("teams.scheduleSync.showPracticesDescription")}
               </p>
             </div>
             <Switch
@@ -430,7 +432,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
           disabled={disconnectMutation.isPending}
         >
           <Trash2 className="w-4 h-4 mr-2" />
-          Disconnect Schedule
+          {t("teams.scheduleSync.disconnect")}
         </Button>
       </AppCard>
     );
@@ -445,15 +447,15 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
             <Calendar className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold">Connect Your TeamSnap Schedule</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              We'll automatically detect <strong>games</strong> and handle <strong>Game Day Prep</strong> for you.
-            </p>
+            <h3 className="font-semibold">{t("teams.scheduleSync.notConnectedTitle")}</h3>
+            <p className="text-sm text-muted-foreground mt-1"
+              dangerouslySetInnerHTML={{ __html: t("teams.scheduleSync.notConnectedDescription") }}
+            />
           </div>
         </div>
         <Button className="w-full mt-4" onClick={() => setShowSheet(true)}>
           <Link2 className="w-4 h-4 mr-2" />
-          Connect TeamSnap Schedule
+          {t("teams.scheduleSync.connectButton")}
         </Button>
       </AppCard>
 
@@ -461,9 +463,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       <Sheet open={showSheet} onOpenChange={setShowSheet}>
         <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
           <SheetHeader className="text-left">
-            <SheetTitle>Connect TeamSnap</SheetTitle>
+            <SheetTitle>{t("teams.scheduleSync.sheetTitle")}</SheetTitle>
             <SheetDescription>
-              Follow these steps to sync your schedule
+              {t("teams.scheduleSync.sheetDescription")}
             </SheetDescription>
           </SheetHeader>
 
@@ -474,7 +476,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center">
                   1
                 </span>
-                Copy your TeamSnap iCal link
+                {t("teams.scheduleSync.step1Title")}
               </h4>
 
               {/* Phone instructions */}
@@ -482,18 +484,18 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-2">
                     <Smartphone className="w-4 h-4" />
-                    <span className="text-sm font-medium">On a phone (TeamSnap app)</span>
+                    <span className="text-sm font-medium">{t("teams.scheduleSync.phoneInstructions")}</span>
                   </div>
                   <ChevronDown className={cn("w-4 h-4 transition-transform", showPhoneInstructions && "rotate-180")} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <ol className="text-sm text-muted-foreground space-y-2 pl-4 list-decimal">
-                    <li>Open <strong>TeamSnap</strong></li>
-                    <li>Choose your <strong>team</strong></li>
-                    <li>Tap <strong>Schedule</strong></li>
-                    <li>Tap <strong>Share / Export / Subscribe</strong></li>
-                    <li>Choose <strong>Subscribe (iCal)</strong></li>
-                    <li>Copy the link</li>
+                    <li>{t("teams.scheduleSync.phoneStep1")}</li>
+                    <li>{t("teams.scheduleSync.phoneStep2")}</li>
+                    <li>{t("teams.scheduleSync.phoneStep3")}</li>
+                    <li>{t("teams.scheduleSync.phoneStep4")}</li>
+                    <li>{t("teams.scheduleSync.phoneStep5")}</li>
+                    <li>{t("teams.scheduleSync.phoneStep6")}</li>
                   </ol>
                 </CollapsibleContent>
               </Collapsible>
@@ -503,26 +505,25 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted rounded-lg">
                   <div className="flex items-center gap-2">
                     <Monitor className="w-4 h-4" />
-                    <span className="text-sm font-medium">On a computer (easiest)</span>
+                    <span className="text-sm font-medium">{t("teams.scheduleSync.desktopInstructions")}</span>
                   </div>
                   <ChevronDown className={cn("w-4 h-4 transition-transform", showDesktopInstructions && "rotate-180")} />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <ol className="text-sm text-muted-foreground space-y-2 pl-4 list-decimal">
-                    <li>Go to <strong>teamsnap.com</strong></li>
-                    <li>Open your team</li>
-                    <li>Click <strong>Schedule</strong></li>
-                    <li>Click <strong>Subscribe / Export</strong></li>
-                    <li>Copy the <strong>iCal link</strong></li>
+                    <li>{t("teams.scheduleSync.desktopStep1")}</li>
+                    <li>{t("teams.scheduleSync.desktopStep2")}</li>
+                    <li>{t("teams.scheduleSync.desktopStep3")}</li>
+                    <li>{t("teams.scheduleSync.desktopStep4")}</li>
+                    <li>{t("teams.scheduleSync.desktopStep5")}</li>
                   </ol>
                 </CollapsibleContent>
               </Collapsible>
 
               <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-sm text-amber-700 dark:text-amber-300">
-                  <strong>Tip:</strong> If TeamSnap opens your calendar instead of showing a link, look for{" "}
-                  <strong>"Copy iCal URL"</strong> or a link icon.
-                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300"
+                  dangerouslySetInnerHTML={{ __html: t("teams.scheduleSync.tip") }}
+                />
               </div>
             </div>
 
@@ -532,10 +533,10 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center">
                   2
                 </span>
-                Paste the link
+                {t("teams.scheduleSync.step2Title")}
               </h4>
               <Input
-                placeholder="Paste TeamSnap iCal link here"
+                placeholder={t("teams.scheduleSync.urlPlaceholder")}
                 value={icalUrl}
                 onChange={(e) => {
                   setIcalUrl(e.target.value);
@@ -553,7 +554,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 ) : (
                   <Calendar className="w-4 h-4 mr-2" />
                 )}
-                Preview Schedule
+                {t("teams.scheduleSync.previewButton")}
               </Button>
             </div>
 
@@ -566,24 +567,24 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                       <div className="flex items-center gap-2 mb-2">
                         <Check className="w-5 h-5 text-green-500" />
                         <span className="font-semibold text-green-700 dark:text-green-300">
-                          Found {preview.future_events} upcoming events
+                          {t("teams.scheduleSync.previewFound", { count: preview.future_events })}
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground space-y-1">
                         {preview.next_game && (
                           <p>
-                            <strong>Next game:</strong>{" "}
+                            <strong>{t("teams.scheduleSync.previewNextGame")}</strong>{" "}
                             {format(new Date(preview.next_game.start_time), "EEE, MMM d 'at' h:mm a")}
                           </p>
                         )}
                         {preview.next_practice && (
                           <p>
-                            <strong>Next practice:</strong>{" "}
+                            <strong>{t("teams.scheduleSync.previewNextPractice")}</strong>{" "}
                             {format(new Date(preview.next_practice.start_time), "EEE, MMM d 'at' h:mm a")}
                           </p>
                         )}
                         <p className="text-xs mt-2">
-                          {preview.games_count} games · {preview.practices_count} practices
+                          {t("teams.scheduleSync.previewCounts", { games: preview.games_count, practices: preview.practices_count })}
                         </p>
                       </div>
                     </div>
@@ -594,12 +595,12 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                         <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center">
                           3
                         </span>
-                        Settings
+                        {t("teams.scheduleSync.step3Title")}
                       </h4>
 
                       <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
                         <div>
-                          <Label className="text-sm font-medium">Your timezone</Label>
+                          <Label className="text-sm font-medium">{t("teams.scheduleSync.timezoneLabel")}</Label>
                           <Select value={timezone} onValueChange={setTimezone}>
                             <SelectTrigger className="mt-1">
                               <SelectValue />
@@ -616,9 +617,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
 
                         <div className="flex items-center justify-between gap-4">
                           <div className="space-y-0.5">
-                            <Label className="font-medium">Auto Game Day Prep</Label>
+                            <Label className="font-medium">{t("teams.scheduleSync.autoGameDayLabel")}</Label>
                             <p className="text-xs text-muted-foreground">
-                              Automatically enable prep mode (recommended)
+                              {t("teams.scheduleSync.autoGameDaySetupDescription")}
                             </p>
                           </div>
                           <Switch checked={autoGameDay} onCheckedChange={setAutoGameDay} />
@@ -626,9 +627,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
 
                         <div className="flex items-center justify-between gap-4">
                           <div className="space-y-0.5">
-                            <Label className="font-medium">Include Practices</Label>
+                            <Label className="font-medium">{t("teams.scheduleSync.includePracticesLabel")}</Label>
                             <p className="text-xs text-muted-foreground">
-                              Show practice times as reminders
+                              {t("teams.scheduleSync.showPracticesDescription")}
                             </p>
                           </div>
                           <Switch checked={includePractices} onCheckedChange={setIncludePractices} />
@@ -648,7 +649,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                       ) : (
                         <Link2 className="w-4 h-4 mr-2" />
                       )}
-                      Connect Schedule
+                      {t("teams.scheduleSync.connectSchedule")}
                     </Button>
                   </>
                 ) : (
@@ -656,9 +657,9 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-destructive">Couldn't read the calendar</p>
+                        <p className="font-medium text-destructive">{t("teams.scheduleSync.previewErrorTitle")}</p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {preview.error || "Double-check that you copied the iCal / Subscribe link."}
+                          {preview.error || t("teams.scheduleSync.previewErrorDescription")}
                         </p>
                       </div>
                     </div>

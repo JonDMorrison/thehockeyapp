@@ -1,4 +1,5 @@
 import { Check, Calendar, ClipboardList, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface OnboardingCompleteProps {
@@ -7,6 +8,7 @@ interface OnboardingCompleteProps {
 }
 
 export function OnboardingComplete({ teamName, onAction }: OnboardingCompleteProps) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full text-center space-y-6">
@@ -17,9 +19,9 @@ export function OnboardingComplete({ teamName, onAction }: OnboardingCompletePro
 
         {/* Message */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">Your team is ready!</h1>
+          <h1 className="text-2xl font-bold">{t("welcome.onboardingComplete.title")}</h1>
           <p className="text-muted-foreground">
-            {teamName} is all set up. What would you like to do first?
+            {t("welcome.onboardingComplete.subtitle", { teamName })}
           </p>
         </div>
 
@@ -31,7 +33,7 @@ export function OnboardingComplete({ teamName, onAction }: OnboardingCompletePro
             size="lg"
           >
             <Calendar className="mr-2 h-5 w-5" />
-            Create this week's plan
+            {t("welcome.onboardingComplete.createWeekButton")}
           </Button>
 
           <Button
@@ -41,7 +43,7 @@ export function OnboardingComplete({ teamName, onAction }: OnboardingCompletePro
             size="lg"
           >
             <ClipboardList className="mr-2 h-5 w-5" />
-            Create today's practice
+            {t("welcome.onboardingComplete.createTodayButton")}
           </Button>
 
           <Button
@@ -51,7 +53,7 @@ export function OnboardingComplete({ teamName, onAction }: OnboardingCompletePro
             size="lg"
           >
             <Users className="mr-2 h-5 w-5" />
-            Invite parents
+            {t("welcome.onboardingComplete.inviteParentsButton")}
           </Button>
         </div>
 
@@ -60,7 +62,7 @@ export function OnboardingComplete({ teamName, onAction }: OnboardingCompletePro
           onClick={() => onAction("home")}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Go to team home
+          {t("welcome.onboardingComplete.goToTeamHome")}
         </button>
       </div>
     </div>

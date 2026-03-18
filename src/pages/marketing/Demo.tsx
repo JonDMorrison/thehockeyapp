@@ -24,30 +24,32 @@ import {
 } from "lucide-react";
 import { FeatureCoachView } from "@/components/marketing/features/FeatureCoachView";
 import { FeatureCheckoff } from "@/components/marketing/features/FeatureCheckoff";
+import { useTranslation } from 'react-i18next';
 
 const Demo: React.FC = () => {
+  const { t } = useTranslation();
   const [activeView, setActiveView] = useState<"coach" | "player">("coach");
   const [showGetStarted, setShowGetStarted] = useState(false);
 
   const coachFeatures = [
-    { icon: ClipboardList, text: "Assign simple tasks", description: "Create off-ice assignments in minutes" },
-    { icon: TrendingUp, text: "See who's completing", description: "Team dashboard shows participation" },
-    { icon: Trophy, text: "Reward consistency", description: "Badges motivate without pressure" },
-    { icon: Users, text: "Whole team visibility", description: "Track completion at a glance" },
+    { icon: ClipboardList, text: t('marketing.demo_coach_feature_tasks'), description: t('marketing.demo_coach_feature_tasks_detail') },
+    { icon: TrendingUp, text: t('marketing.demo_coach_see_who'), description: t('marketing.demo_coach_feature_completion') },
+    { icon: Trophy, text: t('marketing.demo_coach_feature_consistency'), description: t('marketing.demo_coach_rewards_detail') },
+    { icon: Users, text: t('marketing.demo_coach_feature_visibility'), description: t('marketing.demo_coach_feature_visibility_detail') },
   ];
 
   const playerFeatures = [
-    { icon: CheckCircle, text: "Clear daily tasks", description: "Know exactly what to do today" },
-    { icon: Play, text: "One-tap completion", description: "Check off tasks in seconds" },
-    { icon: Trophy, text: "Earn fun rewards", description: "Badges celebrate consistency" },
-    { icon: WifiOff, text: "Works offline", description: "No internet needed" },
+    { icon: CheckCircle, text: t('marketing.demo_player_feature_clear_tasks'), description: t('marketing.demo_player_feature_clear_tasks_detail') },
+    { icon: Play, text: t('marketing.demo_player_feature_completion'), description: t('marketing.demo_player_feature_completion_detail') },
+    { icon: Trophy, text: t('marketing.demo_player_feature_rewards'), description: t('marketing.demo_player_feature_rewards_detail') },
+    { icon: WifiOff, text: t('marketing.demo_player_feature_offline'), description: t('marketing.demo_player_feature_offline_detail') },
   ];
 
   const privacyFeatures = [
-    { icon: Eye, title: "Nothing is public", description: "All data stays within your team" },
-    { icon: Users, title: "No comparisons", description: "Kids aren't ranked against each other" },
-    { icon: Shield, title: "Parent-controlled", description: "You decide what coaches see" },
-    { icon: Lock, title: "Built for families", description: "Privacy by design, not afterthought" },
+    { icon: Eye, title: t('marketing.demo_privacy_nothing_public'), description: t('marketing.demo_privacy_nothing_public_detail') },
+    { icon: Users, title: t('marketing.demo_privacy_no_comparisons'), description: t('marketing.demo_privacy_no_comparisons_detail') },
+    { icon: Shield, title: t('marketing.demo_privacy_parent_controlled'), description: t('marketing.demo_privacy_parent_controlled_detail') },
+    { icon: Lock, title: t('marketing.demo_privacy_built_for_families'), description: t('marketing.demo_privacy_built_for_families_detail') },
   ];
 
   return (
@@ -61,7 +63,7 @@ const Demo: React.FC = () => {
           <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-success/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           {/* Grid pattern */}
-          <div 
+          <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
               backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
@@ -75,14 +77,14 @@ const Demo: React.FC = () => {
           {/* Floating badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
             <Dumbbell className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">Off-Ice Training Demo</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('marketing.demo_badge_demo')}</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-foreground">
-            Simple for everyone.
+            {t('marketing.demo_hero_heading')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Coaches assign off-ice tasks. Kids check them off with fun rewards. Parents stay in control.
+            {t('marketing.demo_hero_description')}
           </p>
 
           {/* View Switcher */}
@@ -96,7 +98,7 @@ const Demo: React.FC = () => {
               }`}
             >
               <Users className="w-4 h-4" />
-              Coach View
+              {t('marketing.demo_switch_coach')}
             </button>
             <button
               onClick={() => setActiveView("player")}
@@ -107,7 +109,7 @@ const Demo: React.FC = () => {
               }`}
             >
               <UserCircle className="w-4 h-4" />
-              Player View
+              {t('marketing.demo_switch_player')}
             </button>
           </div>
         </div>
@@ -123,11 +125,11 @@ const Demo: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-[hsl(221,70%,60%)] flex items-center justify-center">
                   <Users className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-sm font-medium text-foreground">Coach Dashboard</span>
+                <span className="text-sm font-medium text-foreground">{t('marketing.demo_badge_coach_dashboard')}</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                Assign tasks. See results.
+                {t('marketing.demo_assign_tasks')}
               </h2>
 
               {/* Features in glass card */}
@@ -150,7 +152,7 @@ const Demo: React.FC = () => {
               {/* Quote card */}
               <div className="glass-strong rounded-2xl p-6">
                 <p className="text-xl font-semibold text-foreground">
-                  "Finally, I can see who's putting in the work."
+                  {t('marketing.demo_coach_quote')}
                 </p>
               </div>
             </div>
@@ -182,11 +184,11 @@ const Demo: React.FC = () => {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-success to-[hsl(160,60%,40%)] flex items-center justify-center">
                   <UserCircle className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-sm font-medium text-foreground">Player Experience</span>
+                <span className="text-sm font-medium text-foreground">{t('marketing.demo_badge_player_experience')}</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-                Simple tasks. Fun rewards.
+                {t('marketing.demo_player_simple_tasks')}
               </h2>
 
               {/* Features in glass card */}
@@ -209,7 +211,7 @@ const Demo: React.FC = () => {
               {/* Quote card */}
               <div className="glass-strong rounded-2xl p-6">
                 <p className="text-xl font-semibold text-foreground">
-                  "My kids actually want to do their off-ice training now."
+                  {t('marketing.demo_player_quote')}
                 </p>
               </div>
             </div>
@@ -223,18 +225,18 @@ const Demo: React.FC = () => {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
               <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">Total Parent Control</span>
+              <span className="text-sm font-medium text-muted-foreground">{t('marketing.demo_badge_parent_control')}</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-              Parents are always in charge.
+              {t('marketing.demo_parents_always_in_charge')}
             </h2>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {privacyFeatures.map((item, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="group bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-soft p-6 hover:shadow-depth hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -256,10 +258,10 @@ const Demo: React.FC = () => {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-gray-200/50 shadow-depth p-10 md:p-14">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
-              Ready to simplify off-ice training?
+              {t('marketing.features_cta_heading')}
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              {BETA_MODE ? "Free during the beta. All features unlocked." : "Get started free. Teams can cover families. Otherwise parents upgrade after a 7-day trial."}
+              {BETA_MODE ? t('marketing.home_hero_beta_free') : t('marketing.pricing_cta_subtext')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -268,18 +270,18 @@ const Demo: React.FC = () => {
                 className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
-                Get Started For Free
+                {t('marketing.home_cta_get_started')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               {!BETA_MODE && (
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   className="text-base px-8 border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
                   asChild
                 >
                   <Link to="/pricing">
-                    View Pricing
+                    {t('marketing.demo_view_pricing')}
                   </Link>
                 </Button>
               )}

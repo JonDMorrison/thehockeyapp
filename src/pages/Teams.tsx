@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
@@ -14,16 +15,17 @@ import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, Users, Shield } from "lucide-react";
 
-const roleLabels: Record<string, string> = {
-  head_coach: "Head Coach",
-  assistant_coach: "Asst. Coach",
-  manager: "Manager",
-};
-
 const Teams: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  const roleLabels: Record<string, string> = {
+    head_coach: t("teams.role.headCoach"),
+    assistant_coach: t("teams.role.assistantCoach"),
+    manager: t("teams.role.manager"),
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -91,8 +93,8 @@ const Teams: React.FC = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <PageHeader
-            title="Teams"
-            subtitle="Manage your teams"
+            title={t("teams.list.title")}
+            subtitle={t("teams.list.subtitle")}
           />
           <div className="flex items-center gap-2">
             <ContextSwitcher />
@@ -102,7 +104,7 @@ const Teams: React.FC = () => {
               onClick={() => navigate("/teams/new")}
             >
               <Plus className="w-4 h-4" />
-              Create
+              {t("teams.list.create")}
             </Button>
           </div>
         </div>
@@ -165,10 +167,10 @@ const Teams: React.FC = () => {
             <AppCard>
               <EmptyState
                 icon={Users}
-                title="No teams yet"
-                description="Create your first team to start managing practices and player development."
+                title={t("teams.list.emptyTitle")}
+                description={t("teams.list.emptyDescription")}
                 action={{
-                  label: "Create Team",
+                  label: t("teams.list.emptyAction"),
                   onClick: () => navigate("/teams/new"),
                 }}
               />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -74,6 +75,7 @@ interface TeamMembership {
 }
 
 const PlayerHome: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -261,11 +263,11 @@ const PlayerHome: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-preferences", id] });
-      toast.success("Active team updated", "Theme and workouts will reflect this team.");
+      toast.success(t("players.home.toastTeamUpdatedTitle"), t("players.home.toastTeamUpdatedDescription"));
       setShowTeamSelector(false);
     },
     onError: (error: Error) => {
-      toast.error("Failed to update", error.message);
+      toast.error(t("players.home.toastTeamUpdateFailedTitle"), error.message);
     },
   });
 
@@ -318,20 +320,20 @@ const PlayerHome: React.FC = () => {
           
           // Show celebratory toast
           const messages: Record<number, { title: string; description: string }> = {
-            7: { title: "🔥 One Week Streak!", description: "You're building a great habit!" },
-            14: { title: "🔥🔥 Two Week Streak!", description: "Incredible consistency!" },
-            21: { title: "🔥🔥🔥 Three Weeks!", description: "You're unstoppable!" },
-            30: { title: "🏆 One Month Streak!", description: "Legendary dedication!" },
-            60: { title: "⭐ 60 Day Streak!", description: "You're a training machine!" },
-            90: { title: "👑 90 Day Streak!", description: "Elite commitment!" },
-            100: { title: "💯 100 Day Streak!", description: "Absolutely incredible!" },
-            180: { title: "🌟 6 Month Streak!", description: "Hall of Fame worthy!" },
-            365: { title: "🎉 ONE YEAR STREAK!", description: "You are a legend!" },
+            7: { title: t("players.home.streak7Title"), description: t("players.home.streak7Description") },
+            14: { title: t("players.home.streak14Title"), description: t("players.home.streak14Description") },
+            21: { title: t("players.home.streak21Title"), description: t("players.home.streak21Description") },
+            30: { title: t("players.home.streak30Title"), description: t("players.home.streak30Description") },
+            60: { title: t("players.home.streak60Title"), description: t("players.home.streak60Description") },
+            90: { title: t("players.home.streak90Title"), description: t("players.home.streak90Description") },
+            100: { title: t("players.home.streak100Title"), description: t("players.home.streak100Description") },
+            180: { title: t("players.home.streak180Title"), description: t("players.home.streak180Description") },
+            365: { title: t("players.home.streak365Title"), description: t("players.home.streak365Description") },
           };
-          
-          const message = messages[hitMilestone] || { 
-            title: `🔥 ${hitMilestone} Day Streak!`, 
-            description: "Keep up the amazing work!" 
+
+          const message = messages[hitMilestone] || {
+            title: t("players.home.streakDefaultTitle", { days: hitMilestone }),
+            description: t("players.home.streakDefaultDescription")
           };
           
           setTimeout(() => {
@@ -340,7 +342,7 @@ const PlayerHome: React.FC = () => {
         }
       }
     }
-  }, [streakData?.currentStreak, id]);
+  }, [streakData?.currentStreak, id, t]);
 
   // First-run detection: show welcome overlay if player has zero completed sessions
   const { data: sessionCount } = useQuery({
@@ -372,7 +374,7 @@ const PlayerHome: React.FC = () => {
   };
 
   // Combined loading state - check after all hooks are called
-  const isLoading = authLoading || playerLoading || membershipsLoading;
+  const isLoading = authLoading || playerLoading || membershipsLoading || snapshotLoading;
 
   // Show loading skeleton while auth or data is loading
   if (isLoading) {
@@ -400,10 +402,10 @@ const PlayerHome: React.FC = () => {
           <AppCard>
             <EmptyState
               icon={User}
-              title="Player not found"
-              description="This player doesn't exist or you don't have access."
+              title={t("players.home.notFoundTitle")}
+              description={t("players.home.notFoundDescription")}
               action={{
-                label: "Go Back",
+                label: t("players.home.goBack"),
                 onClick: () => navigate("/players"),
               }}
             />
@@ -450,18 +452,23 @@ const PlayerHome: React.FC = () => {
                 <h2 className="text-2xl font-bold">
                   {player.first_name} {player.last_initial && `${player.last_initial}.`}
                 </h2>
-                <Tag variant="neutral">Born {player.birth_year}</Tag>
+                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
                 {player.jersey_number && (
                   <Tag variant="tier">#{player.jersey_number}</Tag>
                 )}
                 {activeTeam && (
-                  <Tag 
-                    variant="accent" 
-                    className="cursor-pointer hover:opacity-80"
-                    onClick={() => setShowTeamSelector(true)}
-                  >
-                    {activeTeam.name}
-                  </Tag>
+                  <div className="flex items-center gap-2">
+                    <Tag
+                      variant="accent"
+                      className="cursor-pointer hover:opacity-80"
+                      onClick={() => setShowTeamSelector(true)}
+                    >
+                      {activeTeam.name}
+                    </Tag>
+                    {activeTeam.season_label && (
+                      <Tag variant="neutral" size="sm">{activeTeam.season_label}</Tag>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -529,7 +536,7 @@ const PlayerHome: React.FC = () => {
             <div className="col-span-4 space-y-6">
               {/* Quick Actions */}
               <AppCard>
-                <AppCardTitle>Quick Actions</AppCardTitle>
+                <AppCardTitle>{t("players.home.quickActions")}</AppCardTitle>
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <Button
                     variant="outline"
@@ -537,7 +544,7 @@ const PlayerHome: React.FC = () => {
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
                     <Target className="w-5 h-5 text-team-primary" />
-                    <span className="text-sm">Goals</span>
+                    <span className="text-sm">{t("players.home.goals")}</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -545,7 +552,7 @@ const PlayerHome: React.FC = () => {
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
                     <Trophy className="w-5 h-5 text-amber-500" />
-                    <span className="text-sm">Badges</span>
+                    <span className="text-sm">{t("players.home.badges")}</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -553,7 +560,7 @@ const PlayerHome: React.FC = () => {
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
                     <User className="w-5 h-5 text-text-muted" />
-                    <span className="text-sm">Profile</span>
+                    <span className="text-sm">{t("players.home.profile")}</span>
                   </Button>
                   <Button
                     variant="outline"
@@ -561,7 +568,7 @@ const PlayerHome: React.FC = () => {
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
                     <Users className="w-5 h-5 text-text-muted" />
-                    <span className="text-sm">Switch</span>
+                    <span className="text-sm">{t("players.home.switch")}</span>
                   </Button>
                 </div>
               </AppCard>
@@ -578,7 +585,7 @@ const PlayerHome: React.FC = () => {
               {memberships && memberships.length > 0 && (
                 <AppCard>
                   <div className="flex items-center justify-between mb-4">
-                    <AppCardTitle>Teams</AppCardTitle>
+                    <AppCardTitle>{t("players.home.teams")}</AppCardTitle>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -634,7 +641,7 @@ const PlayerHome: React.FC = () => {
               {player.first_name} {player.last_initial && `${player.last_initial}.`}
             </h2>
             <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-              <Tag variant="neutral">Born {player.birth_year}</Tag>
+              <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
               {player.jersey_number && (
                 <Tag variant="tier">#{player.jersey_number}</Tag>
               )}
@@ -704,7 +711,7 @@ const PlayerHome: React.FC = () => {
 
           {/* Teams Section - Mobile */}
           <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-text-secondary">Teams</h2>
+            <h2 className="text-sm font-semibold text-text-secondary">{t("players.home.teams")}</h2>
 
             {memberships && memberships.length > 0 && (
               <div className="space-y-3">
@@ -736,7 +743,7 @@ const PlayerHome: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <p className="font-semibold truncate">{team.name}</p>
                             {isActive && (
-                              <Tag variant="accent" size="sm">Active</Tag>
+                              <Tag variant="accent" size="sm">{t("players.home.activeTag")}</Tag>
                             )}
                           </div>
                           {team.season_label && (
@@ -763,7 +770,7 @@ const PlayerHome: React.FC = () => {
               className="flex flex-col items-center gap-1 h-auto py-3"
             >
               <Target className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">Goals</span>
+              <span className="text-xs">{t("players.home.goals")}</span>
             </Button>
             <Button
               variant="outline"
@@ -771,7 +778,7 @@ const PlayerHome: React.FC = () => {
               className="flex flex-col items-center gap-1 h-auto py-3"
             >
               <Trophy className="w-5 h-5 text-amber-500" />
-              <span className="text-xs">Badges</span>
+              <span className="text-xs">{t("players.home.badges")}</span>
             </Button>
             <Button
               variant="outline"
@@ -779,7 +786,7 @@ const PlayerHome: React.FC = () => {
               className="flex flex-col items-center gap-1 h-auto py-3"
             >
               <User className="w-5 h-5 text-text-muted" />
-              <span className="text-xs">Profile</span>
+              <span className="text-xs">{t("players.home.profile")}</span>
             </Button>
             <Button
               variant="outline"
@@ -787,7 +794,7 @@ const PlayerHome: React.FC = () => {
               className="flex flex-col items-center gap-1 h-auto py-3"
             >
               <Users className="w-5 h-5 text-text-muted" />
-              <span className="text-xs">Switch</span>
+              <span className="text-xs">{t("players.home.switch")}</span>
             </Button>
           </div>
         </div>
@@ -797,9 +804,9 @@ const PlayerHome: React.FC = () => {
       <Sheet open={showTeamSelector} onOpenChange={setShowTeamSelector}>
         <SheetContent side="bottom" className="h-auto max-h-[70vh]">
           <SheetHeader>
-            <SheetTitle>Select Active Team</SheetTitle>
+            <SheetTitle>{t("players.home.selectActiveTeamTitle")}</SheetTitle>
             <SheetDescription>
-              Choose which team's workouts and schedule to show.
+              {t("players.home.selectActiveTeamDescription")}
             </SheetDescription>
           </SheetHeader>
           <div className="py-4 space-y-3">

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface FirstRunOverlayProps {
   playerName: string;
@@ -16,6 +17,9 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
   onStart,
   onDismiss,
 }) => {
+  const { t } = useTranslation();
+  const titleId = useId();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -24,6 +28,9 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
       className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm flex items-center justify-center p-6"
     >
       <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -41,14 +48,14 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
           <Play className="w-8 h-8 text-primary" />
         </div>
 
-        <h2 className="text-2xl font-bold mb-2">
-          Welcome, {playerName}! 🏒
+        <h2 id={titleId} className="text-2xl font-bold mb-2">
+          {t("welcome.firstRun.title", { name: playerName })}
         </h2>
 
         <p className="text-muted-foreground mb-6">
           {hasWorkout
-            ? "Your coach has assigned today's training. Tap below to get started!"
-            : "You're all set up! Your coach will assign your first workout soon."}
+            ? t("welcome.firstRun.hasWorkout")
+            : t("welcome.firstRun.noWorkout")}
         </p>
 
         {hasWorkout ? (
@@ -56,9 +63,10 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
             size="lg"
             className="w-full rounded-xl"
             onClick={onStart}
+            autoFocus
           >
             <Play className="w-5 h-5 mr-2" />
-            Start Today's Training
+            {t("welcome.firstRun.startButton")}
           </Button>
         ) : (
           <Button
@@ -66,8 +74,9 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
             size="lg"
             className="w-full rounded-xl"
             onClick={onDismiss}
+            autoFocus
           >
-            Got it!
+            {t("welcome.firstRun.gotItButton")}
           </Button>
         )}
       </motion.div>
