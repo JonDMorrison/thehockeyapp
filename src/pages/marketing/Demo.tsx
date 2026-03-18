@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { BETA_MODE } from "@/core/constants";
 import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -54,6 +55,14 @@ const Demo: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>See It In Action — The Hockey App</title>
+        <meta name="description" content="Watch a demo of The Hockey App's off-ice training tools." />
+        <meta property="og:title" content="See It In Action — The Hockey App" />
+        <meta property="og:description" content="Watch a demo of The Hockey App's off-ice training tools." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/demo" />
+      </Helmet>
       <MarketingNav />
 
       {/* Hero Section */}

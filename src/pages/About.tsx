@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -14,6 +15,14 @@ const About: React.FC = () => {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>About — The Hockey App</title>
+        <meta name="description" content="The story behind The Hockey App and why it was built for hockey families." />
+        <meta property="og:title" content="About — The Hockey App" />
+        <meta property="og:description" content="The story behind The Hockey App and why it was built for hockey families." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/about" />
+      </Helmet>
       <MarketingNav />
 
       {/* Hero */}

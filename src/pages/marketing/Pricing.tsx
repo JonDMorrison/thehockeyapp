@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -59,6 +60,14 @@ const Pricing: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Pricing — The Hockey App</title>
+        <meta name="description" content="Simple, affordable plans for coaches and hockey families." />
+        <meta property="og:title" content="Pricing — The Hockey App" />
+        <meta property="og:description" content="Simple, affordable plans for coaches and hockey families." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/pricing" />
+      </Helmet>
       <MarketingNav />
 
       {/* Hero */}

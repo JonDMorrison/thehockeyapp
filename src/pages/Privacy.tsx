@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -11,6 +12,14 @@ const Privacy: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>Privacy Policy — The Hockey App</title>
+        <meta name="description" content="How The Hockey App handles your data." />
+        <meta property="og:title" content="Privacy Policy — The Hockey App" />
+        <meta property="og:description" content="How The Hockey App handles your data." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/privacy" />
+      </Helmet>
       {/* Sticky back bar */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">

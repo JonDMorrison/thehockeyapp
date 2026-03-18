@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -121,6 +122,14 @@ const Features: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Features — The Hockey App</title>
+        <meta name="description" content="Practice planning, player tracking, badges, weekly goals, solo training and more." />
+        <meta property="og:title" content="Features — The Hockey App" />
+        <meta property="og:description" content="Practice planning, player tracking, badges, weekly goals, solo training and more." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/features" />
+      </Helmet>
       <MarketingNav />
 
       {/* Hero */}

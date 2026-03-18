@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { BETA_MODE } from "@/core/constants";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,14 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>The Hockey App — Off-Ice Training for Hockey Families</title>
+        <meta name="description" content="Structured off-ice training plans for youth hockey players. Built for coaches, players, and hockey parents." />
+        <meta property="og:title" content="The Hockey App — Off-Ice Training for Hockey Families" />
+        <meta property="og:description" content="Structured off-ice training plans for youth hockey players. Built for coaches, players, and hockey parents." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://hockeyapp.ca/" />
+      </Helmet>
       <MarketingNav />
 
       {/* Hero Section */}
