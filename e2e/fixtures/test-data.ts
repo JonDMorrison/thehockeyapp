@@ -1,0 +1,15 @@
+export const TEST_ROUTES = {
+  home: '/',
+  auth: '/auth',
+  players: '/players',
+  teams: '/teams',
+  today: '/today',
+  templates: '/templates',
+  quickCheckoff: '/quick-checkoff',
+  settings: '/settings',
+  reflections: '/reflections',
+  welcome: '/welcome',
+  features: '/features',
+  about: '/about',
+  pricing: '/pricing',
+};

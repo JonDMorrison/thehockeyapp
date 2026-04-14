@@ -8,7 +8,11 @@
     "build": "vite build && node scripts/prerender.cjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -46,6 +50,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.4.2",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.24.0",
     "i18next": "^25.8.18",
@@ -69,6 +74,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.59.1",
     "@prerenderer/prerenderer": "^1.2.5",
     "@prerenderer/renderer-puppeteer": "^1.2.4",
     "@tailwindcss/typography": "^0.5.16",
