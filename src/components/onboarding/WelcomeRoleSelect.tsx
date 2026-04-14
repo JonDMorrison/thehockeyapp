@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, UserCircle, Dumbbell, ArrowRight, Sparkles, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
+import { Users, UserCircle, Dumbbell, ArrowRight, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -48,12 +48,6 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
           <div className="flex items-center justify-center gap-3 mb-8">
             <img src={logoImage} alt={t("auth.logoAlt")} className="w-10 h-10 object-contain" />
             <span className="text-2xl font-bold text-foreground">{t("auth.appName")}</span>
-          </div>
-
-          {/* Welcome badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground">{t("welcome.roleSelect.welcomeBadge")}</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
