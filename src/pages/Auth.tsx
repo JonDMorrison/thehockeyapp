@@ -169,9 +169,9 @@ const Auth: React.FC = () => {
         <div className="max-w-md mx-auto w-full">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="flex flex-col items-center gap-2 mb-6">
-              <img src={logoImage} alt={t("auth.logoAlt")} className="w-16 h-16 object-contain" />
-              <span className="font-bold text-xl text-foreground">{t("auth.appName")}</span>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <img src={logoImage} alt={t("auth.logoAlt")} className="w-10 h-10 object-contain" />
+              <span className="text-2xl font-bold text-foreground">{t("auth.appName")}</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
               {mode === "signin" ? t("auth.signinHeadline") : t("auth.signupHeadline")}
