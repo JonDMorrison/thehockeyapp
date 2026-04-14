@@ -1,3 +1,4 @@
+// Logo updated April 2026
 import React, { forwardRef } from "react";
 import logoImage from "@/assets/hockey-app-logo.png";
 
