@@ -505,7 +505,7 @@
     "app_preview_on_fire": "On Fire!",
     "app_preview_practice_day": "Practice Day",
     "app_preview_practice_day_label": "Practice Day",
-    "app_preview_today_header": "Today — Mon, Jan 6",
+    "app_preview_today_header": "Today",
     "app_preview_today_practice": "Today's Practice",
     "app_preview_today_progress": "Today's Progress",
     "app_preview_total_shots": "Total Shots",
@@ -522,7 +522,7 @@
     "builder_tier": "Tier",
     "checkoff_practice_day": "Practice Day",
     "checkoff_tap_hint": "Tap any task to mark complete",
-    "checkoff_today_header": "Today — Mon, Jan 6",
+    "checkoff_today_header": "Today",
     "coach_view_activity_header": "Today's Activity",
     "coach_view_coach_view_badge": "Coach View",
     "coach_view_done": "Done",
@@ -727,7 +727,7 @@
     "milestone_perfect_week": "Perfect Week",
     "milestone_seven_day_streak": "7 Day Streak!",
     "milestone_tasks_done": "5 of 5 tasks done",
-    "milestone_today_header": "Today — Mon, Jan 6",
+    "milestone_today_header": "Today",
     "milestone_today_practice": "Today's Practice",
     "nav_about": "About",
     "nav_features": "Features",
@@ -829,7 +829,7 @@
     "rewards_task_badge_info": "Complete all tasks to earn today's badge",
     "task_card_practice_day": "Practice Day",
     "task_card_time_total": "~25 min total",
-    "task_card_today_header": "Today — Mon, Jan 6"
+    "task_card_today_header": "Today"
   },
   "nav": {
     "addAPlayer": "Add a Player",

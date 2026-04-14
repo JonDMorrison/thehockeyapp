@@ -58,10 +58,10 @@ export const MarketingFooter: React.FC = () => {
 
         <div className="pt-8 border-t border-background/10 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-background/50">
-            {t('marketing.footer_all_rights')}
+            &copy; {new Date().getFullYear()} The Hockey App. All rights reserved.
           </p>
           <p className="text-sm text-background/50 flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-destructive" /> {t('marketing.footer_made_with')}
+            Made with <Heart className="w-3 h-3 text-destructive fill-current" /> {t('marketing.footer_made_with')}
           </p>
         </div>
       </div>

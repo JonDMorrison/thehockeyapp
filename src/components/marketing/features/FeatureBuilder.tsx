@@ -34,7 +34,7 @@ export const FeatureBuilder: React.FC = () => {
         <div className="flex gap-2">
           <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.builder_date')}</p>
-            <p className="text-xs font-medium">Mon, Jan 6</p>
+            <p className="text-xs font-medium">Today</p>
           </div>
           <div className="flex-1 bg-purple-500/10 rounded-lg p-2.5 border border-purple-500/30">
             <p className="text-[9px] text-purple-600 uppercase">{t('marketing.builder_tier')}</p>
