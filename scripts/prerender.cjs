@@ -1,6 +1,13 @@
 /**
  * Prerender script: starts vite preview, captures each route with Puppeteer, writes static HTML.
+ * Skips gracefully on Vercel or when Chrome is not available.
  */
+
+if (process.env.VERCEL) {
+  console.log('Prerender skipped: running on Vercel');
+  process.exit(0);
+}
+
 const path = require('path');
 const fs = require('fs');
 const { execSync, spawn } = require('child_process');
@@ -14,6 +21,14 @@ const WAIT_MS = 3000;
 // NOTE: /pricing is excluded because BETA_MODE=true redirects it to /
 // Add it back when BETA_MODE is set to false
 const routes = ['/', '/features', '/about', '/privacy', '/terms', '/demo'];
+
+process.on('unhandledRejection', (err) => {
+  if (err.message && err.message.includes('Could not find Chrome')) {
+    console.warn('Puppeteer: Chrome not available — skipping prerender (Vercel environment)');
+    process.exit(0);
+  }
+  throw err;
+});
 
 async function prerender() {
   // Start vite preview
@@ -54,6 +69,10 @@ async function prerender() {
 }
 
 prerender().catch((err) => {
+  if (err.message && (err.message.includes('Could not find Chrome') || err.message.includes('Failed to launch'))) {
+    console.warn('Prerender skipped: Chrome not available in this environment');
+    process.exit(0);
+  }
   console.error('Prerender failed:', err);
   process.exit(1);
 });
