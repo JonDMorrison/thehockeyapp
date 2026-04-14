@@ -43,7 +43,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
       </div>
 
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <div className="max-w-lg w-full text-center">
+        <div className="max-w-lg md:max-w-4xl w-full text-center">
           {/* Logo */}
           <div className="flex flex-col items-center gap-2 mb-6">
             <img src={logoImage} alt={t("auth.logoAlt")} className="w-16 h-16 object-contain" />
@@ -66,12 +66,12 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
           </p>
 
           {/* Role Selection */}
-          <div className="grid gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
             {/* Coach Option */}
             <button
               onClick={() => setSelectedRole("coach")}
               aria-pressed={selectedRole === "coach"}
-              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "coach"
                   ? "border-primary bg-primary/5 shadow-glow"
                   : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-primary/50 hover:shadow-soft"
@@ -116,7 +116,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
             <button
               onClick={() => setSelectedRole("player")}
               aria-pressed={selectedRole === "player"}
-              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "player"
                   ? "border-success bg-success/5 shadow-[0_0_40px_-10px_hsl(var(--success)/0.3)]"
                   : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-success/50 hover:shadow-soft"
@@ -158,7 +158,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
             <button
               onClick={() => setSelectedRole("solo")}
               aria-pressed={selectedRole === "solo"}
-              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "solo"
                   ? "border-warning bg-warning/5 shadow-[0_0_40px_-10px_hsl(var(--warning)/0.3)]"
                   : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-warning/50 hover:shadow-soft"
