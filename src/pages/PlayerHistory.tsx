@@ -21,6 +21,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const PlayerHistory: React.FC = () => {
   const { t } = useTranslation();
@@ -194,6 +195,7 @@ const PlayerHistory: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>History | Hockey App</title></Helmet>
       <PageContainer>
         {!teamData ? (
           <AppCard>

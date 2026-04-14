@@ -21,6 +21,7 @@ import {
   ClipboardList,
   Check,
 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const PAGE_SIZE = 30;
 
@@ -145,6 +146,7 @@ const TeamPractice: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>Practice | Hockey App</title></Helmet>
       <PageContainer>
         {/* Today's Card Quick Action */}
         {!todaysCard ? (

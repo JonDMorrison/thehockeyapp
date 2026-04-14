@@ -34,6 +34,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
+import { Helmet } from "react-helmet-async";
 
 interface PlayerStats {
   playerId: string;
@@ -359,6 +360,7 @@ const TeamProgress: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>Progress | Hockey App</title></Helmet>
       <PageContainer>
         {/* Summary Stats Grid */}
         <div className="grid grid-cols-2 gap-3">

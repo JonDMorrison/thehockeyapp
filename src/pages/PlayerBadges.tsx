@@ -13,6 +13,7 @@ import { BadgeIcon } from "@/components/app/BadgeIcon";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Trophy, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 
 interface Challenge {
   id: string;
@@ -152,6 +153,7 @@ const PlayerBadges: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>Badges | Hockey App</title></Helmet>
       <PageContainer>
         {/* Summary */}
         <AppCard className="text-center bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 border-amber-500/20">

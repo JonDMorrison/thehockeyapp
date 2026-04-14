@@ -28,6 +28,7 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { OfflineIndicator } from "@/components/app/OfflineIndicator";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -845,6 +846,7 @@ const PlayerToday: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>Today's Workout | Hockey App</title></Helmet>
       <PageContainer>
         {/* Team Goal Widget */}
         {teamData?.id && (

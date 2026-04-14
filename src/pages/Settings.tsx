@@ -14,6 +14,7 @@ import { CoachProfileSection } from "@/components/team/CoachProfileSection";
 import { CollisionBanner } from "@/components/settings/CollisionBanner";
 import { toast } from "@/components/app/Toast";
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 
 interface ProfileData {
   user_id: string;
@@ -192,6 +193,7 @@ export default function Settings() {
 
   return (
     <AppShell header={header}>
+      <Helmet><title>Settings | Hockey App</title></Helmet>
       <div className="px-5 py-6 space-y-6">
         {/* Contextual microcopy */}
         <p className="text-xs text-muted-foreground">
@@ -364,7 +366,7 @@ export default function Settings() {
             <SettingsRow
               icon={HelpCircle}
               label="About The Hockey App"
-              onClick={() => window.open("https://thehockeyapp.lovable.app/about", "_blank")}
+              onClick={() => window.open("/about", "_blank")}
             />
             <SettingsRow
               icon={FileText}

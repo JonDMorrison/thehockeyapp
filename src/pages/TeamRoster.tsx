@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { ChevronLeft, UserPlus, Search } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
+import { Helmet } from "react-helmet-async";
 
 interface Membership {
   id: string;
@@ -156,6 +157,7 @@ const TeamRoster: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>Roster | Hockey App</title></Helmet>
       <PageContainer>
         {memberships && memberships.length > 0 ? (
           <div className="space-y-3">

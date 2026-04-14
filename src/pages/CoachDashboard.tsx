@@ -33,6 +33,7 @@ import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
 import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import logoImage from "@/assets/hockey-app-logo.png";
+import { Helmet } from "react-helmet-async";
 
 const CoachDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -242,6 +243,7 @@ const CoachDashboard: React.FC = () => {
         </div>
       }
     >
+      <Helmet><title>{`${dashboard.team?.name ?? "Dashboard"} | Hockey App`}</title></Helmet>
       <PageContainer className="space-y-4">
         {/* Layer 1: Context - Date, Team, Day Type + Pulse Stats */}
         <TodayHeader
