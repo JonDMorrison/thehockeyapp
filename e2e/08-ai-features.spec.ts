@@ -21,9 +21,8 @@ test.describe('AI Features', () => {
     await page.goto('/reflections');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);
-    const hasReflections = await page.locator('[class*="card"], [class*="reflection"]').first().isVisible();
-    const hasEmpty = await page.getByText(/no reflection|nothing yet|complete/i).isVisible();
-    console.log('Reflections - has content:', hasReflections, 'empty:', hasEmpty);
+    await expect(page).not.toHaveURL('/auth');
+    console.log('Weekly reflections loaded at:', page.url());
   });
 
   test('coach dashboard AI insights section', async ({ page }) => {

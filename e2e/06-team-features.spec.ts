@@ -23,6 +23,13 @@ test.describe('Team Features', () => {
   });
 
   test('today page loads', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    if (page.url().includes('/auth')) {
+      test.skip(true, 'Session expired');
+      return;
+    }
     await page.goto('/today');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);

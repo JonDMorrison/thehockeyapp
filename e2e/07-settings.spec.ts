@@ -17,6 +17,13 @@ test.describe('Settings and Misc', () => {
   });
 
   test('widget settings loads', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+    if (page.url().includes('/auth')) {
+      test.skip(true, 'Session expired');
+      return;
+    }
     await page.goto('/settings/widgets');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
@@ -27,7 +34,7 @@ test.describe('Settings and Misc', () => {
     await page.goto('/this-page-absolutely-does-not-exist-xyz');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
-    const has404 = await page.getByText(/not found|404|page.*not.*exist/i).isVisible();
+    const has404 = await page.getByText(/not found|404|page.*not.*exist/i).first().isVisible();
     console.log('404 page rendered:', has404);
   });
 
