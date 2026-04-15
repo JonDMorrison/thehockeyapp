@@ -129,6 +129,7 @@ const Features: React.FC = () => {
         <meta property="og:description" content="Practice planning, player tracking, badges, weekly goals, solo training and more." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/features" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       <MarketingNav />
 

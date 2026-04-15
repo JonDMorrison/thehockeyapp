@@ -67,6 +67,7 @@ const Pricing: React.FC = () => {
         <meta property="og:description" content="Simple, affordable plans for coaches and hockey families." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/pricing" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       <MarketingNav />
 

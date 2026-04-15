@@ -62,6 +62,7 @@ const Demo: React.FC = () => {
         <meta property="og:description" content="Watch a demo of The Hockey App's off-ice training tools." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/demo" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       <MarketingNav />
 

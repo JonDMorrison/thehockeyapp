@@ -19,6 +19,7 @@ const Privacy: React.FC = () => {
         <meta property="og:description" content="How The Hockey App handles your data." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/privacy" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       {/* Sticky back bar */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50">

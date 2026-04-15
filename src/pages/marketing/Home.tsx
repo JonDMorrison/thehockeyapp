@@ -33,6 +33,7 @@ const Home: React.FC = () => {
         <meta property="og:description" content="Structured off-ice training plans for youth hockey players. Built for coaches, players, and hockey parents." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       <MarketingNav />
 

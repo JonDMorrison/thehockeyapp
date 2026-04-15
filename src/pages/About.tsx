@@ -22,6 +22,7 @@ const About: React.FC = () => {
         <meta property="og:description" content="The story behind The Hockey App and why it was built for hockey families." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/about" />
+        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
       <MarketingNav />
 
