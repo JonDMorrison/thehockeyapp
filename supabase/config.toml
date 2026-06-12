@@ -1,13 +1,13 @@
 project_id = "xonpnkzkvqxarbxpinhm"
 
 [functions.generate-workout-ai]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-summaries-ai]
-verify_jwt = false
+verify_jwt = true
 
 [functions.sync-schedule]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-notifications]
 verify_jwt = false
@@ -16,34 +16,34 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.create-checkout]
-verify_jwt = false
+verify_jwt = true
 
 [functions.customer-portal]
-verify_jwt = false
+verify_jwt = true
 
 [functions.comp-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.grant-comp]
-verify_jwt = false
+verify_jwt = true
 
 [functions.revoke-comp]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-parent-summary-ai]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-parent-weekly-summaries]
 verify_jwt = false
 
 [functions.send-parent-weekly-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-admin-activity-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-admin-daily-digest]
 verify_jwt = false
 
 [functions.compute-team-adoption-milestones]
-verify_jwt = false
+verify_jwt = true
