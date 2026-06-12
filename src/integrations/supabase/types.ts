@@ -2700,6 +2700,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_season_report: {
+        Args: {
+          p_team_id: string
+          p_start_date: string
+          p_end_date: string
+        }
+        Returns: Json
+      }
       get_pending_comp_grants: {
         Args: never
         Returns: {

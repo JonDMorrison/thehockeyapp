@@ -345,18 +345,29 @@ const TeamProgress: React.FC = () => {
     <AppShell
       hideNav
       header={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate(`/teams/${id}`)}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <PageHeader
+              title={t("teams.progress.title")}
+              subtitle={team?.name}
+            />
+          </div>
           <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => navigate(`/teams/${id}`)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 shrink-0"
+            onClick={() => navigate(`/teams/${id}/season-report`)}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <BarChart3 className="w-4 h-4" />
+            {t("seasonReport.entry")}
           </Button>
-          <PageHeader
-            title={t("teams.progress.title")}
-            subtitle={team?.name}
-          />
         </div>
       }
     >

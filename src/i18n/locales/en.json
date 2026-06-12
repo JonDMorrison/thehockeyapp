@@ -2510,5 +2510,31 @@
       "gameDay": "Game Day",
       "practiceDay": "Practice Day"
     }
+  },
+  "seasonReport": {
+    "title": "Season Report",
+    "entry": "Season Report",
+    "entryDescription": "Review the whole season at a glance",
+    "print": "Print",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "totalSessions": "Total sessions",
+    "totalShots": "Total shots",
+    "avgCompletion": "Avg completion",
+    "topPerformers": "Top performers",
+    "rosterTitle": "Full roster",
+    "sessions": "Sessions",
+    "shots": "Shots",
+    "streak": "Longest streak",
+    "colName": "Player",
+    "colSessions": "Sessions",
+    "colCompletion": "Completion %",
+    "colShots": "Shots",
+    "colStreak": "Longest streak",
+    "nudgeTitle": "Players who may need a nudge",
+    "nudgeDescription": "A gentle place to start a conversation.",
+    "emptyState": "No training data in this range yet",
+    "error": "Something went wrong loading this report. Please try again.",
+    "unauthorized": "You don't have access to this team's season report."
   }
 }

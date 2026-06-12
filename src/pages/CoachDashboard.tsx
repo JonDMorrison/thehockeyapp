@@ -15,8 +15,9 @@ import { SkeletonStatBar, SkeletonHeroCard, SkeletonEventsList, SkeletonProgramC
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { ChevronLeft, Settings, RefreshCw, Users, Swords } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Users, Swords, BarChart3, ChevronRight } from "lucide-react";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
 import { CoachDock } from "@/components/dashboard/CoachDock";
@@ -36,6 +37,7 @@ import logoImage from "@/assets/hockey-app-logo.png";
 import { Helmet } from "react-helmet-async";
 
 const CoachDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -334,6 +336,23 @@ const CoachDashboard: React.FC = () => {
           teamId={id!}
           rosterCount={dashboard.pulse.players_count}
         />
+
+        {/* Season Report */}
+        <AppCard
+          className="cursor-pointer"
+          onClick={() => navigate(`/teams/${id}/season-report`)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-team-primary/10 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-5 h-5 text-team-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">{t("seasonReport.entry")}</p>
+              <p className="text-xs text-muted-foreground">{t("seasonReport.entryDescription")}</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </div>
+        </AppCard>
 
         {/* Team Cheers Section */}
         {hasPlayers && <CoachCheersSection teamId={id!} />}

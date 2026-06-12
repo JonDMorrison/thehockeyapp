@@ -52,6 +52,7 @@ const PlayerBadges = lazy(() => import("./pages/PlayerBadges"));
 const PlayerTeamGoals = lazy(() => import("./pages/PlayerTeamGoals"));
 const RosterPlayerDetail = lazy(() => import("./pages/RosterPlayerDetail"));
 const TeamProgress = lazy(() => import("./pages/TeamProgress"));
+const SeasonReport = lazy(() => import("./pages/SeasonReport"));
 const QuickCheckoff = lazy(() => import("./pages/QuickCheckoff"));
 const WidgetSettings = lazy(() => import("./pages/WidgetSettings"));
 const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
@@ -158,6 +159,7 @@ const AnimatedRoutes = () => {
             <Route path="/teams/:id/builder/new" element={<WeekPlannerNew />} />
             <Route path="/teams/:id/builder/:planId" element={<WeekPlanEditor />} />
             <Route path="/teams/:id/progress" element={<TeamProgress />} />
+            <Route path="/teams/:teamId/season-report" element={<SeasonReport />} />
             
             {/* Join flows */}
             <Route path="/team/adult/join/:token" element={<TeamAdultJoin />} />
