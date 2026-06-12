@@ -1,4 +1,18 @@
 {
+  "playerWeek": {
+    "title": "This week",
+    "thisWeek": "This week",
+    "weekOf": "{{start}} – {{end}}",
+    "today": "Today",
+    "restDay": "Rest day",
+    "untitled": "Workout",
+    "taskCount": "{{count}} task",
+    "taskCount_other": "{{count}} tasks",
+    "complete": "Complete",
+    "notStarted": "Not started",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week"
+  },
   "admin": {
     "comp": {
       "activeComps": "Active Comps",

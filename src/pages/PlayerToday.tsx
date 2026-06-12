@@ -50,6 +50,7 @@ import {
   MoreHorizontal,
   Trophy,
   Calendar,
+  CalendarDays,
   WifiOff,
   Zap,
   Settings,
@@ -820,6 +821,14 @@ const PlayerToday: React.FC = () => {
           </div>
           <div className="flex items-center gap-1">
             <ContextSwitcher currentPlayerId={playerId} compact />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate(`/players/${playerId}/week`)}
+              title={t("playerWeek.thisWeek")}
+            >
+              <CalendarDays className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon-sm"

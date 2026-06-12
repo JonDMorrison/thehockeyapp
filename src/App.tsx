@@ -47,6 +47,7 @@ const WeekPlannerNew = lazy(() => import("./pages/WeekPlannerNew"));
 const Templates = lazy(() => import("./pages/Templates"));
 const Today = lazy(() => import("./pages/Today"));
 const PlayerToday = lazy(() => import("./pages/PlayerToday"));
+const PlayerWeek = lazy(() => import("./pages/PlayerWeek"));
 const PlayerHistory = lazy(() => import("./pages/PlayerHistory"));
 const PlayerBadges = lazy(() => import("./pages/PlayerBadges"));
 const PlayerTeamGoals = lazy(() => import("./pages/PlayerTeamGoals"));
@@ -135,6 +136,7 @@ const AnimatedRoutes = () => {
             <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/players/:id/home" element={<PlayerHome />} />
             <Route path="/players/:id/today" element={<PlayerToday />} />
+            <Route path="/players/:id/week" element={<PlayerWeek />} />
             <Route path="/players/:id/history" element={<PlayerHistory />} />
             <Route path="/players/:id/badges" element={<PlayerBadges />} />
             <Route path="/players/:id/goals" element={<PlayerTeamGoals />} />

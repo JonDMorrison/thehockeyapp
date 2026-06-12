@@ -39,6 +39,7 @@ import {
   Flame,
   Target,
   Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -540,6 +541,14 @@ const PlayerHome: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <Button
                     variant="outline"
+                    onClick={() => navigate(`/players/${id}/week`)}
+                    className="flex flex-col items-center gap-2 h-auto py-4"
+                  >
+                    <CalendarDays className="w-5 h-5 text-team-primary" />
+                    <span className="text-sm">{t("playerWeek.thisWeek")}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => navigate(`/players/${id}/goals`)}
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
@@ -764,6 +773,14 @@ const PlayerHome: React.FC = () => {
 
           {/* Quick Actions - Mobile */}
           <div className="grid grid-cols-4 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/players/${id}/week`)}
+              className="flex flex-col items-center gap-1 h-auto py-3"
+            >
+              <CalendarDays className="w-5 h-5 text-team-primary" />
+              <span className="text-xs">{t("playerWeek.thisWeek")}</span>
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate(`/players/${id}/goals`)}
