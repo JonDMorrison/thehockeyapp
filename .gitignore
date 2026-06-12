@@ -29,3 +29,4 @@ dist-ssr
 
 # Local secrets / notes (not committed)
 .env.local.notes
+.env.test
