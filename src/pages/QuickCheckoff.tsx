@@ -30,6 +30,7 @@ import {
   MoreHorizontal,
   Undo2,
   Zap,
+  Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +74,7 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   recovery: <Timer className="w-6 h-6" />,
   prep: <Sparkles className="w-6 h-6" />,
   other: <MoreHorizontal className="w-6 h-6" />,
+  video: <Film className="w-6 h-6" />,
 };
 
 const QuickCheckoff: React.FC = () => {

@@ -56,7 +56,10 @@ import {
   Settings,
   Award,
   Flame,
+  Film,
+  ExternalLink,
 } from "lucide-react";
+import { getVideoEmbedUrl } from "@/lib/videoEmbed";
 import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
@@ -75,6 +78,7 @@ interface PracticeTask {
   shot_type: string;
   shots_expected: number | null;
   is_required: boolean;
+  video_url: string | null;
 }
 
 interface TaskCompletion {
@@ -117,6 +121,7 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   recovery: <Timer className="w-5 h-5" />,
   prep: <Sparkles className="w-5 h-5" />,
   other: <MoreHorizontal className="w-5 h-5" />,
+  video: <Film className="w-5 h-5" />,
 };
 
 // tierLabels is defined inside the component to access t()
@@ -886,37 +891,64 @@ const PlayerToday: React.FC = () => {
               const completion = completionMap[task.id];
               const isCompleted = !!completion?.completed;
               const isShooting = task.task_type === "shooting" || task.shots_expected;
+              const isVideo = task.task_type === "video" || !!task.video_url;
+              const videoEmbed = task.video_url ? getVideoEmbedUrl(task.video_url) : null;
 
               return (
-                <div key={task.id} className="flex items-center gap-2">
-                  <div className="flex-1 min-w-0">
-                    <WorkoutCheckItem
-                      id={task.id}
-                      label={task.label}
-                      target={
-                        task.target_type !== "none" && task.target_value
-                          ? `${task.target_value} ${task.target_type}`
-                          : isShooting
-                            ? t("players.today.shotsLoggedCount", { count: completion?.shotsLogged || 0 })
-                            : undefined
-                      }
-                      icon={taskTypeIcons[task.task_type]}
-                      completed={isCompleted}
-                      disabled={isSessionComplete}
-                      onToggle={handleTaskToggle}
-                    />
+                <div key={task.id} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <WorkoutCheckItem
+                        id={task.id}
+                        label={task.label}
+                        target={
+                          task.target_type !== "none" && task.target_value
+                            ? `${task.target_value} ${task.target_type}`
+                            : isShooting
+                              ? t("players.today.shotsLoggedCount", { count: completion?.shotsLogged || 0 })
+                              : undefined
+                        }
+                        icon={taskTypeIcons[task.task_type]}
+                        completed={isCompleted}
+                        disabled={isSessionComplete}
+                        onToggle={handleTaskToggle}
+                      />
+                    </div>
+                    {isShooting && (
+                      <button
+                        className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShotsClick(task.id);
+                        }}
+                        disabled={isSessionComplete}
+                      >
+                        {t("players.today.shotsCount", { count: completion?.shotsLogged || 0 })}
+                      </button>
+                    )}
                   </div>
-                  {isShooting && (
-                    <button
-                      className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleShotsClick(task.id);
-                      }}
-                      disabled={isSessionComplete}
+                  {isVideo && videoEmbed && (
+                    <div className="aspect-video w-full overflow-hidden rounded-lg bg-black/5">
+                      <iframe
+                        src={videoEmbed}
+                        loading="lazy"
+                        allowFullScreen
+                        className="w-full h-full rounded-lg"
+                        title={task.label}
+                      />
+                    </div>
+                  )}
+                  {isVideo && !videoEmbed && task.video_url && (
+                    <a
+                      href={task.video_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-team-primary hover:underline"
                     >
-                      {t("players.today.shotsCount", { count: completion?.shotsLogged || 0 })}
-                    </button>
+                      <Film className="w-4 h-4" />
+                      {t("players.today.openVideo")}
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                   )}
                 </div>
               );

@@ -1074,6 +1074,7 @@ export type Database = {
           target_value: number | null
           task_type: string
           updated_at: string | null
+          video_url: string | null
         }
         Insert: {
           coach_notes?: string | null
@@ -1090,6 +1091,7 @@ export type Database = {
           target_value?: number | null
           task_type: string
           updated_at?: string | null
+          video_url?: string | null
         }
         Update: {
           coach_notes?: string | null
@@ -1106,6 +1108,7 @@ export type Database = {
           target_value?: number | null
           task_type?: string
           updated_at?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {

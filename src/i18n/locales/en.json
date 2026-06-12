@@ -1188,6 +1188,7 @@
       "shotsCount": "{{count}} shots",
       "shotsLogged": "Shots logged",
       "shotsLoggedCount": "{{count}} shots logged",
+      "openVideo": "Open video",
       "totalShots": "Total Shots"
     },
     "upcomingWorkouts": {
@@ -1461,6 +1462,9 @@
     "taskTypePrep": "Prep",
     "taskTypeRecovery": "Recovery",
     "taskTypeShooting": "Shooting",
+    "taskTypeVideo": "Video",
+    "videoUrlPlaceholder": "Paste a YouTube or Vimeo link",
+    "videoUrlInvalid": "Enter a valid YouTube or Vimeo URL",
     "tasks": "Tasks",
     "tasksCount": "Tasks ({{n}})",
     "templateCreated": "Template created",

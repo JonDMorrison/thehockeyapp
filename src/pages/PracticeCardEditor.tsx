@@ -43,8 +43,10 @@ import {
   Zap,
   AlertTriangle,
   MessageSquare,
+  Film,
 } from "lucide-react";
 import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
+import { isValidVideoUrl } from "@/lib/videoEmbed";
 
 interface PracticeTask {
   id?: string;
@@ -57,6 +59,7 @@ interface PracticeTask {
   shots_expected: number | null;
   is_required: boolean;
   coach_notes: string;
+  video_url: string | null;
 }
 
 const taskTypeIcons: Record<string, React.ReactNode> = {
@@ -66,6 +69,7 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
   recovery: <Timer className="w-4 h-4" />,
   prep: <Sparkles className="w-4 h-4" />,
   other: <MoreHorizontal className="w-4 h-4" />,
+  video: <Film className="w-4 h-4" />,
 };
 
 const PracticeCardEditor: React.FC = () => {
@@ -93,6 +97,7 @@ const PracticeCardEditor: React.FC = () => {
     recovery: t('practice.taskTypeRecovery'),
     prep: t('practice.taskTypePrep'),
     other: t('practice.taskTypeOther'),
+    video: t('practice.taskTypeVideo'),
   };
 
   // Form state
@@ -160,7 +165,7 @@ const PracticeCardEditor: React.FC = () => {
       setIsPublished(!!existingCard.published_at);
       setIsLocked(!!existingCard.locked);
       setTasks(
-        existingCard.tasks.map((t: { id: string; sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean; coach_notes: string | null }) => ({
+        existingCard.tasks.map((t: { id: string; sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean; coach_notes: string | null; video_url: string | null }) => ({
           id: t.id,
           sort_order: t.sort_order,
           task_type: t.task_type,
@@ -171,6 +176,7 @@ const PracticeCardEditor: React.FC = () => {
           shots_expected: t.shots_expected,
           is_required: t.is_required,
           coach_notes: t.coach_notes || "",
+          video_url: t.video_url ?? null,
         }))
       );
     }
@@ -247,6 +253,7 @@ const PracticeCardEditor: React.FC = () => {
           shots_expected: task.shots_expected,
           is_required: task.is_required,
           coach_notes: task.coach_notes || null,
+          video_url: task.video_url || null,
         }));
 
         const { error: tasksError } = await supabase
@@ -308,6 +315,7 @@ const PracticeCardEditor: React.FC = () => {
         shots_expected: null,
         is_required: true,
         coach_notes: "",
+        video_url: null,
       },
     ]);
   };
@@ -355,6 +363,7 @@ const PracticeCardEditor: React.FC = () => {
           shots_expected: t.shots_expected,
           is_required: t.is_required !== false,
           coach_notes: t.coach_notes || "",
+          video_url: null,
         }))
       );
     }
@@ -650,6 +659,32 @@ const PracticeCardEditor: React.FC = () => {
                             className="w-32"
                             disabled={isLocked}
                           />
+                        </div>
+                      )}
+
+                      {task.task_type === "video" && (
+                        <div>
+                          <Input
+                            type="url"
+                            inputMode="url"
+                            value={task.video_url ?? ""}
+                            onChange={(e) =>
+                              updateTask(index, { video_url: e.target.value })
+                            }
+                            placeholder={t('practice.videoUrlPlaceholder')}
+                            className={
+                              task.video_url && !isValidVideoUrl(task.video_url)
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : ""
+                            }
+                            disabled={isLocked}
+                          />
+                          {task.video_url && !isValidVideoUrl(task.video_url) && (
+                            <p className="mt-1.5 text-xs text-destructive flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              {t('practice.videoUrlInvalid')}
+                            </p>
+                          )}
                         </div>
                       )}
 
