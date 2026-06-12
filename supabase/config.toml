@@ -10,7 +10,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.check-notifications]
-verify_jwt = false
+verify_jwt = true
 
 [functions.stripe-webhook]
 verify_jwt = false
@@ -34,7 +34,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.generate-parent-weekly-summaries]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-parent-weekly-email]
 verify_jwt = true
@@ -43,7 +43,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-admin-daily-digest]
-verify_jwt = false
+verify_jwt = true
 
 [functions.compute-team-adoption-milestones]
 verify_jwt = true
