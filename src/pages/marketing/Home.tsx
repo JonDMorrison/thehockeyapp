@@ -8,7 +8,6 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { FeatureRewards } from "@/components/marketing/features";
-import { HomeFeaturesSection } from "@/components/marketing/HomeFeaturesSection";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import {
   CheckCircle,
@@ -16,6 +15,10 @@ import {
   Trophy,
   Calendar,
   ClipboardCheck,
+  Flame,
+  FileText,
+  Users,
+  Home as HomeIcon,
 } from "lucide-react";
 import familyNexlevelImg from "@/assets/family-nexlevel.png";
 import { useTranslation } from 'react-i18next';
@@ -27,10 +30,10 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>The Hockey App — Off-Ice Training for Hockey Families</title>
-        <meta name="description" content="Structured off-ice training plans for youth hockey players. Built for coaches, players, and hockey parents." />
-        <meta property="og:title" content="The Hockey App — Off-Ice Training for Hockey Families" />
-        <meta property="og:description" content="Structured off-ice training plans for youth hockey players. Built for coaches, players, and hockey parents." />
+        <title>The Hockey App — Off-Ice Training for Hockey Teams</title>
+        <meta name="description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
+        <meta property="og:title" content="The Hockey App — Off-Ice Training for Hockey Teams" />
+        <meta property="og:description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://hockeyapp.ca/" />
         <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
@@ -70,6 +73,17 @@ const Home: React.FC = () => {
                   onClick={() => setShowGetStarted(true)}
                 >
                   {t('marketing.home_hero_get_started')}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
+                  asChild
+                >
+                  <Link to="/demo">
+                    {t('marketing.home_hero_see_how')}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -159,7 +173,227 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <HomeFeaturesSection />
+      {/* Built for coaches and managers */}
+      <section className="relative py-20 lg:py-28 bg-background overflow-hidden">
+        <div className="absolute top-16 -right-24 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
+        <div className="absolute bottom-16 -left-20 w-72 h-72 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 mb-6 shadow-sm">
+                <ClipboardCheck className="w-7 h-7 text-primary" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                {t('marketing.home_coaches_heading')}
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0">
+                {t('marketing.home_coaches_lead')}
+              </p>
+            </div>
+
+            {/* Lightweight coach-dashboard mockup */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="w-full max-w-md bg-card rounded-2xl border border-border shadow-subtle overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/30">
+                  <div>
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('marketing.home_coaches_dashboard_subtitle')}
+                    </p>
+                    <h3 className="text-base font-bold text-foreground">
+                      {t('marketing.home_coaches_dashboard_title')}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                    <Users className="w-3.5 h-3.5" />
+                    <span className="text-xs font-semibold">
+                      18 {t('marketing.home_coaches_dashboard_active')}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4 space-y-2.5">
+                  {[
+                    { name: t('marketing.home_coaches_player1'), initial: "A", sessions: 5, done: true },
+                    { name: t('marketing.home_coaches_player2'), initial: "L", sessions: 4, done: true },
+                    { name: t('marketing.home_coaches_player3'), initial: "N", sessions: 2, done: false },
+                    { name: t('marketing.home_coaches_player4'), initial: "E", sessions: 5, done: true },
+                  ].map((p, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {p.initial}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{p.name}</p>
+                        <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${(p.sessions / 5) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end flex-shrink-0">
+                        <span className="text-sm font-bold text-foreground">
+                          {p.sessions}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {t('marketing.home_coaches_sessions_label')}
+                        </span>
+                      </div>
+                      {p.done ? (
+                        <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                      ) : (
+                        <span className="text-[10px] font-medium text-amber-600 flex-shrink-0">
+                          {t('marketing.home_coaches_in_progress')}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 30-Day Challenge */}
+      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Lightweight challenge mockup */}
+            <div className="flex justify-center lg:justify-start lg:order-1">
+              <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-subtle p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                    <Flame className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {t('marketing.home_challenge_badge')}
+                  </span>
+                </div>
+                <div className="grid grid-cols-6 gap-1.5 mb-4">
+                  {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
+                    <div
+                      key={n}
+                      className={`aspect-square rounded-md flex items-center justify-center text-[9px] font-semibold ${
+                        n <= 12
+                          ? "bg-primary text-white"
+                          : n === 13
+                          ? "bg-primary/20 text-primary ring-1 ring-primary"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {n}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs font-medium text-muted-foreground text-center">
+                  {t('marketing.home_challenge_progress')}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center lg:text-left lg:order-2">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/15 to-amber-500/5 mb-6 shadow-sm">
+                <Flame className="w-7 h-7 text-orange-500" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                {t('marketing.home_challenge_heading')}
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0">
+                {t('marketing.home_challenge_body')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The end of season report */}
+      <section className="relative py-20 lg:py-28 bg-background overflow-hidden">
+        <div className="absolute -top-10 -left-20 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
+        <div className="absolute bottom-10 right-0 w-64 h-64 rounded-full bg-[hsl(213,100%,25%,0.03)] blur-3xl" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 mb-6 shadow-sm">
+                <FileText className="w-7 h-7 text-primary" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+                {t('marketing.home_report_heading')}
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0">
+                {t('marketing.home_report_body')}
+              </p>
+            </div>
+
+            {/* Lightweight season report mockup */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="w-full max-w-md bg-card rounded-2xl border border-border shadow-subtle overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-border bg-muted/30">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <h3 className="text-base font-bold text-foreground">
+                    {t('marketing.home_report_card_title')}
+                  </h3>
+                </div>
+                <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-5 py-3 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span>{t('marketing.home_report_col_player')}</span>
+                  <span className="text-right">{t('marketing.home_report_col_sessions')}</span>
+                  <span className="text-right">{t('marketing.home_report_col_shots')}</span>
+                  <span className="text-right">{t('marketing.home_report_col_streak')}</span>
+                </div>
+                <div className="divide-y divide-border">
+                  {[
+                    { name: t('marketing.home_coaches_player1'), sessions: 64, shots: 1920, streak: 21 },
+                    { name: t('marketing.home_coaches_player2'), sessions: 58, shots: 1740, streak: 14 },
+                    { name: t('marketing.home_coaches_player3'), sessions: 41, shots: 1230, streak: 9 },
+                    { name: t('marketing.home_coaches_player4'), sessions: 67, shots: 2010, streak: 28 },
+                  ].map((r, i) => (
+                    <div
+                      key={i}
+                      className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-5 py-3 items-center"
+                    >
+                      <span className="text-sm font-medium text-foreground truncate">{r.name}</span>
+                      <span className="text-sm text-foreground text-right tabular-nums">{r.sessions}</span>
+                      <span className="text-sm text-foreground text-right tabular-nums">{r.shots}</span>
+                      <span className="text-sm font-semibold text-primary text-right tabular-nums flex items-center justify-end gap-1">
+                        <Flame className="w-3 h-3 text-orange-500" />
+                        {r.streak}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Families Section — demoted + condensed */}
+      <section className="relative py-16 lg:py-20 bg-[hsl(0,0%,96%)] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/15 to-amber-500/5 mb-6 shadow-sm">
+            <HomeIcon className="w-7 h-7 text-orange-500" strokeWidth={1.5} />
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 text-foreground">
+            {t('marketing.home_families_heading')}
+          </h2>
+          <p className="text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto mb-8">
+            {t('marketing.home_families_body')}
+          </p>
+          <Button
+            size="lg"
+            variant="outline"
+            className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
+            onClick={() => setShowGetStarted(true)}
+          >
+            {t('marketing.home_families_button')}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </section>
 
       {/* Founder Section */}
       <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
