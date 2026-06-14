@@ -45,7 +45,7 @@ export const FeatureRewards: React.FC = () => {
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
             <Trophy className="w-4 h-4 text-white" />
           </div>
-          <h1 className="text-base font-bold text-foreground">{t('marketing.rewards_badges_rewards')}</h1>
+          <p className="text-base font-bold text-foreground">{t('marketing.rewards_badges_rewards')}</p>
         </div>
       </div>
 

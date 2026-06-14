@@ -35,11 +35,16 @@ const Home: React.FC = () => {
         <meta property="og:title" content="The Hockey App — Off-Ice Training for Hockey Teams" />
         <meta property="og:description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://hockeyapp.ca/" />
+        <meta property="og:url" content="https://www.hockeyapp.ca/" />
         <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="The Hockey App — Off-Ice Training for Hockey Teams" />
+        <meta name="twitter:description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
+        <link rel="canonical" href="https://www.hockeyapp.ca/" />
       </Helmet>
       <MarketingNav />
 
+      <main>
       {/* Hero Section */}
       <section className="relative pt-16 bg-[hsl(0,0%,98%)] overflow-hidden">
         {/* Decorative background elements */}
@@ -525,6 +530,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      </main>
 
       <MarketingFooter />
 

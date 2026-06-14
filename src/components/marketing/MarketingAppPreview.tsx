@@ -32,9 +32,9 @@ export const MarketingAppPreview: React.FC = () => {
             <p className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
               {t('marketing.app_preview_today_header')}
             </p>
-            <h1 className="text-base font-bold text-foreground mt-0.5">
+            <p className="text-base font-bold text-foreground mt-0.5">
               {t('marketing.app_preview_northside_wolves')}
-            </h1>
+            </p>
           </div>
           <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Calendar className="w-3 h-3" />
