@@ -18,7 +18,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
 
   const handleContinue = () => {
     if (selectedRole === "coach") {
-      navigate("/teams/new");
+      navigate("/onboarding/coach");
     } else if (selectedRole === "solo") {
       navigate("/solo/setup");
     } else {
@@ -67,10 +67,13 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
               aria-pressed={selectedRole === "coach"}
               className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "coach"
-                  ? "border-primary bg-primary/5 shadow-glow"
-                  : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-primary/50 hover:shadow-soft"
+                  ? "border-primary bg-primary/5 shadow-glow ring-2 ring-primary/40"
+                  : "border-primary/60 bg-primary/5 shadow-soft hover:border-primary hover:shadow-glow"
               }`}
             >
+              <span className="absolute -top-3 left-6 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-white text-xs font-semibold shadow-sm">
+                {t("welcome.roleSelect.coachPopular")}
+              </span>
               <div className="flex items-start gap-4">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
                   selectedRole === "coach"

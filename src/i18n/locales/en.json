@@ -2339,7 +2339,8 @@
       "toastUploadFailed": "Upload failed",
       "toastUploadedDescription": "Image has been uploaded.",
       "toastUploadedTitle": "Uploaded",
-      "youSuffix": "(You)"
+      "youSuffix": "(You)",
+      "inviteCoCoach": "Invite a co-coach or manager"
     },
     "trainingPrefs": {
       "modeLabel": "Training Mode",
@@ -2431,7 +2432,8 @@
       "coachFeature1": "Weekly plans",
       "coachFeature2": "AI-assisted",
       "coachFeature3": "Free to use",
-      "coachTitle": "I'm a Coach",
+      "coachTitle": "I'm a Coach or Manager",
+      "coachPopular": "Most popular for teams",
       "defaultFirstName": "there",
       "greeting": "Hey {{firstName}}! 👋",
       "playerDescription": "Your coach has invited you. Track assigned workouts and team progress.",
@@ -2554,5 +2556,65 @@
     "emptyState": "No training data in this range yet",
     "error": "Something went wrong loading this report. Please try again.",
     "unauthorized": "You don't have access to this team's season report."
+  },
+  "coachOnboarding": {
+    "back": "Back",
+    "continue": "Continue",
+    "skipForNow": "Skip for now",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "step1Title": "Set up your team",
+    "step1Subtitle": "Start with the basics. You can change everything later.",
+    "teamNameLabel": "Team name",
+    "teamNamePlaceholder": "Toronto Hawks",
+    "teamNameRequired": "Team name is required",
+    "ageDivisionLabel": "Age division",
+    "ageDivisionPlaceholder": "Select age division",
+    "levelLabel": "Level",
+    "levelPlaceholder": "Select level",
+    "colorsLabel": "Team colors",
+    "createTeamError": "Could not create your team. Please try again.",
+    "step2Title": "Add your roster",
+    "step2Subtitle": "Add players now or skip and invite families later.",
+    "rosterFirstName": "First name",
+    "rosterLastInitial": "Last initial",
+    "rosterBirthYear": "Birth year",
+    "rosterBirthYearOptional": "Birth year (optional)",
+    "addRow": "Add another player",
+    "removeRow": "Remove",
+    "pasteLabel": "Or paste your roster",
+    "pastePlaceholder": "One player per line, e.g.\nJake D\nAlex M",
+    "pasteButton": "Add from list",
+    "rosterPartialError": "Some players could not be added ({{count}}). The rest were saved.",
+    "step3Title": "Plan your first week",
+    "step3Subtitle": "Get a head start, or skip and do it later.",
+    "templateTitle": "Start from a template",
+    "templateDescription": "Pick a ready-made practice week and tweak it.",
+    "aiTitle": "Generate with AI",
+    "aiDescription": "Let AI build a first week based on your team.",
+    "finish": "Go to my team",
+    "ageDivision": {
+      "u7": "U7",
+      "u9": "U9",
+      "u11": "U11",
+      "u13": "U13",
+      "u15": "U15",
+      "u18": "U18",
+      "junior": "Junior",
+      "other": "Other"
+    },
+    "level": {
+      "aaa": "AAA",
+      "aa": "AA",
+      "a": "A",
+      "rep": "Rep",
+      "house": "House",
+      "other": "Other"
+    }
+  },
+  "coachDashboard": {
+    "inviteCardTitle": "Invite parents and players",
+    "inviteCardDescription": "Get families on board so everyone stays in sync.",
+    "inviteCardButton": "Invite parents",
+    "inviteCardDismiss": "Dismiss"
   }
 }

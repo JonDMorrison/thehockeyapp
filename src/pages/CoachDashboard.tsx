@@ -15,7 +15,7 @@ import { SkeletonStatBar, SkeletonHeroCard, SkeletonEventsList, SkeletonProgramC
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { ChevronLeft, Settings, RefreshCw, Users, Swords, BarChart3, ChevronRight } from "lucide-react";
+import { ChevronLeft, Settings, RefreshCw, Users, Swords, BarChart3, ChevronRight, X, UserPlus } from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
@@ -52,6 +52,30 @@ const CoachDashboard: React.FC = () => {
   const [showChallengeWizard, setShowChallengeWizard] = useState(false);
   const [showGoalCreator, setShowGoalCreator] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [inviteCardDismissed, setInviteCardDismissed] = useState(false);
+
+  // Restore dismissal of the invite card from localStorage (keyed per team)
+  useEffect(() => {
+    if (!id) return;
+    try {
+      setInviteCardDismissed(
+        localStorage.getItem(`invite-card-dismissed:${id}`) === "true"
+      );
+    } catch {
+      // localStorage may be unavailable; default to showing the card
+    }
+  }, [id]);
+
+  const dismissInviteCard = () => {
+    setInviteCardDismissed(true);
+    if (id) {
+      try {
+        localStorage.setItem(`invite-card-dismissed:${id}`, "true");
+      } catch {
+        // ignore storage failures
+      }
+    }
+  };
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
 
@@ -279,6 +303,41 @@ const CoachDashboard: React.FC = () => {
           <p className="text-xs text-muted-foreground px-1">
             This is your team's accountability system.
           </p>
+        )}
+
+        {/* Dismissible invite card */}
+        {!inviteCardDismissed && (
+          <AppCard className="relative">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="absolute top-2 right-2"
+              onClick={dismissInviteCard}
+              aria-label={t("coachDashboard.inviteCardDismiss")}
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </Button>
+            <div className="flex items-start gap-3 pr-6">
+              <div className="w-10 h-10 rounded-full bg-team-primary/10 flex items-center justify-center shrink-0">
+                <UserPlus className="w-5 h-5 text-team-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">{t("coachDashboard.inviteCardTitle")}</p>
+                <p className="text-xs text-muted-foreground">{t("coachDashboard.inviteCardDescription")}</p>
+                <Button
+                  variant="team"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => {
+                    setInviteModalTab("invite");
+                    setShowInviteModal(true);
+                  }}
+                >
+                  {t("coachDashboard.inviteCardButton")}
+                </Button>
+              </div>
+            </div>
+          </AppCard>
         )}
 
         {/* Onboarding Progress Checklist - only if not complete */}

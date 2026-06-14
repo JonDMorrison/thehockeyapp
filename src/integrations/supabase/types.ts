@@ -2367,6 +2367,7 @@ export type Database = {
       }
       teams: {
         Row: {
+          age_division: string | null
           created_at: string | null
           created_by_user_id: string
           custom_primary: string | null
@@ -2374,6 +2375,7 @@ export type Database = {
           custom_tertiary: string | null
           description: string | null
           id: string
+          level: string | null
           name: string
           palette_id: string
           season_label: string | null
@@ -2383,6 +2385,7 @@ export type Database = {
           values_text: string | null
         }
         Insert: {
+          age_division?: string | null
           created_at?: string | null
           created_by_user_id: string
           custom_primary?: string | null
@@ -2390,6 +2393,7 @@ export type Database = {
           custom_tertiary?: string | null
           description?: string | null
           id?: string
+          level?: string | null
           name: string
           palette_id?: string
           season_label?: string | null
@@ -2399,6 +2403,7 @@ export type Database = {
           values_text?: string | null
         }
         Update: {
+          age_division?: string | null
           created_at?: string | null
           created_by_user_id?: string
           custom_primary?: string | null
@@ -2406,6 +2411,7 @@ export type Database = {
           custom_tertiary?: string | null
           description?: string | null
           id?: string
+          level?: string | null
           name?: string
           palette_id?: string
           season_label?: string | null

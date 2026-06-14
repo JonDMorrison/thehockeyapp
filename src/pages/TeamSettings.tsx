@@ -708,7 +708,7 @@ const TeamSettings: React.FC = () => {
               onClick={() => setShowInviteModal(true)}
             >
               <UserPlus className="w-4 h-4" />
-              {t("teams.settings.invite")}
+              {t("teams.settings.inviteCoCoach")}
             </Button>
           </div>
 

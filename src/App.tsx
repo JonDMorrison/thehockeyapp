@@ -57,6 +57,7 @@ const SeasonReport = lazy(() => import("./pages/SeasonReport"));
 const QuickCheckoff = lazy(() => import("./pages/QuickCheckoff"));
 const WidgetSettings = lazy(() => import("./pages/WidgetSettings"));
 const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
+const CoachOnboarding = lazy(() => import("./pages/CoachOnboarding"));
 const Welcome = lazy(() => import("./pages/Welcome"));
 const QuickAssign = lazy(() => import("./pages/QuickAssign"));
 const SoloSetup = lazy(() => import("./pages/SoloSetup"));
@@ -129,6 +130,7 @@ const AnimatedRoutes = () => {
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/welcome" element={<Welcome />} />
+            <Route path="/onboarding/coach" element={<CoachOnboarding />} />
             
             {/* Player management */}
             <Route path="/players" element={<Players />} />
