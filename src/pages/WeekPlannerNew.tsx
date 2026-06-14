@@ -25,6 +25,8 @@ import {
 import { ThemeCard } from "@/components/builder/ThemeCard";
 import { DayCardPreview, DayCardEmpty } from "@/components/builder/DayCardPreview";
 import { DayPicker } from "@/components/builder/DayPicker";
+import { TemplatePicker } from "@/components/planning/TemplatePicker";
+import { LayoutTemplate } from "lucide-react";
 
 type Step = "theme" | "customize";
 
@@ -48,6 +50,7 @@ const WeekPlannerNew: React.FC = () => {
   const [weekPlan, setWeekPlan] = useState<DayPlan[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingDayIndex, setEditingDayIndex] = useState<number | null>(null);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   // Calculate start date (next Monday)
   const startDate = useMemo(() => {
@@ -278,6 +281,17 @@ const WeekPlannerNew: React.FC = () => {
               </p>
             </div>
 
+            {/* Start from template */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => setTemplatePickerOpen(true)}
+            >
+              <LayoutTemplate className="w-5 h-5 mr-2" />
+              {t('templates.startFromTemplate')}
+            </Button>
+
             {/* Theme Cards */}
             <div className="grid grid-cols-1 gap-3">
               {WEEK_THEMES.map((theme) => (
@@ -354,6 +368,19 @@ const WeekPlannerNew: React.FC = () => {
         onSelect={handleDaySelect}
         title={editingDayIndex !== null ? `${dayNames[editingDayIndex]} - ${t('solo.chooseType')}` : t('solo.chooseDayType')}
       />
+
+      {/* Program Template Picker */}
+      {user && teamId && (
+        <TemplatePicker
+          teamId={teamId}
+          userId={user.id}
+          ageDivision={(team as { age_division?: string | null } | undefined)?.age_division ?? null}
+          level={(team as { level?: string | null } | undefined)?.level ?? null}
+          open={templatePickerOpen}
+          onOpenChange={setTemplatePickerOpen}
+          onDone={() => navigate(`/teams/${teamId}/practice`)}
+        />
+      )}
     </AppShell>
   );
 };

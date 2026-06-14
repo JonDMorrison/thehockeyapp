@@ -1120,6 +1120,42 @@ export type Database = {
           },
         ]
       }
+      program_templates: {
+        Row: {
+          age_divisions: string[]
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          levels: string[]
+          tasks: Json
+          title: string
+          weeks: number
+        }
+        Insert: {
+          age_divisions?: string[]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          levels?: string[]
+          tasks?: Json
+          title: string
+          weeks?: number
+        }
+        Update: {
+          age_divisions?: string[]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          levels?: string[]
+          tasks?: Json
+          title?: string
+          weeks?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
+import { TemplatePicker } from "@/components/planning/TemplatePicker";
 import {
   Loader2,
   ChevronLeft,
@@ -71,6 +72,7 @@ const CoachOnboarding: React.FC = () => {
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   // Step 1 — team
   const [teamName, setTeamName] = useState("");
@@ -249,9 +251,8 @@ const CoachOnboarding: React.FC = () => {
   };
 
   const goToTemplate = () => {
-    // TODO Phase 3: wire "Start from a template" to the template picker
     if (teamId) {
-      navigate(`/teams/${teamId}/builder/new`);
+      setTemplatePickerOpen(true);
     } else {
       finish();
     }
@@ -605,6 +606,18 @@ const CoachOnboarding: React.FC = () => {
           </div>
         )}
       </PageContainer>
+
+      {teamId && (
+        <TemplatePicker
+          teamId={teamId}
+          userId={user!.id}
+          ageDivision={ageDivision || null}
+          level={level || null}
+          open={templatePickerOpen}
+          onOpenChange={setTemplatePickerOpen}
+          onDone={finish}
+        />
+      )}
     </AppShell>
   );
 };

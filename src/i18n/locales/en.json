@@ -2616,5 +2616,17 @@
     "inviteCardDescription": "Get families on board so everyone stays in sync.",
     "inviteCardButton": "Invite parents",
     "inviteCardDismiss": "Dismiss"
+  },
+  "templates": {
+    "pickerTitle": "Start from a template",
+    "pickerSubtitle": "Pick a ready-made program. We'll add the days to your team as drafts for you to review.",
+    "useTemplate": "Use this template",
+    "weeksLabel": "{{count}} week",
+    "weeksLabel_other": "{{count}} weeks",
+    "emptyState": "No templates available yet. Check back soon.",
+    "addedToast": "Added {{count}} day to your team as drafts",
+    "addedToast_other": "Added {{count}} days to your team as drafts",
+    "applyError": "Couldn't add the template. Please try again.",
+    "startFromTemplate": "Start from a template"
   }
 }
