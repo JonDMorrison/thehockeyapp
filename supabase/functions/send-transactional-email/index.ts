@@ -1,18 +1,46 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://www.hockeyapp.ca",
+  "https://hockeyapp.ca",
+  "http://localhost:8080",
+  "http://localhost:5173",
+];
+const DEFAULT_ORIGIN = "https://www.hockeyapp.ca";
+
+function corsHeadersFor(origin: string | null): Record<string, string> {
+  const allowOrigin = origin && ALLOWED_ORIGINS.includes(origin)
+    ? origin
+    : DEFAULT_ORIGIN;
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 const FROM_ADDRESS = "The Hockey App <hello@hockeyapp.ca>";
 const NAVY = "#0f2a4a";
 
-function jsonResp(body: Record<string, unknown>, status = 200) {
+// Escape user-controlled values before interpolating into HTML to prevent
+// HTML/script injection in email bodies and subjects.
+function escapeHtml(s: unknown): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function jsonResp(
+  body: Record<string, unknown>,
+  status = 200,
+  cors: Record<string, string> = corsHeadersFor(null),
+) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...cors, "Content-Type": "application/json" },
   });
 }
 
@@ -67,17 +95,23 @@ interface DigestPlayer {
 // ── Per-type email builders ──
 
 function buildCoachWelcome(data: Record<string, unknown>): { subject: string; html: string } {
-  const coachName = String(data.coachName ?? "Coach");
-  const teamName = String(data.teamName ?? "your team");
-  const teamCode = String(data.teamCode ?? "");
+  const coachName = escapeHtml(data.coachName ?? "Coach");
+  const teamName = escapeHtml(data.teamName ?? "your team");
+  const rawTeamCode = String(data.teamCode ?? "");
+  const teamCode = escapeHtml(rawTeamCode);
+  const hasTeamCode = rawTeamCode.trim().length > 0;
 
   const subject = "Your team is set up on The Hockey App";
+
+  const inviteStep = hasTeamCode
+    ? `Invite parents with your team code <strong>${teamCode}</strong>, one tap from their phone connects their player.`
+    : `Invite parents, one tap from their phone connects their player.`;
 
   const inner = `
     ${heading(subject)}
     ${para(`Hi ${coachName}, your team ${teamName} is ready. Here's the path most coaches take in week one:`)}
     <ol style="font-size:15px;line-height:1.65;color:#333333;margin:0 0 16px 0;padding-left:20px;">
-      <li style="margin-bottom:8px;">Invite parents with your team code <strong>${teamCode}</strong>, one tap from their phone connects their player.</li>
+      <li style="margin-bottom:8px;">${inviteStep}</li>
       <li style="margin-bottom:8px;">Publish your first week, players see it the moment you publish.</li>
       <li style="margin-bottom:8px;">Check the dashboard Friday, you'll see exactly who trained without asking anyone.</li>
     </ol>
@@ -90,10 +124,10 @@ function buildCoachWelcome(data: Record<string, unknown>): { subject: string; ht
 }
 
 function buildParentInvitation(data: Record<string, unknown>): { subject: string; html: string } {
-  const coachName = String(data.coachName ?? "Your coach");
-  const playerName = String(data.playerName ?? "your player");
-  const teamName = String(data.teamName ?? "the team");
-  const teamCode = String(data.teamCode ?? "");
+  const coachName = escapeHtml(data.coachName ?? "Your coach");
+  const playerName = escapeHtml(data.playerName ?? "your player");
+  const teamName = escapeHtml(data.teamName ?? "the team");
+  const teamCode = escapeHtml(data.teamCode ?? "");
   const inviteLink = String(data.inviteLink ?? "https://www.hockeyapp.ca");
 
   const subject = `${coachName} invited ${playerName} to ${teamName}'s training program`;
@@ -109,7 +143,7 @@ function buildParentInvitation(data: Record<string, unknown>): { subject: string
 }
 
 function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: string; html: string } {
-  const teamName = String(data.teamName ?? "Your team");
+  const teamName = escapeHtml(data.teamName ?? "Your team");
   const completedCount = Number(data.completedCount ?? 0);
   const rosterCount = Number(data.rosterCount ?? 0);
   const teamProgressUrl = String(data.teamProgressUrl ?? "https://www.hockeyapp.ca/teams");
@@ -129,7 +163,7 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
     .map(
       (p) => `
       <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1a1a1a;">${p.name}</td>
+        <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1a1a1a;">${escapeHtml(p.name)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#333333;text-align:center;">${p.sessions}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#333333;text-align:center;">${p.streak}</td>
       </tr>`,
@@ -159,7 +193,7 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
 }
 
 function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: string; html: string } {
-  const firstName = String(data.firstName ?? "Your player");
+  const firstName = escapeHtml(data.firstName ?? "Your player");
   const playerId = String(data.playerId ?? "");
   const sessionsCount = Number(data.sessionsCount ?? 0);
   const shotsCount = Number(data.shotsCount ?? 0);
@@ -190,9 +224,13 @@ function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: st
 
 // ── Main handler ──
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 serve(async (req) => {
+  const cors = corsHeadersFor(req.headers.get("origin"));
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: cors });
   }
 
   try {
@@ -204,7 +242,7 @@ serve(async (req) => {
           msg: "RESEND_API_KEY not configured, skipping send",
         }),
       );
-      return jsonResp({ skipped: true });
+      return jsonResp({ skipped: true }, 200, cors);
     }
 
     const { type, to, data } = (await req.json()) as {
@@ -214,7 +252,11 @@ serve(async (req) => {
     };
 
     if (!type || !to) {
-      return jsonResp({ error: "Missing required fields: type, to" }, 400);
+      return jsonResp({ error: "Missing required fields: type, to" }, 400, cors);
+    }
+
+    if (typeof to !== "string" || !EMAIL_RE.test(to)) {
+      return jsonResp({ error: "Invalid recipient email" }, 400, cors);
     }
 
     const payload = data ?? {};
@@ -234,7 +276,7 @@ serve(async (req) => {
         built = buildPlayerWeeklyProgress(payload);
         break;
       default:
-        return jsonResp({ error: `Unknown email type: ${type}` }, 400);
+        return jsonResp({ error: `Unknown email type: ${type}` }, 400, cors);
     }
 
     const resendRes = await fetch("https://api.resend.com/emails", {
@@ -262,11 +304,11 @@ serve(async (req) => {
           body: errBody,
         }),
       );
-      return jsonResp({ error: "Failed to send email" }, 500);
+      return jsonResp({ error: "Failed to send email" }, 500, cors);
     }
 
     const resendData = await resendRes.json();
-    return jsonResp({ success: true, id: resendData.id });
+    return jsonResp({ success: true, id: resendData.id }, 200, cors);
   } catch (error) {
     console.log(
       JSON.stringify({
@@ -278,6 +320,7 @@ serve(async (req) => {
     return jsonResp(
       { error: error instanceof Error ? error.message : "Unknown error" },
       500,
+      cors,
     );
   }
 });

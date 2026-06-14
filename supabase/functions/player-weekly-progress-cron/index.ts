@@ -61,10 +61,19 @@ serve(async (req) => {
         // Prefer a linked guardian (owner role first), else the player's owner account.
         let recipientUserId: string | null = null;
 
-        const { data: guardians } = await supabase
+        const { data: guardians, error: guardiansErr } = await supabase
           .from("player_guardians")
           .select("user_id, guardian_role")
           .eq("player_id", player.id);
+
+        if (guardiansErr) {
+          log("guardians_fetch_failed", {
+            player_id: player.id,
+            error: guardiansErr.message,
+          });
+          failed++;
+          continue;
+        }
 
         if (guardians && guardians.length > 0) {
           const owner = guardians.find((g) => g.guardian_role === "owner");
@@ -78,11 +87,20 @@ serve(async (req) => {
           continue;
         }
 
-        const { data: profile } = await supabase
+        const { data: profile, error: profileErr } = await supabase
           .from("profiles")
           .select("email")
           .eq("user_id", recipientUserId)
           .maybeSingle();
+
+        if (profileErr) {
+          log("profile_fetch_failed", {
+            player_id: player.id,
+            error: profileErr.message,
+          });
+          failed++;
+          continue;
+        }
 
         const email = profile?.email;
         if (!email) {
@@ -94,43 +112,60 @@ serve(async (req) => {
 
         // ── Aggregation (past 7 days) ──
         let sessionsCount = 0;
-        try {
-          const { count } = await supabase
-            .from("session_completions")
-            .select("id", { count: "exact", head: true })
-            .eq("player_id", player.id)
-            .eq("status", "complete")
-            .gte("completed_at", weekAgo);
-          sessionsCount = count ?? 0;
-        } catch {
+        const { count: sessCount, error: sessionsErr } = await supabase
+          .from("session_completions")
+          .select("id", { count: "exact", head: true })
+          .eq("player_id", player.id)
+          .eq("status", "complete")
+          .gte("completed_at", weekAgo);
+        if (sessionsErr) {
+          log("sessions_count_failed", {
+            player_id: player.id,
+            error: sessionsErr.message,
+          });
           sessionsCount = 0;
+        } else {
+          sessionsCount = sessCount ?? 0;
         }
 
+        // ── Shots: scope to PUBLISHED TEAM practice cards (match get_season_report) ──
         let shotsCount = 0;
-        try {
-          const { data: taskComps } = await supabase
-            .from("task_completions")
-            .select("shots_logged")
-            .eq("player_id", player.id)
-            .eq("completed", true)
-            .gte("completed_at", weekAgo);
+        const { data: taskComps, error: shotsErr } = await supabase
+          .from("task_completions")
+          .select(
+            "shots_logged, practice_tasks!inner(practice_cards!inner(program_source, published_at))",
+          )
+          .eq("player_id", player.id)
+          .eq("completed", true)
+          .gte("completed_at", weekAgo)
+          .eq("practice_tasks.practice_cards.program_source", "team")
+          .not("practice_tasks.practice_cards.published_at", "is", null);
+        if (shotsErr) {
+          log("shots_sum_failed", {
+            player_id: player.id,
+            error: shotsErr.message,
+          });
+          shotsCount = 0;
+        } else {
           shotsCount = (taskComps ?? []).reduce(
-            (sum, tc) => sum + (tc.shots_logged ?? 0),
+            (sum, tc) => sum + ((tc as { shots_logged: number | null }).shots_logged ?? 0),
             0,
           );
-        } catch {
-          shotsCount = 0;
         }
 
         let streak = 0;
-        try {
-          const { data: streakData } = await supabase.rpc(
-            "calculate_solo_streak",
-            { p_player_id: player.id },
-          );
-          streak = typeof streakData === "number" ? streakData : 0;
-        } catch {
+        const { data: streakData, error: streakErr } = await supabase.rpc(
+          "calculate_solo_streak",
+          { p_player_id: player.id },
+        );
+        if (streakErr) {
+          log("streak_calc_failed", {
+            player_id: player.id,
+            error: streakErr.message,
+          });
           streak = 0;
+        } else {
+          streak = typeof streakData === "number" ? streakData : 0;
         }
 
         // ── Send via send-transactional-email ──
