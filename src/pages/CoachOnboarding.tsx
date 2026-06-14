@@ -242,7 +242,41 @@ const CoachOnboarding: React.FC = () => {
     setStep(3);
   };
 
+  const sendCoachWelcomeEmail = async () => {
+    if (!teamId || !user?.email) return;
+    try {
+      // Best-effort team code: read the latest active invite short_code.
+      let teamCode = "";
+      const { data: invite } = await supabase
+        .from("team_invites")
+        .select("short_code")
+        .eq("team_id", teamId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      teamCode = invite?.short_code || "";
+
+      const coachName =
+        (user.user_metadata?.display_name as string | undefined)?.split(" ")[0] ||
+        (user.user_metadata?.display_name as string | undefined) ||
+        user.email.split("@")[0];
+
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          type: "coach_welcome",
+          to: user.email,
+          data: { coachName, teamName, teamCode },
+        },
+      });
+    } catch {
+      /* email is fire-and-forget; never block onboarding */
+    }
+  };
+
   const finish = () => {
+    // Fire-and-forget welcome email — must never affect navigation.
+    sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
       navigate(`/teams/${teamId}?onboarding=true`);
     } else {

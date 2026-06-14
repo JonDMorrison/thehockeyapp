@@ -35,7 +35,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/app/Toast";
 import { SkeletonListItem } from "@/components/app/Skeleton";
-import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2 } from "lucide-react";
+import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2, Mail } from "lucide-react";
 
 const childSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(50),
@@ -72,6 +72,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const [shoots, setShoots] = useState<"left" | "right" | "unknown">("unknown");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+
+  // Email invite state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePlayerName, setInvitePlayerName] = useState("");
 
   // Reset tab when modal opens
   useEffect(() => {
@@ -153,6 +157,47 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
     onError: (error: Error) => {
       toast.error(t("teams.inviteParents.toastGenerateFailedTitle"), error.message);
+    },
+  });
+
+  // Send email invite to a parent
+  const sendEmailInvite = useMutation({
+    mutationFn: async () => {
+      if (!invite?.token) {
+        throw new Error(t("teams.inviteParents.emailInviteNoLink"));
+      }
+      const coachName =
+        (user?.user_metadata?.display_name as string | undefined) ||
+        user?.email?.split("@")[0] ||
+        "Your coach";
+      const inviteLink = `${window.location.origin}/join/${invite.token}`;
+
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          type: "parent_invitation",
+          to: inviteEmail.trim(),
+          data: {
+            coachName,
+            teamName,
+            teamCode: invite.short_code,
+            playerName: invitePlayerName.trim() || "your player",
+            inviteLink,
+          },
+        },
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(
+        t("teams.inviteParents.emailInviteSentTitle"),
+        t("teams.inviteParents.emailInviteSentDescription"),
+      );
+      setInviteEmail("");
+      setInvitePlayerName("");
+    },
+    onError: (error: Error) => {
+      toast.error(t("teams.inviteParents.emailInviteFailedTitle"), error.message);
     },
   });
 
@@ -554,6 +599,43 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     >
                       <Copy className="w-3 h-3" />
                       {t("teams.inviteParents.copyMessage")}
+                    </Button>
+                  </div>
+
+                  {/* Send email invite */}
+                  <div className="p-4 rounded-lg border border-border space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary" />
+                      <p className="text-sm font-medium">{t("teams.inviteParents.emailInviteTitle")}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder={t("teams.inviteParents.emailInvitePlaceholder")}
+                        className="text-sm"
+                      />
+                      <Input
+                        value={invitePlayerName}
+                        onChange={(e) => setInvitePlayerName(e.target.value)}
+                        placeholder={t("teams.inviteParents.emailInvitePlayerPlaceholder")}
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => sendEmailInvite.mutate()}
+                      disabled={sendEmailInvite.isPending || !inviteEmail.trim()}
+                    >
+                      {sendEmailInvite.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
+                      )}
+                      {t("teams.inviteParents.emailInviteSend")}
                     </Button>
                   </div>
 
