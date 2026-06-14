@@ -120,9 +120,6 @@ const Home: React.FC = () => {
                 <p>{t('marketing.home_problem_p1')}</p>
                 <p>{t('marketing.home_problem_p2')}</p>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
-                {t('marketing.home_problem_solution')}
-              </p>
             </div>
           </div>
         </div>
@@ -188,6 +185,9 @@ const Home: React.FC = () => {
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0">
                 {t('marketing.home_coaches_lead')}
+              </p>
+              <p className="mt-4 text-lg font-semibold text-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
+                {t('marketing.home_coaches_edge')}
               </p>
             </div>
 
@@ -325,6 +325,9 @@ const Home: React.FC = () => {
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0">
                 {t('marketing.home_report_body')}
+              </p>
+              <p className="mt-4 text-lg font-semibold text-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
+                {t('marketing.home_report_recruiting')}
               </p>
             </div>
 

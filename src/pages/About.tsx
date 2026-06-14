@@ -65,6 +65,18 @@ const About: React.FC = () => {
         </div>
       </section>
 
+      {/* Why we built it for teams */}
+      <section className="py-16 lg:py-20 bg-[hsl(0,0%,96%)]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-foreground">
+            {t('marketing.about_why_teams_h2')}
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            {t('marketing.about_why_teams_p1')}
+          </p>
+        </div>
+      </section>
+
       {/* Main Story */}
       <section className="py-20 lg:py-28 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,8 +147,14 @@ const About: React.FC = () => {
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 {t('marketing.about_section_cta_p1')}
               </p>
-              <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 {t('marketing.about_section_cta_p2')}
+              </p>
+              <p className="text-lg font-semibold text-foreground leading-relaxed mb-4">
+                {t('marketing.about_edge_line')}
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+                {t('marketing.about_families_line')}
               </p>
               <Button
                 size="lg"
