@@ -158,6 +158,36 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
   return { subject, html: wrap(inner, subject) };
 }
 
+function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: string; html: string } {
+  const firstName = String(data.firstName ?? "Your player");
+  const playerId = String(data.playerId ?? "");
+  const sessionsCount = Number(data.sessionsCount ?? 0);
+  const shotsCount = Number(data.shotsCount ?? 0);
+  const streak = Number(data.streak ?? 0);
+
+  const weekUrl = `https://www.hockeyapp.ca/players/${playerId}/week`;
+  const isZeroWeek = sessionsCount === 0;
+
+  let subject: string;
+  let bodyText: string;
+
+  if (isZeroWeek) {
+    subject = `${firstName}'s training is ready for a fresh week`;
+    bodyText = `A fresh week is a clean slate. ${firstName}'s training plan is ready whenever they are. Even one session this week keeps the habit alive.`;
+  } else {
+    subject = `${firstName}'s week: ${sessionsCount} sessions, ${shotsCount} shots`;
+    bodyText = `Nice work this week. ${firstName} completed ${sessionsCount} training sessions and logged ${shotsCount} shots. Current streak: ${streak}. Next week's plan is ready — keep the momentum going.`;
+  }
+
+  const inner = `
+    ${heading(isZeroWeek ? `A fresh week for ${firstName}` : `${firstName}'s week`)}
+    ${para(bodyText)}
+    ${button("Open this week", weekUrl)}
+  `;
+
+  return { subject, html: wrap(inner, subject) };
+}
+
 // ── Main handler ──
 
 serve(async (req) => {
@@ -199,6 +229,9 @@ serve(async (req) => {
         break;
       case "weekly_coach_digest":
         built = buildWeeklyCoachDigest(payload);
+        break;
+      case "player_weekly_progress":
+        built = buildPlayerWeeklyProgress(payload);
         break;
       default:
         return jsonResp({ error: `Unknown email type: ${type}` }, 400);
