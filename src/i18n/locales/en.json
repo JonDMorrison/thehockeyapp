@@ -2659,6 +2659,22 @@
     "inviteCardButton": "Invite parents",
     "inviteCardDismiss": "Dismiss"
   },
+  "gettingStarted": {
+    "title": "Getting started",
+    "progress": "{{done}} of {{total}} done",
+    "dismiss": "Dismiss",
+    "steps": {
+      "createTeam": "Create your team",
+      "addPlayers": "Add players to your roster",
+      "publishWeek": "Publish your first week",
+      "invite": "Invite parents and players"
+    },
+    "actions": {
+      "addPlayers": "Add players",
+      "publishWeek": "Start from template",
+      "invite": "Invite"
+    }
+  },
   "templates": {
     "pickerTitle": "Start from a template",
     "pickerSubtitle": "Pick a ready-made program. We'll add the days to your team as drafts for you to review.",

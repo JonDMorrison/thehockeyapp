@@ -29,6 +29,7 @@ import { CoachCheersSection } from "@/components/dashboard/CoachCheersSection";
 import { TeamPulseBar } from "@/components/dashboard/TeamPulseBar";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
+import { GettingStartedChecklist } from "@/components/team/GettingStartedChecklist";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
@@ -65,6 +66,18 @@ const CoachDashboard: React.FC = () => {
       // localStorage may be unavailable; default to showing the card
     }
   }, [id]);
+
+  const openInviteFromGettingStarted = () => {
+    if (id) {
+      try {
+        localStorage.setItem(`hockeyapp-getting-started-invited-${id}`, "true");
+      } catch {
+        // ignore storage failures
+      }
+    }
+    setInviteModalTab("invite");
+    setShowInviteModal(true);
+  };
 
   const dismissInviteCard = () => {
     setInviteCardDismissed(true);
@@ -303,6 +316,14 @@ const CoachDashboard: React.FC = () => {
           <p className="text-xs text-muted-foreground px-1">
             This is your team's accountability system.
           </p>
+        )}
+
+        {/* Coach getting-started checklist */}
+        {id && (
+          <GettingStartedChecklist
+            teamId={id}
+            onInvite={openInviteFromGettingStarted}
+          />
         )}
 
         {/* Dismissible invite card */}
