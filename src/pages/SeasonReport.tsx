@@ -83,7 +83,7 @@ const SeasonReport: React.FC = () => {
         .from("teams")
         .select("id, name, palette_id")
         .eq("id", teamId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -129,6 +129,8 @@ const SeasonReport: React.FC = () => {
     return null;
   }
 
+  const teamName = team?.name ?? t("seasonReport.fallbackTeamName");
+
   const rangeLabel = `${format(new Date(`${startDate}T00:00:00`), "MMM d, yyyy")} – ${format(
     new Date(`${endDate}T00:00:00`),
     "MMM d, yyyy"
@@ -155,7 +157,7 @@ const SeasonReport: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader title={t("seasonReport.title")} subtitle={team?.name} />
+          <PageHeader title={t("seasonReport.title")} subtitle={teamName} />
         </div>
       }
     >
@@ -177,7 +179,7 @@ const SeasonReport: React.FC = () => {
               {t("seasonReport.title")}
             </h1>
             <p className="text-sm text-text-secondary mt-0.5">
-              {team?.name} · {rangeLabel}
+              {teamName} · {rangeLabel}
             </p>
           </div>
           <Button

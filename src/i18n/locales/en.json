@@ -11,7 +11,9 @@
     "complete": "Complete",
     "notStarted": "Not started",
     "prevWeek": "Previous week",
-    "nextWeek": "Next week"
+    "nextWeek": "Next week",
+    "noTeam": "No team found for this player.",
+    "openDay": "Open {{date}}"
   },
   "admin": {
     "comp": {
@@ -2597,7 +2599,8 @@
     "nudgeDescription": "A gentle place to start a conversation.",
     "emptyState": "No training data in this range yet",
     "error": "Something went wrong loading this report. Please try again.",
-    "unauthorized": "You don't have access to this team's season report."
+    "unauthorized": "You don't have access to this team's season report.",
+    "fallbackTeamName": "Team"
   },
   "coachOnboarding": {
     "back": "Back",

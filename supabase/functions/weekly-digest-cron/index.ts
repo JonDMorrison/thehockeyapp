@@ -60,7 +60,7 @@ serve(async (req) => {
       teamsProcessed++;
       try {
         // ── Resolve head coach email ──
-        const { data: roleRow } = await supabase
+        const { data: roleRow, error: roleErr } = await supabase
           .from("team_roles")
           .select("user_id")
           .eq("team_id", team.id)
@@ -68,16 +68,31 @@ serve(async (req) => {
           .limit(1)
           .maybeSingle();
 
+        if (roleErr) {
+          log("role_fetch_failed", { team_id: team.id, error: roleErr.message });
+          failed++;
+          continue;
+        }
+
         if (!roleRow?.user_id) {
           log("no_head_coach", { team_id: team.id });
           continue;
         }
 
-        const { data: coachProfile } = await supabase
+        const { data: coachProfile, error: profileErr } = await supabase
           .from("profiles")
           .select("email, display_name")
           .eq("user_id", roleRow.user_id)
           .maybeSingle();
+
+        if (profileErr) {
+          log("coach_profile_fetch_failed", {
+            team_id: team.id,
+            error: profileErr.message,
+          });
+          failed++;
+          continue;
+        }
 
         const coachEmail = coachProfile?.email;
         if (!coachEmail) {
@@ -85,12 +100,21 @@ serve(async (req) => {
           continue;
         }
 
-        // ── Roster ──
-        const { data: memberships } = await supabase
+        // ── Roster (match get_season_report: NULL/non-'removed' is on-roster) ──
+        const { data: memberships, error: membershipsErr } = await supabase
           .from("team_memberships")
           .select("player_id, players(id, first_name)")
           .eq("team_id", team.id)
-          .eq("status", "active");
+          .neq("status", "removed");
+
+        if (membershipsErr) {
+          log("roster_fetch_failed", {
+            team_id: team.id,
+            error: membershipsErr.message,
+          });
+          failed++;
+          continue;
+        }
 
         const roster = (memberships ?? [])
           .map((m) => m.players as { id: string; first_name: string } | null)
@@ -102,27 +126,37 @@ serve(async (req) => {
         const players: DigestPlayer[] = [];
         for (const p of roster) {
           let sessions = 0;
-          try {
-            const { count } = await supabase
-              .from("session_completions")
-              .select("id", { count: "exact", head: true })
-              .eq("player_id", p.id)
-              .eq("status", "complete")
-              .gte("completed_at", weekAgo);
-            sessions = count ?? 0;
-          } catch {
+          const { count, error: sessionsErr } = await supabase
+            .from("session_completions")
+            .select("id", { count: "exact", head: true })
+            .eq("player_id", p.id)
+            .eq("status", "complete")
+            .gte("completed_at", weekAgo);
+          if (sessionsErr) {
+            log("sessions_count_failed", {
+              team_id: team.id,
+              player_id: p.id,
+              error: sessionsErr.message,
+            });
             sessions = 0;
+          } else {
+            sessions = count ?? 0;
           }
 
           let streak = 0;
-          try {
-            const { data: streakData } = await supabase.rpc(
-              "calculate_solo_streak",
-              { p_player_id: p.id },
-            );
-            streak = typeof streakData === "number" ? streakData : 0;
-          } catch {
+          const { data: streakData, error: streakErr } = await supabase.rpc(
+            "calculate_solo_streak",
+            { p_player_id: p.id },
+          );
+          if (streakErr) {
+            log("streak_calc_failed", {
+              team_id: team.id,
+              player_id: p.id,
+              error: streakErr.message,
+            });
             streak = 0;
+          } else {
+            streak = typeof streakData === "number" ? streakData : 0;
           }
 
           players.push({ name: p.first_name, sessions, streak });

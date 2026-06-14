@@ -26,6 +26,26 @@ export interface ProgramTemplate {
 }
 
 /**
+ * Map a team's competitive level to a practice-card tier.
+ * House → "rec"; Rep / A → "rep"; AA / AAA → "elite"; anything else/blank → "rep".
+ * Case-insensitive.
+ */
+export function levelToTier(level?: string | null): "rec" | "rep" | "elite" {
+  switch ((level ?? "").trim().toLowerCase()) {
+    case "house":
+      return "rec";
+    case "rep":
+    case "a":
+      return "rep";
+    case "aa":
+    case "aaa":
+      return "elite";
+    default:
+      return "rep";
+  }
+}
+
+/**
  * Materialize a program template into draft practice_cards for a team.
  *
  * Tasks are grouped by `day`; each day with at least one task becomes a single
@@ -40,8 +60,11 @@ export async function materializeTemplate(
   template: ProgramTemplate,
   teamId: string,
   userId: string,
-  startMonday: Date
+  startMonday: Date,
+  level?: string | null
 ): Promise<{ cardsCreated: number }> {
+  const tier = levelToTier(level);
+
   // Group template tasks by their absolute day index.
   const byDay = new Map<number, TemplateTaskEntry[]>();
   for (const task of template.tasks ?? []) {
@@ -63,7 +86,7 @@ export async function materializeTemplate(
         .insert({
           team_id: teamId,
           date,
-          tier: "rep",
+          tier,
           title: template.title,
           notes: null,
           created_by_user_id: userId,

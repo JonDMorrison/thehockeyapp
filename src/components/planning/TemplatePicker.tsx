@@ -91,7 +91,8 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
         template,
         teamId,
         userId,
-        comingMonday
+        comingMonday,
+        level
       );
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
       toast.success(t("templates.addedToast", { count: cardsCreated }));
