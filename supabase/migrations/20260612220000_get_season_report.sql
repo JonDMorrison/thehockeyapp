@@ -23,6 +23,7 @@ DECLARE
   v_players jsonb;
   v_total_sessions int;
   v_total_shots int;
+  v_player_count int;
   v_avg_completion int;
 BEGIN
   v_user_id := auth.uid();
@@ -147,13 +148,22 @@ BEGIN
         'longest_streak', pp.longest_streak,
         'badges_earned', pp.badges_earned
       )
-      ORDER BY pp.sessions_completed DESC
+      -- Deterministic tiebreaker so ties / printed reports are stable.
+      ORDER BY pp.sessions_completed DESC, pp.name ASC
     ), '[]'::jsonb),
     COALESCE(SUM(pp.sessions_completed), 0),
     COALESCE(SUM(pp.total_shots), 0),
-    COALESCE(ROUND(AVG(pp.completion_rate)), 0)
-  INTO v_players, v_total_sessions, v_total_shots, v_avg_completion
+    COUNT(*)
+  INTO v_players, v_total_sessions, v_total_shots, v_player_count
   FROM per_player pp;
+
+  -- True team completion rate: total complete sessions over the total
+  -- possible (players x published cards), NOT an average of per-player
+  -- rounded percentages (which over/under-weights small denominators).
+  v_avg_completion := CASE
+    WHEN v_published_cards = 0 OR v_player_count = 0 THEN 0
+    ELSE ROUND(100.0 * v_total_sessions / (v_player_count * v_published_cards))
+  END;
 
   RETURN jsonb_build_object(
     'success', true,

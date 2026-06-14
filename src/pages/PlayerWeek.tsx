@@ -93,7 +93,7 @@ const PlayerWeek: React.FC = () => {
         .from("teams")
         .select("*")
         .eq("id", pref.active_team_id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return team;
@@ -206,7 +206,12 @@ const PlayerWeek: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, sessionCompletions, taskCompletions, weekStart]);
 
-  const isLoading = authLoading || teamLoading || cardsLoading;
+  // Once auth + the team query have settled and no team resolved, we render an
+  // explicit not-found state. Don't gate on cardsLoading in that case — the
+  // cards query is disabled (no team id) and would otherwise stay pending,
+  // leaving us stuck on the skeleton forever.
+  const noTeam = !authLoading && !teamLoading && !teamData;
+  const isLoading = !noTeam && (authLoading || teamLoading || cardsLoading);
 
   const rangeLabel = t("playerWeek.weekOf", {
     start: format(weekStart, "MMM d"),
@@ -290,6 +295,22 @@ const PlayerWeek: React.FC = () => {
     return null;
   }
 
+  if (noTeam) {
+    return (
+      <AppShell hideNav header={header}>
+        <Helmet>
+          <title>This Week | Hockey App</title>
+        </Helmet>
+        <PageContainer>
+          <AppCard className="text-center">
+            <CalendarDays className="w-8 h-8 mx-auto text-text-muted mb-2" />
+            <p className="text-sm text-text-muted py-2">{t("playerWeek.noTeam")}</p>
+          </AppCard>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
   const dayContent = (day: DaySummary) => {
     const interactive = day.isToday && !!day.card;
     return (
@@ -303,6 +324,23 @@ const PlayerWeek: React.FC = () => {
           .filter(Boolean)
           .join(" ")}
         onClick={interactive ? () => handleDayClick(day) : undefined}
+        role={interactive ? "button" : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        aria-label={
+          interactive
+            ? t("playerWeek.openDay", { date: format(day.date, "EEE d") })
+            : undefined
+        }
+        onKeyDown={
+          interactive
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleDayClick(day);
+                }
+              }
+            : undefined
+        }
       >
         {/* Stacked row on mobile, compact column cell on md+ */}
         <div className="flex items-center justify-between gap-3 md:flex-col md:items-start md:gap-2">
