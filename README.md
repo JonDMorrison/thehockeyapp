@@ -1,73 +1,48 @@
-# Welcome to your Lovable project
+# The Hockey App
 
-## Project info
+A mobile-first training and accountability product for youth hockey players, parents, and coaches.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+The Hockey App turns off-ice development into a simple daily routine. Players receive age- and level-appropriate checklists, track shots and training habits, and contribute toward individual and team goals. Coaches and parents can support consistency without turning development into another complicated administrative system.
 
-## How can I edit this code?
+## Product purpose
 
-There are several ways of editing your application.
+Youth players often know they should practise away from the rink, but the work is difficult to organize, measure, and sustain. The product is designed around one question: how can a young athlete clearly understand what to do today and feel motivated to keep going?
 
-**Use Lovable**
+## Product principles
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- Mobile-first and easy to use with one hand
+- Parent- and coach-guided rather than open social networking
+- Clear daily actions instead of overwhelming training plans
+- Calm, credible design rather than a cartoon-style sports app
+- Flexible programs for recreational, representative, and elite players
+- Progress, streaks, badges, shot tracking, and team goals used to support consistency
 
-Changes made via Lovable will be committed automatically to this repo.
+## Jon Morrison's role
 
-**Use your preferred IDE**
+Jon leads the product direction, including customer and coach discovery, workflow design, product positioning, feature prioritization, UX direction, testing, and AI-assisted implementation. The product is informed by his experience coaching youth hockey in Abbotsford, British Columbia.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+This repository reflects a product-led, AI-assisted development workflow. It should not be interpreted as a claim that one person manually authored every line of code.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Current status
 
-Follow these steps:
+Active product development and youth-team pilot preparation.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Technology
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Supabase
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Local development
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Portfolio context
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This is one of several workflow-focused software products led by Jon Morrison. His primary work sits between customers, business strategy, user experience, and technical delivery: understanding a real operating problem, defining the product, and helping a multidisciplinary toolset and team turn that insight into usable software.
