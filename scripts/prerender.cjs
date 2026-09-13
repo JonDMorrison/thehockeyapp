@@ -28,6 +28,14 @@ process.on('unhandledRejection', (err) => {
 });
 
 async function prerender() {
+  // Vercel's build image does not include Chromium's native Linux libraries. The source
+  // document already contains a complete crawlable marketing shell, so keep that shell
+  // there instead of attempting a browser launch that cannot succeed.
+  if (process.env.VERCEL === '1') {
+    console.log('Prerender skipped on Vercel; using the crawlable static marketing shell.');
+    return;
+  }
+
   let puppeteer;
   try {
     puppeteer = require('puppeteer');
