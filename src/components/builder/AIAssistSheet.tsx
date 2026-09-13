@@ -315,7 +315,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
               {/* Tier Selection */}
               <div>
                 <Label className="text-sm font-medium">{t('practice.trainingTier')}</Label>
-                <Select value={tier} onValueChange={(v) => setTier(v as any)}>
+                <Select value={tier} onValueChange={(v: "rec" | "rep" | "elite") => setTier(v)}>
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>

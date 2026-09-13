@@ -7,7 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ADMIN_EMAIL = "jon@getclear.ca";
+function escapeHtml(value: unknown) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,12 +26,20 @@ serve(async (req) => {
     console.log(JSON.stringify({ run_id: runId, fn: "send-admin-daily-digest", msg, ...extra }));
 
   try {
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (req.headers.get("Authorization") !== `Bearer ${serviceKey}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
+    const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL");
+    if (!ADMIN_EMAIL) throw new Error("ADMIN_EMAIL not configured");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      serviceKey
     );
 
     // Digest date = yesterday (Pacific time), but we look at last 24h UTC
@@ -96,14 +111,14 @@ serve(async (req) => {
     const urgentSection = urgentEvents.length > 0
       ? `<h3 style="color:#dc2626;margin:16px 0 8px;">🚨 Urgent Events (${urgentEvents.length})</h3>
          <ul style="margin:0;padding:0 0 0 20px;">
-           ${urgentEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${e.event_type.replace(/_/g, " ")} — ${e.email || e.actor_user_id || "system"} — ${new Date(e.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit" })}</li>`).join("")}
+           ${urgentEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(e.email || e.actor_user_id || "system")} — ${new Date(e.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit" })}</li>`).join("")}
          </ul>`
       : "";
 
     const importantSection = importantEvents.length > 0
       ? `<h3 style="color:#d97706;margin:16px 0 8px;">⚠️ Important (${importantEvents.length})</h3>
          <ul style="margin:0;padding:0 0 0 20px;">
-           ${importantEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${e.event_type.replace(/_/g, " ")} — ${JSON.stringify(e.metadata || {}).slice(0, 100)}</li>`).join("")}
+           ${importantEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(JSON.stringify(e.metadata || {}).slice(0, 100))}</li>`).join("")}
          </ul>`
       : "";
 
@@ -176,7 +191,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Hockey App Admin <admin@thehockeyapp.lovable.app>",
+        from: "Hockey App Admin <admin@hockeyapp.ca>",
         to: [ADMIN_EMAIL],
         subject,
         html,

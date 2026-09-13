@@ -8,6 +8,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const publishedUrl = (Deno.env.get("PUBLISHED_URL") || "https://www.hockeyapp.ca").replace(/\/$/, "");
+
+function getSafeReturnOrigin(req: Request) {
+  const requestOrigin = req.headers.get("origin");
+  if (!requestOrigin) return publishedUrl;
+
+  try {
+    const allowedOrigin = new URL(publishedUrl).origin;
+    const parsedOrigin = new URL(requestOrigin).origin;
+    if (parsedOrigin === allowedOrigin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(parsedOrigin)) {
+      return parsedOrigin;
+    }
+  } catch {
+    // Fall through to the canonical application URL.
+  }
+
+  return publishedUrl;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -59,7 +78,7 @@ serve(async (req) => {
       });
     }
 
-    const origin = req.headers.get("origin") || "https://thehockeyapp.lovable.app";
+    const origin = getSafeReturnOrigin(req);
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customers.data[0].id,
       return_url: `${origin}/settings`,

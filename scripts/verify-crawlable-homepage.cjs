@@ -3,10 +3,11 @@ const path = require('path');
 
 const htmlPath = path.join(__dirname, '..', 'dist', 'index.html');
 const requiredSnippets = [
-  'The off-ice training system for hockey teams',
-  'structured home training program',
+  'Turn the days between practices',
+  'into an advantage',
+  'development standard across every team',
   'Strong players go where they',
-  'Set up your team free',
+  'Start a free team pilot',
 ];
 
 if (!fs.existsSync(htmlPath)) {

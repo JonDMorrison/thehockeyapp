@@ -26,17 +26,17 @@ export const MarketingAppPreview: React.FC = () => {
   return (
     <div className="h-full w-full bg-background text-foreground overflow-y-auto">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-10 bg-primary text-white border-b border-primary px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">
+            <p className="text-[10px] font-bold text-white/70 tracking-wider uppercase">
               {t('marketing.app_preview_today_header')}
             </p>
-            <p className="text-base font-bold text-foreground mt-0.5">
+            <p className="text-base font-black uppercase text-white mt-0.5">
               {t('marketing.app_preview_northside_wolves')}
             </p>
           </div>
-          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 bg-black/20 text-white px-2 py-1 rounded-md">
             <Calendar className="w-3 h-3" />
             <span className="text-[10px] font-semibold">{t('marketing.app_preview_practice_day')}</span>
           </div>
@@ -46,7 +46,7 @@ export const MarketingAppPreview: React.FC = () => {
       {/* Content */}
       <div className="px-4 py-4 space-y-4">
         {/* Progress Card */}
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-4 border border-primary/20">
+        <div className="bg-surface-muted rounded-lg p-4 border border-border border-l-2 border-l-primary">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
@@ -59,11 +59,11 @@ export const MarketingAppPreview: React.FC = () => {
                 </p>
               </div>
             </div>
-            <span className="text-lg font-bold text-primary">{Math.round(progressPercent)}%</span>
+            <span className="text-lg font-black text-primary">{Math.round(progressPercent)}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+              className="h-full bg-[hsl(var(--brand-accent))] rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -79,7 +79,7 @@ export const MarketingAppPreview: React.FC = () => {
               <div
                 key={task.id}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg transition-all",
+                  "flex items-center gap-3 p-3 rounded-md transition-all",
                   task.completed ? "bg-muted/30" : "bg-card border border-border"
                 )}
               >

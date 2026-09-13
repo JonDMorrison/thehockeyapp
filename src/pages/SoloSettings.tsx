@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, User, Calendar, Bell, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
+import { Avatar } from "@/components/app/Avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SoloScheduleSyncSection } from "@/components/player/SoloScheduleSyncSection";
 import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
@@ -75,19 +76,12 @@ export default function SoloSettings() {
           </h2>
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-3">
-              {player?.profile_photo_url ? (
-                <img
-                  src={player.profile_photo_url}
-                  alt={player.first_name}
-                  className="h-12 w-12 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-lg font-semibold text-muted-foreground">
-                    {player?.first_name?.[0]}
-                  </span>
-                </div>
-              )}
+              <Avatar
+                src={player?.profile_photo_url}
+                alt={player?.first_name || "Player"}
+                fallback={player?.first_name || "Player"}
+                size="lg"
+              />
               <div>
                 <p className="font-medium text-foreground">
                   {player?.first_name} {player?.last_initial}.

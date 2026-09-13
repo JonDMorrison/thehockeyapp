@@ -268,19 +268,31 @@ function convertToEvent(icalEvent: ICalEvent, sourceType: string): ParsedEvent {
   };
 }
 
-// Validate iCal URL
+const MAX_ICAL_BYTES = 2 * 1024 * 1024;
+
+function isPrivateHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) {
+    return true;
+  }
+
+  if (/^(10\.|127\.|169\.254\.|192\.168\.)/.test(host)) return true;
+  const match172 = host.match(/^172\.(\d{1,3})\./);
+  if (match172 && Number(match172[1]) >= 16 && Number(match172[1]) <= 31) return true;
+  if (host === "::1" || host.startsWith("fe80:") || host.startsWith("fc") || host.startsWith("fd")) return true;
+
+  return false;
+}
+
+// Calendar URLs are treated as secrets. Only fetch public HTTPS endpoints.
 function isValidICalUrl(url: string): boolean {
   try {
-    const parsed = new URL(url);
-    // TeamSnap iCal URLs typically look like:
-    // https://go.teamsnap.com/.../.ics or webcal://...
-    if (parsed.protocol === "webcal:") {
-      return true;
-    }
-    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
-      return url.includes(".ics") || url.includes("teamsnap") || url.includes("ical");
-    }
-    return false;
+    const parsed = new URL(normalizeICalUrl(url));
+    return parsed.protocol === "https:"
+      && !parsed.username
+      && !parsed.password
+      && (parsed.port === "" || parsed.port === "443")
+      && !isPrivateHostname(parsed.hostname);
   } catch {
     return false;
   }
@@ -294,6 +306,24 @@ function normalizeICalUrl(url: string): string {
   return url;
 }
 
+async function fetchICal(url: string): Promise<string> {
+  if (!isValidICalUrl(url)) throw new Error("Invalid iCal URL format");
+
+  const response = await fetch(normalizeICalUrl(url), {
+    headers: { "User-Agent": "TheHockeyApp/1.0" },
+    redirect: "error",
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!response.ok) throw new Error(`Calendar request failed with status ${response.status}`);
+  const declaredLength = Number(response.headers.get("content-length") || 0);
+  if (declaredLength > MAX_ICAL_BYTES) throw new Error("Calendar file is too large");
+
+  const bytes = await response.arrayBuffer();
+  if (bytes.byteLength > MAX_ICAL_BYTES) throw new Error("Calendar file is too large");
+  return new TextDecoder().decode(bytes);
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -303,9 +333,29 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const { action, team_id, player_id, ical_url, timezone } = await req.json();
+    const authHeader = req.headers.get("Authorization");
+    const serviceRequest = authHeader === `Bearer ${supabaseServiceKey}`;
+    let userId: string | null = null;
+
+    if (!serviceRequest && authHeader?.startsWith("Bearer ")) {
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await authClient.auth.getUser();
+      userId = user?.id ?? null;
+    }
+
+    if (!serviceRequest && !userId) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { action, team_id, player_id, ical_url } = await req.json();
 
     console.log(`[sync-schedule] Action: ${action}, Team: ${team_id}, Player: ${player_id}`);
 
@@ -325,16 +375,10 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
         );
       }
 
-      const normalizedUrl = normalizeICalUrl(ical_url);
-
-      // Fetch the iCal feed
-      console.log(`[sync-schedule] Fetching iCal from: ${normalizedUrl}`);
-      const icalResponse = await fetch(normalizedUrl, {
-        headers: { "User-Agent": "HockeyTraining/1.0" },
-      });
-
-      if (!icalResponse.ok) {
-        console.error(`[sync-schedule] Failed to fetch iCal: ${icalResponse.status}`);
+      let icalContent: string;
+      try {
+        icalContent = await fetchICal(ical_url);
+      } catch {
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -343,12 +387,6 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
         );
       }
-
-      const icalContent = await icalResponse.text();
-      
-      // Debug: Log first 500 chars of iCal content
-      console.log(`[sync-schedule] iCal content preview: ${icalContent.slice(0, 500)}`);
-      console.log(`[sync-schedule] iCal total length: ${icalContent.length} chars`);
       
       if (!icalContent.includes("BEGIN:VCALENDAR")) {
         return new Response(
@@ -397,6 +435,21 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
         );
       }
 
+      if (!serviceRequest) {
+        const { data: role } = await supabase
+          .from("team_roles")
+          .select("role")
+          .eq("team_id", team_id)
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!role) {
+          return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
       // Get the schedule source for this team
       const { data: source, error: sourceError } = await supabase
         .from("team_schedule_sources")
@@ -420,18 +473,7 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
         .eq("id", source.id);
 
       try {
-        const normalizedUrl = normalizeICalUrl(source.ical_url);
-        
-        console.log(`[sync-schedule] Syncing team ${team_id} from ${normalizedUrl}`);
-        const icalResponse = await fetch(normalizedUrl, {
-          headers: { "User-Agent": "HockeyTraining/1.0" },
-        });
-
-        if (!icalResponse.ok) {
-          throw new Error(`Failed to fetch iCal: ${icalResponse.status}`);
-        }
-
-        const icalContent = await icalResponse.text();
+        const icalContent = await fetchICal(source.ical_url);
         const icalEvents = parseICalContent(icalContent);
         const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
 
@@ -531,6 +573,21 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
         );
       }
 
+      if (!serviceRequest) {
+        const { data: player } = await supabase
+          .from("players")
+          .select("id")
+          .eq("id", player_id)
+          .eq("owner_user_id", userId)
+          .maybeSingle();
+        if (!player) {
+          return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
       // Get the schedule source for this player
       const { data: source, error: sourceError } = await supabase
         .from("solo_schedule_sources")
@@ -554,18 +611,7 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
         .eq("id", source.id);
 
       try {
-        const normalizedUrl = normalizeICalUrl(source.ical_url);
-        
-        console.log(`[sync-schedule] Syncing player ${player_id} from ${normalizedUrl}`);
-        const icalResponse = await fetch(normalizedUrl, {
-          headers: { "User-Agent": "HockeyTraining/1.0" },
-        });
-
-        if (!icalResponse.ok) {
-          throw new Error(`Failed to fetch iCal: ${icalResponse.status}`);
-        }
-
-        const icalContent = await icalResponse.text();
+        const icalContent = await fetchICal(source.ical_url);
         const icalEvents = parseICalContent(icalContent);
         const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
 
@@ -652,6 +698,12 @@ const { action, team_id, player_id, ical_url, timezone } = await req.json();
     }
 
     if (action === "sync_all") {
+      if (!serviceRequest) {
+        return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       // Sync all teams (for cron job)
       const { data: sources, error: sourcesError } = await supabase
         .from("team_schedule_sources")

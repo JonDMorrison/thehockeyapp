@@ -12,7 +12,7 @@ const appleButtonVariants = cva(
         primary:
           "bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] text-white shadow-glow hover:brightness-110",
         secondary:
-          "bg-white text-primary border-2 border-primary/20 hover:bg-primary hover:text-white hover:border-primary",
+          "bg-card text-primary border-2 border-primary/40 hover:bg-primary hover:text-white hover:border-primary",
         outline:
           "border-2 border-gray-300 bg-transparent hover:border-primary hover:text-primary",
         ghost:

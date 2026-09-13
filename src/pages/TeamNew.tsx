@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -28,10 +28,12 @@ const teamSchema = z.object({
 });
 
 type TeamFormData = z.infer<typeof teamSchema>;
+type CreateTeamResult = { success?: boolean; team_id?: string; name?: string };
 
 const TeamNew: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
 
@@ -51,35 +53,21 @@ const TeamNew: React.FC = () => {
 
   const createTeam = useMutation({
     mutationFn: async (data: TeamFormData) => {
-      // Create the team
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .insert({
-          name: data.name.trim(),
-          season_label: data.season_label?.trim() || null,
-          palette_id: data.palette_id,
-          created_by_user_id: user!.id,
-        })
-        .select()
-        .single();
-
-      if (teamError) throw teamError;
-
-      // Add creator as head coach
-      const { error: roleError } = await supabase
-        .from("team_roles")
-        .insert({
-          team_id: team.id,
-          user_id: user!.id,
-          role: "head_coach",
-        });
-
-      if (roleError) throw roleError;
-
-      return team;
+      const associationId = searchParams.get("association") || undefined;
+      const { data: result, error } = await supabase.rpc("create_team_with_owner", {
+        p_name: data.name.trim(),
+        p_season_label: data.season_label?.trim() || undefined,
+        p_palette_id: data.palette_id,
+        p_association_id: associationId,
+      });
+      if (error) throw error;
+      const team = result as unknown as CreateTeamResult;
+      if (!team.team_id) throw new Error("Team was not created");
+      return { id: team.team_id, name: team.name || data.name.trim(), associationId };
     },
     onSuccess: (team) => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["association-dashboard", team.associationId] });
       toast.success(t("teams.new.toastSuccess"), `${team.name} ${t("teams.new.toastSuccessReady")}`);
       // Redirect to team home with onboarding flag
       navigate(`/teams/${team.id}?onboarding=true`);
@@ -186,7 +174,7 @@ const TeamNew: React.FC = () => {
                   id="season_label"
                   value={formData.season_label}
                   onChange={(e) => updateField("season_label", e.target.value)}
-                  placeholder="2024-25 · U12 Rep"
+                  placeholder="2026-27 · U12 Rep"
                 />
               </div>
             </div>
@@ -267,9 +255,7 @@ const TeamNew: React.FC = () => {
                   {t("teams.new.tryAgain")}
                 </Button>
                 <a
-                  href="https://lovable.dev/support"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/contact"
                   className="text-sm text-primary hover:underline"
                 >
                   {t("teams.new.contactSupport")}

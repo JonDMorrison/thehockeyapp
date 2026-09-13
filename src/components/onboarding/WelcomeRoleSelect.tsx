@@ -116,7 +116,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
               className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "player"
                   ? "border-success bg-success/5 shadow-[0_0_40px_-10px_hsl(var(--success)/0.3)]"
-                  : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-success/50 hover:shadow-soft"
+                  : "border-border bg-card/60 backdrop-blur-sm hover:border-success/50 hover:shadow-soft"
               }`}
             >
               <div className="flex items-start gap-4">
@@ -158,7 +158,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
               className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
                 selectedRole === "solo"
                   ? "border-warning bg-warning/5 shadow-[0_0_40px_-10px_hsl(var(--warning)/0.3)]"
-                  : "border-gray-200 bg-white/60 backdrop-blur-sm hover:border-warning/50 hover:shadow-soft"
+                  : "border-border bg-card/60 backdrop-blur-sm hover:border-warning/50 hover:shadow-soft"
               }`}
             >
               <div className="flex items-start gap-4">

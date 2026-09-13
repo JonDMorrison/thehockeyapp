@@ -19,8 +19,11 @@ import {
   FileText,
   Users,
   Home as HomeIcon,
+  Building2,
+  BarChart3,
+  ShieldCheck,
 } from "lucide-react";
-import familyNexlevelImg from "@/assets/family-nexlevel.png";
+import familyNexlevelImg from "@/assets/family-nexlevel.webp";
 import { useTranslation } from 'react-i18next';
 
 const Home: React.FC = () => {
@@ -28,25 +31,25 @@ const Home: React.FC = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="marketing-performance min-h-screen bg-background">
       <Helmet>
-        <title>The Hockey App — Off-Ice Training for Hockey Teams</title>
-        <meta name="description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
-        <meta property="og:title" content="The Hockey App — Off-Ice Training for Hockey Teams" />
-        <meta property="og:description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
+        <title>The Hockey App — Off-Ice Development for Hockey Teams</title>
+        <meta name="description" content="Run one off-ice development standard across every team. Coaches keep their own workspace while association leaders see privacy-safe rollout and adoption." />
+        <meta property="og:title" content="The Hockey App — Off-Ice Development for Hockey Teams" />
+        <meta property="og:description" content="Run one off-ice development standard across every team, with independent coach workspaces and association-level rollout reporting." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.hockeyapp.ca/" />
         <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="The Hockey App — Off-Ice Training for Hockey Teams" />
-        <meta name="twitter:description" content="The off-ice training system for hockey teams. Coaches assign structured home training, players follow it on their own, and you see who's putting in the work." />
+        <meta name="twitter:title" content="The Hockey App — Off-Ice Development for Hockey Teams" />
+        <meta name="twitter:description" content="Run one off-ice development standard across every team, with independent coach workspaces and association-level rollout reporting." />
         <link rel="canonical" href="https://www.hockeyapp.ca/" />
       </Helmet>
       <MarketingNav />
 
       <main>
       {/* Hero Section */}
-      <section className="relative pt-16 bg-[hsl(0,0%,98%)] overflow-hidden">
+      <section className="relative pt-16 bg-background overflow-hidden performance-grid">
         {/* Decorative background elements */}
         <div className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-primary/[0.04] blur-3xl" />
         <div className="absolute bottom-0 -right-24 w-80 h-80 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-3xl" />
@@ -56,7 +59,11 @@ const Home: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-32 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.05] text-foreground">
+              <div className="inline-flex items-center gap-2 rounded-md border border-primary/35 bg-primary/10 px-3 py-2 mb-6 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                Pilot one team. Scale across the association.
+              </div>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black uppercase tracking-[-0.045em] mb-6 leading-[0.96] text-foreground">
                 {t('marketing.home_hero_heading_prefix')}{" "}
                 <span className="bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
                   {t('marketing.home_hero_heading_gradient')}
@@ -74,7 +81,7 @@ const Home: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
                   size="lg"
-                  className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                  className="text-base px-10 bg-primary hover:bg-team-tertiary transition-colors text-white rounded-md shadow-[0_10px_30px_rgba(223,47,54,0.25)] font-bold uppercase tracking-wide"
                   onClick={() => setShowGetStarted(true)}
                 >
                   {t('marketing.home_hero_get_started')}
@@ -82,7 +89,7 @@ const Home: React.FC = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-base px-8 border-2 border-primary text-primary hover:bg-primary/5 transition-colors rounded-xl"
+                  className="text-base px-8 border border-border text-foreground hover:bg-surface-muted transition-colors rounded-md"
                   asChild
                 >
                   <Link to="/demo">
@@ -90,6 +97,19 @@ const Home: React.FC = () => {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-px mt-10 border border-border bg-border max-w-xl mx-auto lg:mx-0 rounded-lg overflow-hidden text-left">
+                {[
+                  ["One plan", "Across the roster"],
+                  ["Minutes", "To assign a week"],
+                  ["One view", "To see adoption"],
+                ].map(([value, label]) => (
+                  <div key={value} className="bg-card px-3 py-4 sm:px-4">
+                    <p className="text-sm sm:text-base font-black uppercase text-foreground">{value}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{label}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -103,7 +123,7 @@ const Home: React.FC = () => {
                     <MarketingAppPreview />
                   </PhoneMockup>
                   {/* Bottom gradient mask for clean mobile crop */}
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[hsl(0,0%,98%)] to-transparent pointer-events-none lg:hidden" />
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none lg:hidden" />
                 </div>
               </div>
             </div>
@@ -112,10 +132,10 @@ const Home: React.FC = () => {
       </section>
 
       {/* The Problem Section */}
-      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-surface-muted overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="bg-card rounded-2xl p-8 md:p-12 border border-border shadow-subtle">
+          <div className="bg-card rounded-lg p-8 md:p-12 border border-border shadow-subtle border-l-4 border-l-primary">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-foreground">
               {t('marketing.home_problem_heading')}
             </h2>
@@ -262,8 +282,83 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Association operations */}
+      <section className="relative overflow-hidden border-y border-border bg-[#0a0a0c] py-20 lg:py-28">
+        <div className="absolute inset-0 performance-grid opacity-40" />
+        <div className="absolute -right-20 top-0 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
+          <div>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-primary/35 bg-primary/10 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">
+              <Building2 className="h-4 w-4" />
+              Association HQ
+            </div>
+            <h2 className="font-display text-4xl font-black uppercase leading-[0.95] tracking-[-0.04em] text-white sm:text-5xl">
+              One standard.<br /><span className="text-primary">Every team.</span>
+            </h2>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/65">
+              Give every coach an independent workspace, then track onboarding, weekly-plan coverage, sessions, and adoption from one association view.
+            </p>
+            <div className="mt-7 space-y-3">
+              {[
+                [ShieldCheck, "Player details stay inside authorized team and family access"],
+                [BarChart3, "Directors see aggregate rollout—not a cross-team child leaderboard"],
+                [Users, "Invite association staff with owner, director, admin, or reporting roles"],
+              ].map(([Icon, label]) => (
+                <div key={label as string} className="flex items-start gap-3 text-sm text-white/75">
+                  <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>{label as string}</span>
+                </div>
+              ))}
+            </div>
+            <Button className="mt-8 font-bold uppercase tracking-wide" asChild>
+              <Link to="/contact">Plan an association rollout <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111114] shadow-[0_28px_80px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Association HQ</p>
+                <p className="mt-0.5 font-display text-lg font-black uppercase text-white">North Shore Hockey</p>
+              </div>
+              <span className="rounded border border-emerald-400/25 bg-emerald-400/10 px-2 py-1 text-[10px] font-bold uppercase text-emerald-300">Season live</span>
+            </div>
+            <div className="grid grid-cols-4 gap-px bg-white/10">
+              {[["12", "Teams"], ["214", "Players"], ["74%", "Active"], ["38K", "Shots"]].map(([value, label]) => (
+                <div key={label} className="bg-[#111114] px-3 py-4 text-center">
+                  <p className="font-display text-xl font-black text-white sm:text-2xl">{value}</p>
+                  <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-white/40">{label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="divide-y divide-white/10 px-5">
+              {[
+                { name: "U13 A1", active: 82, players: "18/22", live: true },
+                { name: "U15 A2", active: 71, players: "15/21", live: true },
+                { name: "U11 C1", active: 46, players: "9/20", live: false },
+              ].map((team) => (
+                <div key={team.name} className="py-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-display text-sm font-black uppercase text-white">{team.name}</p>
+                      <p className="text-[10px] text-white/40">{team.players} players active</p>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase ${team.live ? "text-emerald-300" : "text-amber-300"}`}>
+                      {team.live ? "Plan live" : "Plan needed"}
+                    </span>
+                  </div>
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-red-400" style={{ width: `${team.active}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 30-Day Challenge */}
-      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-surface-muted overflow-hidden">
         <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -379,7 +474,38 @@ const Home: React.FC = () => {
       </section>
 
       {/* Families Section — demoted + condensed */}
-      <section className="relative py-16 lg:py-20 bg-[hsl(0,0%,96%)] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-background border-y border-border overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-12 items-start">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-primary mb-4">Complete development</p>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase leading-none mb-5">
+                More than a shot counter.
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed">
+                Shot challenges are a powerful way to build a habit. The Hockey App keeps the clear targets and fast check-offs, then adds the rest of the player’s week.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                ["Shot-type goals", "Wrist, snap, slap, backhand, and mixed-shot targets."],
+                ["Complete weekly plans", "Shooting, mobility, conditioning, prep, and recovery."],
+                ["Schedule-aware workload", "Game and practice days shape the work players see."],
+                ["Coach visibility", "Assign once, then see completion across the roster."],
+              ].map(([title, description]) => (
+                <div key={title} className="bg-card border border-border rounded-lg p-5">
+                  <CheckCircle className="w-5 h-5 text-primary mb-4" />
+                  <h3 className="font-black uppercase tracking-tight mb-2">{title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Families Section — demoted + condensed */}
+      <section className="relative py-16 lg:py-20 bg-surface-muted overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/15 to-amber-500/5 mb-6 shadow-sm">
@@ -404,7 +530,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Founder Section */}
-      <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+      <section className="relative py-20 lg:py-28 bg-surface-muted overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, hsl(0 0% 12%) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         <div className="absolute top-10 left-1/4 w-4 h-4 rounded-full bg-primary/10 hidden lg:block" />
         <div className="absolute bottom-20 right-1/4 w-3 h-3 rounded-full bg-[hsl(213,100%,25%,0.1)] hidden lg:block" />
@@ -415,7 +541,8 @@ const Home: React.FC = () => {
                 <img
                   src={familyNexlevelImg}
                   alt={t('marketing.home_founder_img_alt')}
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto object-cover rounded-lg border border-border"
+                  loading="lazy"
                 />
               </div>
             </div>
@@ -510,7 +637,7 @@ const Home: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="text-base px-10 bg-primary hover:bg-team-tertiary transition-colors text-white rounded-md shadow-[0_10px_30px_rgba(223,47,54,0.25)] font-bold uppercase tracking-wide"
                 onClick={() => setShowGetStarted(true)}
               >
                 {t('marketing.home_cta_get_started')}

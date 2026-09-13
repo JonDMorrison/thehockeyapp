@@ -1,14 +1,17 @@
 import { Page } from '@playwright/test';
 
 export async function login(page: Page) {
-  // Session is pre-loaded via storageState in playwright.config.ts
-  // Just navigate to the app — Supabase session will be picked up automatically
-  await page.goto('/');
+  // The global setup signs in once and stores the authenticated Supabase session.
+  await page.goto('/settings');
   await page.waitForLoadState('networkidle');
 
-  // If we end up on /auth, the session expired — fail clearly
   if (page.url().includes('/auth')) {
-    throw new Error('Session expired — refresh e2e/.auth/user.json with a new token from hockeyapp.ca DevTools');
+    throw new Error('Authenticated test session unavailable. Set TEST_USER_EMAIL and TEST_USER_PASSWORD in .env.test.');
+  }
+
+  const signOut = page.getByRole('button', { name: /sign out/i });
+  if (!(await signOut.isVisible({ timeout: 5_000 }).catch(() => false))) {
+    throw new Error('Authentication check failed: the protected settings page did not show a signed-in session.');
   }
 }
 
@@ -58,7 +61,7 @@ export async function getFirstTeamId(page: Page): Promise<string | null> {
     if (await el.isVisible()) {
       const href = await el.getAttribute('href');
       if (href) {
-        const match = href.match(/\/teams\/([^\/]+)/);
+        const match = href.match(/\/teams\/([^/]+)/);
         if (match) return match[1];
       }
     }
@@ -71,7 +74,7 @@ export async function getFirstTeamId(page: Page): Promise<string | null> {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
     const url = page.url();
-    const match = url.match(/\/teams\/([^\/]+)/);
+    const match = url.match(/\/teams\/([^/]+)/);
     if (match) return match[1];
   }
 
@@ -87,7 +90,7 @@ export async function getFirstPlayerId(page: Page): Promise<string | null> {
   const playerLink = page.locator('a[href*="/players/"]').first();
   if (await playerLink.isVisible()) {
     const href = await playerLink.getAttribute('href');
-    const match = href?.match(/\/players\/([^\/]+)/);
+    const match = href?.match(/\/players\/([^/]+)/);
     if (match) return match[1];
   }
 
@@ -98,7 +101,7 @@ export async function getFirstPlayerId(page: Page): Promise<string | null> {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
     const url = page.url();
-    const match = url.match(/\/players\/([^\/]+)/);
+    const match = url.match(/\/players\/([^/]+)/);
     if (match) return match[1];
     await page.goBack();
   }

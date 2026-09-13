@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,7 @@ import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppC
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/app/Toast";
 import { Loader2, Shield, AlertCircle, CheckCircle, UserPlus } from "lucide-react";
 
@@ -16,24 +17,27 @@ const GuardianJoin: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const [redeemStatus, setRedeemStatus] = useState<"idle" | "success" | "error">("idle");
+  const [relationshipConfirmed, setRelationshipConfirmed] = useState(false);
 
-  // Fetch invite details (public read allowed by token)
+  // Token-scoped preview returns only the details needed for this screen.
   const { data: invite, isLoading: inviteLoading, error: inviteError } = useQuery({
     queryKey: ["guardian-invite", token],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("player_guardian_invites")
-        .select(`
-          *,
-          players(first_name, last_initial)
-        `)
-        .eq("token", token)
-        .single();
+      const { data, error } = await supabase.rpc("preview_guardian_invite", {
+        p_token: token,
+      });
 
       if (error) throw error;
-      return data;
+      return data as unknown as {
+        success: boolean;
+        error?: string;
+        status?: string;
+        expires_at?: string;
+        player_name?: string;
+        email_domain?: string;
+      };
     },
     enabled: !!token,
   });
@@ -42,13 +46,13 @@ const GuardianJoin: React.FC = () => {
   const isExpired = invite?.expires_at && new Date(invite.expires_at) < new Date();
   const isRevoked = invite?.status === "revoked";
   const isAlreadyAccepted = invite?.status === "accepted";
-  const isValid = invite && !isExpired && !isRevoked && !isAlreadyAccepted;
 
   // Redeem invite mutation
   const redeemInvite = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.rpc("redeem_guardian_invite", {
         invite_token: token,
+        p_relationship_confirmed: relationshipConfirmed,
       });
 
       if (error) throw error;
@@ -73,13 +77,6 @@ const GuardianJoin: React.FC = () => {
     },
   });
 
-  // Auto-redeem when authenticated and invite is valid
-  useEffect(() => {
-    if (isAuthenticated && isValid && redeemStatus === "idle" && !redeemInvite.isPending) {
-      redeemInvite.mutate();
-    }
-  }, [isAuthenticated, isValid, redeemStatus]);
-
   if (inviteLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -93,7 +90,7 @@ const GuardianJoin: React.FC = () => {
   }
 
   // Invalid or not found
-  if (inviteError || !invite) {
+  if (inviteError || !invite?.success) {
     return (
       <AppShell hideNav>
         <PageContainer className="min-h-screen flex items-center justify-center">
@@ -184,9 +181,7 @@ const GuardianJoin: React.FC = () => {
     );
   }
 
-  const playerName = invite.players?.first_name
-    ? `${invite.players.first_name}${invite.players.last_initial ? ` ${invite.players.last_initial}.` : ""}`
-    : t("auth.guardianJoin.aPlayerFallback");
+  const playerName = invite.player_name || t("auth.guardianJoin.aPlayerFallback");
 
   // Not authenticated - prompt login
   if (!isAuthenticated) {
@@ -207,7 +202,7 @@ const GuardianJoin: React.FC = () => {
                   variant="team"
                   size="lg"
                   className="w-full"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate(`/auth?redirect=${encodeURIComponent(`/guardian/join/${token}`)}`)}
                 >
                   {t("auth.signInOrCreateAccount")}
                 </Button>
@@ -219,7 +214,8 @@ const GuardianJoin: React.FC = () => {
     );
   }
 
-  // Authenticated and redeeming
+  // Authenticated: require an explicit relationship acknowledgement before
+  // adding access to a child's profile.
   return (
     <AppShell hideNav>
       <PageContainer className="min-h-screen flex items-center justify-center">
@@ -254,7 +250,7 @@ const GuardianJoin: React.FC = () => {
                   {t("common.tryAgain")}
                 </Button>
               </>
-            ) : (
+            ) : redeemInvite.isPending ? (
               <>
                 <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-team-primary" />
@@ -264,6 +260,33 @@ const GuardianJoin: React.FC = () => {
                   {t("auth.guardianJoin.joiningMessage", { playerName })}
                 </AppCardDescription>
                 <Loader2 className="w-8 h-8 animate-spin text-team-primary mx-auto" />
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-team-primary" />
+                </div>
+                <AppCardTitle className="text-xl mb-2">Confirm guardian access</AppCardTitle>
+                <AppCardDescription className="mb-5">
+                  You were invited to help manage {playerName}. Sign in with the invited email address to continue.
+                </AppCardDescription>
+                <label className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 text-left text-sm">
+                  <Checkbox
+                    checked={relationshipConfirmed}
+                    onCheckedChange={(checked) => setRelationshipConfirmed(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <span>I confirm I am a parent or legal guardian authorized to manage this player profile.</span>
+                </label>
+                <Button
+                  variant="team"
+                  size="lg"
+                  className="mt-4 w-full"
+                  disabled={!relationshipConfirmed}
+                  onClick={() => redeemInvite.mutate()}
+                >
+                  Accept guardian access
+                </Button>
               </>
             )}
           </AppCard>

@@ -3,9 +3,8 @@
 @tailwind utilities;
 
 /* 
-  HOCKEY TRAINING APP - DESIGN SYSTEM
-  Premium, calm, modern aesthetic inspired by Apple Fitness / Calm / Notion
-  Mobile-first, neutral surfaces, team colors as subtle accents only
+  HOCKEY TRAINING APP - PERFORMANCE DESIGN SYSTEM
+  Dark rink-side surfaces, decisive red actions, compact data presentation
   All colors in HSL format
 */
 
@@ -15,74 +14,74 @@
        NEUTRAL COLOR SYSTEM
        Clean, structured, trustworthy
        ======================================== */
-    --background: 0 0% 98%;             /* #FAFAFA */
-    --foreground: 0 0% 12%;             /* #1F1F1F */
+    --background: 222 18% 5%;
+    --foreground: 0 0% 96%;
     
-    --surface: 0 0% 100%;               /* #FFFFFF */
-    --surface-muted: 0 0% 96%;          /* #F4F4F4 */
+    --surface: 222 16% 8%;
+    --surface-muted: 222 14% 12%;
     
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card: 222 15% 9%;
+    --card-foreground: 0 0% 96%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover: 222 15% 9%;
+    --popover-foreground: 0 0% 96%;
     
-    /* Text hierarchy — all meet WCAG AA on white/fafafa */
-    --text-primary: 0 0% 12%;           /* #1F1F1F — 16:1 */
-    --text-secondary: 0 0% 20%;         /* #333333 — 12.6:1 */
-    --text-muted: 0 0% 33%;             /* #555555 — 7.5:1 */
-    --text-disabled: 0 0% 60%;          /* #999999 — 2.8:1 (decorative only) */
+    /* Text hierarchy tuned for the dark surfaces below */
+    --text-primary: 0 0% 96%;
+    --text-secondary: 0 0% 76%;
+    --text-muted: 0 0% 64%;
+    --text-disabled: 0 0% 44%;
     
     /* Borders */
-    --border: 0 0% 91%;                 /* #E8E8E8 */
-    --border-muted: 0 0% 94%;           /* #F0F0F0 */
-    --input: 0 0% 91%;
-    --ring: 0 0% 12%;
+    --border: 222 12% 21%;
+    --border-muted: 222 12% 15%;
+    --input: 222 12% 22%;
+    --ring: 358 76% 54%;
     
     /* ========================================
        TEAM THEMING VARIABLES
        Applied via setTeamTheme() function
        Used as accents only, never flood surfaces
        ======================================== */
-    --team-primary: 22 90% 46%;         /* #E94F00 — disciplined orange */
+    --team-primary: 358 76% 54%;        /* decisive hockey red */
     --team-secondary: 0 0% 100%;
-    --team-tertiary: 22 85% 40%;        /* #CC4300 — hover state */
+    --team-tertiary: 358 72% 45%;
     
     /* Computed accent colors from team palette */
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
     /* Brand accent — navy blue, used sparingly */
-    --brand-accent: 213 100% 25%;       /* #003E7E */
+    --brand-accent: 193 100% 45%;       /* ice blue data accent */
     
     /* Headline gradient — red to blue */
-    --gradient-start: 0 85% 50%;        /* #E61A1A — bold red */
-    --gradient-end: 213 100% 25%;       /* #003E7E — navy blue */
+    --gradient-start: 358 76% 54%;
+    --gradient-end: 193 100% 45%;
     
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 12%;
+    --secondary: 222 14% 14%;
+    --secondary-foreground: 0 0% 96%;
     
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 12%;
+    --accent: 222 14% 14%;
+    --accent-foreground: 0 0% 96%;
     
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 33%;
+    --muted: 222 14% 14%;
+    --muted-foreground: 0 0% 64%;
     
     /* ========================================
        SEMANTIC COLORS
        Calm, muted versions - not alarming
        ======================================== */
-    --success: 123 38% 33%;             /* #2E7D32 — calm, trustworthy green */
+    --success: 139 59% 46%;
     --success-foreground: 0 0% 100%;
-    --success-muted: 123 25% 95%;
+    --success-muted: 139 35% 14%;
     
     --warning: 38 92% 50%;              /* Warm amber */
-    --warning-foreground: 38 92% 15%;
-    --warning-muted: 38 60% 95%;
+    --warning-foreground: 38 92% 10%;
+    --warning-muted: 38 45% 14%;
     
-    --destructive: 0 65% 55%;           /* Soft red */
+    --destructive: 0 72% 54%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-muted: 0 40% 96%;
+    --destructive-muted: 0 35% 14%;
     
     /* ========================================
        SPACING SCALE (reference)
@@ -93,81 +92,79 @@
        RADIUS SCALE
        Generous, friendly radii
        ======================================== */
-    --radius: 1rem;                     /* 16px base */
-    --radius-sm: 0.75rem;               /* 12px */
-    --radius-lg: 1.5rem;                /* 24px */
+    --radius: 0.75rem;
+    --radius-sm: 0.5rem;
+    --radius-lg: 1rem;
     --radius-full: 9999px;              /* Pills */
     
     /* ========================================
        SHADOWS
        Subtle, premium feel
        ======================================== */
-    --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 
-                     0 1px 2px 0 rgba(0, 0, 0, 0.03);
-    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 
-                     0 2px 4px -2px rgba(0, 0, 0, 0.04);
-    --shadow-elevated: 0 6px 20px -4px rgba(0, 0, 0, 0.08);
+    --shadow-subtle: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 12px 32px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 20px 60px rgba(0, 0, 0, 0.42);
     
     /* Safe area for mobile */
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
     
     /* Sidebar (keeping for shadcn compatibility) */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 0 0% 12%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 0 0% 91%;
+    --sidebar-background: 222 18% 5%;
+    --sidebar-foreground: 0 0% 76%;
+    --sidebar-primary: var(--team-primary);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 14% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 222 12% 18%;
     --sidebar-ring: var(--team-primary);
   }
 
   .dark {
-    --background: 0 0% 9%;
-    --foreground: 0 0% 95%;
+    --background: 222 18% 5%;
+    --foreground: 0 0% 96%;
     
-    --surface: 0 0% 12%;
-    --surface-muted: 0 0% 15%;
+    --surface: 222 16% 8%;
+    --surface-muted: 222 14% 12%;
     
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 95%;
+    --card: 222 15% 9%;
+    --card-foreground: 0 0% 96%;
     
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222 15% 9%;
+    --popover-foreground: 0 0% 96%;
     
-    --text-primary: 0 0% 95%;
-    --text-secondary: 0 0% 70%;
-    --text-muted: 0 0% 55%;
-    --text-disabled: 0 0% 40%;
+    --text-primary: 0 0% 96%;
+    --text-secondary: 0 0% 76%;
+    --text-muted: 0 0% 64%;
+    --text-disabled: 0 0% 44%;
     
-    --border: 0 0% 20%;
-    --border-muted: 0 0% 16%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 80%;
+    --border: 222 12% 21%;
+    --border-muted: 222 12% 15%;
+    --input: 222 12% 22%;
+    --ring: 358 76% 54%;
     
     --primary: var(--team-primary);
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 222 14% 14%;
+    --secondary-foreground: 0 0% 96%;
     
-    --accent: 0 0% 16%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 222 14% 14%;
+    --accent-foreground: 0 0% 96%;
     
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 222 14% 14%;
+    --muted-foreground: 0 0% 64%;
     
-    --destructive: 0 55% 45%;
+    --destructive: 0 72% 54%;
     --destructive-foreground: 0 0% 100%;
     
-    --sidebar-background: 0 0% 9%;
-    --sidebar-foreground: 0 0% 70%;
+    --sidebar-background: 222 18% 5%;
+    --sidebar-foreground: 0 0% 76%;
     --sidebar-primary: var(--team-primary);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 18%;
+    --sidebar-accent: 222 14% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 222 12% 18%;
     --sidebar-ring: var(--team-primary);
   }
 }
@@ -194,6 +191,13 @@
   /* Typography defaults */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground;
+    font-family: "Arial Narrow", "Inter Tight", Inter, sans-serif;
+    font-stretch: condensed;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.35);
+    color: hsl(var(--foreground));
   }
   
   /* Focus styles */
@@ -218,9 +222,32 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground/30;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
+  .marketing-performance {
+    --primary: 358 76% 54%;
+    --team-primary: 358 76% 54%;
+    --team-tertiary: 358 72% 45%;
+  }
+
+  .performance-grid {
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
   /* Card base with shadow */
   .card-elevated {
     box-shadow: var(--shadow-subtle);

@@ -8,6 +8,7 @@ import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppC
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
 import { Baby, Loader2, Plus, Check } from "lucide-react";
+
+type CreatePlayerResult = { success?: boolean; player_id?: string };
 
 const childSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(50),
@@ -48,6 +51,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
   const [birthYear, setBirthYear] = useState(2015);
   const [shoots, setShoots] = useState<"left" | "right" | "unknown">("unknown");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [adultAcknowledged, setAdultAcknowledged] = useState(false);
 
   // Get user's children that are NOT on this team yet
   const { data: childrenData, isLoading: loadingChildren } = useQuery({
@@ -93,6 +97,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
         // Use existing child
         playerId = selectedChildId;
       } else {
+        if (!adultAcknowledged) throw new Error("Confirm that you are authorized to manage this player profile.");
         // Validate form for new child
         const validated = childSchema.parse({
           first_name: firstName,
@@ -100,37 +105,22 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
           shoots,
         });
 
-        // Create new child player profile
-        const { data: newPlayer, error: playerError } = await supabase
-          .from("players")
-          .insert({
-            owner_user_id: user!.id,
-            first_name: validated.first_name,
-            birth_year: validated.birth_year,
-            shoots: validated.shoots,
-          })
-          .select()
-          .single();
-
-        if (playerError) throw playerError;
-        playerId = newPlayer.id;
-
-        // Add as guardian with owner role
-        await supabase.from("player_guardians").insert({
-          player_id: playerId,
-          user_id: user!.id,
-          guardian_role: "owner",
+        const { data: result, error: playerError } = await supabase.rpc("create_managed_player", {
+          p_first_name: validated.first_name,
+          p_birth_year: validated.birth_year,
+          p_shoots: validated.shoots,
         });
+        if (playerError) throw playerError;
+        const newPlayer = result as unknown as CreatePlayerResult;
+        if (!newPlayer.player_id) throw new Error("Player profile was not created");
+        playerId = newPlayer.player_id;
       }
 
       // Add to team roster
-      const { error: membershipError } = await supabase
-        .from("team_memberships")
-        .insert({
-          team_id: teamId,
-          player_id: playerId,
-          status: "active",
-        });
+      const { error: membershipError } = await supabase.rpc("add_my_player_to_team", {
+        p_team_id: teamId,
+        p_player_id: playerId,
+      });
 
       if (membershipError) {
         if (membershipError.code === "23505") {
@@ -174,6 +164,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
     setShoots("unknown");
     setSelectedChildId(null);
     setErrors({});
+    setAdultAcknowledged(false);
   };
 
   const currentYear = new Date().getFullYear();
@@ -321,6 +312,18 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                  <Checkbox
+                    checked={adultAcknowledged}
+                    onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    I am this player’s parent or legal guardian and I am authorized to create this profile.
+                    <span className="mt-1 block text-xs text-muted-foreground">Private photos and AI personalization remain off by default.</span>
+                  </span>
+                </label>
               </>
             )}
 
@@ -328,7 +331,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
               variant="team"
               className="w-full"
               onClick={() => addChildMutation.mutate()}
-              disabled={addChildMutation.isPending || (!selectedChildId && !firstName.trim())}
+              disabled={addChildMutation.isPending || (!selectedChildId && (!firstName.trim() || !adultAcknowledged))}
             >
               {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}

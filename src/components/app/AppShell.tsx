@@ -72,7 +72,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Smart Navigation Header */}
       {useNavHeader && (
-        <header className="sticky top-0 z-40 safe-top bg-background/95 backdrop-blur-xl border-b border-border/50">
+        <header className="sticky top-0 z-40 safe-top bg-background/95 backdrop-blur-xl border-b border-border/80 border-t-2 border-t-primary">
           <div className="px-4 py-2 pr-14">
             <NavigationHeader
               title={navTitle}
@@ -87,7 +87,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Legacy Header (for backward compatibility) */}
       {!useNavHeader && header && (
-        <header className="sticky top-0 z-40 safe-top bg-background/95 backdrop-blur-xl border-b border-border/50">
+        <header className="sticky top-0 z-40 safe-top bg-background/95 backdrop-blur-xl border-b border-border/80 border-t-2 border-t-primary">
           <div className="px-4 py-3 pr-14">
             {header}
           </div>
@@ -104,7 +104,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Bottom Navigation with animated indicator */}
       {!hideNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border/50 safe-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0b0f]/95 backdrop-blur-xl border-t border-border safe-bottom">
           <div className="flex items-center justify-around h-16 max-w-lg mx-auto relative">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path ||
@@ -117,7 +117,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-1 py-2 px-5 rounded-2xl transition-all duration-200 tap-target",
+                    "relative flex flex-col items-center justify-center gap-1 py-2 px-5 transition-all duration-200 tap-target",
                     "active:scale-95",
                     isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
@@ -126,7 +126,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="tab-indicator"
-                      className="absolute inset-0 bg-primary/10 rounded-2xl"
+                      className="absolute top-0 left-3 right-3 h-0.5 bg-primary"
                       initial={false}
                       transition={{
                         type: "spring",

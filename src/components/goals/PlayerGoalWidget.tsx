@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Target, Clock, Trophy, Flame, Gift, Medal, Pizza, Gamepad2, Star } from 'lucide-react';
+import { Target, Clock, Trophy, Flame, Gift, Medal, Pizza, Gamepad2, Star, type LucideIcon } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,7 +24,7 @@ const motivationalMessages = [
 ];
 
 // Reward display config matching GoalRewardPrompt options
-const rewardConfig: Record<string, { emoji: string; label: string; icon: React.ComponentType<any>; color: string }> = {
+const rewardConfig: Record<string, { emoji: string; label: string; icon: LucideIcon; color: string }> = {
   badges: { emoji: "🏅", label: "Badge Hunt", icon: Medal, color: "from-amber-500 to-yellow-500" },
   scrimmage: { emoji: "🏒", label: "Scrimmage Game", icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
   pizza: { emoji: "🍕", label: "Pizza Party", icon: Pizza, color: "from-red-500 to-orange-500" },

@@ -108,7 +108,34 @@ serve(async (req) => {
           continue;
         }
 
-        // TODO: no opt-out field exists — add one and honor it.
+        // Create defaults lazily for older accounts, then honor the user's choice.
+        let { data: preferences, error: preferenceErr } = await supabase
+          .from("email_preferences")
+          .select("player_weekly_progress, unsubscribe_token")
+          .eq("user_id", recipientUserId)
+          .maybeSingle();
+        if (!preferences && !preferenceErr) {
+          const created = await supabase
+            .from("email_preferences")
+            .insert({ user_id: recipientUserId })
+            .select("player_weekly_progress, unsubscribe_token")
+            .single();
+          preferences = created.data;
+          preferenceErr = created.error;
+        }
+        if (preferenceErr) {
+          log("preferences_fetch_failed", {
+            player_id: player.id,
+            error: preferenceErr.message,
+          });
+          failed++;
+          continue;
+        }
+        if (preferences?.player_weekly_progress === false) {
+          skipped++;
+          log("progress_email_opted_out", { player_id: player.id });
+          continue;
+        }
 
         // ── Aggregation (past 7 days) ──
         let sessionsCount = 0;
@@ -186,6 +213,9 @@ serve(async (req) => {
                 sessionsCount,
                 shotsCount,
                 streak,
+                unsubscribeUrl: preferences?.unsubscribe_token
+                  ? `https://www.hockeyapp.ca/unsubscribe/${preferences.unsubscribe_token}?kind=player_weekly_progress`
+                  : undefined,
               },
             }),
           },

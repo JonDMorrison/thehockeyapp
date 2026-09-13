@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -139,6 +159,201 @@ export type Database = {
           },
         ]
       }
+      association_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          association_id: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: number
+          metadata: Json
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          association_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: never
+          metadata?: Json
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          association_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: never
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_audit_log_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          association_id: string
+          created_at: string
+          created_by_user_id: string
+          expires_at: string
+          id: string
+          invited_email: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          association_id: string
+          created_at?: string
+          created_by_user_id: string
+          expires_at?: string
+          id?: string
+          invited_email: string
+          role: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          association_id?: string
+          created_at?: string
+          created_by_user_id?: string
+          expires_at?: string
+          id?: string
+          invited_email?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_invites_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_roles: {
+        Row: {
+          association_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          association_id: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          association_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_roles_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      association_teams: {
+        Row: {
+          added_at: string
+          added_by_user_id: string
+          association_id: string
+          team_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by_user_id: string
+          association_id: string
+          team_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by_user_id?: string
+          association_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "association_teams_association_id_fkey"
+            columns: ["association_id"]
+            isOneToOne: false
+            referencedRelation: "associations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "association_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      associations: {
+        Row: {
+          created_at: string
+          created_by_user_id: string
+          id: string
+          name: string
+          region: string | null
+          season_label: string | null
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_user_id: string
+          id?: string
+          name: string
+          region?: string | null
+          season_label?: string | null
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_user_id?: string
+          id?: string
+          name?: string
+          region?: string | null
+          season_label?: string | null
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           badge_icon: string
@@ -175,6 +390,39 @@ export type Database = {
         }
         Relationships: []
       }
+      client_error_events: {
+        Row: {
+          component_stack: string | null
+          created_at: string
+          id: number
+          message: string
+          release: string | null
+          route: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component_stack?: string | null
+          created_at?: string
+          id?: never
+          message: string
+          release?: string | null
+          route: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component_stack?: string | null
+          created_at?: string
+          id?: never
+          message?: string
+          release?: string | null
+          route?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -196,6 +444,36 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      email_preferences: {
+        Row: {
+          player_weekly_progress: boolean
+          product_updates: boolean
+          team_invites: boolean
+          unsubscribe_token: string
+          updated_at: string
+          user_id: string
+          weekly_coach_digest: boolean
+        }
+        Insert: {
+          player_weekly_progress?: boolean
+          product_updates?: boolean
+          team_invites?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id: string
+          weekly_coach_digest?: boolean
+        }
+        Update: {
+          player_weekly_progress?: boolean
+          product_updates?: boolean
+          team_invites?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id?: string
+          weekly_coach_digest?: boolean
         }
         Relationships: []
       }
@@ -780,6 +1058,56 @@ export type Database = {
           },
         ]
       }
+      player_consents: {
+        Row: {
+          ai_personalization_allowed: boolean
+          consented_at: string | null
+          guardian_user_id: string
+          id: string
+          photo_sharing_allowed: boolean
+          player_id: string
+          policy_version: string
+          relationship_confirmed: boolean
+          terms_version: string
+          updated_at: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          ai_personalization_allowed?: boolean
+          consented_at?: string | null
+          guardian_user_id: string
+          id?: string
+          photo_sharing_allowed?: boolean
+          player_id: string
+          policy_version?: string
+          relationship_confirmed?: boolean
+          terms_version?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          ai_personalization_allowed?: boolean
+          consented_at?: string | null
+          guardian_user_id?: string
+          id?: string
+          photo_sharing_allowed?: boolean
+          player_id?: string
+          policy_version?: string
+          relationship_confirmed?: boolean
+          terms_version?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_consents_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_guardian_invites: {
         Row: {
           created_at: string | null
@@ -1120,42 +1448,6 @@ export type Database = {
           },
         ]
       }
-      program_templates: {
-        Row: {
-          age_divisions: string[]
-          created_at: string | null
-          description: string | null
-          id: string
-          is_active: boolean
-          levels: string[]
-          tasks: Json
-          title: string
-          weeks: number
-        }
-        Insert: {
-          age_divisions?: string[]
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          levels?: string[]
-          tasks?: Json
-          title: string
-          weeks?: number
-        }
-        Update: {
-          age_divisions?: string[]
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          levels?: string[]
-          tasks?: Json
-          title?: string
-          weeks?: number
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1192,6 +1484,42 @@ export type Database = {
           has_used_trial?: boolean
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      program_templates: {
+        Row: {
+          age_divisions: string[]
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          levels: string[]
+          tasks: Json
+          title: string
+          weeks: number
+        }
+        Insert: {
+          age_divisions?: string[]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          levels?: string[]
+          tasks?: Json
+          title: string
+          weeks?: number
+        }
+        Update: {
+          age_divisions?: string[]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          levels?: string[]
+          tasks?: Json
+          title?: string
+          weeks?: number
         }
         Relationships: []
       }
@@ -2661,6 +2989,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_my_player_to_team: {
+        Args: { p_player_id: string; p_team_id: string }
+        Returns: Json
+      }
+      add_team_to_association: {
+        Args: { p_association_id: string; p_team_id: string }
+        Returns: Json
+      }
       am_i_admin: { Args: never; Returns: boolean }
       apply_offline_event: {
         Args: {
@@ -2689,11 +3025,59 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_association: {
+        Args: { p_name: string; p_region?: string; p_season_label?: string }
+        Returns: Json
+      }
+      create_association_invite: {
+        Args: { p_association_id: string; p_email: string; p_role?: string }
+        Returns: Json
+      }
+      create_managed_player: {
+        Args: {
+          p_ai_personalization_allowed?: boolean
+          p_birth_year: number
+          p_fav_nhl_city?: string
+          p_fav_nhl_player?: string
+          p_first_name: string
+          p_hockey_love?: string
+          p_jersey_number?: string
+          p_last_initial?: string
+          p_photo_sharing_allowed?: boolean
+          p_season_goals?: string
+          p_shoots?: string
+        }
+        Returns: Json
+      }
+      create_solo_player_with_plan: {
+        Args: {
+          p_birth_year: number
+          p_days_per_week: number
+          p_first_name: string
+          p_training_focus: string[]
+        }
+        Returns: Json
+      }
+      create_team_with_owner: {
+        Args: {
+          p_age_division?: string
+          p_association_id?: string
+          p_level?: string
+          p_name: string
+          p_palette_id?: string
+          p_season_label?: string
+        }
+        Returns: Json
+      }
       evaluate_player_challenges: {
         Args: { p_player_id: string }
         Returns: Json
       }
       generate_team_short_code: { Args: { p_team_id: string }; Returns: string }
+      get_association_dashboard: {
+        Args: { p_association_id: string; p_days?: number }
+        Returns: Json
+      }
       get_comp_admin_list: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: {
@@ -2745,14 +3129,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_season_report: {
-        Args: {
-          p_team_id: string
-          p_start_date: string
-          p_end_date: string
-        }
-        Returns: Json
-      }
       get_pending_comp_grants: {
         Args: never
         Returns: {
@@ -2766,6 +3142,10 @@ export type Database = {
       }
       get_player_development_snapshot: {
         Args: { p_player_id: string }
+        Returns: Json
+      }
+      get_season_report: {
+        Args: { p_end_date: string; p_start_date: string; p_team_id: string }
         Returns: Json
       }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
@@ -2806,6 +3186,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_association_admin: {
+        Args: { p_association_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_association_member: {
+        Args: { p_association_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_guardian_of_team_player: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
@@ -2840,6 +3228,10 @@ export type Database = {
         Args: { invite_token: string; p_player_id: string }
         Returns: Json
       }
+      leave_my_player_from_team: {
+        Args: { p_player_id: string; p_team_id: string }
+        Returns: boolean
+      }
       log_admin_event: {
         Args: {
           p_actor?: string
@@ -2852,17 +3244,37 @@ export type Database = {
         }
         Returns: string
       }
+      preview_association_invite: { Args: { p_token: string }; Returns: Json }
+      preview_guardian_invite: { Args: { p_token: string }; Returns: Json }
+      preview_solo_referral_invite: { Args: { p_token: string }; Returns: Json }
+      preview_team_adult_invite: { Args: { p_token: string }; Returns: Json }
       preview_team_by_invite: { Args: { invite_token: string }; Returns: Json }
       preview_team_by_short_code: {
         Args: { p_short_code: string }
         Returns: Json
       }
-      redeem_guardian_invite: { Args: { invite_token: string }; Returns: Json }
+      redeem_association_invite: { Args: { p_token: string }; Returns: Json }
+      redeem_guardian_invite: {
+        Args: { invite_token: string; p_relationship_confirmed: boolean }
+        Returns: Json
+      }
       redeem_team_adult_invite: {
         Args: { invite_token: string }
         Returns: Json
       }
       regenerate_team_invite: { Args: { p_team_id: string }; Returns: Json }
+      remove_team_from_association: {
+        Args: { p_association_id: string; p_team_id: string }
+        Returns: Json
+      }
+      revoke_association_invite: {
+        Args: { p_invite_id: string }
+        Returns: boolean
+      }
+      unsubscribe_email: {
+        Args: { p_kind?: string; p_token: string }
+        Returns: boolean
+      }
       user_has_player_on_team: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
@@ -2996,6 +3408,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       program_source: ["team", "parent"],

@@ -62,10 +62,9 @@ const WeeklyReflections: React.FC = () => {
   const { data: hasPro, isLoading: proLoading } = useQuery({
     queryKey: ["has-full-access", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.rpc("has_full_access", {
-        p_user_id: user!.id,
-      });
-      return data === true;
+      const { data, error } = await supabase.rpc("get_my_access_status");
+      if (error) throw error;
+      return Boolean((data as { has_full_access?: boolean } | null)?.has_full_access);
     },
     enabled: !!user,
   });

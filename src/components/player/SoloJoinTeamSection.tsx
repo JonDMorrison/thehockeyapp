@@ -70,14 +70,14 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
         return;
       }
 
-      // Fall back to full token lookup
-      const { data: invite, error } = await supabase
-        .from("team_invites")
-        .select("id, team_id, token, status, expires_at, teams(name)")
-        .eq("token", code)
-        .single();
+      // Fall back to a token-scoped preview. Invite rows are never listed.
+      const { data: fullTokenResult, error } = await supabase.rpc(
+        "preview_team_by_invite",
+        { invite_token: inviteCode.trim() },
+      );
+      const fullTokenData = fullTokenResult as { success?: boolean } | null;
 
-      if (error || !invite) {
+      if (error || !fullTokenData?.success) {
         toast({
           title: "Invalid code",
           description: "That code wasn't found. Check with your coach.",
@@ -86,26 +86,8 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
         return;
       }
 
-      if (invite.status !== "active") {
-        toast({
-          title: "Invite expired",
-          description: "This invite is no longer active.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (new Date(invite.expires_at) < new Date()) {
-        toast({
-          title: "Invite expired",
-          description: "This invite has expired. Ask your coach for a new one.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Navigate to the join flow with player pre-selected
-      navigate(`/join/${invite.token}?playerId=${playerId}`);
+      navigate(`/join/${encodeURIComponent(inviteCode.trim())}?playerId=${playerId}`);
     } catch (err) {
       toast({
         title: "Error",

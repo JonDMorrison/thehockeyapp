@@ -40,12 +40,12 @@ export const PhoneMockup: React.FC<PhoneMockupProps> = ({
       )}
 
       {/* Phone frame */}
-      <div className="relative bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
+      <div className="relative bg-black rounded-[3rem] p-3 shadow-2xl ring-1 ring-white/25">
         {/* Notch */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-full z-10" />
 
         {/* Screen */}
-        <div className="rounded-[2.5rem] overflow-hidden bg-white aspect-[9/19.5]">
+        <div className="rounded-[2.5rem] overflow-hidden bg-background aspect-[9/19.5]">
           {imageSrc ? (
             <img
               src={imageSrc}

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = [
   "https://www.hockeyapp.ca",
@@ -50,7 +51,7 @@ function button(label: string, href: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0;">
     <tr>
       <td align="left">
-        <a href="${href}" style="display:inline-block;padding:12px 28px;background-color:${NAVY};color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;border-radius:6px;">
+        <a href="${escapeHtml(href)}" style="display:inline-block;padding:12px 28px;background-color:${NAVY};color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;border-radius:6px;">
           ${label}
         </a>
       </td>
@@ -84,6 +85,14 @@ function heading(text: string): string {
 
 function para(text: string): string {
   return `<p style="font-size:15px;line-height:1.65;color:#333333;margin:0 0 16px 0;">${text}</p>`;
+}
+
+function unsubscribeFooter(data: Record<string, unknown>): string {
+  const unsubscribeUrl = typeof data.unsubscribeUrl === "string" ? data.unsubscribeUrl : "";
+  if (!unsubscribeUrl) return "";
+  return `<p style="font-size:12px;line-height:1.5;color:#888888;margin:28px 0 0 0;border-top:1px solid #eeeeee;padding-top:16px;">
+    You can <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666666;">turn off this email</a> at any time.
+  </p>`;
 }
 
 interface DigestPlayer {
@@ -135,10 +144,24 @@ function buildParentInvitation(data: Record<string, unknown>): { subject: string
   const inner = `
     ${heading(`Join ${teamName}`)}
     ${para(`Hi, ${coachName} uses The Hockey App to give ${teamName} a structured off-ice training plan players follow at home. Join with team code <strong>${teamCode}</strong> and ${playerName} sees their daily checklist right away.`)}
-    ${para("Takes about a minute. Nothing is public, no rankings, and you control the account.")}
+    ${para("Takes about a minute. Player details and training photos stay private, and you control the player account.")}
     ${button(`Join ${teamName}`, inviteLink)}
   `;
 
+  return { subject, html: wrap(inner, subject) };
+}
+
+function buildAssociationInvitation(data: Record<string, unknown>): { subject: string; html: string } {
+  const associationName = escapeHtml(data.associationName ?? "your hockey association");
+  const role = escapeHtml(String(data.role ?? "viewer").replaceAll("_", " "));
+  const inviteLink = String(data.inviteLink ?? "https://www.hockeyapp.ca/associations");
+  const subject = `You're invited to ${associationName} on The Hockey App`;
+  const inner = `
+    ${heading(`Join ${associationName}`)}
+    ${para(`You've been invited to the association workspace as <strong>${role}</strong>. Use it to coordinate teams and review rollout progress without exposing individual player details across the association.`)}
+    ${button("Accept association invitation", inviteLink)}
+    ${para("For security, sign in with the email address that received this invitation.")}
+  `;
   return { subject, html: wrap(inner, subject) };
 }
 
@@ -187,6 +210,7 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
     </table>
     ${para("Players who haven't started this week are at the bottom, no action needed unless you want to nudge them.")}
     ${button("See full progress", teamProgressUrl)}
+    ${unsubscribeFooter(data)}
   `;
 
   return { subject, html: wrap(inner, subject) };
@@ -217,6 +241,7 @@ function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: st
     ${heading(isZeroWeek ? `A fresh week for ${firstName}` : `${firstName}'s week`)}
     ${para(bodyText)}
     ${button("Open this week", weekUrl)}
+    ${unsubscribeFooter(data)}
   `;
 
   return { subject, html: wrap(inner, subject) };
@@ -245,6 +270,25 @@ serve(async (req) => {
       return jsonResp({ skipped: true }, 200, cors);
     }
 
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const authHeader = req.headers.get("Authorization");
+    const serviceRequest = authHeader === `Bearer ${SERVICE_ROLE_KEY}`;
+    let user: { id: string; email?: string } | null = null;
+
+    if (!serviceRequest && authHeader?.startsWith("Bearer ")) {
+      const authClient = createClient(SUPABASE_URL, ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user: authUser } } = await authClient.auth.getUser();
+      user = authUser ? { id: authUser.id, email: authUser.email } : null;
+    }
+
+    if (!serviceRequest && !user) {
+      return jsonResp({ error: "Unauthorized" }, 401, cors);
+    }
+
     const { type, to, data } = (await req.json()) as {
       type?: string;
       to?: string;
@@ -261,6 +305,43 @@ serve(async (req) => {
 
     const payload = data ?? {};
 
+    if (type === "weekly_coach_digest" || type === "player_weekly_progress") {
+      if (!serviceRequest) return jsonResp({ error: "Forbidden" }, 403, cors);
+    } else if (type === "association_invitation" && !serviceRequest) {
+      const associationId = typeof payload.associationId === "string" ? payload.associationId : "";
+      if (!associationId) return jsonResp({ error: "Missing association context" }, 400, cors);
+
+      const authClient = createClient(SUPABASE_URL, ANON_KEY, {
+        global: { headers: { Authorization: authHeader! } },
+      });
+      const { data: role } = await authClient
+        .from("association_roles")
+        .select("role")
+        .eq("association_id", associationId)
+        .eq("user_id", user!.id)
+        .in("role", ["owner", "director", "admin"])
+        .maybeSingle();
+      if (!role) return jsonResp({ error: "Forbidden" }, 403, cors);
+    } else if (!serviceRequest) {
+      const teamId = typeof payload.teamId === "string" ? payload.teamId : "";
+      if (!teamId) return jsonResp({ error: "Missing team context" }, 400, cors);
+
+      const authClient = createClient(SUPABASE_URL, ANON_KEY, {
+        global: { headers: { Authorization: authHeader! } },
+      });
+      const { data: role } = await authClient
+        .from("team_roles")
+        .select("role")
+        .eq("team_id", teamId)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      if (!role) return jsonResp({ error: "Forbidden" }, 403, cors);
+      if (type === "coach_welcome" && to.toLowerCase() !== user!.email?.toLowerCase()) {
+        return jsonResp({ error: "Welcome email recipient must match the signed-in account" }, 403, cors);
+      }
+    }
+
     let built: { subject: string; html: string };
     switch (type) {
       case "coach_welcome":
@@ -268,6 +349,9 @@ serve(async (req) => {
         break;
       case "parent_invitation":
         built = buildParentInvitation(payload);
+        break;
+      case "association_invitation":
+        built = buildAssociationInvitation(payload);
         break;
       case "weekly_coach_digest":
         built = buildWeeklyCoachDigest(payload);

@@ -54,7 +54,7 @@ const Demo: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="marketing-performance min-h-screen bg-background">
       <Helmet>
         <title>See It In Action — The Hockey App</title>
         <meta name="description" content="Watch a demo of The Hockey App's off-ice training tools." />
@@ -85,7 +85,7 @@ const Demo: React.FC = () => {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Floating badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
             <Dumbbell className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-muted-foreground">{t('marketing.demo_badge_demo')}</span>
           </div>
@@ -98,7 +98,7 @@ const Demo: React.FC = () => {
           </p>
 
           {/* View Switcher */}
-          <div className="inline-flex items-center gap-2 p-1.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft">
+          <div className="inline-flex items-center gap-2 p-1.5 rounded-xl bg-card/80 backdrop-blur-sm border border-border shadow-soft">
             <button
               onClick={() => setActiveView("coach")}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
@@ -131,7 +131,7 @@ const Demo: React.FC = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Content */}
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-[hsl(221,70%,60%)] flex items-center justify-center">
                   <Users className="w-4 h-4 text-white" />
                 </div>
@@ -143,7 +143,7 @@ const Demo: React.FC = () => {
               </h2>
 
               {/* Features in glass card */}
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-soft p-6 mb-8">
+              <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-soft p-6 mb-8">
                 <ul className="space-y-4">
                   {coachFeatures.map((item, i) => (
                     <li key={i} className="flex items-start gap-4 group">
@@ -190,7 +190,7 @@ const Demo: React.FC = () => {
 
             {/* Content */}
             <div className="lg:order-2 order-1">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-success to-[hsl(160,60%,40%)] flex items-center justify-center">
                   <UserCircle className="w-4 h-4 text-white" />
                 </div>
@@ -202,7 +202,7 @@ const Demo: React.FC = () => {
               </h2>
 
               {/* Features in glass card */}
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-soft p-6 mb-8">
+              <div className="bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-soft p-6 mb-8">
                 <ul className="space-y-4">
                   {playerFeatures.map((item, i) => (
                     <li key={i} className="flex items-start gap-4 group">
@@ -233,7 +233,7 @@ const Demo: React.FC = () => {
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-soft mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
               <Shield className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-muted-foreground">{t('marketing.demo_badge_parent_control')}</span>
             </div>
@@ -247,7 +247,7 @@ const Demo: React.FC = () => {
             {privacyFeatures.map((item, i) => (
               <div
                 key={i}
-                className="group bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-soft p-6 hover:shadow-depth hover:-translate-y-1 transition-all duration-300"
+                className="group bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-soft p-6 hover:shadow-depth hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <item.icon className="w-7 h-7 text-primary" />
@@ -266,7 +266,7 @@ const Demo: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-gray-200/50 shadow-depth p-10 md:p-14">
+          <div className="bg-card/80 backdrop-blur-xl rounded-2xl border border-border shadow-depth p-10 md:p-14">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
               {t('marketing.features_cta_heading')}
             </h2>

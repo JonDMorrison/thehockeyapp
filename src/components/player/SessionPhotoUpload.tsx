@@ -22,6 +22,7 @@ interface SessionPhoto {
   visibility: string;
   caption: string | null;
   created_at: string;
+  signed_url: string;
 }
 
 interface SessionPhotoUploadProps {
@@ -68,7 +69,17 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as SessionPhoto[];
+      const photosWithUrls = await Promise.all(
+        data.map(async (photo) => {
+          const { data: signed, error: signedError } = await supabase.storage
+            .from("session-photos")
+            .createSignedUrl(photo.storage_path, 3600);
+          if (signedError) throw signedError;
+          return { ...photo, signed_url: signed.signedUrl };
+        })
+      );
+
+      return photosWithUrls as SessionPhoto[];
     },
     enabled: !!practiceCardId && !!playerId,
   });
@@ -84,6 +95,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
       caption: string;
       visibility: 'parent_only' | 'team_adults';
     }) => {
+      if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+        throw new Error("Choose a JPEG, PNG, WebP, HEIC, or HEIF image under 5 MB.");
+      }
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `sessions/${practiceCardId}/${playerId}/${fileName}`;
@@ -107,7 +122,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           caption: caption || null,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        await supabase.storage.from("session-photos").remove([filePath]);
+        throw insertError;
+      }
 
       return filePath;
     },
@@ -175,11 +193,6 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
     setShareWithCoaches(false);
   };
 
-  const getPhotoUrl = (storagePath: string) => {
-    const { data } = supabase.storage.from("session-photos").getPublicUrl(storagePath);
-    return data.publicUrl;
-  };
-
   const photoCount = (photos?.length || 0) + localQueuedPhotos.length;
 
   return (
@@ -197,7 +210,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
             className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted group"
           >
             <img
-              src={getPhotoUrl(photo.storage_path)}
+              src={photo.signed_url}
               alt="Session proof"
               className="w-full h-full object-cover"
             />

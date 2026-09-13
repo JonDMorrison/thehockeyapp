@@ -130,37 +130,23 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
           shoots,
         });
 
-        // Create new adult player profile
-        const { data: newPlayer, error: playerError } = await supabase
-          .from("players")
-          .insert({
-            owner_user_id: user!.id,
-            first_name: validated.first_name,
-            birth_year: validated.birth_year,
-            shoots: validated.shoots,
-          })
-          .select()
-          .single();
-
-        if (playerError) throw playerError;
-        playerId = newPlayer.id;
-
-        // Add as guardian with owner role
-        await supabase.from("player_guardians").insert({
-          player_id: playerId,
-          user_id: user!.id,
-          guardian_role: "owner",
+        // Create the player, owner link, and consent record atomically.
+        const { data: result, error: playerError } = await supabase.rpc("create_managed_player", {
+          p_first_name: validated.first_name,
+          p_birth_year: validated.birth_year,
+          p_shoots: validated.shoots,
         });
+        if (playerError) throw playerError;
+        const created = result as unknown as { player_id?: string };
+        if (!created.player_id) throw new Error("Player profile was not created");
+        playerId = created.player_id;
       }
 
       // Add to team roster
-      const { error: membershipError } = await supabase
-        .from("team_memberships")
-        .insert({
-          team_id: teamId,
-          player_id: playerId,
-          status: "active",
-        });
+      const { error: membershipError } = await supabase.rpc("add_my_player_to_team", {
+        p_team_id: teamId,
+        p_player_id: playerId,
+      });
 
       if (membershipError) {
         if (membershipError.code === "23505") {
@@ -206,11 +192,11 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
         throw new Error("No membership found");
       }
 
-      // Update status to 'left' instead of deleting (preserves history)
-      const { error } = await supabase
-        .from("team_memberships")
-        .update({ status: "left" })
-        .eq("id", existingMembership.membershipId);
+      // Preserve history while removing the player from the active roster.
+      const { error } = await supabase.rpc("leave_my_player_from_team", {
+        p_team_id: teamId,
+        p_player_id: existingMembership.playerId,
+      });
 
       if (error) throw error;
     },

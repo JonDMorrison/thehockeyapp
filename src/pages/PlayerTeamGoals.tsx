@@ -35,6 +35,7 @@ import {
   CheckCircle,
   Pizza,
   Gamepad2,
+  type LucideIcon,
 } from "lucide-react";
 
 // rewardConfig is defined inside the component to access t()
@@ -50,7 +51,7 @@ const PlayerTeamGoals: React.FC = () => {
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
 
-  const rewardConfig: Record<string, { emoji: string; label: string; icon: React.ComponentType<any>; color: string }> = {
+  const rewardConfig: Record<string, { emoji: string; label: string; icon: LucideIcon; color: string }> = {
     badges: { emoji: "🏅", label: t("players.goals.rewardBadgeHunt"), icon: Medal, color: "from-amber-500 to-yellow-500" },
     scrimmage: { emoji: "🏒", label: t("players.goals.rewardScrimmage"), icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
     pizza: { emoji: "🍕", label: t("players.goals.rewardPizza"), icon: Pizza, color: "from-red-500 to-orange-500" },

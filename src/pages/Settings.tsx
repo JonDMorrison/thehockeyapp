@@ -5,15 +5,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { getPlanLabel, FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
 import { BETA_MODE } from "@/core/constants";
-import { ChevronRight, User, Shield, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
+import { ChevronRight, User, Bell, HelpCircle, LogOut, FileText, CreditCard, Crown, Check, ExternalLink, Loader2, Sparkles, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { CoachProfileSection } from "@/components/team/CoachProfileSection";
 import { CollisionBanner } from "@/components/settings/CollisionBanner";
 import { toast } from "@/components/app/Toast";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 
 interface ProfileData {
@@ -23,10 +24,17 @@ interface ProfileData {
   avatar_url?: string | null;
 }
 
+interface EmailPreferences {
+  weekly_coach_digest: boolean;
+  player_weekly_progress: boolean;
+  product_updates: boolean;
+}
+
 export default function Settings() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, signOut, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const {
     isPro, isComped, isTeamCovered, isTeamPurchaser, hasCollision,
     plan, access, loading: entLoading,
@@ -111,6 +119,41 @@ export default function Settings() {
       return data || [];
     },
     enabled: !!user,
+  });
+
+  const emailPreferences = useQuery({
+    queryKey: ["email-preferences", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data: existing, error } = await supabase
+        .from("email_preferences")
+        .select("weekly_coach_digest, player_weekly_progress, product_updates")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (existing) return existing as EmailPreferences;
+
+      const { data: created, error: createError } = await supabase
+        .from("email_preferences")
+        .insert({ user_id: user.id })
+        .select("weekly_coach_digest, player_weekly_progress, product_updates")
+        .single();
+      if (createError) throw createError;
+      return created as EmailPreferences;
+    },
+    enabled: !!user,
+  });
+
+  const updateEmailPreference = useMutation({
+    mutationFn: async ({ key, value }: { key: keyof EmailPreferences; value: boolean }) => {
+      if (!user) throw new Error("Sign in to update email preferences");
+      const { error } = await supabase
+        .from("email_preferences")
+        .upsert({ user_id: user.id, [key]: value }, { onConflict: "user_id" });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["email-preferences", user?.id] }),
+    onError: (error: Error) => toast.error("Could not save email preference", error.message),
   });
 
   const handleSignOut = async () => {
@@ -356,6 +399,55 @@ export default function Settings() {
           <CoachProfileSection isCoach={isCoach} />
         </section>
 
+        {/* Communication preferences */}
+        <section>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Email preferences
+          </h2>
+          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            <PreferenceRow
+              label="Coach weekly digest"
+              description="A weekly team participation summary."
+              checked={emailPreferences.data?.weekly_coach_digest ?? true}
+              disabled={emailPreferences.isLoading || updateEmailPreference.isPending || !isCoach}
+              onCheckedChange={(value) => updateEmailPreference.mutate({ key: "weekly_coach_digest", value })}
+            />
+            <PreferenceRow
+              label="Player weekly progress"
+              description="Sessions, shots, and streak progress for your players."
+              checked={emailPreferences.data?.player_weekly_progress ?? true}
+              disabled={emailPreferences.isLoading || updateEmailPreference.isPending}
+              onCheckedChange={(value) => updateEmailPreference.mutate({ key: "player_weekly_progress", value })}
+            />
+            <PreferenceRow
+              label="Product updates"
+              description="Occasional news about meaningful Hockey App improvements."
+              checked={emailPreferences.data?.product_updates ?? false}
+              disabled={emailPreferences.isLoading || updateEmailPreference.isPending}
+              onCheckedChange={(value) => updateEmailPreference.mutate({ key: "product_updates", value })}
+            />
+          </div>
+        </section>
+
+        {/* Association workspace */}
+        {isCoach && (
+          <section>
+            <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Association
+            </h2>
+            <div className="overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-r from-card to-primary/10">
+              <SettingsRow
+                icon={Building2}
+                label="Association HQ"
+                sublabel="Manage teams, rollout, staff, and adoption."
+                onClick={() => navigate("/associations")}
+              />
+            </div>
+          </section>
+        )}
+
         {/* Support Section */}
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
@@ -387,6 +479,35 @@ export default function Settings() {
         </Button>
       </div>
     </AppShell>
+  );
+}
+
+function PreferenceRow({
+  label,
+  description,
+  checked,
+  disabled,
+  onCheckedChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center gap-4 px-4 py-3.5">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{description}</p>
+      </div>
+      <Switch
+        aria-label={label}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={onCheckedChange}
+      />
+    </div>
   );
 }
 

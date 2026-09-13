@@ -50,6 +50,7 @@ const SoloSetup: React.FC = () => {
   const [selectedFocuses, setSelectedFocuses] = useState<string[]>(["shooting", "conditioning"]);
   const [daysPerWeek, setDaysPerWeek] = useState(4);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [adultAcknowledged, setAdultAcknowledged] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -73,46 +74,17 @@ const SoloSetup: React.FC = () => {
         throw new Error(validation.error.errors[0].message);
       }
 
-      // Create the player
-      const { data: player, error: playerError } = await supabase
-        .from("players")
-        .insert({
-          owner_user_id: user!.id,
-          first_name: firstName.trim(),
-          birth_year: birthYear,
-          shoots: "unknown",
-        })
-        .select()
-        .single();
-
-      if (playerError) throw playerError;
-
-      // Add as guardian
-      const { error: guardianError } = await supabase
-        .from("player_guardians")
-        .insert({
-          player_id: player.id,
-          user_id: user!.id,
-          guardian_role: "owner",
-        });
-
-      if (guardianError) throw guardianError;
-
-      // Create personal training plan
-      const { error: planError } = await supabase
-        .from("personal_training_plans")
-        .insert({
-          player_id: player.id,
-          name: "My Training Plan",
-          training_focus: selectedFocuses,
-          days_per_week: daysPerWeek,
-          tier: "base",
-          is_active: true,
-        });
-
-      if (planError) throw planError;
-
-      return player;
+      if (!adultAcknowledged) throw new Error("An adult must confirm responsibility for this profile.");
+      const { data, error } = await supabase.rpc("create_solo_player_with_plan", {
+        p_first_name: firstName.trim(),
+        p_birth_year: birthYear,
+        p_training_focus: selectedFocuses,
+        p_days_per_week: daysPerWeek,
+      });
+      if (error) throw error;
+      const player = data as unknown as { player_id?: string; first_name?: string };
+      if (!player.player_id) throw new Error("Player profile was not created");
+      return { id: player.player_id, first_name: player.first_name || firstName.trim() };
     },
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
@@ -137,6 +109,10 @@ const SoloSetup: React.FC = () => {
       const validation = playerSchema.safeParse({ first_name: firstName, birth_year: birthYear });
       if (!validation.success) {
         setErrors({ first_name: validation.error.errors[0].message });
+        return;
+      }
+      if (!adultAcknowledged) {
+        setErrors({ adult: "An adult must confirm responsibility for this profile." });
         return;
       }
       setErrors({});
@@ -255,6 +231,16 @@ const SoloSetup: React.FC = () => {
                     ))}
                   </select>
                 </div>
+
+                <label className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 text-sm">
+                  <Checkbox
+                    checked={adultAcknowledged}
+                    onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <span>I am 18 or older and I am creating this profile for myself or a player I am authorized to manage.</span>
+                </label>
+                {errors.adult && <p className="text-xs text-destructive">{errors.adult}</p>}
               </div>
             </AppCard>
           </div>

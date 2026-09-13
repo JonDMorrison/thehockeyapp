@@ -29,6 +29,7 @@ interface SessionPhoto {
   visibility: string;
   caption: string | null;
   created_at: string;
+  signed_url: string;
 }
 
 const RosterPlayerDetail: React.FC = () => {
@@ -126,15 +127,20 @@ const RosterPlayerDetail: React.FC = () => {
         .limit(6);
 
       if (error) throw error;
-      return data as SessionPhoto[];
+      const photosWithUrls = await Promise.all(
+        data.map(async (photo) => {
+          const { data: signed, error: signedError } = await supabase.storage
+            .from("session-photos")
+            .createSignedUrl(photo.storage_path, 3600);
+          if (signedError) throw signedError;
+          return { ...photo, signed_url: signed.signedUrl };
+        })
+      );
+
+      return photosWithUrls as SessionPhoto[];
     },
     enabled: !!user && !!teamId && !!playerId,
   });
-
-  const getPhotoUrl = (storagePath: string) => {
-    const { data } = supabase.storage.from("session-photos").getPublicUrl(storagePath);
-    return data.publicUrl;
-  };
 
   // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
@@ -289,7 +295,7 @@ const RosterPlayerDetail: React.FC = () => {
                   className="relative aspect-square rounded-lg overflow-hidden bg-surface-muted"
                 >
                   <img
-                    src={getPhotoUrl(photo.storage_path)}
+                    src={photo.signed_url}
                     alt={t("players.rosterDetail.sessionPhotoAlt")}
                     className="w-full h-full object-cover"
                   />

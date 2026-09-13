@@ -5,16 +5,16 @@ import { ArrowRight } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Button } from "@/components/ui/button";
-import founderImg from "@/assets/founder-about-headshot.png";
+import founderImg from "@/assets/founder-about-headshot.webp";
 import garageTrainingImg from "@/assets/girl-garage-training.jpg";
-import kidDrivewayImg from "@/assets/kid-driveway-shooting.jpg";
+import kidDrivewayImg from "@/assets/kid-driveway-shooting-optimized.jpg";
 import { useTranslation } from 'react-i18next';
 
 
 const About: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="marketing-performance min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>About — The Hockey App</title>
         <meta name="description" content="The story behind The Hockey App and why it was built for hockey families." />
@@ -27,7 +27,7 @@ const About: React.FC = () => {
       <MarketingNav />
 
       {/* Hero */}
-      <section className="relative pt-16 bg-[hsl(0,0%,98%)]">
+      <section className="relative pt-16 bg-background performance-grid">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-[60px] pb-20 lg:pb-28">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="text-center lg:text-left">
@@ -66,7 +66,7 @@ const About: React.FC = () => {
       </section>
 
       {/* Why we built it for teams */}
-      <section className="py-16 lg:py-20 bg-[hsl(0,0%,96%)]">
+      <section className="py-16 lg:py-20 bg-surface-muted">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-foreground">
             {t('marketing.about_why_teams_h2')}
@@ -129,7 +129,7 @@ const About: React.FC = () => {
       </section>
 
       {/* Closing CTA */}
-      <section className="py-20 lg:py-28 bg-[hsl(0,0%,96%)]">
+      <section className="py-20 lg:py-28 bg-surface-muted">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="rounded-2xl overflow-hidden shadow-subtle">

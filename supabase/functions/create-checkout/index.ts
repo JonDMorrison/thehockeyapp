@@ -8,6 +8,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const publishedUrl = (Deno.env.get("PUBLISHED_URL") || "https://www.hockeyapp.ca").replace(/\/$/, "");
+
+function getSafeReturnOrigin(req: Request) {
+  const requestOrigin = req.headers.get("origin");
+  if (!requestOrigin) return publishedUrl;
+
+  try {
+    const allowedOrigin = new URL(publishedUrl).origin;
+    const parsedOrigin = new URL(requestOrigin).origin;
+    if (parsedOrigin === allowedOrigin || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(parsedOrigin)) {
+      return parsedOrigin;
+    }
+  } catch {
+    // Fall through to the canonical application URL.
+  }
+
+  return publishedUrl;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -47,9 +66,9 @@ serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const purchaseType: string = body.purchase_type || "parent_pro";
-    const preferredCurrency = (body.preferred_currency || "CAD").toUpperCase();
-    const teamId: string | null = body.team_id || null;
+    const purchaseType = body.purchase_type === "team_plan" ? "team_plan" : "parent_pro";
+    const preferredCurrency = body.preferred_currency === "USD" ? "USD" : "CAD";
+    const teamId: string | null = typeof body.team_id === "string" ? body.team_id : null;
 
     // ─── Resolve price ID based on purchase type ───
     let priceId: string;
@@ -58,6 +77,21 @@ serve(async (req) => {
       if (!teamId) {
         return new Response(JSON.stringify({ error: "team_id is required for team_plan" }), {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: role, error: roleError } = await supabase
+        .from("team_roles")
+        .select("role")
+        .eq("team_id", teamId)
+        .eq("user_id", user.id)
+        .in("role", ["head_coach", "assistant_coach", "manager"])
+        .maybeSingle();
+
+      if (roleError || !role) {
+        return new Response(JSON.stringify({ error: "Only a team manager can purchase a team plan" }), {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -83,7 +117,7 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    const origin = req.headers.get("origin") || "https://thehockeyapp.lovable.app";
+    const origin = getSafeReturnOrigin(req);
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,

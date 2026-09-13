@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -72,6 +73,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const [shoots, setShoots] = useState<"left" | "right" | "unknown">("unknown");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [adultAcknowledged, setAdultAcknowledged] = useState(false);
 
   // Email invite state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -177,6 +179,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
           type: "parent_invitation",
           to: inviteEmail.trim(),
           data: {
+            teamId,
             coachName,
             teamName,
             teamCode: invite.short_code,
@@ -209,40 +212,30 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       if (selectedChildId) {
         playerId = selectedChildId;
       } else {
+        if (!adultAcknowledged) {
+          throw new Error("Confirm that you are authorized to manage this player profile.");
+        }
         const validated = childSchema.parse({
           first_name: firstName,
           birth_year: birthYear,
           shoots,
         });
 
-        const { data: newPlayer, error: playerError } = await supabase
-          .from("players")
-          .insert({
-            owner_user_id: user!.id,
-            first_name: validated.first_name,
-            birth_year: validated.birth_year,
-            shoots: validated.shoots,
-          })
-          .select()
-          .single();
-
-        if (playerError) throw playerError;
-        playerId = newPlayer.id;
-
-        await supabase.from("player_guardians").insert({
-          player_id: playerId,
-          user_id: user!.id,
-          guardian_role: "owner",
+        const { data: result, error: playerError } = await supabase.rpc("create_managed_player", {
+          p_first_name: validated.first_name,
+          p_birth_year: validated.birth_year,
+          p_shoots: validated.shoots,
         });
+        if (playerError) throw playerError;
+        const created = result as unknown as { player_id?: string };
+        if (!created.player_id) throw new Error("Player profile was not created");
+        playerId = created.player_id;
       }
 
-      const { error: membershipError } = await supabase
-        .from("team_memberships")
-        .insert({
-          team_id: teamId,
-          player_id: playerId,
-          status: "active",
-        });
+      const { error: membershipError } = await supabase.rpc("add_my_player_to_team", {
+        p_team_id: teamId,
+        p_player_id: playerId,
+      });
 
       if (membershipError) {
         if (membershipError.code === "23505") {
@@ -286,6 +279,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     setShoots("unknown");
     setSelectedChildId(null);
     setErrors({});
+    setAdultAcknowledged(false);
   };
 
   const inviteLink = invite?.token
@@ -341,7 +335,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "invite" | "add-child")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="add-child" className="gap-2">
                 <Baby className="w-4 h-4" />
@@ -458,6 +452,15 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                           </SelectContent>
                         </Select>
                       </div>
+
+                      <label className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                        <Checkbox
+                          checked={adultAcknowledged}
+                          onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                          className="mt-0.5"
+                        />
+                        <span>I confirm I am this player's parent or legal guardian and may manage their profile.</span>
+                      </label>
                     </>
                   )}
 
@@ -465,7 +468,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                     variant="team"
                     className="w-full"
                     onClick={() => addChildMutation.mutate()}
-                    disabled={addChildMutation.isPending || (!selectedChildId && !firstName.trim())}
+                    disabled={
+                      addChildMutation.isPending
+                      || (!selectedChildId && (!firstName.trim() || !adultAcknowledged))
+                    }
                   >
                     {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                     {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}
