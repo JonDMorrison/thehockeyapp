@@ -3,9 +3,10 @@ const path = require('path');
 
 const htmlPath = path.join(__dirname, '..', 'dist', 'index.html');
 const requiredSnippets = [
-  'Turn the days between practices',
-  'into an advantage',
-  'One weekly plan across your association',
+  'Build better players.',
+  'Across every team.',
+  'Give every coach a simple weekly plan',
+  'your association one view of participation and progress',
   'One weekly plan across every team.',
   'Set the standard once',
   'Start a free team pilot',

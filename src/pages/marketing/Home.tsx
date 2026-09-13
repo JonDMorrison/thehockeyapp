@@ -241,16 +241,16 @@ export default function Home() {
         <title>The Hockey App — Off-Ice Development for Hockey Associations</title>
         <meta
           name="description"
-          content="Run one off-ice development standard across every team. Coaches assign, players train, and association leaders see privacy-safe adoption."
+          content="Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress."
         />
         <meta property="og:title" content="The Hockey App — Off-Ice Development for Hockey Associations" />
-        <meta property="og:description" content="One weekly development system for every team in your association." />
+        <meta property="og:description" content="Build better players across every team with simple weekly plans and visible association-wide progress." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.hockeyapp.ca/" />
         <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="The Hockey App — Off-Ice Development for Hockey Associations" />
-        <meta name="twitter:description" content="One weekly development system for every team in your association." />
+        <meta name="twitter:description" content="Build better players across every team with simple weekly plans and visible association-wide progress." />
         <meta name="twitter:image" content="https://www.hockeyapp.ca/SitePreview.png" />
         <link rel="canonical" href="https://www.hockeyapp.ca/" />
       </Helmet>
@@ -265,10 +265,10 @@ export default function Home() {
             <div>
               <SectionEyebrow>Off-ice development for every team</SectionEyebrow>
               <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-6xl lg:text-[72px]">
-                Turn the days between practices <span className="text-primary">into an advantage.</span>
+                Build better players. <span className="text-primary">Across every team.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-7 text-white/68 sm:text-xl">
-                One weekly plan across your association. Coaches assign. Players train. Everyone sees the right progress.
+                Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={() => setShowGetStarted(true)}>

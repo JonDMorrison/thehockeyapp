@@ -148,9 +148,9 @@ Avoid leading with “accountability,” surveillance, or a feature inventory. F
 
 ### Homepage message
 
-**Turn the days between practices into an advantage.**
+**Build better players. Across every team.**
 
-Give every player a clear off-ice plan matched to the team schedule. Coaches assign in minutes. Players check off the work. Families and staff see progress.
+Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
 
 Primary CTA: **Start a free team pilot**
 
