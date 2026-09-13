@@ -10,6 +10,7 @@ import { AppCard } from "@/components/app/AppCard";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
+import { getRecommendedCoachingVideo } from "@/lib/coachingVideos";
 import { format, addDays, isSameDay, isToday, isTomorrow, subDays } from "date-fns";
 import {
   ChevronLeft,
@@ -56,6 +57,10 @@ interface ExercisePreset {
   video_url: string | null;
 }
 
+function getPresetVideo(label: string, taskType: string, shotType: string): string | null {
+  return getRecommendedCoachingVideo({ label, taskType, shotType })?.url ?? null;
+}
+
 const QuickAssign: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -80,7 +85,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "wrist",
       description: t('practice.exercise50Shots'),
-      video_url: "https://www.youtube.com/watch?v=iHHmFJ17m58",
+      video_url: getPresetVideo(t('practice.exerciseWristShots'), "shooting", "wrist"),
     },
     {
       id: "snap_shots",
@@ -91,7 +96,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "snap",
       description: t('practice.exercise30Shots'),
-      video_url: "https://www.youtube.com/watch?v=iHHmFJ17m58",
+      video_url: getPresetVideo(t('practice.exerciseSnapShots'), "shooting", "snap"),
     },
     {
       id: "slap_shots",
@@ -102,7 +107,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "slap",
       description: t('practice.exercise25Shots'),
-      video_url: "https://www.youtube.com/watch?v=Z6PqI_JifHI",
+      video_url: getPresetVideo(t('practice.exerciseSlapShots'), "shooting", "slap"),
     },
     {
       id: "backhand",
@@ -113,7 +118,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "backhand",
       description: t('practice.exercise25Shots'),
-      video_url: "https://www.youtube.com/watch?v=UukG8FEUeKY",
+      video_url: getPresetVideo(t('practice.exerciseBackhand'), "shooting", "backhand"),
     },
     {
       id: "pushups",
@@ -168,7 +173,7 @@ const QuickAssign: React.FC = () => {
       target_type: "minutes",
       shot_type: "none",
       description: t('practice.exercise5Minutes'),
-      video_url: "https://www.youtube.com/watch?v=DD94uw3Chn8",
+      video_url: getPresetVideo(t('practice.exerciseStickhandling'), "shooting", "none"),
     },
     {
       id: "lunges",

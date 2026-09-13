@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, ChevronDown, Film, Play, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, Film, Play, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { COACHING_VIDEOS, getCoachingVideo } from "@/lib/coachingVideos";
+import {
+  getCoachingVideo,
+  getRecommendedCoachingVideo,
+  getSortedCoachingVideos,
+} from "@/lib/coachingVideos";
 import { getVideoEmbedUrl, isValidVideoUrl } from "@/lib/videoEmbed";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +25,9 @@ interface VideoAttachmentEditorProps {
   onChange: (value: string | null) => void;
   disabled?: boolean;
   defaultOpen?: boolean;
+  taskLabel?: string;
+  taskType?: string;
+  shotType?: string;
 }
 
 const CUSTOM_VIDEO_VALUE = "custom";
@@ -30,12 +37,19 @@ export function VideoAttachmentEditor({
   onChange,
   disabled = false,
   defaultOpen = false,
+  taskLabel = "",
+  taskType = "",
+  shotType = "",
 }: VideoAttachmentEditorProps) {
   const { t } = useTranslation();
   const inputId = useId();
   const [isOpen, setIsOpen] = useState(defaultOpen && !value);
   const [showPreview, setShowPreview] = useState(false);
   const selectedVideo = value ? getCoachingVideo(value) : null;
+  const recommendationContext = { label: taskLabel, taskType, shotType };
+  const recommendedVideo = getRecommendedCoachingVideo(recommendationContext);
+  const sortedVideos = getSortedCoachingVideos(recommendationContext);
+  const isRecommendedSelected = selectedVideo?.id === recommendedVideo?.id;
   const embedUrl = value ? getVideoEmbedUrl(value) : null;
   const isInvalid = Boolean(value && !isValidVideoUrl(value));
 
@@ -51,10 +65,16 @@ export function VideoAttachmentEditor({
         type="button"
         onClick={() => setIsOpen(true)}
         disabled={disabled}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:border-team-primary/50 hover:bg-team-primary/5 hover:text-team-primary disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:border-team-primary/50 hover:bg-team-primary/5 hover:text-team-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Film className="h-4 w-4" />
-        {t("practice.addSkillVideo")}
+        {recommendedVideo
+          ? <Sparkles className="h-4 w-4 shrink-0" />
+          : <Film className="h-4 w-4 shrink-0" />}
+        <span className="truncate">
+          {recommendedVideo
+            ? t("practice.addRecommendedVideo", { title: recommendedVideo.title })
+            : t("practice.addSkillVideo")}
+        </span>
       </button>
     );
   }
@@ -77,7 +97,7 @@ export function VideoAttachmentEditor({
               </span>
               <span className="block truncate text-xs text-text-muted">
                 {selectedVideo
-                  ? `${selectedVideo.source} · ${selectedVideo.duration}`
+                  ? `${isRecommendedSelected ? `${t("practice.recommended")} · ` : ""}${selectedVideo.source} · ${selectedVideo.duration}`
                   : t("practice.videoOptionalHint")}
               </span>
             </span>
@@ -102,6 +122,40 @@ export function VideoAttachmentEditor({
 
       <CollapsibleContent>
         <div className="space-y-3 border-t border-border px-3 pb-3 pt-3">
+          {recommendedVideo && !isRecommendedSelected && (
+            <div className="rounded-lg border border-team-primary/25 bg-team-primary/[0.06] p-3">
+              <div className="flex items-start gap-2.5">
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-team-primary/10 text-team-primary">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-team-primary">
+                    {t("practice.recommendedForDrill")}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold leading-snug text-foreground">
+                    {recommendedVideo.title}
+                  </p>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    {recommendedVideo.source} · {recommendedVideo.duration}
+                  </p>
+                </div>
+                {!disabled && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8 shrink-0 px-2.5 text-xs"
+                    onClick={() => {
+                      onChange(recommendedVideo.url);
+                      setShowPreview(false);
+                    }}
+                  >
+                    {t("practice.useRecommended")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label className="text-xs">{t("practice.officialVideoLibrary")}</Label>
             <Select
@@ -112,7 +166,7 @@ export function VideoAttachmentEditor({
                   setShowPreview(false);
                   return;
                 }
-                const video = COACHING_VIDEOS.find((item) => item.id === videoId);
+                const video = sortedVideos.find((item) => item.id === videoId);
                 onChange(video?.url ?? null);
                 setShowPreview(false);
               }}
@@ -123,8 +177,9 @@ export function VideoAttachmentEditor({
               </SelectTrigger>
               <SelectContent className="max-w-[calc(100vw-2rem)]">
                 <SelectItem value={CUSTOM_VIDEO_VALUE}>{t("practice.customYoutubeVimeo")}</SelectItem>
-                {COACHING_VIDEOS.map((video) => (
+                {sortedVideos.map((video) => (
                   <SelectItem key={video.id} value={video.id}>
+                    {video.id === recommendedVideo?.id ? `${t("practice.recommended")} · ` : ""}
                     {video.source} · {video.title} ({video.duration})
                   </SelectItem>
                 ))}

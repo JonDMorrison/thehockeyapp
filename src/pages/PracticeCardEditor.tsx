@@ -674,6 +674,9 @@ const PracticeCardEditor: React.FC = () => {
                         onChange={(videoUrl) => updateTask(index, { video_url: videoUrl })}
                         disabled={isLocked}
                         defaultOpen={task.task_type === "video"}
+                        taskLabel={task.label}
+                        taskType={task.task_type}
+                        shotType={task.shot_type}
                       />
 
                       {/* Coach Notes (optional) */}
