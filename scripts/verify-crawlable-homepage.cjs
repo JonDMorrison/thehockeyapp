@@ -3,8 +3,8 @@ const path = require('path');
 
 const htmlPath = path.join(__dirname, '..', 'dist', 'index.html');
 const requiredSnippets = [
-  'Build better players.',
-  'Across every team.',
+  'Off-ice training',
+  'delivers on-ice results.',
   'Give every coach a simple weekly plan',
   'your association one view of participation and progress',
   'One weekly plan across every team.',

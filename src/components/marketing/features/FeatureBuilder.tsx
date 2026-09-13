@@ -21,7 +21,7 @@ export const FeatureBuilder: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-base font-bold text-foreground">{t('marketing.builder_build_practice')}</h1>
+          <p className="text-base font-bold text-foreground">{t('marketing.builder_build_practice')}</p>
           <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Sparkles className="w-3 h-3" />
             <span className="text-[10px] font-semibold">{t('marketing.builder_ai_assist')}</span>
