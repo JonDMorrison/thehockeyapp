@@ -50,27 +50,8 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
 
     setIsValidating(true);
     try {
-      const code = inviteCode.trim().toUpperCase();
-      
-      // Try short code first (format: TEAM-1234)
-      const { data: shortCodeResult } = await supabase.rpc(
-        "preview_team_by_short_code",
-        { p_short_code: code }
-      );
-
-      const shortCodeData = shortCodeResult as {
-        success: boolean;
-        invite_token?: string;
-        error?: string;
-      } | null;
-
-      if (shortCodeData?.success && shortCodeData.invite_token) {
-        // Navigate with the full token from the short code lookup
-        navigate(`/join/${shortCodeData.invite_token}?playerId=${playerId}`);
-        return;
-      }
-
-      // Fall back to a token-scoped preview. Invite rows are never listed.
+      // This preview accepts a short code or full token without listing invite rows
+      // or returning the underlying long-lived invite secret.
       const { data: fullTokenResult, error } = await supabase.rpc(
         "preview_team_by_invite",
         { invite_token: inviteCode.trim() },

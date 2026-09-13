@@ -86,7 +86,7 @@ The most important risks were not visual. They were authorization, child-data ha
 - Rebuilt the end-to-end login setup so a public homepage can no longer be mistaken for an authenticated session.
 - Added an example configuration for a dedicated test account.
 - Removed the tracked runtime `.env` from future source control while preserving the local copy, and added a safe `.env.example`. It contained only the public Supabase project URL/ID and publishable key, not the service-role secret.
-- Added 21 database permission/transaction tests and four public launch browser tests covering association positioning, private joining, registration acknowledgement, and legal routes.
+- Added 22 database permission/transaction tests and four public launch browser tests covering association positioning, private joining, registration acknowledgement, and legal routes.
 
 ### Association operations
 
@@ -235,7 +235,7 @@ The next design pass should concentrate on measured usability rather than a new 
 ## Final launch checklist
 
 - [x] Security and association migrations apply cleanly to a fresh local database
-- [x] Database authorization tests pass (21 assertions)
+- [x] Database authorization tests pass (22 assertions)
 - [x] Public launch browser tests pass
 - [ ] Production security advisors clean or accepted with written rationale
 - [ ] Deployment manifest reconciled: required functions deployed; recurring email jobs intentionally enabled or disabled

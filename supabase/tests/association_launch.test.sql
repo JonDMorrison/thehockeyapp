@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(21);
+SELECT plan(22);
 
 SELECT has_table('public', 'associations', 'association workspaces exist');
 SELECT has_table('public', 'association_roles', 'association roles exist');
@@ -17,6 +17,7 @@ SELECT ok(NOT has_table_privilege('authenticated', 'public.team_roles', 'INSERT'
 SELECT ok(NOT has_table_privilege('authenticated', 'public.team_memberships', 'INSERT'), 'roster rows require an authorized RPC');
 SELECT ok(has_function_privilege('anon', 'public.preview_guardian_invite(text)', 'EXECUTE'), 'anonymous users can preview one guardian token');
 SELECT ok(NOT has_function_privilege('anon', 'public.redeem_guardian_invite(text,boolean)', 'EXECUTE'), 'anonymous users cannot redeem guardian access');
+SELECT ok(NOT has_function_privilege('anon', 'public.preview_team_by_short_code(text)', 'EXECUTE'), 'legacy preview cannot reveal the underlying invite token');
 
 INSERT INTO auth.users (id, email, raw_app_meta_data, raw_user_meta_data)
 VALUES
