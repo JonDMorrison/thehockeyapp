@@ -100,12 +100,37 @@ serve(async (req) => {
           continue;
         }
 
-        // ── Roster (match get_season_report: NULL/non-'removed' is on-roster) ──
+        // Create defaults lazily for older accounts, then honor the user's choice.
+        let { data: preferences, error: preferenceErr } = await supabase
+          .from("email_preferences")
+          .select("weekly_coach_digest, unsubscribe_token")
+          .eq("user_id", roleRow.user_id)
+          .maybeSingle();
+        if (!preferences && !preferenceErr) {
+          const created = await supabase
+            .from("email_preferences")
+            .insert({ user_id: roleRow.user_id })
+            .select("weekly_coach_digest, unsubscribe_token")
+            .single();
+          preferences = created.data;
+          preferenceErr = created.error;
+        }
+        if (preferenceErr) {
+          log("preferences_fetch_failed", { team_id: team.id, error: preferenceErr.message });
+          failed++;
+          continue;
+        }
+        if (preferences?.weekly_coach_digest === false) {
+          log("digest_opted_out", { team_id: team.id });
+          continue;
+        }
+
+        // ── Active roster only ──
         const { data: memberships, error: membershipsErr } = await supabase
           .from("team_memberships")
           .select("player_id, players(id, first_name)")
           .eq("team_id", team.id)
-          .neq("status", "removed");
+          .eq("status", "active");
 
         if (membershipsErr) {
           log("roster_fetch_failed", {
@@ -184,6 +209,9 @@ serve(async (req) => {
                 rosterCount,
                 players,
                 teamProgressUrl,
+                unsubscribeUrl: preferences?.unsubscribe_token
+                  ? `https://www.hockeyapp.ca/unsubscribe/${preferences.unsubscribe_token}?kind=weekly_coach_digest`
+                  : undefined,
               },
             }),
           },

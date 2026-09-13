@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { privateMediaReference, validateImageUpload } from "@/lib/media";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { logger } from "@/core";
@@ -54,6 +55,9 @@ import { TrainingPreferencesSection } from "@/components/team/TrainingPreference
 import { JoinAsPlayerSection } from "@/components/team/JoinAsPlayerSection";
 import { AddChildSection } from "@/components/team/AddChildSection";
 import { Link } from "react-router-dom";
+import type { Database } from "@/integrations/supabase/types";
+
+type TeamUpdate = Database["public"]["Tables"]["teams"]["Update"];
 
 interface TeamRole {
   id: string;
@@ -198,7 +202,7 @@ const TeamSettings: React.FC = () => {
     mutationFn: async () => {
       const validated = teamInfoSchema.parse({ name, season_label: seasonLabel });
 
-      const updateData: Record<string, any> = {
+      const updateData: TeamUpdate = {
         name: validated.name,
         season_label: validated.season_label || null,
         palette_id: paletteId,
@@ -250,6 +254,11 @@ const TeamSettings: React.FC = () => {
   // Upload media
   const uploadMedia = async (file: File, type: "photo" | "logo") => {
     const setUploading = type === "photo" ? setUploadingPhoto : setUploadingLogo;
+    const validationError = validateImageUpload(file);
+    if (validationError) {
+      toast.error(t("teams.settings.toastUploadFailed"), validationError);
+      return;
+    }
     setUploading(true);
 
     try {
@@ -257,20 +266,20 @@ const TeamSettings: React.FC = () => {
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `teams/${id}/${type}/${fileName}`;
 
+      const bucket = type === "photo" ? "team-private-media" : "team-media";
       const { error: uploadError } = await supabase.storage
-        .from("team-media")
+        .from(bucket)
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
-        .from("team-media")
-        .getPublicUrl(filePath);
-
       const updateField = type === "photo" ? "team_photo_url" : "team_logo_url";
+      const storedUrl = type === "photo"
+        ? privateMediaReference(bucket, filePath)
+        : supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
       const { error: updateError } = await supabase
         .from("teams")
-        .update({ [updateField]: urlData.publicUrl })
+        .update({ [updateField]: storedUrl })
         .eq("id", id);
 
       if (updateError) throw updateError;

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { resolveMediaUrl } from "@/lib/media";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string | null;
@@ -36,6 +37,19 @@ const getAvatarColors = (name: string): { bg: string; text: string } => {
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
   ({ className, src, alt = "", fallback, size = "default", type = "team", ...props }, ref) => {
     const [hasError, setHasError] = React.useState(false);
+    const [resolvedSrc, setResolvedSrc] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+      let active = true;
+      setHasError(false);
+      setResolvedSrc(null);
+      resolveMediaUrl(src).then((url) => {
+        if (active) setResolvedSrc(url);
+      });
+      return () => {
+        active = false;
+      };
+    }, [src]);
     
     const nameSource = fallback || alt;
     const initials = nameSource
@@ -65,9 +79,9 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         )}
         {...props}
       >
-        {src && !hasError ? (
+        {resolvedSrc && !hasError ? (
           <img
-            src={src}
+            src={resolvedSrc}
             alt={alt}
             className="h-full w-full object-cover"
             onError={() => setHasError(true)}

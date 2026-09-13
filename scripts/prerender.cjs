@@ -18,7 +18,7 @@ const WAIT_MS = 3000;
 
 // NOTE: /pricing is excluded because BETA_MODE=true redirects it to /
 // Add it back when BETA_MODE is set to false
-const routes = ['/', '/features', '/about', '/privacy', '/terms', '/demo'];
+const routes = ['/', '/features', '/about', '/privacy', '/terms', '/contact', '/demo'];
 
 // Never let an unhandled rejection crash the build — log and succeed with the static shell.
 process.on('unhandledRejection', (err) => {
@@ -28,6 +28,14 @@ process.on('unhandledRejection', (err) => {
 });
 
 async function prerender() {
+  // Vercel's build image does not include Chromium's native Linux libraries. The source
+  // document already contains a complete crawlable marketing shell, so keep that shell
+  // there instead of attempting a browser launch that cannot succeed.
+  if (process.env.VERCEL === '1') {
+    console.log('Prerender skipped on Vercel; using the crawlable static marketing shell.');
+    return;
+  }
+
   let puppeteer;
   try {
     puppeteer = require('puppeteer');

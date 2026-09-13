@@ -2,14 +2,35 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import {
   Gift, Calendar, Dumbbell, CheckCircle2, ArrowRight,
   Clock, Target, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+
+interface SoloInvitePreview {
+  success: boolean;
+  error?: string;
+  share_type: "workout" | "program";
+  expires_at: string;
+  status: "pending" | "redeemed" | "expired";
+  referrer?: { first_name?: string; last_initial?: string };
+  plan?: {
+    id: string;
+    name: string | null;
+    tier: string | null;
+    days_per_week: number | null;
+    training_focus: string[] | null;
+  } | null;
+  workout?: {
+    id: string;
+    title: string | null;
+    date: string;
+    tier: string | null;
+    tasks: Array<{ id: string; label: string; task_type: string }>;
+  } | null;
+}
 
 export default function SoloTryWorkout() {
   const { t } = useTranslation();
@@ -19,46 +40,15 @@ export default function SoloTryWorkout() {
   const { data: invite, isLoading, error } = useQuery({
     queryKey: ['solo-invite', token],
     queryFn: async () => {
-      const { data: invite, error: inviteError } = await supabase
-        .from('solo_referral_invites')
-        .select(`
-          *,
-          referrer:players!solo_referral_invites_referrer_player_id_fkey(
-            first_name,
-            last_initial
-          ),
-          plan:personal_training_plans(
-            id,
-            name,
-            tier,
-            days_per_week,
-            training_focus
-          )
-        `)
-        .eq('token', token!)
-        .single();
-
+      const { data, error: inviteError } = await supabase.rpc(
+        "preview_solo_referral_invite",
+        { p_token: token! },
+      );
       if (inviteError) throw inviteError;
 
-      // Fetch workout card separately (no FK relationship)
-      let workout: { id: string; title: string | null; date: string; tier: string | null; tasks: { id: string; label: string; task_type: string }[] } | null = null;
-      if (invite.workout_card_id) {
-        const { data: card } = await supabase
-          .from('personal_practice_cards')
-          .select('id, title, date, tier')
-          .eq('id', invite.workout_card_id)
-          .maybeSingle();
-        if (card) {
-          const { data: tasks } = await supabase
-            .from('personal_practice_tasks')
-            .select('id, label, task_type')
-            .eq('personal_practice_card_id', card.id)
-            .order('sort_order');
-          workout = { ...card, tasks: tasks || [] };
-        }
-      }
-
-      return { ...invite, workout };
+      const preview = data as unknown as SoloInvitePreview;
+      if (!preview?.success) throw new Error(preview?.error || "Invite not found");
+      return preview;
     },
     enabled: !!token,
   });

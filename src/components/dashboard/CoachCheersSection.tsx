@@ -14,6 +14,26 @@ import {
 import { toast } from "@/components/app/Toast";
 import { Heart, Send, Sparkles, MessageCircle, ChevronDown, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { Database } from "@/integrations/supabase/types";
+
+type TeamCheerInsert = Database["public"]["Tables"]["team_cheers"]["Insert"];
+type CheerPlayer = {
+  first_name: string;
+  last_initial?: string | null;
+  profile_photo_url?: string | null;
+};
+
+function toCheerPlayer(value: unknown): CheerPlayer | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const player = value as Record<string, unknown>;
+  return typeof player.first_name === "string"
+    ? {
+        first_name: player.first_name,
+        last_initial: typeof player.last_initial === "string" ? player.last_initial : null,
+        profile_photo_url: typeof player.profile_photo_url === "string" ? player.profile_photo_url : null,
+      }
+    : null;
+}
 
 interface CoachCheersSectionProps {
   teamId: string;
@@ -98,7 +118,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
       
       // Fetch coach profiles for cheers sent by coaches
       const coachUserIds = data?.filter(c => c.from_user_id && !c.from_player_id).map(c => c.from_user_id) || [];
-      let coachProfiles: Record<string, { name: string; avatarUrl: string | null }> = {};
+      const coachProfiles: Record<string, { name: string; avatarUrl: string | null }> = {};
       
       if (coachUserIds.length > 0) {
         const { data: profiles } = await supabase
@@ -118,6 +138,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
       
       return data?.map(cheer => ({
         ...cheer,
+        fromPlayer: toCheerPlayer(cheer.from_player),
+        toPlayer: toCheerPlayer(cheer.to_player),
         coachName: cheer.from_user_id ? coachProfiles[cheer.from_user_id]?.name : null,
         coachAvatarUrl: cheer.from_user_id ? coachProfiles[cheer.from_user_id]?.avatarUrl : null,
       }));
@@ -211,7 +233,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
     }) => {
       if (!currentSender) throw new Error("No sender selected");
       
-      const insertData: any = {
+      const insertData: TeamCheerInsert = {
         team_id: teamId,
         to_player_id: toPlayerId,
         cheer_type: type,
@@ -467,7 +489,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
             const isFromCoach = cheer.from_user_id && !cheer.from_player_id;
             const senderName = isFromCoach 
               ? cheer.coachName 
-              : (cheer.from_player as any)?.first_name;
+              : cheer.fromPlayer?.first_name;
             
             return (
               <div
@@ -488,8 +510,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                   )
                 ) : (
                   <Avatar
-                    src={(cheer.from_player as any)?.profile_photo_url}
-                    fallback={(cheer.from_player as any)?.first_name || "?"}
+                    src={cheer.fromPlayer?.profile_photo_url}
+                    fallback={cheer.fromPlayer?.first_name || "?"}
                     size="sm"
                   />
                 )}
@@ -501,7 +523,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                     </span>
                     <span className="text-muted-foreground">→</span>
                     <span className="font-medium">
-                      {(cheer.to_player as any)?.first_name}
+                      {cheer.toPlayer?.first_name}
                     </span>
                   </div>
                   <div className="mt-0.5">

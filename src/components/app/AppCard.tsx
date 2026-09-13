@@ -35,7 +35,7 @@ const AppCard = React.forwardRef<HTMLDivElement, AppCardProps>(
 );
 AppCard.displayName = "AppCard";
 
-interface AppCardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+type AppCardTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
 
 const AppCardTitle = React.forwardRef<HTMLHeadingElement, AppCardTitleProps>(
   ({ className, ...props }, ref) => (
@@ -48,7 +48,7 @@ const AppCardTitle = React.forwardRef<HTMLHeadingElement, AppCardTitleProps>(
 );
 AppCardTitle.displayName = "AppCardTitle";
 
-interface AppCardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
+type AppCardDescriptionProps = React.HTMLAttributes<HTMLParagraphElement>;
 
 const AppCardDescription = React.forwardRef<HTMLParagraphElement, AppCardDescriptionProps>(
   ({ className, ...props }, ref) => (

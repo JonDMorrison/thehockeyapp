@@ -38,7 +38,7 @@ export const HomeFeaturesSection: React.FC = () => {
   ];
 
   return (
-    <section className="relative py-20 lg:py-28 bg-[hsl(0,0%,96%)] overflow-hidden">
+    <section className="relative py-20 lg:py-28 bg-surface-muted overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-16 -left-24 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
       <div className="absolute bottom-16 -right-20 w-72 h-72 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-3xl" />

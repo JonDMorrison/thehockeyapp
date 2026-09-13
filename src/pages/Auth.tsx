@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useCallback, useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,22 +31,41 @@ const getRedirectPath = (): string => {
   return "/welcome";
 };
 
-const authSchema = z.object({
-  email: z.string().trim().email("Please enter a valid email address").max(255),
-  password: z.string().min(6, "Password must be at least 6 characters").max(128),
+const emailSchema = z.string().trim().email("Please enter a valid email address").max(255);
+
+const signInSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "Please enter your password").max(128),
+});
+
+const signUpSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
   displayName: z.string().trim().max(100).optional(),
 });
 
+const resetSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+  confirmPassword: z.string(),
+}).refine((values) => values.password === values.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type AuthMode = "signin" | "signup" | "reset";
+
 const Auth: React.FC = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<"signin" | "signup">(() => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [mode, setMode] = useState<AuthMode>(() => {
     const m = searchParams.get("mode");
-    return m === "signup" ? "signup" : "signin";
+    return m === "signup" || m === "reset" ? m : "signin";
   });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -54,17 +73,32 @@ const Auth: React.FC = () => {
 
   const { signIn, signUp, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const requestedRedirect = searchParams.get("redirect");
+  const getPostAuthPath = useCallback(
+    () => requestedRedirect?.startsWith("/") && !requestedRedirect.startsWith("//")
+      ? requestedRedirect
+      : getRedirectPath(),
+    [requestedRedirect],
+  );
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
-      navigate(getRedirectPath(), { replace: true });
+    if (isAuthenticated && !authLoading && mode !== "reset") {
+      navigate(getPostAuthPath(), { replace: true });
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, mode, navigate, getPostAuthPath]);
 
   const validate = () => {
     try {
-      authSchema.parse({ email, password, displayName: mode === "signup" ? displayName : undefined });
+      const values = mode === "reset"
+        ? { password, confirmPassword }
+        : { email, password, displayName: mode === "signup" ? displayName : undefined };
+      const schema = mode === "reset" ? resetSchema : mode === "signup" ? signUpSchema : signInSchema;
+      schema.parse(values);
+      if (mode === "signup" && !acceptedTerms) {
+        setErrors({ terms: "Please agree to the Terms and Privacy Policy" });
+        return false;
+      }
       setErrors({});
       return true;
     } catch (err) {
@@ -82,8 +116,9 @@ const Auth: React.FC = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!email) {
-      setErrors({ email: t("auth.emailLabel") + " is required" });
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      setErrors({ email: "Please enter a valid email address" });
       return;
     }
     setForgotLoading(true);
@@ -111,17 +146,32 @@ const Auth: React.FC = () => {
     setLoading(true);
 
     try {
-      if (mode === "signup") {
-        const { error } = await signUp(email, password, displayName || undefined);
+      if (mode === "reset") {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) {
+          toast.error("Couldn't update password", error.message);
+        } else {
+          toast.success("Password updated", "You can now use your new password.");
+          setPassword("");
+          setConfirmPassword("");
+          navigate("/welcome", { replace: true });
+        }
+      } else if (mode === "signup") {
+        const { data, error } = await signUp(email, password, displayName || undefined);
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error(t("auth.accountExistsTitle"), t("auth.accountExistsMessage"));
           } else {
             toast.error(t("auth.signUpFailedTitle"), error.message);
           }
-        } else {
+        } else if (data.session) {
           toast.success(t("auth.welcomeTitle"), t("auth.accountCreatedMessage"));
-          navigate(getRedirectPath(), { replace: true });
+          navigate(getPostAuthPath(), { replace: true });
+        } else {
+          toast.success("Check your email", "Confirm your email address to finish creating your account.");
+          setMode("signin");
+          setSearchParams({ mode: "signin" }, { replace: true });
+          setPassword("");
         }
       } else {
         const { error } = await signIn(email, password);
@@ -133,7 +183,7 @@ const Auth: React.FC = () => {
           }
         } else {
           toast.success(t("auth.welcomeBackTitle"), t("auth.signedInMessage"));
-          navigate(getRedirectPath(), { replace: true });
+          navigate(getPostAuthPath(), { replace: true });
         }
       }
     } catch {
@@ -174,12 +224,18 @@ const Auth: React.FC = () => {
               <span className="text-2xl font-bold text-foreground">{t("auth.appName")}</span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">
-              {mode === "signin" ? t("auth.signinHeadline") : t("auth.signupHeadline")}
+              {mode === "signin"
+                ? t("auth.signinHeadline")
+                : mode === "signup"
+                ? t("auth.signupHeadline")
+                : "Choose a new password"}
             </h1>
             <p className="text-muted-foreground">
               {mode === "signin"
                 ? t("auth.signinSubheadline")
-                : t("auth.signupSubheadline")}
+                : mode === "signup"
+                ? t("auth.signupSubheadline")
+                : "Use at least 8 characters for your new password."}
             </p>
             {mode === "signup" && (
               <p className="text-xs text-muted-foreground/70 mt-1">
@@ -214,7 +270,7 @@ const Auth: React.FC = () => {
                 </div>
               )}
 
-              <div className="space-y-2">
+              {mode !== "reset" && <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   {t("auth.emailLabel")}
                 </Label>
@@ -234,7 +290,7 @@ const Auth: React.FC = () => {
                 {errors.email && (
                   <p className="text-xs text-destructive pl-1">{errors.email}</p>
                 )}
-              </div>
+              </div>}
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">
@@ -249,7 +305,7 @@ const Auth: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
-                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
                   />
                 </div>
               {errors.password && (
@@ -269,6 +325,50 @@ const Auth: React.FC = () => {
               )}
             </div>
 
+            {mode === "reset" && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm new password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Repeat your new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.confirmPassword ? "border-destructive" : ""}`}
+                    autoComplete="new-password"
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive pl-1">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="acceptTerms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => {
+                      setAcceptedTerms(checked === true);
+                      if (checked === true) setErrors((current) => ({ ...current, terms: "" }));
+                    }}
+                    aria-describedby={errors.terms ? "terms-error" : undefined}
+                    className="mt-0.5"
+                  />
+                  <Label htmlFor="acceptTerms" className="text-xs leading-5 text-muted-foreground font-normal">
+                    I agree to the <Link to="/terms" className="text-primary hover:underline">Terms</Link> and acknowledge the <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                  </Label>
+                </div>
+                {errors.terms && <p id="terms-error" className="text-xs text-destructive">{errors.terms}</p>}
+              </div>
+            )}
+
 
             <AppleButton
                 type="submit"
@@ -278,11 +378,16 @@ const Auth: React.FC = () => {
                 disabled={loading}
                 loading={loading}
               >
-                {mode === "signin" ? t("auth.signInButton") : t("auth.createAccountButton")}
+                {mode === "signin"
+                  ? t("auth.signInButton")
+                  : mode === "signup"
+                  ? t("auth.createAccountButton")
+                  : "Update password"}
               </AppleButton>
             </form>
 
             {/* Divider */}
+            {mode !== "reset" && <>
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border/50" />
@@ -296,7 +401,9 @@ const Auth: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
+                const nextMode = mode === "signin" ? "signup" : "signin";
+                setMode(nextMode);
+                setSearchParams({ mode: nextMode }, { replace: true });
                 setErrors({});
               }}
               className="w-full py-3 text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -305,6 +412,7 @@ const Auth: React.FC = () => {
                 ? t("auth.noAccountPrompt")
                 : t("auth.hasAccountPrompt")}
             </button>
+            </>}
           </div>
 
           {/* Back to home link */}

@@ -64,7 +64,7 @@ const PlanningCard = ({
           "text-[10px] font-bold px-2 py-1 rounded-full",
           badgeVariant === 'premium'
             ? "bg-white/20 text-white backdrop-blur-sm border border-white/30"
-            : "bg-white/90 text-foreground"
+            : "bg-card/90 text-foreground"
         )}>
           {badge}
         </span>

@@ -11,6 +11,13 @@ export interface TeamPalette {
 
 export const teamPalettes: TeamPalette[] = [
   {
+    id: "brand",
+    displayName: "Hockey App Red",
+    primary: "358 76% 54%",
+    secondary: "0 0% 100%",
+    tertiary: "358 72% 45%",
+  },
+  {
     id: "toronto",
     displayName: "Toronto",
     primary: "221 83% 53%",    // Royal blue
@@ -163,7 +170,7 @@ export const applyTeamTheme = (paletteId: string, customColors?: CustomColors | 
 };
 
 export const getStoredTeamTheme = (): string => {
-  return localStorage.getItem('selected-team-theme') || 'toronto';
+  return localStorage.getItem('selected-team-theme') || 'brand';
 };
 
 export const getStoredCustomColors = (): CustomColors | null => {

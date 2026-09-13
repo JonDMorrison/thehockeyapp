@@ -22,6 +22,8 @@ const Demo = lazy(() => import("./pages/marketing/Demo"));
 const About = lazy(() => import("./pages/About"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 
 // App pages - lazy loaded
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -74,6 +76,10 @@ const Settings = lazy(() => import("./pages/Settings"));
 const CompAdmin = lazy(() => import("./pages/admin/CompAdmin"));
 const ParentSummaries = lazy(() => import("./pages/ParentSummaries"));
 const WeeklyReflections = lazy(() => import("./pages/WeeklyReflections"));
+const Associations = lazy(() => import("./pages/Associations"));
+const AssociationNew = lazy(() => import("./pages/AssociationNew"));
+const AssociationDashboard = lazy(() => import("./pages/AssociationDashboard"));
+const AssociationJoin = lazy(() => import("./pages/AssociationJoin"));
 
 const queryClient = new QueryClient();
 
@@ -99,7 +105,7 @@ const AnimatedRoutes = () => {
   const location = useLocation();
   
   // Determine if this is a marketing page (no swipe back)
-  const isMarketingPage = ["/", "/features", "/pricing", "/demo", "/about", "/privacy", "/terms"].includes(location.pathname);
+  const isMarketingPage = ["/", "/features", "/pricing", "/demo", "/about", "/privacy", "/terms", "/contact"].includes(location.pathname);
   
   return (
     <SwipeBackGesture enabled={!isMarketingPage}>
@@ -126,6 +132,8 @@ const AnimatedRoutes = () => {
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/unsubscribe/:token" element={<Unsubscribe />} />
             
             {/* Auth */}
             <Route path="/auth" element={<Auth />} />
@@ -145,6 +153,12 @@ const AnimatedRoutes = () => {
             <Route path="/parents/:playerId/summaries" element={<ParentSummaries />} />
             <Route path="/reflections" element={<WeeklyReflections />} />
             <Route path="/guardian/join/:token" element={<GuardianJoin />} />
+
+            {/* Association management */}
+            <Route path="/associations" element={<Associations />} />
+            <Route path="/associations/new" element={<AssociationNew />} />
+            <Route path="/associations/:id" element={<AssociationDashboard />} />
+            <Route path="/association/join/:token" element={<AssociationJoin />} />
             
             {/* Team management */}
             <Route path="/teams" element={<Teams />} />
@@ -203,6 +217,7 @@ const AnimatedRoutes = () => {
 const App = () => {
   // Apply stored team theme and initialize offline DB on mount
   useEffect(() => {
+    document.documentElement.classList.add("dark");
     applyTeamTheme(getStoredTeamTheme());
     initOfflineDB().catch((err) => logger.error("Failed to init offline DB", { err }));
   }, []);

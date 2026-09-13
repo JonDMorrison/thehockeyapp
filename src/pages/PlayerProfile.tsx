@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { privateMediaReference, validateImageUpload } from "@/lib/media";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/core";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -256,15 +257,9 @@ const PlayerProfile: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file || !id) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error(t("players.profile.toastInvalidFileTitle"), t("players.profile.toastInvalidFileDescription"));
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t("players.profile.toastFileTooLargeTitle"), t("players.profile.toastFileTooLargeDescription"));
+    const validationError = validateImageUpload(file);
+    if (validationError) {
+      toast.error(t("players.profile.toastInvalidFileTitle"), validationError);
       return;
     }
 
@@ -281,15 +276,10 @@ const PlayerProfile: React.FC = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("player-photos")
-        .getPublicUrl(fileName);
-
       // Update player record
       const { error: updateError } = await supabase
         .from("players")
-        .update({ profile_photo_url: `${urlData.publicUrl}?t=${Date.now()}` })
+        .update({ profile_photo_url: privateMediaReference("player-photos", fileName) })
         .eq("id", id);
 
       if (updateError) throw updateError;

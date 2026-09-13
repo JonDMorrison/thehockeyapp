@@ -66,6 +66,9 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (req.headers.get("Authorization") !== `Bearer ${supabaseServiceKey}`) {
+      return jsonResp({ error: "Unauthorized" }, 401);
+    }
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Determine week_start (previous Monday) ──

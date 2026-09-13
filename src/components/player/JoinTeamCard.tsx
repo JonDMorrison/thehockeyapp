@@ -32,29 +32,8 @@ export const JoinTeamCard: React.FC<JoinTeamCardProps> = ({ playerId }) => {
   // Validate and preview team by code
   const previewMutation = useMutation({
     mutationFn: async (code: string) => {
-      // Try short code first
-      const { data: shortCodeResult } = await supabase.rpc(
-        "preview_team_by_short_code",
-        { p_short_code: code.trim() }
-      );
-
-      const shortCodeData = shortCodeResult as {
-        success: boolean;
-        team_id?: string;
-        team_name?: string;
-        team_logo_url?: string | null;
-        team_photo_url?: string | null;
-        palette_id?: string;
-        season_label?: string | null;
-        invite_token?: string;
-        error?: string;
-      } | null;
-
-      if (shortCodeData?.success) {
-        return shortCodeData;
-      }
-
-      // Fall back to full token
+      // This minimal preview accepts either a short code or a full token without
+      // returning the underlying long-lived invite secret.
       const { data: tokenResult } = await supabase.rpc(
         "preview_team_by_invite",
         { invite_token: code.trim() }

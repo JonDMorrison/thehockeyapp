@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ const playerSchema = z.object({
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
+type CreatePlayerResult = { success?: boolean; player_id?: string; first_name?: string };
 
 const PlayerNew: React.FC = () => {
   const { t } = useTranslation();
@@ -55,6 +57,9 @@ const PlayerNew: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [adultAcknowledged, setAdultAcknowledged] = useState(false);
+  const [photoSharingAllowed, setPhotoSharingAllowed] = useState(false);
+  const [aiPersonalizationAllowed, setAiPersonalizationAllowed] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -87,38 +92,23 @@ const PlayerNew: React.FC = () => {
 
   const createPlayer = useMutation({
     mutationFn: async (data: PlayerFormData) => {
-      // First create the player
-      const { data: player, error: playerError } = await supabase
-        .from("players")
-        .insert({
-          owner_user_id: user!.id,
-          first_name: data.first_name.trim(),
-          last_initial: data.last_initial?.trim() || null,
-          birth_year: data.birth_year,
-          shoots: data.shoots,
-          jersey_number: data.jersey_number?.trim() || null,
-          fav_nhl_city: data.fav_nhl_city?.trim() || null,
-          fav_nhl_player: data.fav_nhl_player?.trim() || null,
-          hockey_love: data.hockey_love?.trim() || null,
-          season_goals: data.season_goals?.trim() || null,
-        })
-        .select()
-        .single();
-
-      if (playerError) throw playerError;
-
-      // Then add the owner as a guardian
-      const { error: guardianError } = await supabase
-        .from("player_guardians")
-        .insert({
-          player_id: player.id,
-          user_id: user!.id,
-          guardian_role: "owner",
-        });
-
-      if (guardianError) throw guardianError;
-
-      return player;
+      const { data: result, error } = await supabase.rpc("create_managed_player", {
+        p_first_name: data.first_name.trim(),
+        p_last_initial: data.last_initial?.trim() || undefined,
+        p_birth_year: data.birth_year,
+        p_shoots: data.shoots,
+        p_jersey_number: data.jersey_number?.trim() || undefined,
+        p_fav_nhl_city: data.fav_nhl_city?.trim() || undefined,
+        p_fav_nhl_player: data.fav_nhl_player?.trim() || undefined,
+        p_hockey_love: data.hockey_love?.trim() || undefined,
+        p_season_goals: data.season_goals?.trim() || undefined,
+        p_photo_sharing_allowed: photoSharingAllowed,
+        p_ai_personalization_allowed: aiPersonalizationAllowed,
+      });
+      if (error) throw error;
+      const player = result as unknown as CreatePlayerResult;
+      if (!player.player_id) throw new Error("Player profile was not created");
+      return { id: player.player_id, first_name: player.first_name || data.first_name.trim() };
     },
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
@@ -163,6 +153,10 @@ const PlayerNew: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    if (!adultAcknowledged) {
+      setErrors((current) => ({ ...current, consent: "An adult account holder must confirm this profile." }));
+      return;
+    }
     createPlayer.mutate(formData);
   };
 
@@ -345,6 +339,48 @@ const PlayerNew: React.FC = () => {
                   rows={2}
                 />
               </div>
+            </div>
+          </AppCard>
+
+          <AppCard>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="adult-acknowledgement"
+                checked={adultAcknowledged}
+                onCheckedChange={(checked) => {
+                  setAdultAcknowledged(checked === true);
+                  if (checked === true) setErrors((current) => ({ ...current, consent: "" }));
+                }}
+                aria-describedby={errors.consent ? "consent-error" : "consent-help"}
+                className="mt-0.5"
+              />
+              <div>
+                <Label htmlFor="adult-acknowledgement" className="text-sm leading-5">
+                  I am this player, or I am their parent or legal guardian and I am authorized to create this profile.
+                </Label>
+                <p id="consent-help" className="text-xs text-muted-foreground mt-1">
+                  Player profiles are managed through an adult account. Review our <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+                </p>
+                {errors.consent && <p id="consent-error" className="text-xs text-destructive mt-1">{errors.consent}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3 border-t border-border pt-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Optional permissions</p>
+              <label className="flex cursor-pointer items-start gap-3 text-sm">
+                <Checkbox checked={photoSharingAllowed} onCheckedChange={(checked) => setPhotoSharingAllowed(checked === true)} className="mt-0.5" />
+                <span>
+                  Allow private training photos to be shared with authorized team staff.
+                  <span className="mt-0.5 block text-xs text-muted-foreground">Photos are never public and this can be changed later.</span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 text-sm">
+                <Checkbox checked={aiPersonalizationAllowed} onCheckedChange={(checked) => setAiPersonalizationAllowed(checked === true)} className="mt-0.5" />
+                <span>
+                  Allow player details to personalize AI-assisted training suggestions.
+                  <span className="mt-0.5 block text-xs text-muted-foreground">AI access is optional; core training works without it.</span>
+                </span>
+              </label>
             </div>
           </AppCard>
 

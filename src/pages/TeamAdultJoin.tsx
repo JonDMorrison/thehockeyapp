@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -22,24 +22,27 @@ const TeamAdultJoin: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const [redeemStatus, setRedeemStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Fetch invite details
   const { data: invite, isLoading: inviteLoading, error: inviteError } = useQuery({
     queryKey: ["team-adult-invite", token],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("team_adult_invites")
-        .select(`
-          *,
-          teams(name)
-        `)
-        .eq("token", token)
-        .single();
+      const { data, error } = await supabase.rpc("preview_team_adult_invite", {
+        p_token: token,
+      });
 
       if (error) throw error;
-      return data;
+      return data as unknown as {
+        success: boolean;
+        error?: string;
+        team_name?: string;
+        role?: string;
+        status?: string;
+        expires_at?: string;
+        email_domain?: string;
+      };
     },
     enabled: !!token,
   });
@@ -47,7 +50,6 @@ const TeamAdultJoin: React.FC = () => {
   const isExpired = invite?.expires_at && new Date(invite.expires_at) < new Date();
   const isRevoked = invite?.status === "revoked";
   const isAlreadyAccepted = invite?.status === "accepted";
-  const isValid = invite && !isExpired && !isRevoked && !isAlreadyAccepted;
 
   // Redeem invite
   const redeemInvite = useMutation({
@@ -78,13 +80,6 @@ const TeamAdultJoin: React.FC = () => {
     },
   });
 
-  // Auto-redeem when authenticated and valid
-  useEffect(() => {
-    if (isAuthenticated && isValid && redeemStatus === "idle" && !redeemInvite.isPending) {
-      redeemInvite.mutate();
-    }
-  }, [isAuthenticated, isValid, redeemStatus]);
-
   if (inviteLoading || authLoading) {
     return (
       <AppShell hideNav>
@@ -97,7 +92,7 @@ const TeamAdultJoin: React.FC = () => {
     );
   }
 
-  if (inviteError || !invite) {
+  if (inviteError || !invite?.success) {
     return (
       <AppShell hideNav>
         <PageContainer className="min-h-screen flex items-center justify-center">
@@ -185,7 +180,7 @@ const TeamAdultJoin: React.FC = () => {
     );
   }
 
-  const teamName = invite.teams?.name || t("auth.teamAdultJoin.theTeamFallback");
+  const teamName = invite.team_name || t("auth.teamAdultJoin.theTeamFallback");
 
   if (!isAuthenticated) {
     return (
@@ -198,13 +193,13 @@ const TeamAdultJoin: React.FC = () => {
               </div>
               <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.inviteTitle")}</AppCardTitle>
               <AppCardDescription className="mb-4">
-                {t("auth.teamAdultJoin.invitePrompt", { teamName, role: roleLabels[invite.role] })}
+                {t("auth.teamAdultJoin.invitePrompt", { teamName, role: roleLabels[invite.role || ""] || "Team Staff" })}
               </AppCardDescription>
               <Button
                 variant="team"
                 size="lg"
                 className="w-full"
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate(`/auth?redirect=${encodeURIComponent(`/team/adult/join/${token}`)}`)}
               >
                 {t("auth.signInOrCreateAccount")}
               </Button>
@@ -249,16 +244,34 @@ const TeamAdultJoin: React.FC = () => {
                   {t("common.tryAgain")}
                 </Button>
               </>
-            ) : (
+            ) : redeemInvite.isPending ? (
               <>
                 <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-team-primary" />
                 </div>
                 <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.joiningTitle")}</AppCardTitle>
                 <AppCardDescription className="mb-4">
-                  {t("auth.teamAdultJoin.joiningMessage", { teamName, role: roleLabels[invite.role] })}
+                  {t("auth.teamAdultJoin.joiningMessage", { teamName, role: roleLabels[invite.role || ""] || "Team Staff" })}
                 </AppCardDescription>
                 <Loader2 className="w-8 h-8 animate-spin text-team-primary mx-auto" />
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-team-primary" />
+                </div>
+                <AppCardTitle className="text-xl mb-2">Join {teamName}</AppCardTitle>
+                <AppCardDescription className="mb-5">
+                  Accept the {roleLabels[invite.role || ""] || "team staff"} invitation. For security, use the email address that received it.
+                </AppCardDescription>
+                <Button
+                  variant="team"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => redeemInvite.mutate()}
+                >
+                  Accept team role
+                </Button>
               </>
             )}
           </AppCard>

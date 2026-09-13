@@ -1,17 +1,11 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
-import { useAuth } from "@/hooks/useAuth";
 
 const Terms: React.FC = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="marketing-performance min-h-screen bg-background flex flex-col">
       <Helmet>
         <title>Terms of Service — The Hockey App</title>
         <meta name="description" content="Terms and conditions for using The Hockey App." />
@@ -21,26 +15,13 @@ const Terms: React.FC = () => {
         <meta property="og:url" content="https://hockeyapp.ca/terms" />
         <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
       </Helmet>
-      {/* Sticky back bar */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <button
-            onClick={() => isAuthenticated ? navigate("/settings") : navigate("/")}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground group"
-          >
-            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            {isAuthenticated ? "Back to Settings" : "Back to home"}
-          </button>
-        </div>
-      </div>
-
       <MarketingNav />
 
-      <main className="flex-1 pt-8 pb-16">
+      <main className="flex-1 pt-28 pb-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <h1 className="text-4xl font-bold mb-6">Terms of Service</h1>
-          <p className="text-sm text-muted-foreground mb-8">Last updated: January 2026</p>
+          <p className="text-sm text-muted-foreground mb-8">Last updated: September 12, 2026</p>
           
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
             <section>
@@ -76,6 +57,16 @@ const Terms: React.FC = () => {
                 Users are responsible for content they upload. You may not upload content that is 
                 inappropriate, offensive, or violates the rights of others. We reserve the right to 
                 remove any content that violates these guidelines.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">Training and Safety</h2>
+              <p className="text-muted-foreground">
+                Training plans are general information, not medical advice or a substitute for qualified coaching.
+                Account holders are responsible for choosing age-appropriate activities, providing suitable adult
+                supervision, using safe equipment and space, and stopping an activity if a player experiences pain,
+                dizziness, or injury. Consult a qualified health professional where appropriate.
               </p>
             </section>
 

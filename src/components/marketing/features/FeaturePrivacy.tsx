@@ -8,7 +8,7 @@ export const FeaturePrivacy: React.FC = () => {
   const settings = [
     { icon: Eye, label: t('marketing.privacy_show_name'), enabled: true },
     { icon: Bell, label: t('marketing.privacy_practice_reminders'), enabled: true },
-    { icon: Users, label: t('marketing.privacy_team_leaderboards'), enabled: false, locked: true },
+    { icon: Users, label: t('marketing.privacy_team_leaderboards'), enabled: true },
     { icon: EyeOff, label: t('marketing.privacy_public_profile'), enabled: false, locked: true },
   ];
 
@@ -66,7 +66,7 @@ export const FeaturePrivacy: React.FC = () => {
                       : "bg-muted justify-start"
                 }`}>
                   <div className={`w-4 h-4 rounded-full ${
-                    setting.locked ? "bg-muted-foreground/30" : "bg-white shadow-sm"
+                    setting.locked ? "bg-muted-foreground/30" : "bg-card shadow-sm"
                   }`} />
                 </div>
               </div>

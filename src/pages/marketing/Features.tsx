@@ -121,7 +121,7 @@ const Features: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="marketing-performance min-h-screen bg-background">
       <Helmet>
         <title>Features — The Hockey App</title>
         <meta name="description" content="Practice planning, player tracking, badges, weekly goals, solo training and more." />
@@ -134,7 +134,7 @@ const Features: React.FC = () => {
       <MarketingNav />
 
       {/* Hero */}
-      <section className="relative py-16 sm:py-20 lg:py-32 bg-[hsl(0,0%,98%)]">
+      <section className="relative py-16 sm:py-20 lg:py-32 bg-background performance-grid">
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             {/* Floating badge */}
@@ -154,7 +154,7 @@ const Features: React.FC = () => {
       </section>
 
       {/* Feature Sections */}
-      <section className="py-12 sm:py-16 lg:py-24 bg-[hsl(0,0%,96%)]">
+      <section className="py-12 sm:py-16 lg:py-24 bg-surface-muted">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-20 sm:space-y-28 lg:space-y-40">
             {features.map((feature, i) => (

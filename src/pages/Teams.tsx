@@ -13,7 +13,7 @@ import { SkeletonTeamCard } from "@/components/app/Skeleton";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronRight, Users, Shield } from "lucide-react";
+import { Plus, ChevronRight, Users, Shield, Building2 } from "lucide-react";
 
 const Teams: React.FC = () => {
   const { t } = useTranslation();
@@ -112,6 +112,25 @@ const Teams: React.FC = () => {
     >
       <PullToRefresh onRefresh={handleRefresh} isRefreshing={isLoading}>
         <PageContainer>
+          <button
+            type="button"
+            onClick={() => navigate("/associations")}
+            className="group relative w-full overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-card via-card to-primary/10 p-5 text-left transition hover:border-primary/45"
+          >
+            <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
+            <div className="relative flex items-center gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Association HQ</p>
+                <p className="mt-1 font-black uppercase tracking-tight">Manage every team in one view</p>
+                <p className="mt-1 text-xs text-muted-foreground">Rollout, adoption, plans, and staff access.</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+            </div>
+          </button>
+
           {isLoading ? (
             <div className="space-y-3">
               <SkeletonTeamCard />

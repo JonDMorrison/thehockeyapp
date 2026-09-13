@@ -10,7 +10,6 @@ import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppC
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,11 +23,12 @@ import {
   Loader2,
   ChevronLeft,
   Palette,
-  Plus,
-  Trash2,
   Users,
   LayoutTemplate,
   Sparkles,
+  Link2,
+  Clipboard,
+  ShieldCheck,
 } from "lucide-react";
 
 const AGE_DIVISIONS = ["U7", "U9", "U11", "U13", "U15", "U18", "Junior", "Other"] as const;
@@ -54,15 +54,9 @@ const LEVEL_KEYS: Record<string, string> = {
   Other: "other",
 };
 
-interface RosterRow {
-  first_name: string;
-  last_initial: string;
-  birth_year: string;
-}
-
-const emptyRow = (): RosterRow => ({ first_name: "", last_initial: "", birth_year: "" });
-
 const TOTAL_STEPS = 3;
+type CreateTeamResult = { success?: boolean; team_id?: string };
+type TeamInviteResult = { success?: boolean; token?: string; error?: string };
 
 const CoachOnboarding: React.FC = () => {
   const { t } = useTranslation();
@@ -84,9 +78,8 @@ const CoachOnboarding: React.FC = () => {
   // Created team
   const [teamId, setTeamId] = useState<string | null>(null);
 
-  // Step 2 — roster
-  const [rows, setRows] = useState<RosterRow[]>([emptyRow()]);
-  const [pasteText, setPasteText] = useState("");
+  // Step 2 — parent-led roster invitation
+  const [familyInviteLink, setFamilyInviteLink] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -105,44 +98,18 @@ const CoachOnboarding: React.FC = () => {
     setNameError(null);
     setSubmitting(true);
     try {
-      // Same core insert as TeamNew
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .insert({
-          name: trimmed,
-          palette_id: paletteId,
-          created_by_user_id: user!.id,
-        })
-        .select()
-        .single();
-
-      if (teamError) throw teamError;
-
-      const { error: roleError } = await supabase.from("team_roles").insert({
-        team_id: team.id,
-        user_id: user!.id,
-        role: "head_coach",
+      const { data, error } = await supabase.rpc("create_team_with_owner", {
+        p_name: trimmed,
+        p_palette_id: paletteId,
+        p_age_division: ageDivision || undefined,
+        p_level: level || undefined,
       });
-
-      if (roleError) throw roleError;
-
-      // Tolerant update — columns may not exist until the migration is applied.
-      if (ageDivision || level) {
-        try {
-          await supabase
-            .from("teams")
-            .update({
-              age_division: ageDivision || null,
-              level: level || null,
-            })
-            .eq("id", team.id);
-        } catch {
-          /* columns may not exist until migration applied; ignore */
-        }
-      }
+      if (error) throw error;
+      const team = data as unknown as CreateTeamResult;
+      if (!team.team_id) throw new Error("Team was not created");
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });
-      setTeamId(team.id);
+      setTeamId(team.team_id);
       setStep(2);
     } catch {
       toast.error(t("coachOnboarding.createTeamError"));
@@ -151,95 +118,26 @@ const CoachOnboarding: React.FC = () => {
     }
   };
 
-  const updateRow = (index: number, key: keyof RosterRow, value: string) => {
-    setRows((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, [key]: value } : r))
-    );
-  };
-
-  const addRow = () => setRows((prev) => [...prev, emptyRow()]);
-
-  const removeRow = (index: number) =>
-    setRows((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
-
-  const addFromPaste = () => {
-    const parsed = pasteText
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const tokens = line.split(/\s+/);
-        return {
-          first_name: tokens[0] || "",
-          last_initial: (tokens[1] || "").slice(0, 1).toUpperCase(),
-          birth_year: "",
-        };
-      });
-    if (parsed.length === 0) return;
-    setRows((prev) => {
-      const existing = prev.filter((r) => r.first_name.trim());
-      return [...existing, ...parsed];
-    });
-    setPasteText("");
-  };
-
-  const saveRoster = async () => {
-    if (!teamId) {
-      setStep(3);
-      return;
-    }
-    const valid = rows.filter((r) => r.first_name.trim());
-    if (valid.length === 0) {
-      setStep(3);
-      return;
-    }
+  const createFamilyInvite = async () => {
+    if (!teamId) return;
     setSubmitting(true);
-    const defaultBirthYear = new Date().getFullYear() - 11;
-    let failures = 0;
-
-    for (const row of valid) {
-      try {
-        const birthYear = row.birth_year.trim()
-          ? parseInt(row.birth_year, 10)
-          : defaultBirthYear;
-
-        const { data: player, error: playerError } = await supabase
-          .from("players")
-          .insert({
-            owner_user_id: user!.id,
-            first_name: row.first_name.trim(),
-            last_initial: row.last_initial.trim() || null,
-            birth_year: Number.isFinite(birthYear) ? birthYear : defaultBirthYear,
-          })
-          .select()
-          .single();
-
-        if (playerError || !player) {
-          failures += 1;
-          continue;
-        }
-
-        const { error: membershipError } = await supabase
-          .from("team_memberships")
-          .insert({
-            team_id: teamId,
-            player_id: player.id,
-            status: "active",
-          });
-
-        if (membershipError) failures += 1;
-      } catch {
-        failures += 1;
-      }
+    try {
+      const { data, error } = await supabase.rpc("regenerate_team_invite", { p_team_id: teamId });
+      if (error) throw error;
+      const result = data as unknown as TeamInviteResult;
+      if (!result.success || !result.token) throw new Error(result.error || "Invite could not be created");
+      setFamilyInviteLink(`${window.location.origin}/join/${result.token}`);
+      toast.success("Family invite ready", "Share this secure link with parents and guardians.");
+    } catch (error) {
+      toast.error("Could not create family invite", error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      setSubmitting(false);
     }
+  };
 
-    queryClient.invalidateQueries({ queryKey: ["team-dashboard", teamId] });
-    setSubmitting(false);
-
-    if (failures > 0) {
-      toast.error(t("coachOnboarding.rosterPartialError", { count: failures }));
-    }
-    setStep(3);
+  const copyFamilyInvite = async () => {
+    await navigator.clipboard.writeText(familyInviteLink);
+    toast.success("Copied", "Family invite link copied.");
   };
 
   const sendCoachWelcomeEmail = async () => {
@@ -266,7 +164,7 @@ const CoachOnboarding: React.FC = () => {
         body: {
           type: "coach_welcome",
           to: user.email,
-          data: { coachName, teamName, teamCode },
+          data: { coachName, teamName, teamCode, teamId },
         },
       });
     } catch {
@@ -464,110 +362,64 @@ const CoachOnboarding: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 2 — ROSTER */}
+        {/* STEP 2 — INVITE FAMILIES */}
         {step === 2 && (
           <div className="space-y-6">
             <div>
               <AppCardTitle className="text-xl flex items-center gap-2">
                 <Users className="w-5 h-5 text-team-primary" />
-                {t("coachOnboarding.step2Title")}
+                Invite your families
               </AppCardTitle>
               <AppCardDescription className="mt-1">
-                {t("coachOnboarding.step2Subtitle")}
+                Parents create and manage their player profile, then join your roster in about a minute.
               </AppCardDescription>
             </div>
 
-            <AppCard>
-              <div className="space-y-3">
-                {rows.map((row, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 items-start">
-                    <div className="col-span-5 space-y-1">
-                      {index === 0 && (
-                        <Label className="text-xs">{t("coachOnboarding.rosterFirstName")}</Label>
-                      )}
-                      <Input
-                        value={row.first_name}
-                        onChange={(e) => updateRow(index, "first_name", e.target.value)}
-                        placeholder="Jake"
-                      />
-                    </div>
-                    <div className="col-span-2 space-y-1">
-                      {index === 0 && (
-                        <Label className="text-xs">{t("coachOnboarding.rosterLastInitial")}</Label>
-                      )}
-                      <Input
-                        value={row.last_initial}
-                        onChange={(e) =>
-                          updateRow(index, "last_initial", e.target.value.slice(0, 1).toUpperCase())
-                        }
-                        maxLength={1}
-                        placeholder="D"
-                      />
-                    </div>
-                    <div className="col-span-4 space-y-1">
-                      {index === 0 && (
-                        <Label className="text-xs">{t("coachOnboarding.rosterBirthYearOptional")}</Label>
-                      )}
-                      <Input
-                        type="number"
-                        inputMode="numeric"
-                        value={row.birth_year}
-                        onChange={(e) => updateRow(index, "birth_year", e.target.value)}
-                        placeholder="2015"
-                      />
-                    </div>
-                    <div className="col-span-1 flex items-end h-full">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        className={index === 0 ? "mt-5" : ""}
-                        onClick={() => removeRow(index)}
-                        aria-label={t("coachOnboarding.removeRow")}
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                <Button type="button" variant="outline" size="sm" onClick={addRow}>
-                  <Plus className="w-4 h-4" />
-                  {t("coachOnboarding.addRow")}
-                </Button>
+            <AppCard className="overflow-hidden border-primary/25 bg-gradient-to-br from-card to-primary/5">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <Link2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <AppCardTitle>One link builds the roster</AppCardTitle>
+                  <AppCardDescription className="mt-1 leading-5">
+                    Each family confirms that they are authorized to manage the player. Your team roster fills automatically when they join.
+                  </AppCardDescription>
+                </div>
               </div>
+
+              {familyInviteLink ? (
+                <button
+                  type="button"
+                  onClick={copyFamilyInvite}
+                  className="mt-5 flex w-full items-center gap-3 rounded-xl border border-primary/25 bg-background/70 p-3 text-left"
+                >
+                  <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{familyInviteLink}</span>
+                  <Clipboard className="h-4 w-4 shrink-0 text-primary" />
+                </button>
+              ) : (
+                <Button type="button" variant="team" className="mt-5 w-full" onClick={createFamilyInvite} disabled={submitting}>
+                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                  Create family invite
+                </Button>
+              )}
             </AppCard>
 
-            <AppCard>
-              <Label className="text-sm font-medium">{t("coachOnboarding.pasteLabel")}</Label>
-              <Textarea
-                className="mt-2"
-                rows={4}
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                placeholder={t("coachOnboarding.pastePlaceholder")}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={addFromPaste}
-                disabled={!pasteText.trim()}
-              >
-                {t("coachOnboarding.pasteButton")}
-              </Button>
-            </AppCard>
+            <div className="flex items-start gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />
+              <p className="text-sm leading-6 text-muted-foreground">
+                This parent-led setup keeps children’s accounts, consent, and private photos under family control.
+              </p>
+            </div>
 
             <div className="flex flex-col gap-3">
               <Button
                 variant="team"
                 size="xl"
                 className="w-full"
-                onClick={saveRoster}
+                onClick={() => setStep(3)}
                 disabled={submitting}
               >
-                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t("coachOnboarding.continue")}
               </Button>
               <Button

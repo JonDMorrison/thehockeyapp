@@ -11,6 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
 import { User, Camera, Loader2, Heart, Trophy, MessageCircle } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
+import { privateMediaReference, validateImageUpload } from "@/lib/media";
+
+type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
 
 interface CoachProfileSectionProps {
   teamId?: string;
@@ -92,6 +96,11 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   // Upload avatar
   const uploadAvatar = async (file: File) => {
     if (!user) return;
+    const validationError = validateImageUpload(file);
+    if (validationError) {
+      toast.error(t("teams.coachProfile.toastUploadFailed"), validationError);
+      return;
+    }
     setUploading(true);
 
     try {
@@ -100,21 +109,17 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
       const filePath = `avatars/${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("team-media")
+        .from("profile-media")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("team-media")
-        .getPublicUrl(filePath);
 
       // Use upsert to handle case where profile doesn't exist yet
       const { error: updateError } = await supabase
         .from("profiles")
         .upsert({
           user_id: user.id,
-          avatar_url: urlData.publicUrl,
+          avatar_url: privateMediaReference("profile-media", filePath),
           email: user.email
         } as { user_id: string; avatar_url: string; email: string | undefined }, { onConflict: 'user_id' });
 
@@ -135,7 +140,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
     mutationFn: async () => {
       if (!user) throw new Error("Not authenticated");
 
-      const profileData: Record<string, any> = {
+      const profileData: ProfileInsert = {
         user_id: user.id,
         email: user.email,
         display_name: displayName.trim() || null,
@@ -151,7 +156,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
       // Use upsert to create profile if it doesn't exist
       const { error } = await supabase
         .from("profiles")
-        .upsert(profileData as any, { onConflict: 'user_id' });
+        .upsert(profileData, { onConflict: 'user_id' });
 
       if (error) throw error;
     },

@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const PUBLISHED_URL = "https://thehockeyapp.lovable.app";
+const PUBLISHED_URL = "https://www.hockeyapp.ca";
 
 function jsonResp(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -175,11 +175,14 @@ serve(async (req) => {
     console.log(JSON.stringify({ run_id: runId, fn: "send-parent-weekly-email", msg, ...extra }));
 
   try {
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (req.headers.get("Authorization") !== `Bearer ${supabaseServiceKey}`) {
+      return jsonResp({ error: "Unauthorized" }, 401);
+    }
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Fetch unsent summaries ──
@@ -283,7 +286,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "The Hockey App <weekly@thehockeyapp.lovable.app>",
+            from: "The Hockey App <weekly@hockeyapp.ca>",
             to: [profile.email],
             subject,
             html,

@@ -22,6 +22,9 @@ import {
   X,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import type { Database } from "@/integrations/supabase/types";
+
+type SessionCompletion = Database["public"]["Tables"]["session_completions"]["Row"];
 
 const PlayerHistory: React.FC = () => {
   const { t } = useTranslation();
@@ -129,7 +132,7 @@ const PlayerHistory: React.FC = () => {
 
       if (sessionsError) throw sessionsError;
 
-      const sessionMap: Record<string, any> = {};
+      const sessionMap: Record<string, SessionCompletion> = {};
       sessions.forEach((s) => {
         sessionMap[s.practice_card_id] = s;
       });

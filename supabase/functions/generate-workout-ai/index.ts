@@ -198,10 +198,7 @@ serve(async (req) => {
       });
     }
     
-    console.log("generate-workout-ai: User authenticated:", user.id);
-
     const body: GenerateRequest = await req.json();
-    console.log("generate-workout-ai: Request body:", JSON.stringify(body));
     const { type, team_id, player_id, date, start_date, tier, time_budget, days_per_week, focus_areas, keep_simple, schedule_events } = body;
 
     // For solo players without team_id, skip team role verification
@@ -219,7 +216,7 @@ serve(async (req) => {
         .single();
 
       if (roleError || !teamRole) {
-        console.log("generate-workout-ai: Team role check failed for team", team_id, "user", user.id, "error:", roleError?.message);
+        console.log("generate-workout-ai: Team role check failed", roleError?.message);
         return new Response(JSON.stringify({ error: "Not authorized for this team" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -315,8 +312,6 @@ Output the JSON matching this exact schema:
 ${JSON.stringify(schema, null, 2)}`;
     }
 
-    console.log("Generating workout with prompt:", userPrompt);
-
     // Call AI Gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -357,8 +352,6 @@ ${JSON.stringify(schema, null, 2)}`;
     const aiData = await aiResponse.json();
     let outputText = aiData.choices?.[0]?.message?.content || "";
     
-    console.log("AI raw output:", outputText);
-
     // Clean up the response - remove markdown code blocks if present
     outputText = outputText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 

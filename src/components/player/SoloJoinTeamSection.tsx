@@ -50,34 +50,15 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
 
     setIsValidating(true);
     try {
-      const code = inviteCode.trim().toUpperCase();
-      
-      // Try short code first (format: TEAM-1234)
-      const { data: shortCodeResult } = await supabase.rpc(
-        "preview_team_by_short_code",
-        { p_short_code: code }
+      // This preview accepts a short code or full token without listing invite rows
+      // or returning the underlying long-lived invite secret.
+      const { data: fullTokenResult, error } = await supabase.rpc(
+        "preview_team_by_invite",
+        { invite_token: inviteCode.trim() },
       );
+      const fullTokenData = fullTokenResult as { success?: boolean } | null;
 
-      const shortCodeData = shortCodeResult as {
-        success: boolean;
-        invite_token?: string;
-        error?: string;
-      } | null;
-
-      if (shortCodeData?.success && shortCodeData.invite_token) {
-        // Navigate with the full token from the short code lookup
-        navigate(`/join/${shortCodeData.invite_token}?playerId=${playerId}`);
-        return;
-      }
-
-      // Fall back to full token lookup
-      const { data: invite, error } = await supabase
-        .from("team_invites")
-        .select("id, team_id, token, status, expires_at, teams(name)")
-        .eq("token", code)
-        .single();
-
-      if (error || !invite) {
+      if (error || !fullTokenData?.success) {
         toast({
           title: "Invalid code",
           description: "That code wasn't found. Check with your coach.",
@@ -86,26 +67,8 @@ export const SoloJoinTeamSection: React.FC<SoloJoinTeamSectionProps> = ({
         return;
       }
 
-      if (invite.status !== "active") {
-        toast({
-          title: "Invite expired",
-          description: "This invite is no longer active.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (new Date(invite.expires_at) < new Date()) {
-        toast({
-          title: "Invite expired",
-          description: "This invite has expired. Ask your coach for a new one.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Navigate to the join flow with player pre-selected
-      navigate(`/join/${invite.token}?playerId=${playerId}`);
+      navigate(`/join/${encodeURIComponent(inviteCode.trim())}?playerId=${playerId}`);
     } catch (err) {
       toast({
         title: "Error",

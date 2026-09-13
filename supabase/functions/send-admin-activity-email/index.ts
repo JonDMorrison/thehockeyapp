@@ -7,7 +7,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ADMIN_EMAIL = "jon@getclear.ca";
+function escapeHtml(value: unknown) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -21,6 +28,8 @@ serve(async (req) => {
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
+    const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL");
+    if (!ADMIN_EMAIL) throw new Error("ADMIN_EMAIL not configured");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -39,6 +48,9 @@ serve(async (req) => {
       .from("admin_activity_log")
       .select("*")
       .eq("id", event_id)
+      .eq("severity", "urgent")
+      .is("emailed_at", null)
+      .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString())
       .single();
 
     if (evtErr || !evt) {
@@ -58,23 +70,24 @@ serve(async (req) => {
 
     // Build email
     const severityEmoji = evt.severity === "urgent" ? "🚨" : evt.severity === "important" ? "⚠️" : "ℹ️";
+    const eventType = escapeHtml(evt.event_type.replace(/_/g, " "));
     const subject = `${severityEmoji} [Hockey App] ${evt.event_type.replace(/_/g, " ").toUpperCase()}`;
 
     const metaRows = Object.entries(evt.metadata || {})
-      .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">${k}</td><td style="font-size:13px;">${String(v)}</td></tr>`)
+      .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">${escapeHtml(k)}</td><td style="font-size:13px;">${escapeHtml(v)}</td></tr>`)
       .join("");
 
     const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#1a1a1a;max-width:560px;margin:0 auto;padding:24px;">
   <p style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Admin Alert</p>
-  <h2 style="margin:0 0 16px;">${severityEmoji} ${evt.event_type.replace(/_/g, " ")}</h2>
+  <h2 style="margin:0 0 16px;">${severityEmoji} ${eventType}</h2>
   <table style="margin:0 0 16px;width:100%;">
-    <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Severity</td><td style="font-size:13px;font-weight:600;">${evt.severity}</td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Severity</td><td style="font-size:13px;font-weight:600;">${escapeHtml(evt.severity)}</td></tr>
     <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Time</td><td style="font-size:13px;">${new Date(evt.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver" })}</td></tr>
-    ${evt.actor_user_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">User</td><td style="font-size:13px;">${evt.actor_user_id}</td></tr>` : ""}
-    ${evt.email ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Email</td><td style="font-size:13px;">${evt.email}</td></tr>` : ""}
-    ${evt.team_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Team</td><td style="font-size:13px;">${evt.team_id}</td></tr>` : ""}
+    ${evt.actor_user_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">User</td><td style="font-size:13px;">${escapeHtml(evt.actor_user_id)}</td></tr>` : ""}
+    ${evt.email ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Email</td><td style="font-size:13px;">${escapeHtml(evt.email)}</td></tr>` : ""}
+    ${evt.team_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Team</td><td style="font-size:13px;">${escapeHtml(evt.team_id)}</td></tr>` : ""}
     ${metaRows}
   </table>
   <p style="font-size:11px;color:#aaa;margin-top:24px;">Hockey App Admin System</p>
@@ -87,7 +100,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Hockey App Admin <admin@thehockeyapp.lovable.app>",
+        from: "Hockey App Admin <admin@hockeyapp.ca>",
         to: [ADMIN_EMAIL],
         subject,
         html,
