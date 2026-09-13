@@ -26,6 +26,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import iceMotion from "@/assets/brand/ice-motion.jpg";
 
 const Features: React.FC = () => {
   const { t } = useTranslation();
@@ -134,7 +135,10 @@ const Features: React.FC = () => {
       <MarketingNav />
 
       {/* Hero */}
-      <section className="relative py-16 sm:py-20 lg:py-32 bg-background performance-grid">
+      <section className="relative overflow-hidden bg-background py-20 performance-grid sm:py-24 lg:py-36">
+        <img src={iceMotion} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-50" loading="eager" decoding="async" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,10,14,0.98),rgba(9,10,14,0.72),rgba(9,10,14,0.88))]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             {/* Floating badge */}
@@ -143,7 +147,7 @@ const Features: React.FC = () => {
               <span className="text-xs sm:text-sm font-medium text-text-muted">{t('marketing.features_hero_badge')}</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6 px-2 text-foreground">
+            <h1 className="mb-4 px-2 font-display text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] text-foreground sm:mb-6 sm:text-5xl md:text-6xl lg:text-7xl">
               {t('marketing.features_hero_heading')}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto px-4">

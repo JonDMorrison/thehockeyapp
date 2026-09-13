@@ -55,6 +55,7 @@ import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSecti
 import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
 import { FirstRunOverlay } from "@/components/player/FirstRunOverlay";
 import { AnimatePresence } from "framer-motion";
+import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
 
@@ -439,7 +440,10 @@ const PlayerHome: React.FC = () => {
         {/* Desktop Layout */}
         <div className="hidden md:block">
           {/* Hero Header with Player Info and Stats */}
-          <div className="flex items-center justify-between mb-6">
+          <section className="relative mb-6 min-h-[150px] overflow-hidden rounded-xl border border-white/10 bg-black p-6">
+            <img src={toeDragDetail} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-58" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.84)_58%,rgba(8,10,14,0.24)_100%)]" />
+            <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar
                 src={player.profile_photo_url}
@@ -447,7 +451,7 @@ const PlayerHome: React.FC = () => {
                 size="lg"
               />
               <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold">
+                <h2 className="font-display text-3xl font-black uppercase text-white">
                   {player.first_name} {player.last_initial && `${player.last_initial}.`}
                 </h2>
                 <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
@@ -470,7 +474,8 @@ const PlayerHome: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
+            </div>
+          </section>
 
           {/* Desktop Grid Layout - 2 column for better balance */}
           <div className="grid grid-cols-12 gap-6">
@@ -636,15 +641,17 @@ const PlayerHome: React.FC = () => {
         {/* Mobile Layout - Keep existing stacked layout */}
         <div className="md:hidden space-y-4">
           {/* Player Header - Mobile only */}
-          <section className="flex items-center gap-4 border-b border-border pb-5">
-            <Avatar
+          <section className="relative flex min-h-[142px] items-center gap-4 overflow-hidden rounded-xl border border-white/10 bg-black p-4">
+            <img src={toeDragDetail} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-52" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.97)_0%,rgba(8,10,14,0.82)_70%,rgba(8,10,14,0.3)_100%)]" />
+            <div className="relative"><Avatar
               src={player.profile_photo_url}
               fallback={`${player.first_name} ${player.last_initial || ""}`}
               size="lg"
-            />
-            <div className="min-w-0 flex-1">
+            /></div>
+            <div className="relative min-w-0 flex-1">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Ready to train</p>
-              <h2 className="mt-1 font-display text-2xl font-black uppercase">
+              <h2 className="mt-1 font-display text-2xl font-black uppercase text-white">
                 {player.first_name} {player.last_initial && `${player.last_initial}.`}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2">

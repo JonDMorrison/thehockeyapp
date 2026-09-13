@@ -23,6 +23,7 @@ import { UserMenu } from "@/components/app/UserMenu";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import logoImage from "@/assets/hockey-app-logo.png";
 import { BETA_MODE } from "@/core/constants";
+import soloGarageTraining from "@/assets/brand/solo-garage-training.jpg";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {
@@ -280,6 +281,8 @@ export default function SoloDashboard() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
+              <img src={soloGarageTraining} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[center_30%] opacity-52" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-primary/35" />
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white/10 -translate-y-4 translate-x-4" />
               <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-white/5 translate-y-4 -translate-x-4" />

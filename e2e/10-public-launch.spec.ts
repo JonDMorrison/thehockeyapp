@@ -6,7 +6,7 @@ test.describe('Public launch experience', () => {
   test('association offer is prominent and contactable', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /build better players\. across every team/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /off-ice training delivers on-ice results/i })).toBeVisible();
     await expect(page.getByText(/give every coach a simple weekly plan/i)).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Association' })).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByRole('heading', { name: /see which teams need support/i })).toBeVisible();

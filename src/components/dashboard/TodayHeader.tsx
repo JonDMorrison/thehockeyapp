@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import coachPlanning from "@/assets/brand/coach-planning.jpg";
 
 interface TodayHeaderProps {
   teamName: string;
@@ -88,11 +89,14 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   };
 
   return (
-    <div className="space-y-1">
+    <section className="relative min-h-[168px] overflow-hidden rounded-xl border border-white/10 bg-black p-5 shadow-lg sm:p-6">
+      <img src={coachPlanning} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-62" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.88)_52%,rgba(8,10,14,0.32)_100%)]" />
+      <div className="relative space-y-2">
       {/* Date and Day Type */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold tracking-wider text-text-muted">
+          <span className="text-xs font-semibold tracking-wider text-white/58">
             {t("common.today").toUpperCase()} — {formattedDate}
           </span>
         </div>
@@ -122,7 +126,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="text-lg font-bold h-9 max-w-[240px]"
+              className="h-9 max-w-[240px] bg-black/55 text-lg font-bold text-white"
               disabled={isUpdating}
             />
             <Button
@@ -156,9 +160,9 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
               />
             )}
             <div className="flex items-baseline gap-2">
-              <h1 className="text-lg font-bold text-foreground">{teamName}</h1>
+              <h1 className="font-display text-3xl font-black uppercase tracking-[-0.025em] text-white sm:text-4xl">{teamName}</h1>
               {seasonLabel && (
-                <span className="text-sm text-text-muted">· {seasonLabel}</span>
+                <span className="text-sm text-white/58">· {seasonLabel}</span>
               )}
               {onUpdateTeamName && (
                 <button
@@ -166,13 +170,14 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
                   className="opacity-50 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted"
                   aria-label={t("coach.todayHeader.editTeamName")}
                 >
-                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Pencil className="h-3.5 w-3.5 text-white/55" />
                 </button>
               )}
             </div>
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </section>
   );
 };

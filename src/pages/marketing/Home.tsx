@@ -24,8 +24,15 @@ import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
-import drivewayPlayer from "@/assets/kid-driveway-shooting-optimized.jpg";
 import familyNexlevel from "@/assets/family-nexlevel-optimized.png";
+import heroOutdoorTraining from "@/assets/brand/hero-outdoor-training.jpg";
+import drivewayPlayer from "@/assets/brand/driveway-wrist-shot.jpg";
+import teamHuddle from "@/assets/brand/team-huddle.jpg";
+import coachPlanning from "@/assets/brand/coach-planning.jpg";
+import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
+import soloGarageTraining from "@/assets/brand/solo-garage-training.jpg";
+import familyProgress from "@/assets/brand/family-progress.jpg";
+import teamCelebration from "@/assets/brand/team-celebration.jpg";
 
 type RoleKey = "association" | "coach" | "player" | "family";
 
@@ -56,6 +63,8 @@ const roleOptions: Array<{
   eyebrow: string;
   title: string;
   description: string;
+  image: string;
+  imageAlt: string;
 }> = [
   {
     key: "association",
@@ -63,6 +72,8 @@ const roleOptions: Array<{
     eyebrow: "Association HQ",
     title: "See which teams need support.",
     description: "Track rollout, weekly-plan coverage, and participation without exposing private player detail.",
+    image: teamHuddle,
+    imageAlt: "Youth hockey players and coaches gathered in a team huddle",
   },
   {
     key: "coach",
@@ -70,6 +81,8 @@ const roleOptions: Array<{
     eyebrow: "Coach workspace",
     title: "Run the week without chasing it.",
     description: "Assign work once, then see what is live, what is complete, and what needs attention.",
+    image: coachPlanning,
+    imageAlt: "A hockey coach reviewing the weekly plan at rink-side",
   },
   {
     key: "player",
@@ -77,6 +90,8 @@ const roleOptions: Array<{
     eyebrow: "Today’s session",
     title: "Know exactly what to do next.",
     description: "A fast daily checklist keeps training clear, rewarding, and easy to finish independently.",
+    image: toeDragDetail,
+    imageAlt: "A player practicing off-ice stickhandling with a puck",
   },
   {
     key: "family",
@@ -84,6 +99,8 @@ const roleOptions: Array<{
     eyebrow: "Family view",
     title: "Support progress without policing it.",
     description: "See weekly consistency and celebrate the work while the player owns the routine.",
+    image: familyProgress,
+    imageAlt: "A parent and young player reviewing training progress together",
   },
 ];
 
@@ -260,12 +277,22 @@ export default function Home() {
       <main>
         {/* 1. Hero */}
         <section className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
-          <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_72%_20%,hsl(var(--primary)/0.16),transparent_36%)]" />
+          <img
+            src={heroOutdoorTraining}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-[62%_center] opacity-50"
+            loading="eager"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,#090a0e_0%,rgba(9,10,14,0.96)_38%,rgba(9,10,14,0.68)_68%,rgba(9,10,14,0.46)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(0deg,#090a0e_0%,transparent_38%,rgba(9,10,14,0.2)_100%)]" />
+          <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_72%_20%,hsl(var(--primary)/0.18),transparent_36%)]" />
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-8 lg:pb-28 lg:pt-24">
             <div>
               <SectionEyebrow>Off-ice development for every team</SectionEyebrow>
-              <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-6xl lg:text-[72px]">
-                Build better players. <span className="text-primary">Across every team.</span>
+              <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.94] tracking-[-0.035em] text-white sm:text-6xl lg:text-[72px]">
+                Off-ice training <span className="text-primary">delivers on-ice results.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-7 text-white/68 sm:text-xl">
                 Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
@@ -402,8 +429,25 @@ export default function Home() {
                   Privacy and permissions built into every view
                 </div>
               </div>
-              <div className="mx-auto w-full max-w-xl">
-                <RolePreview role={activeRole} />
+              <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d11] shadow-[0_28px_80px_rgba(0,0,0,0.48)]">
+                <div className="grid md:grid-cols-[0.72fr_1.28fr]">
+                  <div className="relative min-h-[190px] overflow-hidden md:min-h-[430px]">
+                    <img
+                      key={role.key}
+                      src={role.image}
+                      alt={role.imageAlt}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/18 to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#0b0d11]" />
+                    <div className="absolute bottom-4 left-4 rounded-md border border-white/12 bg-black/60 px-3 py-2 backdrop-blur-md">
+                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/70">Built for real hockey weeks</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-4 sm:p-6">
+                    <div className="w-full"><RolePreview role={activeRole} /></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -412,7 +456,15 @@ export default function Home() {
         {/* 5. Complete development */}
         <section className="border-b border-white/[0.06] bg-[#0b0d11] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:gap-20 lg:px-8">
-            <div>
+            <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-white/10 bg-black">
+              <img
+                src={soloGarageTraining}
+                alt="A young hockey player completing an off-ice stickhandling session at home"
+                className="absolute inset-0 h-full w-full object-cover object-[center_34%] opacity-85"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
               <SectionEyebrow>Complete development</SectionEyebrow>
               <h2 className="font-display text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
                 More than a <span className="text-primary">shot counter.</span>
@@ -420,6 +472,7 @@ export default function Home() {
               <p className="mt-6 max-w-md text-lg leading-7 text-white/60">
                 Keep the fast targets and satisfying check-offs. Add the rest of the player’s week.
               </p>
+              </div>
             </div>
             <div className="border-t border-white/10">
               {developmentAreas.map((area, index) => (
@@ -467,8 +520,10 @@ export default function Home() {
         </section>
 
         {/* 7. Final CTA */}
-        <section className="performance-grid relative overflow-hidden py-16 sm:py-20 lg:py-24">
-          <div className="absolute left-1/2 top-1/2 h-80 w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
+        <section className="performance-grid relative overflow-hidden py-16 sm:py-20 lg:py-28">
+          <img src={teamCelebration} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-55" loading="lazy" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,10,14,0.98)_0%,rgba(9,10,14,0.9)_45%,rgba(9,10,14,0.52)_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090a0e] via-transparent to-[#090a0e]/60" />
           <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
             <SectionEyebrow>Start with one team</SectionEyebrow>
             <h2 className="font-display text-4xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-6xl lg:text-7xl">

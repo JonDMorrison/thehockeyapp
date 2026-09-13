@@ -42,6 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import teamHuddle from "@/assets/brand/team-huddle.jpg";
 
 type AssociationRole = "owner" | "director" | "admin" | "viewer";
 type TeamFilter = "all" | "needs_plan" | "low_adoption";
@@ -320,7 +321,9 @@ export default function AssociationDashboard() {
       }
     >
       <PageContainer className="mx-auto max-w-6xl space-y-5 sm:space-y-7">
-        <section className="relative overflow-hidden rounded-xl border border-primary/30 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.18),transparent_38%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--background)))] p-5 sm:p-8">
+        <section className="relative overflow-hidden rounded-xl border border-primary/30 bg-black p-5 sm:p-8">
+          <img src={teamHuddle} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[center_34%] opacity-38" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.86)_60%,rgba(8,10,14,0.55)_100%)]" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -331,14 +334,14 @@ export default function AssociationDashboard() {
               <h2 className="mt-4 text-3xl font-black uppercase leading-none tracking-[-0.04em] sm:text-5xl">
                 {attentionCount > 0 ? <>{attentionCount} team{attentionCount === 1 ? "" : "s"} need attention</> : <>Every team is on track</>}
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-white/62">
                 {attentionCount > 0
                   ? "Start with missing weekly plans and low participation. Player details stay inside each authorized team."
                   : `${formatNumber(dashboard.totals.active_players_count)} players were active across ${dashboard.totals.teams_count} teams in the last ${dashboard.window_days} days.`}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="report-window" className="text-xs text-muted-foreground">Reporting window</Label>
+              <Label htmlFor="report-window" className="text-xs text-white/58">Reporting window</Label>
               <Select value={String(windowDays)} onValueChange={(value) => setWindowDays(Number(value))}>
                 <SelectTrigger id="report-window" className="w-28"><SelectValue /></SelectTrigger>
                 <SelectContent>

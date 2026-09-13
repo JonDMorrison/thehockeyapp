@@ -1,5 +1,8 @@
 project_id = "xonpnkzkvqxarbxpinhm"
 
+[auth.email]
+enable_confirmations = false
+
 [functions.generate-workout-ai]
 verify_jwt = true
 
