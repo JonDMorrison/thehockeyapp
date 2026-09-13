@@ -41,11 +41,11 @@ import {
   Sparkles,
   MoreHorizontal,
   Zap,
-  AlertTriangle,
   MessageSquare,
   Film,
 } from "lucide-react";
 import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
+import { VideoAttachmentEditor } from "@/components/practice/VideoAttachmentEditor";
 import { isValidVideoUrl } from "@/lib/videoEmbed";
 
 interface PracticeTask {
@@ -199,6 +199,13 @@ const PracticeCardEditor: React.FC = () => {
       const emptyLabelTask = tasks.find((task) => !task.label.trim());
       if (emptyLabelTask) {
         throw new Error(t('practice.taskLabelRequired'));
+      }
+
+      const invalidVideoTask = tasks.find(
+        (task) => task.video_url && !isValidVideoUrl(task.video_url)
+      );
+      if (invalidVideoTask) {
+        throw new Error(t('practice.videoUrlInvalid'));
       }
 
       let practiceCardId = cardId;
@@ -662,31 +669,12 @@ const PracticeCardEditor: React.FC = () => {
                         </div>
                       )}
 
-                      {task.task_type === "video" && (
-                        <div>
-                          <Input
-                            type="url"
-                            inputMode="url"
-                            value={task.video_url ?? ""}
-                            onChange={(e) =>
-                              updateTask(index, { video_url: e.target.value })
-                            }
-                            placeholder={t('practice.videoUrlPlaceholder')}
-                            className={
-                              task.video_url && !isValidVideoUrl(task.video_url)
-                                ? "border-destructive focus-visible:ring-destructive"
-                                : ""
-                            }
-                            disabled={isLocked}
-                          />
-                          {task.video_url && !isValidVideoUrl(task.video_url) && (
-                            <p className="mt-1.5 text-xs text-destructive flex items-center gap-1">
-                              <AlertTriangle className="w-3 h-3" />
-                              {t('practice.videoUrlInvalid')}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                      <VideoAttachmentEditor
+                        value={task.video_url}
+                        onChange={(videoUrl) => updateTask(index, { video_url: videoUrl })}
+                        disabled={isLocked}
+                        defaultOpen={task.task_type === "video"}
+                      />
 
                       {/* Coach Notes (optional) */}
                       <div>

@@ -54,10 +54,9 @@ import {
   Award,
   Flame,
   Film,
-  ExternalLink,
 } from "lucide-react";
-import { getVideoEmbedUrl } from "@/lib/videoEmbed";
 import { SessionPhotoUpload } from "@/components/player/SessionPhotoUpload";
+import { SkillVideo } from "@/components/player/SkillVideo";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
@@ -870,8 +869,6 @@ const PlayerToday: React.FC = () => {
               const completion = completionMap[task.id];
               const isCompleted = !!completion?.completed;
               const isShooting = task.task_type === "shooting" || task.shots_expected;
-              const isVideo = task.task_type === "video" || !!task.video_url;
-              const videoEmbed = task.video_url ? getVideoEmbedUrl(task.video_url) : null;
 
               return (
                 <div key={task.id} className="space-y-2">
@@ -906,29 +903,7 @@ const PlayerToday: React.FC = () => {
                       </button>
                     )}
                   </div>
-                  {isVideo && videoEmbed && (
-                    <div className="aspect-video w-full overflow-hidden rounded-lg bg-black/5">
-                      <iframe
-                        src={videoEmbed}
-                        loading="lazy"
-                        allowFullScreen
-                        className="w-full h-full rounded-lg"
-                        title={task.label}
-                      />
-                    </div>
-                  )}
-                  {isVideo && !videoEmbed && task.video_url && (
-                    <a
-                      href={task.video_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-team-primary hover:underline"
-                    >
-                      <Film className="w-4 h-4" />
-                      {t("players.today.openVideo")}
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
+                  {task.video_url && <SkillVideo url={task.video_url} taskTitle={task.label} />}
                 </div>
               );
             })}

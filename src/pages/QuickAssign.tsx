@@ -24,6 +24,7 @@ import {
   Calendar,
   AlertTriangle,
   Copy,
+  Film,
 } from "lucide-react";
 import {
   Sheet,
@@ -52,6 +53,7 @@ interface ExercisePreset {
   target_type: string;
   shot_type: string;
   description: string;
+  video_url: string | null;
 }
 
 const QuickAssign: React.FC = () => {
@@ -66,6 +68,7 @@ const QuickAssign: React.FC = () => {
   const [copySheetOpen, setCopySheetOpen] = useState(false);
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [pendingPublish, setPendingPublish] = useState<boolean | null>(null);
+  const [videoExercises, setVideoExercises] = useState<Set<string>>(new Set());
 
   const EXERCISE_PRESETS: ExercisePreset[] = [
     {
@@ -77,6 +80,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "wrist",
       description: t('practice.exercise50Shots'),
+      video_url: "https://www.youtube.com/watch?v=iHHmFJ17m58",
     },
     {
       id: "snap_shots",
@@ -87,6 +91,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "snap",
       description: t('practice.exercise30Shots'),
+      video_url: "https://www.youtube.com/watch?v=iHHmFJ17m58",
     },
     {
       id: "slap_shots",
@@ -97,6 +102,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "slap",
       description: t('practice.exercise25Shots'),
+      video_url: "https://www.youtube.com/watch?v=Z6PqI_JifHI",
     },
     {
       id: "backhand",
@@ -107,6 +113,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "backhand",
       description: t('practice.exercise25Shots'),
+      video_url: "https://www.youtube.com/watch?v=UukG8FEUeKY",
     },
     {
       id: "pushups",
@@ -117,6 +124,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "none",
       description: t('practice.exercise20Reps'),
+      video_url: null,
     },
     {
       id: "squats",
@@ -127,6 +135,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "none",
       description: t('practice.exercise25Reps'),
+      video_url: null,
     },
     {
       id: "planks",
@@ -137,6 +146,7 @@ const QuickAssign: React.FC = () => {
       target_type: "seconds",
       shot_type: "none",
       description: t('practice.exercise60Seconds'),
+      video_url: null,
     },
     {
       id: "stretching",
@@ -147,6 +157,7 @@ const QuickAssign: React.FC = () => {
       target_type: "minutes",
       shot_type: "none",
       description: t('practice.exercise5Minutes'),
+      video_url: null,
     },
     {
       id: "stickhandling",
@@ -157,6 +168,7 @@ const QuickAssign: React.FC = () => {
       target_type: "minutes",
       shot_type: "none",
       description: t('practice.exercise5Minutes'),
+      video_url: "https://www.youtube.com/watch?v=DD94uw3Chn8",
     },
     {
       id: "lunges",
@@ -167,6 +179,7 @@ const QuickAssign: React.FC = () => {
       target_type: "reps",
       shot_type: "none",
       description: t('practice.exercise20RepsEachLeg'),
+      video_url: null,
     },
   ];
 
@@ -280,7 +293,7 @@ const QuickAssign: React.FC = () => {
           date,
           title,
           practice_tasks (
-            id, task_type, label, target_type, target_value, shot_type, shots_expected, is_required, sort_order
+            id, task_type, label, target_type, target_value, shot_type, shots_expected, is_required, sort_order, video_url
           )
         `)
         .eq("team_id", id)
@@ -306,14 +319,41 @@ const QuickAssign: React.FC = () => {
   }, [team?.palette_id, setTeamTheme]);
 
   const toggleExercise = (exerciseId: string) => {
-    setSelectedExercises((prev) => {
-      const next = new Set(prev);
-      if (next.has(exerciseId)) {
+    const isRemoving = selectedExercises.has(exerciseId);
+    const exercise = EXERCISE_PRESETS.find((preset) => preset.id === exerciseId);
+
+    setSelectedExercises((current) => {
+      const next = new Set(current);
+      if (isRemoving) {
         next.delete(exerciseId);
       } else {
         next.add(exerciseId);
       }
       return next;
+    });
+
+    if (isRemoving || exercise?.video_url) {
+      setVideoExercises((current) => {
+        const updated = new Set(current);
+        if (isRemoving) {
+          updated.delete(exerciseId);
+        } else {
+          updated.add(exerciseId);
+        }
+        return updated;
+      });
+    }
+  };
+
+  const toggleExerciseVideo = (exerciseId: string) => {
+    setVideoExercises((current) => {
+      const updated = new Set(current);
+      if (updated.has(exerciseId)) {
+        updated.delete(exerciseId);
+      } else {
+        updated.add(exerciseId);
+      }
+      return updated;
     });
   };
 
@@ -366,6 +406,7 @@ const QuickAssign: React.FC = () => {
         shot_type: task.shot_type,
         shots_expected: task.shots_expected,
         is_required: task.is_required,
+        video_url: task.video_url,
       }));
 
       const { error: tasksError } = await supabase
@@ -441,6 +482,7 @@ const QuickAssign: React.FC = () => {
         shot_type: preset.shot_type,
         shots_expected: preset.task_type === "shooting" ? preset.target_value : null,
         is_required: true,
+        video_url: videoExercises.has(preset.id) ? preset.video_url : null,
       }));
 
       const { error: tasksError } = await supabase
@@ -618,30 +660,50 @@ const QuickAssign: React.FC = () => {
         <div className="grid grid-cols-2 gap-3">
           {EXERCISE_PRESETS.map((exercise) => {
             const isSelected = selectedExercises.has(exercise.id);
+            const includesVideo = videoExercises.has(exercise.id);
             return (
-              <button
-                key={exercise.id}
-                onClick={() => toggleExercise(exercise.id)}
-                className={`
-                  relative p-4 rounded-xl text-left transition-all
-                  ${isSelected
-                    ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background"
-                    : "bg-card border border-border hover:border-primary/50"}
-                `}
-              >
-                {isSelected && (
-                  <div className="absolute top-2 right-2">
-                    <Check className="w-4 h-4" />
+              <div key={exercise.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => toggleExercise(exercise.id)}
+                  className={`
+                    relative h-full w-full rounded-xl p-4 text-left transition-all
+                    ${isSelected
+                      ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      : "bg-card border border-border hover:border-primary/50"}
+                  `}
+                >
+                  {isSelected && (
+                    <div className="absolute right-2 top-2">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div className={`mb-2 ${isSelected ? "text-primary-foreground" : "text-primary"}`}>
+                    {exercise.icon}
                   </div>
+                  <div className="pr-5 text-sm font-medium">{exercise.label}</div>
+                  <div className={`mt-0.5 text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                    {exercise.description}
+                  </div>
+                  {exercise.video_url && <div className="h-7" aria-hidden="true" />}
+                </button>
+                {exercise.video_url && isSelected && (
+                  <button
+                    type="button"
+                    onClick={() => toggleExerciseVideo(exercise.id)}
+                    className={`absolute bottom-2.5 left-2.5 inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-bold transition-colors ${
+                      includesVideo
+                        ? "bg-background text-foreground"
+                        : "bg-primary-foreground/10 text-primary-foreground/75"
+                    }`}
+                    aria-pressed={includesVideo}
+                    aria-label={includesVideo ? t('practice.removeVideo') : t('practice.addSkillVideo')}
+                  >
+                    <Film className="h-3.5 w-3.5" />
+                    {includesVideo ? t('practice.videoOn') : t('practice.videoOff')}
+                  </button>
                 )}
-                <div className={`mb-2 ${isSelected ? "text-primary-foreground" : "text-primary"}`}>
-                  {exercise.icon}
-                </div>
-                <div className="font-medium text-sm">{exercise.label}</div>
-                <div className={`text-xs mt-0.5 ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                  {exercise.description}
-                </div>
-              </button>
+              </div>
             );
           })}
         </div>
