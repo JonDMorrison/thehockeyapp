@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "@/components/app/Toast";
 import { fireGoalConfetti } from "@/lib/confetti";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 import {
   Trophy,
   ArrowLeft,
@@ -170,6 +171,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         target_type: string;
         target_value: number | null;
         is_required: boolean;
+        video_url: string | null;
       }> = [];
 
       cards.forEach((card) => {
@@ -183,6 +185,10 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
             target_type: exercise.category === t('practice.categoryShooting') ? "shots" : "time",
             target_value: exercise.category === t('practice.categoryShooting') ? 25 : 5,
             is_required: true,
+            video_url: getRecommendedCoachingVideoUrl({
+              label: exercise.label,
+              taskType: getTaskType(exercise.category),
+            }),
           });
         });
       });

@@ -6,6 +6,7 @@ import { format, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DAY_TEMPLATES, TASK_LIBRARY } from "@/lib/weekTemplates";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
@@ -15,6 +16,7 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { EmptyState } from "@/components/app/EmptyState";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { Button } from "@/components/ui/button";
+import { SkillVideo } from "@/components/player/SkillVideo";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
@@ -50,7 +52,9 @@ interface PersonalTask {
   task_type: string;
   sort_order: number;
   is_required: boolean;
+  shot_type: string | null;
   shots_expected: number | null;
+  video_url: string | null;
 }
 
 interface PersonalCard {
@@ -192,7 +196,13 @@ const SoloToday: React.FC = () => {
           task_type: taskTemplate.type,
           sort_order: index,
           is_required: taskTemplate.isRequired || false,
+          shot_type: taskTemplate.shotType ?? "none",
           shots_expected: taskTemplate.shots || null,
+          video_url: getRecommendedCoachingVideoUrl({
+            label: taskTemplate.label,
+            taskType: taskTemplate.type,
+            shotType: taskTemplate.shotType,
+          }),
         };
       }).filter(Boolean);
 
@@ -440,15 +450,23 @@ const SoloToday: React.FC = () => {
                     : undefined;
 
                 return (
-                  <WorkoutCheckItem
-                    key={task.id}
-                    id={task.id}
-                    label={task.label}
-                    target={target}
-                    icon={taskTypeIcons[task.task_type] || taskTypeIcons.other}
-                    completed={isCompleted || false}
-                    onToggle={(id) => toggleTask.mutate(id)}
-                  />
+                  <div key={task.id} className="space-y-2">
+                    <WorkoutCheckItem
+                      id={task.id}
+                      label={task.label}
+                      target={target}
+                      icon={taskTypeIcons[task.task_type] || taskTypeIcons.other}
+                      completed={isCompleted || false}
+                      onToggle={(id) => toggleTask.mutate(id)}
+                    />
+                    {task.video_url ? (
+                      <SkillVideo
+                        key={task.video_url}
+                        url={task.video_url}
+                        taskTitle={task.label}
+                      />
+                    ) : null}
+                  </div>
                 );
               })}
             </div>

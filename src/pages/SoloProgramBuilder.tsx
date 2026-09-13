@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { fireGoalConfetti } from "@/lib/confetti";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
 type Step = "setup" | "goals" | "generating" | "preview";
 
@@ -233,6 +234,12 @@ export default function SoloProgramBuilder() {
               target_value: task.target_value || null,
               target_type: task.target_type || "none",
               is_required: task.is_required,
+              shot_type: task.shot_type || "none",
+              video_url: getRecommendedCoachingVideoUrl({
+                label: task.label,
+                taskType: task.task_type,
+                shotType: task.shot_type,
+              }),
             }));
 
             const { error: tasksError } = await supabase

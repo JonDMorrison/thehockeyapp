@@ -2,7 +2,7 @@
 
 ## Deploy
 - Vercel auto-deploys on push to main
-- Supabase project: tyfkyzdeuyhpeurxigrm
+- Supabase project: xonpnkzkvqxarbxpinhm (`the-hockey-app`)
 
 ## Critical Rules
 - Read only first, report findings, confirm with Jon, then make changes

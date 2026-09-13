@@ -54,6 +54,7 @@ export interface TaskTemplate {
   reps?: number;
   isRequired?: boolean;
   description?: string; // How to do the exercise
+  shotType?: "wrist" | "snap" | "slap" | "backhand" | "none";
 }
 
 export const TASK_LIBRARY: TaskTemplate[] = [
@@ -64,6 +65,7 @@ export const TASK_LIBRARY: TaskTemplate[] = [
     type: "shooting", 
     icon: "🎯", 
     shots: 50, 
+    shotType: "wrist",
     isRequired: true,
     description: "Focus on quick release from your front foot. Keep your bottom hand loose and snap through the puck. Aim for corners."
   },
@@ -73,6 +75,7 @@ export const TASK_LIBRARY: TaskTemplate[] = [
     type: "shooting", 
     icon: "⚡", 
     shots: 30,
+    shotType: "snap",
     description: "Quick, powerful shots with minimal wind-up. Load your stick by pressing down just behind the puck, then snap through."
   },
   { 
@@ -81,6 +84,7 @@ export const TASK_LIBRARY: TaskTemplate[] = [
     type: "shooting", 
     icon: "🏒", 
     shots: 25,
+    shotType: "backhand",
     description: "Cup the puck on your backhand, roll your wrists over as you release. Start close to the net and work back."
   },
   { 
@@ -89,6 +93,7 @@ export const TASK_LIBRARY: TaskTemplate[] = [
     type: "shooting", 
     icon: "💥", 
     shots: 20,
+    shotType: "slap",
     description: "Wind up at shoulder height, strike the ice 2-3 inches behind the puck. Follow through low for power."
   },
   { 

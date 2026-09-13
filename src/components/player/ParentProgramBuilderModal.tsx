@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/app/Toast";
 import { fireGoalConfetti } from "@/lib/confetti";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 import {
   ArrowLeft,
   ArrowRight,
@@ -258,6 +259,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         shots_expected: number | null;
         is_required: boolean;
         program_source: "parent";
+        video_url: string | null;
       }> = [];
 
       cards.forEach((card, cardIdx) => {
@@ -274,6 +276,11 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
             shots_expected: task.shots_expected ?? null,
             is_required: task.is_required ?? true,
             program_source: "parent",
+            video_url: getRecommendedCoachingVideoUrl({
+              label: task.label,
+              taskType: task.task_type,
+              shotType: task.shot_type,
+            }),
           });
         });
       });

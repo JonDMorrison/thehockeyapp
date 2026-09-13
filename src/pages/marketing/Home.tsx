@@ -23,6 +23,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
+import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
 import drivewayPlayer from "@/assets/kid-driveway-shooting-optimized.jpg";
 import familyNexlevel from "@/assets/family-nexlevel-optimized.png";
 
@@ -324,6 +325,8 @@ export default function Home() {
           </div>
         </section>
 
+        <MarketingSkillVideoShowcase />
+
         {/* 3. Player development */}
         <section className="border-b border-white/[0.06] bg-[#111319] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:px-8">
@@ -365,9 +368,9 @@ export default function Home() {
         <section className="performance-grid border-b border-white/[0.06] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
-              <SectionEyebrow>One system · Four focused views</SectionEyebrow>
+              <SectionEyebrow>For associations, coaches, players & families</SectionEyebrow>
               <h2 className="font-display text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-5xl">
-                Everyone sees what matters. <span className="text-white/42">Nothing they don’t.</span>
+                One shared program. <span className="text-white/42">A clear view for every role.</span>
               </h2>
             </div>
 

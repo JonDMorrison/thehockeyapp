@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
 import { Button } from "@/components/ui/button";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import {
@@ -124,6 +125,8 @@ const Demo: React.FC = () => {
           </div>
         </div>
       </section>
+
+      <MarketingSkillVideoShowcase />
 
       {/* Coach View Section */}
       <section className={`py-20 lg:py-28 transition-opacity duration-500 ${activeView === "coach" ? "opacity-100" : "hidden"}`}>

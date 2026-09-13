@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ExternalLink, Film, Play, X } from "lucide-react";
+import { Check, ChevronDown, ExternalLink, Film, Play, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { getCoachingVideo } from "@/lib/coachingVideos";
 import { getVideoEmbedUrl, parseVideoUrl } from "@/lib/videoEmbed";
+import {
+  dismissSkillVideo,
+  getSkillVideoInteraction,
+  markSkillVideoWatched,
+} from "@/lib/skillVideoState";
 import { cn } from "@/lib/utils";
 
 interface SkillVideoProps {
@@ -14,12 +19,12 @@ interface SkillVideoProps {
 export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [interaction, setInteraction] = useState(() => getSkillVideoInteraction(url));
   const embedUrl = getVideoEmbedUrl(url);
   const parsedVideo = parseVideoUrl(url);
   const coachingVideo = getCoachingVideo(url);
 
-  if (isDismissed) return null;
+  if (interaction.dismissed) return null;
 
   if (!embedUrl) {
     return (
@@ -39,10 +44,23 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
   const source = coachingVideo?.source
     ?? (parsedVideo?.provider === "vimeo" ? "Vimeo" : "YouTube");
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && !interaction.watched) {
+      markSkillVideoWatched(url);
+      setInteraction((current) => ({ ...current, watched: true }));
+    }
+  };
+
+  const handleDismiss = () => {
+    dismissSkillVideo(url);
+    setInteraction((current) => ({ ...current, dismissed: true }));
+  };
+
   return (
     <Collapsible
       open={isOpen}
-      onOpenChange={setIsOpen}
+      onOpenChange={handleOpenChange}
       className="overflow-hidden rounded-xl border border-border bg-[linear-gradient(120deg,hsl(var(--card)),hsl(var(--muted)/0.45))] shadow-subtle"
     >
       <div className="flex items-center">
@@ -55,10 +73,17 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
             <span className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-foreground text-background shadow-sm">
               <span className="absolute inset-y-0 left-0 w-1 bg-team-primary" />
               <Play className="ml-0.5 h-5 w-5 fill-current" />
+              {interaction.watched ? (
+                <span className="absolute bottom-0.5 right-0.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-foreground">
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                </span>
+              ) : null}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-team-primary">
-                {t("players.today.skillVideo")}
+                {interaction.watched
+                  ? t("players.today.tipWatched")
+                  : t("players.today.skillTip")}
               </span>
               <span className="mt-0.5 block truncate text-sm font-bold text-foreground">
                 {coachingVideo?.title || taskTitle}
@@ -69,7 +94,11 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
             </span>
             <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-text-secondary">
               <span className="hidden sm:inline">
-                {isOpen ? t("players.today.hideVideo") : t("players.today.watchVideo")}
+                {isOpen
+                  ? t("players.today.hideVideo")
+                  : interaction.watched
+                    ? t("players.today.watchAgain")
+                    : t("players.today.watchVideo")}
               </span>
               <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
             </span>
@@ -77,7 +106,7 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
         </CollapsibleTrigger>
         <button
           type="button"
-          onClick={() => setIsDismissed(true)}
+          onClick={handleDismiss}
           className="mr-1 grid h-10 w-10 shrink-0 place-items-center rounded-lg text-text-muted transition-colors hover:bg-muted hover:text-foreground"
           aria-label={t("players.today.dismissVideo")}
           title={t("players.today.dismissVideo")}

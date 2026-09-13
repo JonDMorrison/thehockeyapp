@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
 import {
   WEEK_THEMES,
@@ -176,6 +177,12 @@ export default function SoloWeekPlanner() {
             target_value: task.minutes || task.reps || null,
             target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none",
             is_required: task.isRequired || false,
+            shot_type: task.shotType ?? "none",
+            video_url: getRecommendedCoachingVideoUrl({
+              label: task.label,
+              taskType: task.type,
+              shotType: task.shotType,
+            }),
           }));
 
           const { error: tasksError } = await supabase

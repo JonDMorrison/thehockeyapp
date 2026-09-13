@@ -131,7 +131,6 @@ const RECOMMENDED_VIDEO_BY_SKILL: Readonly<Partial<Record<CoachingSkill, Coachin
   toe_drag: "itrain-toe-drag",
   stickhandling: "iihf-obstacle-quick-shot",
   scoring: "hc-scoring-position",
-  shooting: "hc-three-shot-scoring",
 };
 
 const SHOT_TYPE_SKILLS: Readonly<Record<string, CoachingSkill>> = {
@@ -152,9 +151,17 @@ export function inferCoachingSkill({
   shotType = "",
 }: VideoRecommendationContext): CoachingSkill | null {
   const normalizedLabel = label.toLowerCase().replace(/[-_]+/g, " ");
+  const normalizedTaskType = taskType.toLowerCase();
+  const supportsSkillVideo = !normalizedTaskType
+    || normalizedTaskType === "shooting"
+    || normalizedTaskType === "prep"
+    || normalizedTaskType === "stickhandling"
+    || normalizedTaskType === "video";
 
-  if (/\bquick\s+release\b|\brelease\s+quick/.test(normalizedLabel)) return "quick_release";
-  if (/\btoe\s+drag\b/.test(normalizedLabel)) return "toe_drag";
+  if (!supportsSkillVideo) return null;
+
+  if (/\bquick\s+releases?\b|\breleases?\s+quick/.test(normalizedLabel)) return "quick_release";
+  if (/\btoe\s+drags?\b/.test(normalizedLabel)) return "toe_drag";
   if (/\bslap\s*shot/.test(normalizedLabel)) return "slap";
   if (/\bsnap\s*shot/.test(normalizedLabel)) return "snap";
   if (/\bwrist\s*shot/.test(normalizedLabel)) return "wrist";
@@ -164,9 +171,14 @@ export function inferCoachingSkill({
 
   const structuredShotType = SHOT_TYPE_SKILLS[shotType.toLowerCase()];
   if (structuredShotType) return structuredShotType;
-  if (taskType.toLowerCase() === "shooting") return "shooting";
 
   return null;
+}
+
+export function getRecommendedCoachingVideoUrl(
+  context: VideoRecommendationContext,
+): string | null {
+  return getRecommendedCoachingVideo(context)?.url ?? null;
 }
 
 export function getRecommendedCoachingVideo(

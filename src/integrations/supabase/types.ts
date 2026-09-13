@@ -803,11 +803,13 @@ export type Database = {
           is_required: boolean | null
           label: string
           personal_practice_card_id: string
+          shot_type: string | null
           shots_expected: number | null
           sort_order: number
           target_type: string | null
           target_value: number | null
           task_type: string
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -815,11 +817,13 @@ export type Database = {
           is_required?: boolean | null
           label: string
           personal_practice_card_id: string
+          shot_type?: string | null
           shots_expected?: number | null
           sort_order?: number
           target_type?: string | null
           target_value?: number | null
           task_type: string
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -827,11 +831,13 @@ export type Database = {
           is_required?: boolean | null
           label?: string
           personal_practice_card_id?: string
+          shot_type?: string | null
           shots_expected?: number | null
           sort_order?: number
           target_type?: string | null
           target_value?: number | null
           task_type?: string
+          video_url?: string | null
         }
         Relationships: [
           {

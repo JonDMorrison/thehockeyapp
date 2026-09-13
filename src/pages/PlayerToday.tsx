@@ -903,7 +903,13 @@ const PlayerToday: React.FC = () => {
                       </button>
                     )}
                   </div>
-                  {task.video_url && <SkillVideo url={task.video_url} taskTitle={task.label} />}
+                  {task.video_url ? (
+                    <SkillVideo
+                      key={task.video_url}
+                      url={task.video_url}
+                      taskTitle={task.label}
+                    />
+                  ) : null}
                 </div>
               );
             })}

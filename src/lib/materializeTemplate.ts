@@ -1,6 +1,7 @@
 import { format, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/core";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
 /** A single task entry stored inside a program template's `tasks` jsonb array. */
 export interface TemplateTaskEntry {
@@ -116,7 +117,11 @@ export async function materializeTemplate(
         shots_expected: task.shots_expected,
         is_required: true,
         coach_notes: null,
-        video_url: null,
+        video_url: getRecommendedCoachingVideoUrl({
+          label: task.label,
+          taskType: task.task_type,
+          shotType: task.shot_type,
+        }),
       }));
 
       if (tasksToInsert.length > 0) {

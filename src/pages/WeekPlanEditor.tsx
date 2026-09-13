@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { DayEditorSheet, DayData, PlanTask } from "@/components/builder/DayEditorSheet";
 import { applyTierScaling, getTierLabel, getDayLabel } from "@/lib/tierScaling";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
 interface WeekPlan {
   id: string;
@@ -529,6 +530,11 @@ const WeekPlanEditor: React.FC = () => {
             ? applyTierScaling(task.shots_expected, tier)
             : task.shots_expected,
           is_required: task.is_required,
+          video_url: getRecommendedCoachingVideoUrl({
+            label: task.label,
+            taskType: task.task_type,
+            shotType: task.shot_type,
+          }),
         }));
 
         const { error: tasksError } = await supabase

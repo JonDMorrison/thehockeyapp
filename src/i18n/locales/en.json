@@ -1200,7 +1200,7 @@
     "today": {
       "cached": "Cached",
       "completeSession": "Complete Session",
-      "dismissVideo": "Remove video from this screen",
+      "dismissVideo": "Hide this skill tip",
       "done": "Done",
       "finishedAt": "Finished at {{time}}",
       "firstWorkoutDescription": "Amazing start to the journey!",
@@ -1228,11 +1228,14 @@
       "hideSkillVideo": "Hide skill video",
       "hideVideo": "Hide",
       "openVideo": "Open video",
+      "skillTip": "Watch 60-second tip",
       "skillVideo": "Skill video",
+      "tipWatched": "Tip watched",
       "videoBy": "Video by {{source}}",
       "watchOnVimeo": "Open in Vimeo",
       "watchOnYoutube": "Open in YouTube",
       "watchSkillVideo": "Watch skill video",
+      "watchAgain": "Watch again",
       "watchVideo": "Watch",
       "totalShots": "Total Shots"
     },

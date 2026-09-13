@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { DAY_TEMPLATES, getTasksForDay } from "@/lib/weekTemplates";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
 interface Task {
   id: string;
@@ -128,7 +129,7 @@ export default function SoloWorkoutBuilder() {
       label: task.label,
       target_type: task.minutes ? 'minutes' : task.reps ? 'reps' : 'none',
       target_value: task.minutes || task.reps || null,
-      shot_type: 'none',
+      shot_type: task.shotType ?? 'none',
       shots_expected: task.shots || null,
       is_required: task.isRequired || false,
     })));
@@ -146,15 +147,15 @@ export default function SoloWorkoutBuilder() {
       shots_expected: null,
       is_required: true,
     };
-    setTasks([...tasks, newTask]);
+    setTasks((current) => [...current, newTask]);
   };
 
   const updateTask = (id: string, updates: Partial<Task>) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+    setTasks((current) => current.map((task) => task.id === id ? { ...task, ...updates } : task));
   };
 
   const removeTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
+    setTasks((current) => current.filter((task) => task.id !== id));
   };
 
   // Save mutation
@@ -189,6 +190,11 @@ export default function SoloWorkoutBuilder() {
         shot_type: task.shot_type,
         shots_expected: task.shots_expected,
         is_required: task.is_required,
+        video_url: getRecommendedCoachingVideoUrl({
+          label: task.label,
+          taskType: task.task_type,
+          shotType: task.shot_type,
+        }),
       }));
 
       const { error: tasksError } = await supabase

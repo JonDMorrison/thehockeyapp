@@ -40,4 +40,21 @@ test.describe('Public launch experience', () => {
     await page.goto('/terms');
     await expect(page.getByRole('heading', { name: /terms/i }).first()).toBeVisible();
   });
+
+  test('skill-video experience appears on Home and How It Works', async ({ page }) => {
+    for (const route of ['/', '/demo']) {
+      await page.goto(route);
+
+      await expect(page.getByRole('heading', { name: /see it\. try it\. check it off/i })).toBeVisible();
+      await expect(page.getByText('Matched automatically')).toBeVisible();
+
+      const videoLink = page.getByRole('link', {
+        name: /watch hockey canada's quick release skill video/i,
+      });
+      await expect(videoLink).toHaveAttribute('href', 'https://www.youtube.com/watch?v=iHHmFJ17m58');
+
+      const poster = page.getByAltText(/hockey canada quick release video shown inside/i);
+      await expect.poll(() => poster.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+    }
+  });
 });
