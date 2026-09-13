@@ -1,8 +1,6 @@
-import { useTranslation } from 'react-i18next';
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CalendarPlus, CalendarRange, Sparkles, Rocket, Flame } from "lucide-react";
+import type { ReactNode } from "react";
+import { CalendarPlus, CalendarRange, ChevronRight, Flame, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface PlanningHubCardsProps {
@@ -17,140 +15,79 @@ interface PlanningHubCardsProps {
 interface PlanningCardProps {
   title: string;
   subtitle: string;
-  icon: React.ReactNode;
-  gradient: string;
+  icon: ReactNode;
   badge?: string;
-  badgeVariant?: "default" | "premium" | "challenge";
+  primary?: boolean;
   onClick: () => void;
-  delay?: number;
 }
 
-const PlanningCard: React.FC<PlanningCardProps> = ({
-  title,
-  subtitle,
-  icon,
-  gradient,
-  badge,
-  badgeVariant = "default",
-  onClick,
-  delay = 0,
-}) => {
+function PlanningCard({ title, subtitle, icon, badge, primary = false, onClick }: PlanningCardProps) {
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
+    <button
+      type="button"
       onClick={onClick}
       className={cn(
-        "relative w-full p-5 rounded-2xl text-left overflow-hidden",
-        "bg-gradient-to-br shadow-lg",
-        "border border-white/10",
-        "transition-shadow duration-300 hover:shadow-xl",
-        gradient
+        "group flex min-h-28 w-full items-center gap-4 rounded-lg border p-4 text-left transition duration-150 active:scale-[0.99]",
+        primary
+          ? "border-primary bg-primary text-white shadow-[0_12px_30px_hsl(var(--primary)/0.2)] hover:bg-team-tertiary"
+          : "border-border bg-card hover:border-primary/35 hover:bg-primary/[0.035]",
       )}
     >
-      {/* Shimmer effect for premium badge */}
-      {(badgeVariant === "premium" || badgeVariant === "challenge") && (
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute -inset-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
-          />
-        </div>
-      )}
-
-      <div className="relative z-10 flex flex-col gap-3">
-        <div className="flex items-start justify-between">
-          <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
-            {icon}
-          </div>
-          {badge && (
-            <span
-              className={cn(
-                "px-2.5 py-1 rounded-full text-xs font-semibold",
-                badgeVariant === "premium" || badgeVariant === "challenge"
-                  ? "bg-white/25 text-white backdrop-blur-sm"
-                  : "bg-white/20 text-white/90"
-              )}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
-
-        <div>
-          <h3 className="text-lg font-bold text-white">{title}</h3>
-          <p className="text-sm text-white/80 mt-0.5">{subtitle}</p>
-        </div>
-      </div>
-    </motion.button>
+      <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-md", primary ? "bg-black/15" : "bg-primary/10 text-primary")}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={cn("flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.16em]", primary ? "text-white/65" : "text-muted-foreground")}>
+          {badge || "Planning tool"}
+        </span>
+        <span className="mt-1 block font-display text-lg font-black uppercase leading-tight">{title}</span>
+        <span className={cn("mt-1 block text-xs leading-5", primary ? "text-white/70" : "text-muted-foreground")}>{subtitle}</span>
+      </span>
+      <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5", primary ? "text-white/70" : "text-muted-foreground")} />
+    </button>
   );
-};
+}
 
-export const PlanningHubCards: React.FC<PlanningHubCardsProps> = ({
-  teamId,
+export function PlanningHubCards({
   onAddWorkout,
   onPlanWeek,
   onCreateProgram,
   onStartChallenge,
   weekPlanCount = 0,
-}) => {
+}: PlanningHubCardsProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-3">
-      {/* Top row: Add Workout + 30 Day Challenge */}
-      <div className="grid grid-cols-2 gap-3">
-        <PlanningCard
-          title={t('practice.addWorkout')}
-          subtitle={t('practice.oneWorkoutForOneDay')}
-          icon={<CalendarPlus className="w-6 h-6 text-white" />}
-          gradient="from-emerald-500 to-teal-500"
-          badge={weekPlanCount > 0 ? t('practice.nThisWeek', { n: weekPlanCount }) : undefined}
-          onClick={onAddWorkout}
-          delay={0}
-        />
-
-        <PlanningCard
-          title={t('practice.thirtyDayChallenge')}
-          subtitle={t('practice.dailyExercisesFor30Days')}
-          icon={<Flame className="w-6 h-6 text-white" />}
-          gradient="from-orange-500 to-red-500"
-          badge="🔥"
-          badgeVariant="challenge"
-          onClick={onStartChallenge}
-          delay={0.1}
-        />
-      </div>
-
-      {/* Bottom row: Plan Week + Create Program */}
-      <div className="grid grid-cols-2 gap-3">
-        <PlanningCard
-          title={t('practice.planTheWeek')}
-          subtitle={t('practice.setUpMonSunReuseIt')}
-          icon={<CalendarRange className="w-6 h-6 text-white" />}
-          gradient="from-blue-500 to-indigo-500"
-          onClick={onPlanWeek}
-          delay={0.2}
-        />
-
-        <PlanningCard
-          title={t('practice.createAProgram')}
-          subtitle={t('practice.aiBuilds4To8Weeks')}
-          icon={
-            <div className="flex items-center gap-0.5">
-              <Sparkles className="w-5 h-5 text-white" />
-              <Rocket className="w-4 h-4 text-white/80" />
-            </div>
-          }
-          gradient="from-purple-500 to-pink-500"
-          badge="AI"
-          badgeVariant="premium"
-          onClick={onCreateProgram}
-          delay={0.3}
-        />
-      </div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <PlanningCard
+        title={t("practice.addWorkout")}
+        subtitle={t("practice.oneWorkoutForOneDay")}
+        icon={<CalendarPlus className="h-5 w-5" />}
+        badge={weekPlanCount > 0 ? t("practice.nThisWeek", { n: weekPlanCount }) : "Fastest option"}
+        primary
+        onClick={onAddWorkout}
+      />
+      <PlanningCard
+        title={t("practice.planTheWeek")}
+        subtitle={t("practice.setUpMonSunReuseIt")}
+        icon={<CalendarRange className="h-5 w-5" />}
+        badge="Full week"
+        onClick={onPlanWeek}
+      />
+      <PlanningCard
+        title={t("practice.thirtyDayChallenge")}
+        subtitle={t("practice.dailyExercisesFor30Days")}
+        icon={<Flame className="h-5 w-5" />}
+        badge="Build a habit"
+        onClick={onStartChallenge}
+      />
+      <PlanningCard
+        title={t("practice.createAProgram")}
+        subtitle={t("practice.aiBuilds4To8Weeks")}
+        icon={<Sparkles className="h-5 w-5" />}
+        badge="Guided setup"
+        onClick={onCreateProgram}
+      />
     </div>
   );
-};
+}

@@ -191,7 +191,7 @@
   /* Typography defaults */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground;
-    font-family: "Arial Narrow", "Inter Tight", Inter, sans-serif;
+    font-family: "Barlow Condensed", "Arial Narrow", "Inter Tight", Inter, sans-serif;
     font-stretch: condensed;
   }
 

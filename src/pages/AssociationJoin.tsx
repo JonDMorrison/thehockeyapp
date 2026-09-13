@@ -85,7 +85,7 @@ export default function AssociationJoin() {
   return (
     <AppShell hideNav>
       <PageContainer className="mx-auto max-w-lg pt-10 sm:pt-20">
-        <AppCard className="overflow-hidden border-primary/30 p-0">
+        <AppCard className="overflow-hidden border-primary/30" contentClassName="p-0">
           <div className="h-1.5 bg-gradient-to-r from-primary to-cyan-400" />
           <div className="p-6 text-center sm:p-8">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">

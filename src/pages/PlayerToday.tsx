@@ -22,7 +22,6 @@ import { fireGoalConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
-import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
@@ -50,10 +49,8 @@ import {
   MoreHorizontal,
   Trophy,
   Calendar,
-  CalendarDays,
   WifiOff,
   Zap,
-  Settings,
   Award,
   Flame,
   Film,
@@ -65,7 +62,6 @@ import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { PlayerGoalWidget } from "@/components/goals";
-import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { SessionCelebration } from "@/components/player/SessionCelebration";
 
 interface PracticeTask {
@@ -790,7 +786,6 @@ const PlayerToday: React.FC = () => {
 
   return (
     <AppShell
-      hideNav
       header={
         <div className="flex items-center gap-3">
           <Button
@@ -825,58 +820,42 @@ const PlayerToday: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <ContextSwitcher currentPlayerId={playerId} compact />
             <Button
               variant="ghost"
-              size="icon-sm"
-              onClick={() => navigate(`/players/${playerId}/week`)}
-              title={t("playerWeek.thisWeek")}
-            >
-              <CalendarDays className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
+              size="icon"
               onClick={() => navigate(`/quick-checkoff?player_id=${playerId}`)}
               title={t("players.today.quickModeTitle")}
+              aria-label={t("players.today.quickModeTitle")}
             >
               <Zap className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               onClick={() => setShowSettingsSheet(true)}
+              aria-label="Player options"
             >
-              <Settings className="w-4 h-4" />
+              <MoreHorizontal className="w-5 h-5" />
             </Button>
-            {player && (
-              <Avatar
-                src={player.profile_photo_url}
-                fallback={`${player.first_name} ${player.last_initial || ""}`}
-                size="sm"
-              />
-            )}
           </div>
         </div>
       }
     >
       <Helmet><title>Today's Workout | Hockey App</title></Helmet>
-      <PageContainer>
-        {/* Team Goal Widget */}
-        {teamData?.id && (
-          <PlayerGoalWidget teamId={teamData.id} className="mb-4" />
-        )}
-
+      <PageContainer className="max-w-2xl space-y-5">
         {/* Progress */}
-        <AppCard>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">{t("players.today.progress")}</span>
-            <span className="text-sm text-text-muted">
+        <section className="rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-5">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">{t("players.today.progress")}</p>
+              <p className="mt-1 font-display text-4xl font-black tabular-nums">{Math.round(progress)}%</p>
+            </div>
+            <span className="pb-1 text-sm text-text-muted">
               {completedCount}/{tasks.length} {t("teams.practice.tasks")}
             </span>
           </div>
-          <ProgressBar value={progress} />
-        </AppCard>
+          <ProgressBar value={progress} className="mt-4" />
+        </section>
 
         {/* Tasks */}
         <div>
@@ -966,6 +945,10 @@ const PlayerToday: React.FC = () => {
           />
         )}
 
+        {teamData?.id && (
+          <PlayerGoalWidget teamId={teamData.id} />
+        )}
+
         {/* Footer */}
         <div className="space-y-3 pt-4">
           {totalShots > 0 && (
@@ -978,14 +961,16 @@ const PlayerToday: React.FC = () => {
           )}
 
           {!isSessionComplete && (
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleSessionComplete}
-            >
-              <Trophy className="w-5 h-5 mr-2" />
-              {t("players.today.completeSession")}
-            </Button>
+            <div className="sticky bottom-20 z-30 -mx-4 border-t border-border bg-background/92 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-xl lg:border">
+              <Button
+                className="min-h-12 w-full font-black uppercase tracking-wide"
+                size="lg"
+                onClick={handleSessionComplete}
+              >
+                <Trophy className="w-5 h-5 mr-2" />
+                {t("players.today.completeSession")}
+              </Button>
+            </div>
           )}
 
           {isSessionComplete && (

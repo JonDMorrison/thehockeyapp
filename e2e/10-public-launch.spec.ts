@@ -6,8 +6,9 @@ test.describe('Public launch experience', () => {
   test('association offer is prominent and contactable', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /one standard/i })).toBeVisible();
-    await expect(page.getByText(/aggregate rollout/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /turn the days between practices/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Association' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('heading', { name: /see which teams need support/i })).toBeVisible();
 
     await page.getByRole('link', { name: /plan an association rollout/i }).click();
     await expect(page).toHaveURL(/\/contact$/);

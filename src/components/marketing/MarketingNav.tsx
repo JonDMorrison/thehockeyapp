@@ -73,7 +73,7 @@ export const MarketingNav: React.FC = () => {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-muted md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
             aria-expanded={mobileMenuOpen}

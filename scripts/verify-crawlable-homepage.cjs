@@ -5,8 +5,9 @@ const htmlPath = path.join(__dirname, '..', 'dist', 'index.html');
 const requiredSnippets = [
   'Turn the days between practices',
   'into an advantage',
-  'development standard across every team',
-  'Strong players go where they',
+  'One weekly plan across your association',
+  'One weekly plan across every team.',
+  'Set the standard once',
   'Start a free team pilot',
 ];
 
