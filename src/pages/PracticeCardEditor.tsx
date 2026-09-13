@@ -454,11 +454,11 @@ const PracticeCardEditor: React.FC = () => {
         )}
 
         {existingCard?.mode === "game_day" && (
-          <AppCard variant="muted" className="border-team-primary/30 bg-team-primary/5">
+          <AppCard variant="muted" className="border-primary/30 bg-primary/5">
             <div className="flex gap-3">
-              <Zap className="w-5 h-5 text-team-primary flex-shrink-0" />
+              <Zap className="w-5 h-5 text-primary flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-team-primary">{t('practice.gameDayPrepCard')}</p>
+                <p className="font-medium text-primary">{t('practice.gameDayPrepCard')}</p>
                 <p className="text-text-muted mt-1">
                   {t('practice.gameDayPrepCardDesc')}
                 </p>

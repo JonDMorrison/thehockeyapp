@@ -51,9 +51,9 @@ export default function Unsubscribe() {
           {status === "working" ? (
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           ) : status === "done" ? (
-            <CheckCircle2 className="h-8 w-8 text-emerald-400" />
+            <CheckCircle2 className="h-8 w-8 text-success" />
           ) : (
-            <BellOff className="h-8 w-8 text-amber-400" />
+            <BellOff className="h-8 w-8 text-primary" />
           )}
         </div>
 
@@ -70,7 +70,7 @@ export default function Unsubscribe() {
         </p>
 
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <ShieldCheck className="h-4 w-4 text-success" />
           Your choice is saved immediately.
         </div>
 

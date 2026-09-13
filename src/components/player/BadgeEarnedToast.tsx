@@ -5,6 +5,7 @@ import { BadgeIcon } from "@/components/app/BadgeIcon";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { BRAND_CONFETTI_COLORS } from "@/lib/brand";
 
 interface BadgeEarnedToastProps {
   badgeName: string;
@@ -21,13 +22,11 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
 
   useEffect(() => {
     // Fire celebration confetti
-    const colors = ['#FFD700', '#FFA500', '#FF6347', '#32CD32', '#1E90FF', '#9370DB'];
-
     confetti({
       particleCount: 80,
       spread: 70,
       origin: { y: 0.6 },
-      colors: colors,
+      colors: BRAND_CONFETTI_COLORS,
     });
 
     // Second burst after a short delay
@@ -37,14 +36,14 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
         angle: 60,
         spread: 55,
         origin: { x: 0, y: 0.6 },
-        colors: colors,
+        colors: BRAND_CONFETTI_COLORS,
       });
       confetti({
         particleCount: 50,
         angle: 120,
         spread: 55,
         origin: { x: 1, y: 0.6 },
-        colors: colors,
+        colors: BRAND_CONFETTI_COLORS,
       });
     }, 150);
   }, []);
@@ -67,7 +66,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
           {/* Background card with gradient border */}
           <div className="relative bg-card rounded-2xl p-6 max-w-xs text-center shadow-2xl overflow-hidden">
             {/* Gradient border effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 -z-10" style={{ padding: '2px' }}>
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary via-primary to-rose-500 -z-10" style={{ padding: '2px' }}>
               <div className="w-full h-full bg-card rounded-2xl" />
             </div>
 
@@ -78,7 +77,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
               transition={{ delay: 0.3 }}
               className="absolute top-3 right-4"
             >
-              <Sparkles className="w-5 h-5 text-amber-400" />
+              <Sparkles className="w-5 h-5 text-primary" />
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0 }}
@@ -86,7 +85,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
               transition={{ delay: 0.4 }}
               className="absolute top-6 left-4"
             >
-              <Sparkles className="w-4 h-4 text-orange-400" />
+              <Sparkles className="w-4 h-4 text-primary" />
             </motion.div>
 
             {/* Close button — min 44×44px touch target */}
@@ -113,7 +112,7 @@ export const BadgeEarnedToast: React.FC<BadgeEarnedToastProps> = ({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg font-bold mb-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent"
+              className="text-lg font-bold mb-1 bg-gradient-to-r from-primary via-primary to-rose-500 bg-clip-text text-transparent"
             >
               {t("common.badge.earnedTitle")}
             </motion.h3>

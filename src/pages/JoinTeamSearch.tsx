@@ -63,7 +63,7 @@ const JoinTeamSearch: React.FC = () => {
               </div>
 
               <div className="mt-5 flex items-start gap-3 rounded-xl border border-border/70 bg-background/45 p-4">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   Codes expire and can be replaced by team staff. Ask your coach or manager if yours no longer works.
                 </p>

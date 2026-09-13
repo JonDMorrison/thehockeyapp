@@ -27,7 +27,7 @@ export const MarketingMilestonePreview: React.FC = () => {
       <div className="h-6 bg-background" />
 
       {/* Celebration overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-transparent pointer-events-none" />
 
       {/* Scrollable content */}
       <div className="h-[calc(100%-1.5rem)] overflow-y-auto">
@@ -42,7 +42,7 @@ export const MarketingMilestonePreview: React.FC = () => {
               {t('marketing.milestone_northside_wolves')}
             </h1>
           </div>
-          <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Trophy className="w-3 h-3" />
             <span className="text-[10px] font-semibold">{t('marketing.milestone_badge')}</span>
           </div>
@@ -52,7 +52,7 @@ export const MarketingMilestonePreview: React.FC = () => {
       {/* Content */}
       <div className="px-4 py-4 space-y-4">
         {/* Milestone Achievement Card */}
-        <div className="relative bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-500 rounded-xl p-4 text-white shadow-lg overflow-hidden">
+        <div className="relative bg-gradient-to-br from-primary to-brand-strong rounded-xl p-4 text-white shadow-lg overflow-hidden">
           {/* Sparkle effects */}
           <div className="absolute top-2 right-3 text-white/80">
             <Star className="w-4 h-4 fill-current animate-pulse" />
@@ -73,10 +73,10 @@ export const MarketingMilestonePreview: React.FC = () => {
         </div>
 
         {/* Completed Progress */}
-        <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20">
+        <div className="bg-success/10 rounded-xl p-4 border border-success/20">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-success flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" strokeWidth={3} />
               </div>
               <div>
@@ -84,10 +84,10 @@ export const MarketingMilestonePreview: React.FC = () => {
                 <p className="text-[10px] text-muted-foreground">{t('marketing.milestone_tasks_done')}</p>
               </div>
             </div>
-            <span className="text-lg font-bold text-emerald-500">100%</span>
+            <span className="text-lg font-bold text-success">100%</span>
           </div>
-          <div className="h-2 bg-emerald-500/20 rounded-full overflow-hidden">
-            <div className="h-full w-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full" />
+          <div className="h-2 bg-success/20 rounded-full overflow-hidden">
+            <div className="h-full w-full rounded-full bg-gradient-to-r from-success to-success/75" />
           </div>
         </div>
 
@@ -102,11 +102,11 @@ export const MarketingMilestonePreview: React.FC = () => {
                 key={task.id}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg transition-all bg-muted/30",
-                  task.justCompleted && "ring-2 ring-emerald-500/50 bg-emerald-500/5"
+                  task.justCompleted && "ring-2 ring-success/50 bg-success/5"
                 )}
               >
                 {/* Checkbox */}
-                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center shrink-0">
                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
 
@@ -123,7 +123,7 @@ export const MarketingMilestonePreview: React.FC = () => {
                 </div>
 
                 {task.justCompleted && (
-                  <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">
                     {t('marketing.milestone_just_now')}
                   </span>
                 )}
@@ -133,8 +133,8 @@ export const MarketingMilestonePreview: React.FC = () => {
         </div>
 
         {/* Streak indicator */}
-        <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-yellow-500/10 rounded-xl p-3">
-          <Flame className="w-5 h-5 text-orange-500" />
+        <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary/10 via-primary/10 to-primary/10 rounded-xl p-3">
+          <Flame className="w-5 h-5 text-primary" />
           <span className="text-sm font-bold text-foreground">{t('marketing.milestone_seven_day_streak')}</span>
           <span className="text-lg">🔥</span>
         </div>

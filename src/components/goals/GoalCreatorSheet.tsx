@@ -205,7 +205,7 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
             >
               <SheetHeader className="mb-6">
                 <SheetTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <Sparkles className="w-5 h-5 text-primary" />
                   Smart Goal Suggestions
                 </SheetTitle>
                 <SheetDescription>

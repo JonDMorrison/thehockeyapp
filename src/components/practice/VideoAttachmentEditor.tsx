@@ -65,7 +65,7 @@ export function VideoAttachmentEditor({
         type="button"
         onClick={() => setIsOpen(true)}
         disabled={disabled}
-        className="flex w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:border-team-primary/50 hover:bg-team-primary/5 hover:text-team-primary disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full min-w-0 items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-sm font-semibold text-text-muted transition-colors hover:border-primary/50 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
         {recommendedVideo
           ? <Sparkles className="h-4 w-4 shrink-0" />
@@ -88,7 +88,7 @@ export function VideoAttachmentEditor({
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-background/70"
             disabled={disabled}
           >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-team-primary/10 text-team-primary">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
               <Film className="h-4 w-4" />
             </span>
             <span className="min-w-0 flex-1">
@@ -123,13 +123,13 @@ export function VideoAttachmentEditor({
       <CollapsibleContent>
         <div className="space-y-3 border-t border-border px-3 pb-3 pt-3">
           {recommendedVideo && !isRecommendedSelected && (
-            <div className="rounded-lg border border-team-primary/25 bg-team-primary/[0.06] p-3">
+            <div className="rounded-lg border border-primary/25 bg-primary/[0.06] p-3">
               <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-team-primary/10 text-team-primary">
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
                   <Sparkles className="h-3.5 w-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-team-primary">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
                     {t("practice.recommendedForDrill")}
                   </p>
                   <p className="mt-0.5 text-sm font-semibold leading-snug text-foreground">
@@ -215,7 +215,7 @@ export function VideoAttachmentEditor({
               <button
                 type="button"
                 onClick={() => setShowPreview((current) => !current)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-team-primary hover:underline"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
               >
                 <Play className="h-3.5 w-3.5" />
                 {showPreview ? t("practice.hidePreview") : t("practice.previewVideo")}

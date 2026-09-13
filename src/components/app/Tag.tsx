@@ -8,10 +8,10 @@ const tagVariants = cva(
     variants: {
       variant: {
         neutral: "bg-muted text-muted-foreground",
-        accent: "bg-team-tertiary/10 text-team-tertiary border border-team-tertiary/20",
+        accent: "bg-brand-strong/10 text-brand-strong border border-brand-strong/20",
         success: "bg-success-muted text-success",
         warning: "bg-warning-muted text-warning-foreground",
-        gameday: "bg-team-primary/10 text-team-primary border border-team-primary/20",
+        gameday: "bg-primary/10 text-primary border border-primary/20",
         offline: "bg-muted text-text-muted",
         tier: "bg-secondary text-text-secondary",
       },

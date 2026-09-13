@@ -41,7 +41,7 @@ import {
 // rewardConfig is defined inside the component to access t()
 
 const rankIcons = [Trophy, Medal, Award];
-const rankColors = ["text-amber-500", "text-slate-400", "text-amber-700"];
+const rankColors = ["text-primary", "text-slate-400", "text-primary"];
 
 const PlayerTeamGoals: React.FC = () => {
   const { t } = useTranslation();
@@ -52,13 +52,13 @@ const PlayerTeamGoals: React.FC = () => {
   const { setTeamTheme } = useTeamTheme();
 
   const rewardConfig: Record<string, { emoji: string; label: string; icon: LucideIcon; color: string }> = {
-    badges: { emoji: "🏅", label: t("players.goals.rewardBadgeHunt"), icon: Medal, color: "from-amber-500 to-yellow-500" },
-    scrimmage: { emoji: "🏒", label: t("players.goals.rewardScrimmage"), icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
-    pizza: { emoji: "🍕", label: t("players.goals.rewardPizza"), icon: Pizza, color: "from-red-500 to-orange-500" },
-    trophy: { emoji: "🏆", label: t("players.goals.rewardTrophy"), icon: Trophy, color: "from-yellow-500 to-amber-600" },
-    stars: { emoji: "⭐", label: t("players.goals.rewardStars"), icon: Star, color: "from-purple-500 to-pink-500" },
-    surprise: { emoji: "🎁", label: t("players.goals.rewardSurprise"), icon: Gift, color: "from-emerald-500 to-teal-500" },
-    custom: { emoji: "🎯", label: t("players.goals.rewardCustom"), icon: Gift, color: "from-indigo-500 to-purple-500" },
+    badges: { emoji: "🏅", label: t("players.goals.rewardBadgeHunt"), icon: Medal, color: "from-primary to-brand-strong" },
+    scrimmage: { emoji: "🏒", label: t("players.goals.rewardScrimmage"), icon: Gamepad2, color: "from-primary to-brand-strong" },
+    pizza: { emoji: "🍕", label: t("players.goals.rewardPizza"), icon: Pizza, color: "from-red-500 to-primary" },
+    trophy: { emoji: "🏆", label: t("players.goals.rewardTrophy"), icon: Trophy, color: "from-primary to-brand-strong" },
+    stars: { emoji: "⭐", label: t("players.goals.rewardStars"), icon: Star, color: "from-primary to-brand-strong" },
+    surprise: { emoji: "🎁", label: t("players.goals.rewardSurprise"), icon: Gift, color: "from-primary to-brand-strong" },
+    custom: { emoji: "🎯", label: t("players.goals.rewardCustom"), icon: Gift, color: "from-primary to-brand-strong" },
   };
 
   // Redirect if not authenticated
@@ -244,12 +244,12 @@ const PlayerTeamGoals: React.FC = () => {
                   className={cn(
                     "absolute top-0 left-0 right-0 h-1.5",
                     goal.status === "completed"
-                      ? "bg-gradient-to-r from-green-400 to-emerald-500"
+                      ? "bg-gradient-to-r from-success to-success/75"
                       : progress >= 75
-                      ? "bg-gradient-to-r from-orange-400 to-red-500"
+                      ? "bg-gradient-to-r from-primary to-red-500"
                       : progress >= 50
-                      ? "bg-gradient-to-r from-yellow-400 to-orange-500"
-                      : "bg-gradient-to-r from-blue-400 to-cyan-500"
+                      ? "bg-gradient-to-r from-primary to-brand-strong"
+                      : "bg-gradient-to-r from-primary to-brand-strong"
                   )}
                 />
 
@@ -258,7 +258,7 @@ const PlayerTeamGoals: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Target className="w-5 h-5 text-team-primary" />
+                        <Target className="w-5 h-5 text-primary" />
                         <h2 className="text-lg font-bold">{goal.name}</h2>
                       </div>
                       {goal.description && (
@@ -305,7 +305,7 @@ const PlayerTeamGoals: React.FC = () => {
 
                       {/* Reward */}
                       {reward && (
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-team-primary/10 to-accent/10 border border-team-primary/20">
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
                           <span className="text-2xl">{reward.emoji}</span>
                           <div>
                             <p className="text-xs text-text-muted">{t("players.goals.reward")}</p>
@@ -338,13 +338,13 @@ const PlayerTeamGoals: React.FC = () => {
             >
               <AppCard>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-team-primary/10 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                     {myContribution && myRank !== undefined && myRank < 3 ? (
                       React.createElement(rankIcons[myRank], {
                         className: cn("w-7 h-7", rankColors[myRank]),
                       })
                     ) : (
-                      <TrendingUp className="w-7 h-7 text-team-primary" />
+                      <TrendingUp className="w-7 h-7 text-primary" />
                     )}
                   </div>
                   <div className="flex-1">
@@ -366,7 +366,7 @@ const PlayerTeamGoals: React.FC = () => {
                   {myContribution && myContribution.contribution_value > 0 && (
                     <div className="text-right">
                       <p className="text-xs text-text-muted">{t("players.goals.teamImpact")}</p>
-                      <p className="text-lg font-bold text-team-primary">
+                      <p className="text-lg font-bold text-primary">
                         {Math.round((myContribution.contribution_value / goal.current_value) * 100)}%
                       </p>
                     </div>
@@ -384,7 +384,7 @@ const PlayerTeamGoals: React.FC = () => {
               >
                 <AppCard>
                   <AppCardTitle className="flex items-center gap-2 mb-4">
-                    <Users className="w-5 h-5 text-team-primary" />
+                    <Users className="w-5 h-5 text-primary" />
                     {t("players.goals.leaderboardTitle")}
                   </AppCardTitle>
 
@@ -403,7 +403,7 @@ const PlayerTeamGoals: React.FC = () => {
                             className={cn(
                               "flex items-center gap-3 p-3 rounded-lg transition-colors",
                               isMe
-                                ? "bg-team-primary/10 border border-team-primary/20"
+                                ? "bg-primary/10 border border-primary/20"
                                 : "bg-surface-muted/50"
                             )}
                           >
@@ -425,7 +425,7 @@ const PlayerTeamGoals: React.FC = () => {
                               size="sm"
                             />
                             <div className="flex-1 min-w-0">
-                              <p className={cn("font-medium truncate", isMe && "text-team-primary")}>
+                              <p className={cn("font-medium truncate", isMe && "text-primary")}>
                                 {contribution.player?.first_name}{" "}
                                 {contribution.player?.last_initial && `${contribution.player.last_initial}.`}
                                 {isMe && ` ${t("players.goals.youSuffix")}`}

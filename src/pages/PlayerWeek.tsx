@@ -227,7 +227,7 @@ const PlayerWeek: React.FC = () => {
     }
     if (day.done > 0) {
       return (
-        <span className="text-sm font-semibold text-team-primary tabular-nums">
+        <span className="text-sm font-semibold text-primary tabular-nums">
           {day.done}/{day.total}
         </span>
       );
@@ -318,7 +318,7 @@ const PlayerWeek: React.FC = () => {
         key={day.dateStr}
         className={[
           "transition-colors h-full",
-          day.isToday ? "border-team-primary border-2" : "",
+          day.isToday ? "border-primary border-2" : "",
           interactive ? "cursor-pointer hover:shadow-medium" : "cursor-default",
         ]
           .filter(Boolean)
@@ -350,7 +350,7 @@ const PlayerWeek: React.FC = () => {
                 {format(day.date, "EEE d")}
               </span>
               {day.isToday && (
-                <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-team-primary/10 text-team-primary">
+                <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
                   {t("playerWeek.today")}
                 </span>
               )}

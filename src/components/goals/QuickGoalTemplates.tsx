@@ -32,7 +32,7 @@ export function QuickGoalTemplates({ playerCount, lastWeekShots = 0, onSelect }:
       timeframe: 'week',
       description: lastWeekShots > 0 ? 'Double last week\'s shots' : 'Set an ambitious shot target',
       icon: Rocket,
-      color: 'bg-gradient-to-r from-orange-500 to-red-500',
+      color: 'bg-gradient-to-r from-primary to-red-500',
     },
     {
       name: 'Perfect Week',
@@ -41,7 +41,7 @@ export function QuickGoalTemplates({ playerCount, lastWeekShots = 0, onSelect }:
       timeframe: 'week',
       description: 'Every player, every day',
       icon: Flame,
-      color: 'bg-gradient-to-r from-amber-500 to-orange-500',
+      color: 'bg-gradient-to-r from-primary to-brand-strong',
     },
     {
       name: 'Team Unity',
@@ -50,7 +50,7 @@ export function QuickGoalTemplates({ playerCount, lastWeekShots = 0, onSelect }:
       timeframe: 'week',
       description: '100% team participation',
       icon: Trophy,
-      color: 'bg-gradient-to-r from-yellow-500 to-amber-500',
+      color: 'bg-gradient-to-r from-primary to-brand-strong',
     },
   ];
 

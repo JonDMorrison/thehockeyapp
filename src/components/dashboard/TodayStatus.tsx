@@ -116,14 +116,14 @@ export const TodayStatus: React.FC<TodayStatusProps> = (props) => {
         <div className="flex items-center justify-center gap-4 pt-1">
           <button
             onClick={() => navigate(`/teams/${props.teamId}/builder`)}
-            className="text-xs text-text-muted hover:text-team-primary transition-colors"
+            className="text-xs text-text-muted hover:text-primary transition-colors"
           >
             Build with AI
           </button>
           <span className="text-text-disabled">·</span>
           <button
             onClick={() => navigate(`/templates`)}
-            className="text-xs text-text-muted hover:text-team-primary transition-colors"
+            className="text-xs text-text-muted hover:text-primary transition-colors"
           >
             Use template
           </button>

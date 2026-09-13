@@ -35,14 +35,14 @@ export function TeamAssignmentsSection({ playerId, teamId, teamName, streakData 
         onClick={() => navigate(`/players/${playerId}/today`)}
         className={`group relative w-full overflow-hidden rounded-xl border p-5 text-left transition duration-150 active:scale-[0.995] sm:p-6 ${
           sessionComplete
-            ? "border-emerald-500/25 bg-emerald-500/[0.06] hover:border-emerald-500/40"
+            ? "border-success/25 bg-success/[0.06] hover:border-success/40"
             : snapshot?.has_card
               ? "border-primary/35 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.18),transparent_40%),hsl(var(--card))] hover:border-primary/55"
               : "border-border bg-card hover:border-primary/30"
         }`}
       >
         <div className="flex items-start gap-4">
-          <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${sessionComplete ? "bg-emerald-500/12 text-emerald-400" : snapshot?.has_card ? "bg-primary/12 text-primary" : "bg-muted text-muted-foreground"}`}>
+          <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${sessionComplete ? "bg-success/12 text-success" : snapshot?.has_card ? "bg-primary/12 text-primary" : "bg-muted text-muted-foreground"}`}>
             {sessionComplete ? <CheckCircle2 className="h-6 w-6" /> : snapshot?.has_card ? <Dumbbell className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
           </span>
           <span className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ export function TeamAssignmentsSection({ playerId, teamId, teamName, streakData 
 
         {snapshot?.has_card && total > 0 && (
           <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
-            <div className={`h-full rounded-full transition-all duration-500 ${sessionComplete ? "bg-emerald-500" : "bg-primary"}`} style={{ width: `${progress}%` }} />
+            <div className={`h-full rounded-full transition-all duration-500 ${sessionComplete ? "bg-success" : "bg-primary"}`} style={{ width: `${progress}%` }} />
           </div>
         )}
       </button>
@@ -73,13 +73,13 @@ export function TeamAssignmentsSection({ playerId, teamId, teamName, streakData 
       {(currentStreak > 0 || bestStreak > 0) && (
         <div className="flex flex-wrap items-center gap-2">
           {currentStreak > 0 && (
-            <span className="flex min-h-9 items-center gap-1.5 rounded-md border border-orange-500/20 bg-orange-500/10 px-3 text-sm font-semibold text-orange-400">
+            <span className="flex min-h-9 items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-3 text-sm font-semibold text-primary">
               <Flame className="h-4 w-4" /> {t("players.teamAssignments.dayTeamStreak", { n: currentStreak })}
             </span>
           )}
           {bestStreak > currentStreak && (
             <span className="flex min-h-9 items-center gap-1.5 rounded-md bg-muted px-3 text-xs font-medium text-muted-foreground">
-              <Trophy className="h-3.5 w-3.5 text-amber-400" /> {t("players.teamAssignments.best", { n: bestStreak })}
+              <Trophy className="h-3.5 w-3.5 text-primary" /> {t("players.teamAssignments.best", { n: bestStreak })}
             </span>
           )}
         </div>

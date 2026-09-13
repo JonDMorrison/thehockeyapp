@@ -46,15 +46,17 @@ test.describe('Public launch experience', () => {
       await page.goto(route);
 
       await expect(page.getByRole('heading', { name: /see it\. try it\. check it off/i })).toBeVisible();
-      await expect(page.getByText('Matched automatically')).toBeVisible();
+      await expect(page.getByText('Inside the drill')).toBeVisible();
+      await expect(page.getByText('Today\'s workout')).toBeVisible();
 
-      const videoLink = page.getByRole('link', {
-        name: /watch hockey canada's quick release skill video/i,
-      });
-      await expect(videoLink).toHaveAttribute('href', 'https://www.youtube.com/watch?v=iHHmFJ17m58');
+      const poster = page.getByAltText(/hockey canada quick release lesson shown inside/i);
+      await expect(poster).toBeVisible();
+      await expect(poster).toHaveAttribute('src', 'https://i.ytimg.com/vi/iHHmFJ17m58/maxresdefault.jpg');
 
-      const poster = page.getByAltText(/hockey canada quick release video shown inside/i);
-      await expect.poll(() => poster.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+      const preview = page.getByTestId('marketing-video-preview-play');
+      await expect(preview).toBeVisible();
+      await expect(preview).not.toHaveAttribute('role', 'button');
+      await expect(preview.locator('xpath=ancestor::a')).toHaveCount(0);
     }
   });
 });

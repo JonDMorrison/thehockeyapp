@@ -125,7 +125,7 @@ const Pricing: React.FC = () => {
 
               <Button
                 size="lg"
-                className="w-full bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="w-full bg-primary hover:bg-brand-strong text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
                 {t('marketing.pricing_start_trial')}
@@ -377,7 +377,7 @@ const Pricing: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="text-base px-10 bg-primary hover:bg-brand-strong text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
                 {t('marketing.pricing_cta_get_started')}

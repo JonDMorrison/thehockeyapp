@@ -103,7 +103,7 @@ export default function Associations() {
                   className="group cursor-pointer overflow-hidden border-border/90 p-0 transition hover:-translate-y-0.5 hover:border-primary/40"
                   onClick={() => navigate(`/associations/${association.id}`)}
                 >
-                  <div className="h-1 bg-gradient-to-r from-primary via-primary to-cyan-400" />
+                  <div className="h-1 bg-gradient-to-r from-primary to-brand-strong" />
                   <div className="flex items-center gap-4 p-5">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
                       <Building2 className="h-6 w-6 text-primary" />

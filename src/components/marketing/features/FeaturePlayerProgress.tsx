@@ -39,13 +39,13 @@ export const FeaturePlayerProgress: React.FC = () => {
             <p className="text-lg font-bold text-foreground">7</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_streak')}</p>
           </div>
-          <div className="bg-emerald-500/10 rounded-xl p-3 text-center">
-            <Target className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+          <div className="rounded-xl bg-primary/10 p-3 text-center">
+            <Target className="mx-auto mb-1 h-4 w-4 text-primary" />
             <p className="text-lg font-bold text-foreground">142</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_shots')}</p>
           </div>
-          <div className="bg-amber-500/10 rounded-xl p-3 text-center">
-            <Trophy className="w-4 h-4 text-amber-600 mx-auto mb-1" />
+          <div className="bg-primary/10 rounded-xl p-3 text-center">
+            <Trophy className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">5</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.player_progress_badges')}</p>
           </div>

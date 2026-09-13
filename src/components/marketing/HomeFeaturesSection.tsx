@@ -41,10 +41,10 @@ export const HomeFeaturesSection: React.FC = () => {
     <section className="relative py-20 lg:py-28 bg-surface-muted overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-16 -left-24 w-80 h-80 rounded-full bg-primary/[0.04] blur-3xl" />
-      <div className="absolute bottom-16 -right-20 w-72 h-72 rounded-full bg-[hsl(213,100%,25%,0.04)] blur-3xl" />
+      <div className="absolute bottom-16 -right-20 w-72 h-72 rounded-full bg-primary/[0.04] blur-3xl" />
       <div className="absolute top-1/3 right-12 w-3 h-3 rounded-full bg-primary/15 hidden lg:block" />
       <div className="absolute top-1/2 left-16 w-2 h-2 rounded-full bg-primary/10 hidden lg:block" />
-      <div className="absolute bottom-1/4 right-1/3 w-2 h-2 rounded-full bg-[hsl(213,100%,25%,0.12)] hidden lg:block" />
+      <div className="absolute bottom-1/4 right-1/3 w-2 h-2 rounded-full bg-primary/10 hidden lg:block" />
 
       {/* Subtle dot grid */}
       <div

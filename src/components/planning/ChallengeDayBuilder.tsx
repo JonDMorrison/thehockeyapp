@@ -102,7 +102,7 @@ export const ChallengeDayBuilder: React.FC<ChallengeDayBuilderProps> = ({
                     onClick={() => onToggleExercise(exercise.id)}
                     className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
                       isSelected
-                        ? "border-orange-500 bg-orange-500/10"
+                        ? "border-primary bg-primary/10"
                         : "border-border hover:bg-muted"
                     }`}
                   >

@@ -20,7 +20,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         className="flex-1 h-auto py-3 flex-col gap-1"
         onClick={onInviteParents}
       >
-        <UserPlus className="w-4 h-4 text-team-primary" />
+        <UserPlus className="w-4 h-4 text-primary" />
         <span className="text-xs">Invite</span>
       </Button>
       <Button
@@ -28,7 +28,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         className="flex-1 h-auto py-3 flex-col gap-1"
         onClick={onCreateWeekPlan}
       >
-        <Layers className="w-4 h-4 text-team-primary" />
+        <Layers className="w-4 h-4 text-primary" />
         <span className="text-xs">Week Plan</span>
       </Button>
       <Button
@@ -36,7 +36,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         className="flex-1 h-auto py-3 flex-col gap-1"
         onClick={onViewRoster}
       >
-        <Users className="w-4 h-4 text-team-primary" />
+        <Users className="w-4 h-4 text-primary" />
         <span className="text-xs">Roster</span>
       </Button>
     </div>

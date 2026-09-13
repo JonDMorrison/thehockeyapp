@@ -70,8 +70,8 @@ export const WeeklySummaryCard: React.FC<WeeklySummaryCardProps> = ({
   return (
     <AppCard>
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-5 h-5 text-team-primary" />
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <AppCardTitle className="text-base mb-1">Weekly Summary</AppCardTitle>
@@ -157,8 +157,8 @@ export const TeamWeeklySummaryCard: React.FC<TeamWeeklySummaryCardProps> = ({
     <AppCard>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-lg bg-team-primary/10 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-team-primary" />
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <AppCardTitle className="text-base mb-1">Team Summary</AppCardTitle>

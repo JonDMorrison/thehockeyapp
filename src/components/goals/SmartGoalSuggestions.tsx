@@ -61,7 +61,7 @@ export function SmartGoalSuggestions({
       {!hideHeader && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
+            <Sparkles className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold">Smart Goal Suggestions</h3>
           </div>
           {onDismiss && (
@@ -129,7 +129,7 @@ function generateSuggestions(stats: SmartGoalSuggestionsProps['teamStats']): Goa
       timeframe: 'week',
       description: `Beat last week by 20% → ${Math.round(avgShotsPerWeek * 1.2)} shots`,
       tag: 'Based on activity',
-      tagColor: 'bg-blue-100 text-blue-700',
+      tagColor: 'bg-primary/10 text-primary',
     });
   } else {
     // Default for new teams
@@ -140,7 +140,7 @@ function generateSuggestions(stats: SmartGoalSuggestionsProps['teamStats']): Goa
       timeframe: 'week',
       description: `${playerCount * 50} team shots this week`,
       tag: 'Great for starters',
-      tagColor: 'bg-green-100 text-green-700',
+      tagColor: 'bg-primary/10 text-primary',
     });
   }
 
@@ -152,7 +152,7 @@ function generateSuggestions(stats: SmartGoalSuggestionsProps['teamStats']): Goa
     timeframe: 'week',
     description: `${playerCount * 5} sessions completed by the team`,
     tag: lastGoalAchieved ? 'Keep momentum' : 'Popular',
-    tagColor: lastGoalAchieved ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-700',
+    tagColor: 'bg-primary/10 text-primary',
   });
 
   // Participation goal
@@ -163,7 +163,7 @@ function generateSuggestions(stats: SmartGoalSuggestionsProps['teamStats']): Goa
     timeframe: 'week',
     description: '90% of the team checks in this week',
     tag: 'Team building',
-    tagColor: 'bg-pink-100 text-pink-700',
+    tagColor: 'bg-primary/10 text-primary',
   });
 
   return suggestions.slice(0, 3);

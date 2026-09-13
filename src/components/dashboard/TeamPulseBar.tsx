@@ -99,7 +99,7 @@ export const TeamPulseBar: React.FC<TeamPulseBarProps> = ({
             <div className="flex flex-col items-end">
               <span className={cn(
                 "text-sm font-semibold leading-none",
-                engagementRate >= 50 ? "text-green-600" : "text-muted-foreground"
+                engagementRate >= 50 ? "text-success" : "text-muted-foreground"
               )}>
                 {engagementRate}%
               </span>

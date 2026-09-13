@@ -11,29 +11,29 @@ export const FeatureRewards: React.FC = () => {
       icon: Flame,
       label: t('marketing.rewards_seven_day_streak'),
       earned: true,
-      gradient: "from-orange-500 via-red-500 to-rose-600",
-      glowColor: "shadow-orange-500/40"
+      gradient: "from-primary via-red-500 to-rose-600",
+      glowColor: "shadow-primary/40"
     },
     {
       icon: Trophy,
       label: t('marketing.rewards_perfect_week'),
       earned: true,
-      gradient: "from-amber-400 via-yellow-500 to-orange-500",
-      glowColor: "shadow-amber-500/40"
+      gradient: "from-primary to-brand-strong",
+      glowColor: "shadow-primary/40"
     },
     {
       icon: Target,
       label: t('marketing.rewards_hundred_shots'),
       earned: true,
-      gradient: "from-blue-500 via-cyan-400 to-teal-500",
-      glowColor: "shadow-blue-500/40"
+      gradient: "from-primary via-primary to-success",
+      glowColor: "shadow-primary/40"
     },
     {
       icon: Medal,
       label: t('marketing.rewards_first_month'),
       earned: false,
-      gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
-      glowColor: "shadow-purple-500/40"
+      gradient: "from-primary to-brand-strong",
+      glowColor: "shadow-primary/40"
     },
   ];
 
@@ -42,7 +42,7 @@ export const FeatureRewards: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center">
             <Trophy className="w-4 h-4 text-white" />
           </div>
           <p className="text-base font-bold text-foreground">{t('marketing.rewards_badges_rewards')}</p>
@@ -54,7 +54,7 @@ export const FeatureRewards: React.FC = () => {
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="relative bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-500 rounded-xl p-4 text-white overflow-hidden shadow-lg shadow-amber-500/30"
+          className="relative bg-gradient-to-br from-primary to-brand-strong rounded-xl p-4 text-white overflow-hidden shadow-lg shadow-primary/30"
         >
           {/* Sparkle decorations */}
           <div className="absolute top-2 right-3">
@@ -126,11 +126,11 @@ export const FeatureRewards: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-gradient-to-r from-orange-500/15 to-amber-500/10 rounded-xl p-4 border border-orange-500/20"
+          className="bg-gradient-to-r from-primary/15 to-primary/10 rounded-xl p-4 border border-primary/20"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-red-500 flex items-center justify-center shadow-lg shadow-primary/30">
                 <Flame className="w-4 h-4 text-white" />
               </div>
               <span className="font-bold text-foreground">{t('marketing.rewards_seven_day_streak_badge')}</span>

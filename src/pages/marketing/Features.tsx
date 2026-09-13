@@ -42,7 +42,7 @@ const Features: React.FC = () => {
       ],
       Preview: FeatureTaskCard,
       glowColor: "primary" as const,
-      gradient: "from-primary via-[hsl(221,70%,60%)] to-[hsl(200,70%,55%)]",
+      gradient: "from-primary to-brand-strong",
     },
     {
       icon: CheckCircle,
@@ -54,8 +54,8 @@ const Features: React.FC = () => {
         t('marketing.features_bullet_builds_habit'),
       ],
       Preview: FeatureCheckoff,
-      glowColor: "success" as const,
-      gradient: "from-success via-[hsl(142,60%,45%)] to-[hsl(160,60%,40%)]",
+      glowColor: "primary" as const,
+      gradient: "from-primary to-brand-strong",
     },
     {
       icon: Trophy,
@@ -67,8 +67,8 @@ const Features: React.FC = () => {
         t('marketing.features_bullet_effort_based'),
       ],
       Preview: FeatureRewards,
-      glowColor: "orange" as const,
-      gradient: "from-[hsl(35,90%,55%)] via-[hsl(25,85%,50%)] to-[hsl(15,80%,50%)]",
+      glowColor: "primary" as const,
+      gradient: "from-primary to-brand-strong",
     },
     {
       icon: Sparkles,
@@ -80,8 +80,8 @@ const Features: React.FC = () => {
         t('marketing.features_bullet_parents_see'),
       ],
       Preview: FeatureBuilder,
-      glowColor: "purple" as const,
-      gradient: "from-[hsl(280,70%,50%)] via-[hsl(260,60%,55%)] to-primary",
+      glowColor: "primary" as const,
+      gradient: "from-primary to-brand-strong",
     },
     {
       icon: Users,
@@ -93,8 +93,8 @@ const Features: React.FC = () => {
         t('marketing.features_bullet_participation'),
       ],
       Preview: FeatureCoachView,
-      glowColor: "cyan" as const,
-      gradient: "from-[hsl(200,70%,50%)] via-[hsl(190,65%,45%)] to-[hsl(180,60%,40%)]",
+      glowColor: "primary" as const,
+      gradient: "from-primary to-brand-strong",
     },
     {
       icon: Shield,
@@ -106,8 +106,8 @@ const Features: React.FC = () => {
         t('marketing.features_bullet_you_decide'),
       ],
       Preview: FeaturePrivacy,
-      glowColor: "success" as const,
-      gradient: "from-success via-[hsl(142,60%,45%)] to-[hsl(160,60%,40%)]",
+      glowColor: "primary" as const,
+      gradient: "from-primary to-brand-strong",
     },
   ];
 
@@ -223,7 +223,7 @@ const Features: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="bg-primary hover:bg-brand-strong transition-colors text-white border-0 h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg w-full sm:w-auto rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
                 {t('marketing.features_cta_get_started')}

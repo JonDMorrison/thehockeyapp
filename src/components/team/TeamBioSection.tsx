@@ -55,7 +55,7 @@ export const TeamBioSection: React.FC<TeamBioSectionProps> = ({
   return (
     <AppCard>
       <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-        <FileText className="w-4 h-4 text-team-primary" />
+        <FileText className="w-4 h-4 text-primary" />
         {t("teams.bio.title")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">
@@ -174,7 +174,7 @@ export const TeamChallengesToggle: React.FC<TeamChallengesToggleProps> = ({
   return (
     <AppCard>
       <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-        <Trophy className="w-4 h-4 text-team-primary" />
+        <Trophy className="w-4 h-4 text-primary" />
         {t("teams.bio.challengesTitle")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">

@@ -24,7 +24,7 @@ export const FeatureCheckoff: React.FC = () => {
             <h1 className="text-base font-bold text-foreground">{t('marketing.checkoff_practice_day')}</h1>
           </div>
           <div className="text-right">
-            <p className="text-lg font-bold text-emerald-500">60%</p>
+            <p className="text-lg font-bold text-success">60%</p>
             <p className="text-[9px] text-muted-foreground">3 of 5</p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export const FeatureCheckoff: React.FC = () => {
             key={task.label}
             className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
               task.active
-                ? "bg-emerald-500/10 border-2 border-emerald-500 scale-[1.02]"
+                ? "bg-success/10 border-2 border-success scale-[1.02]"
                 : task.completed
                   ? "bg-muted/30"
                   : "bg-card border border-border"
@@ -46,14 +46,14 @@ export const FeatureCheckoff: React.FC = () => {
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all ${
                 task.completed
-                  ? "bg-emerald-500 text-white"
+                  ? "bg-success text-white"
                   : task.active
-                    ? "border-2 border-emerald-500 bg-emerald-500/20"
+                    ? "border-2 border-success bg-success/20"
                     : "border-2 border-muted-foreground/30"
               }`}
             >
               {task.completed && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-              {task.active && <Sparkles className="w-3 h-3 text-emerald-500 animate-pulse" />}
+              {task.active && <Sparkles className="w-3 h-3 text-success animate-pulse" />}
             </div>
 
             {/* Label */}
@@ -65,7 +65,7 @@ export const FeatureCheckoff: React.FC = () => {
             </div>
 
             {task.active && (
-              <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/20 px-2 py-1 rounded-full animate-pulse">
+              <span className="text-[9px] font-bold text-success bg-success/20 px-2 py-1 rounded-full animate-pulse">
                 TAP ✓
               </span>
             )}

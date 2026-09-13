@@ -44,7 +44,7 @@ export const DayPicker: React.FC<DayPickerProps> = ({
               className={cn(
                 "w-full p-4 rounded-2xl text-left transition-all duration-200",
                 "bg-card border border-border",
-                "hover:shadow-medium hover:border-team-primary/30 active:scale-[0.98]"
+                "hover:shadow-medium hover:border-primary/30 active:scale-[0.98]"
               )}
             >
               <div className="flex items-center gap-4">

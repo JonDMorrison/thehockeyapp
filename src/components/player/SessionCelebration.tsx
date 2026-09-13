@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/app/Tag';
 import confetti from 'canvas-confetti';
 import { useTranslation } from 'react-i18next';
+import { BRAND_CONFETTI_COLORS } from '@/lib/brand';
 
 interface SessionCelebrationProps {
   playerName: string;
@@ -53,8 +54,6 @@ export function SessionCelebration({
       const duration = 3000;
       const end = Date.now() + duration;
 
-      const colors = ['#FFD700', '#FFA500', '#FF6347', '#32CD32', '#1E90FF'];
-
       // Initial bursts from sides
       (function frame() {
         confetti({
@@ -62,14 +61,14 @@ export function SessionCelebration({
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: colors,
+          colors: BRAND_CONFETTI_COLORS,
         });
         confetti({
           particleCount: 3,
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: colors,
+          colors: BRAND_CONFETTI_COLORS,
         });
 
         if (Date.now() < end) {
@@ -83,7 +82,7 @@ export function SessionCelebration({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
-          colors: colors,
+          colors: BRAND_CONFETTI_COLORS,
         });
       }, 500);
 
@@ -94,7 +93,7 @@ export function SessionCelebration({
             particleCount: 150,
             spread: 100,
             origin: { y: 0.5 },
-            colors: ['#FFD700', '#FFA500', '#FF8C00'],
+            colors: BRAND_CONFETTI_COLORS,
             scalar: 1.2,
           });
         }, 1000);
@@ -136,9 +135,7 @@ export function SessionCelebration({
           transition={{ delay: 0.3 }}
           className="absolute inset-0 rounded-full blur-xl"
           style={{
-            background: isFirstWorkout 
-              ? 'radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%)'
-              : 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
             transform: 'scale(1.5)',
           }}
         />
@@ -146,9 +143,7 @@ export function SessionCelebration({
         <div 
           className="relative w-28 h-28 rounded-full flex items-center justify-center shadow-lg"
           style={{
-            background: isFirstWorkout
-              ? 'linear-gradient(135deg, #FFD700, #FFA500)'
-              : 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))',
+            background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-strong)))',
           }}
         >
           {isFirstWorkout ? (
@@ -164,7 +159,7 @@ export function SessionCelebration({
             transition={{ delay: 0.5 }}
             className="absolute -top-1 -right-1"
           >
-            <Sparkles className="w-6 h-6 text-amber-400" />
+            <Sparkles className="w-6 h-6 text-primary" />
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
@@ -172,7 +167,7 @@ export function SessionCelebration({
             transition={{ delay: 0.7 }}
             className="absolute -bottom-1 -left-1"
           >
-            <Star className="w-5 h-5 text-amber-300 fill-amber-300" />
+            <Star className="w-5 h-5 text-primary fill-primary" />
           </motion.div>
         </div>
       </motion.div>
@@ -205,7 +200,7 @@ export function SessionCelebration({
         className="flex items-center gap-2 mb-6 flex-wrap justify-center"
       >
         {isFirstWorkout && (
-          <Tag variant="accent" className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+          <Tag variant="accent" className="bg-primary/20 text-primary border-primary/30">
             <Award className="w-3 h-3" />
             {t('common.session.firstWorkoutTag')}
           </Tag>
@@ -253,12 +248,12 @@ export function SessionCelebration({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 max-w-xs"
+          className="mb-6 max-w-xs rounded-xl border border-primary/20 bg-primary/5 p-4"
         >
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+          <p className="text-sm font-medium text-foreground">
             {t('common.session.startOfSomethingGreat')}
           </p>
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+          <p className="mt-1 text-xs text-text-muted">
             {t('common.session.keepStreakGoing')}
           </p>
         </motion.div>

@@ -541,7 +541,7 @@ const PlayerHome: React.FC = () => {
                     onClick={() => navigate(`/players/${id}/week`)}
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
-                    <CalendarDays className="w-5 h-5 text-team-primary" />
+                    <CalendarDays className="w-5 h-5 text-primary" />
                     <span className="text-sm">{t("playerWeek.thisWeek")}</span>
                   </Button>
                   <Button
@@ -549,7 +549,7 @@ const PlayerHome: React.FC = () => {
                     onClick={() => navigate(`/players/${id}/goals`)}
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
-                    <Target className="w-5 h-5 text-team-primary" />
+                    <Target className="w-5 h-5 text-primary" />
                     <span className="text-sm">{t("players.home.goals")}</span>
                   </Button>
                   <Button
@@ -557,7 +557,7 @@ const PlayerHome: React.FC = () => {
                     onClick={() => navigate(`/players/${id}/badges`)}
                     className="flex flex-col items-center gap-2 h-auto py-4"
                   >
-                    <Trophy className="w-5 h-5 text-amber-500" />
+                    <Trophy className="w-5 h-5 text-primary" />
                     <span className="text-sm">{t("players.home.badges")}</span>
                   </Button>
                   <Button
@@ -596,7 +596,7 @@ const PlayerHome: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => navigate(`/join?player=${id}`)}
-                      className="text-team-primary -mr-2"
+                      className="text-primary -mr-2"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
@@ -609,7 +609,7 @@ const PlayerHome: React.FC = () => {
                       return (
                         <div
                           key={membership.id}
-                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-surface-muted transition-colors ${isActive ? 'bg-team-primary/5' : ''}`}
+                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-surface-muted transition-colors ${isActive ? 'bg-primary/5' : ''}`}
                           onClick={() => navigate(`/teams/${team.id}/roster`)}
                         >
                           <Avatar
@@ -621,7 +621,7 @@ const PlayerHome: React.FC = () => {
                             <p className="font-medium truncate text-sm">{team.name}</p>
                           </div>
                           {isActive && (
-                            <div className="w-2 h-2 rounded-full bg-team-primary" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                           )}
                         </div>
                       );
@@ -798,7 +798,7 @@ const PlayerHome: React.FC = () => {
                 <AppCard
                   key={membership.id}
                   className={`cursor-pointer transition-all ${
-                    isActive ? "ring-2 ring-team-primary ring-offset-2" : ""
+                    isActive ? "ring-2 ring-primary ring-offset-2" : ""
                   }`}
                   onClick={() => updateActiveTeam.mutate(team.id)}
                 >
@@ -817,7 +817,7 @@ const PlayerHome: React.FC = () => {
                       )}
                     </div>
                     {isActive && (
-                      <div className="w-6 h-6 rounded-full bg-team-primary flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                         <Check className="w-4 h-4 text-primary-foreground" />
                       </div>
                     )}

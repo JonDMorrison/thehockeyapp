@@ -155,8 +155,8 @@ const TeamPractice: React.FC = () => {
             onClick={() => navigate(`/teams/${id}/practice/new?date=${todayStr}`)}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-team-primary/10 flex items-center justify-center">
-                <Plus className="w-6 h-6 text-team-primary" />
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Plus className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <p className="font-semibold">{t("teams.practice.createToday")}</p>
@@ -172,8 +172,8 @@ const TeamPractice: React.FC = () => {
             onClick={() => navigate(`/teams/${id}/practice/${todaysCard.id}/edit`)}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-team-primary/10 flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-team-primary" />
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

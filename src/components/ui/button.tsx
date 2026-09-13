@@ -16,11 +16,11 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Team-themed primary CTA
-        team: "bg-team-primary text-primary-foreground hover:opacity-90 shadow-subtle hover:shadow-medium",
+        team: "bg-primary text-primary-foreground hover:opacity-90 shadow-subtle hover:shadow-medium",
         // Soft team accent
-        "team-soft": "bg-team-primary/10 text-team-primary hover:bg-team-primary/20",
+        "team-soft": "bg-primary/10 text-primary hover:bg-primary/20",
         // Quick action style
-        action: "bg-card text-foreground border border-border shadow-subtle hover:shadow-medium hover:border-team-primary/30",
+        action: "bg-card text-foreground border border-border shadow-subtle hover:shadow-medium hover:border-primary/30",
       },
       size: {
         default: "h-11 px-5 py-2.5 rounded-md tap-target",

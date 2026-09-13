@@ -205,13 +205,13 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                         className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                           workout.is_complete
                             ? "bg-success/10"
-                            : "bg-team-primary/10"
+                            : "bg-primary/10"
                         }`}
                       >
                         {workout.is_complete ? (
                           <CheckCircle className="w-5 h-5 text-success" />
                         ) : (
-                          <Icon className="w-5 h-5 text-team-primary" />
+                          <Icon className="w-5 h-5 text-primary" />
                         )}
                       </div>
                       <div className="flex-1 text-left min-w-0">

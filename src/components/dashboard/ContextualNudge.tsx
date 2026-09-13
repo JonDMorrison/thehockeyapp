@@ -84,9 +84,9 @@ export const ContextualNudge: React.FC<ContextualNudgeProps> = ({
   const Icon = activeNudge.icon;
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-team-primary/5 border border-team-primary/10">
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-team-primary/10 flex items-center justify-center">
-        <Icon className="w-4 h-4 text-team-primary" />
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-primary" />
       </div>
       <p className="flex-1 text-sm text-text-secondary">
         {activeNudge.message}
@@ -94,7 +94,7 @@ export const ContextualNudge: React.FC<ContextualNudgeProps> = ({
       <Button
         size="sm"
         variant="ghost"
-        className="flex-shrink-0 text-team-primary hover:text-team-primary hover:bg-team-primary/10"
+        className="flex-shrink-0 text-primary hover:text-primary hover:bg-primary/10"
         onClick={() => onAction(activeNudge.id)}
       >
         {activeNudge.actionLabel}

@@ -237,7 +237,7 @@ const RosterPlayerDetail: React.FC = () => {
         {(player.fav_nhl_city || player.fav_nhl_player || player.hockey_love || player.season_goals) && (
           <AppCard>
             <AppCardTitle className="text-base flex items-center gap-2 mb-4">
-              <Star className="w-4 h-4 text-team-primary" />
+              <Star className="w-4 h-4 text-primary" />
               {t("players.rosterDetail.aboutTitle", { name: player.first_name })}
             </AppCardTitle>
             <div className="space-y-4 text-sm">
@@ -285,7 +285,7 @@ const RosterPlayerDetail: React.FC = () => {
         {sharedPhotos && sharedPhotos.length > 0 && (
           <AppCard>
             <AppCardTitle className="text-base flex items-center gap-2 mb-4">
-              <ImageIcon className="w-4 h-4 text-team-primary" />
+              <ImageIcon className="w-4 h-4 text-primary" />
               {t("players.rosterDetail.recentPhotos")}
             </AppCardTitle>
             <div className="grid grid-cols-3 gap-2">
@@ -299,7 +299,7 @@ const RosterPlayerDetail: React.FC = () => {
                     alt={t("players.rosterDetail.sessionPhotoAlt")}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-1 right-1 w-5 h-5 bg-team-primary/80 rounded-full flex items-center justify-center">
+                  <div className="absolute top-1 right-1 w-5 h-5 bg-primary/80 rounded-full flex items-center justify-center">
                     <Share2 className="w-2.5 h-2.5 text-white" />
                   </div>
                 </div>

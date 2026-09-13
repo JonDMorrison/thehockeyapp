@@ -111,9 +111,9 @@ const WidgetSettings: React.FC = () => {
       <PageContainer>
         <div className="space-y-6">
           {/* Privacy warning */}
-          <AppCard className="border-amber-500/20 bg-amber-500/5">
+          <AppCard className="border-primary/20 bg-primary/5">
             <div className="flex gap-3">
-              <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">{t("settings.widgetSettings.privacyNotice")}</p>
                 <p className="text-sm text-muted-foreground">

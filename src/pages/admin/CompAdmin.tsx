@@ -181,7 +181,7 @@ export default function CompAdmin() {
         {/* Grant Form */}
         <section className="bg-card border border-border rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2">
-            <Crown className="w-4 h-4 text-amber-500" />
+            <Crown className="w-4 h-4 text-primary" />
             {t("admin.comp.grantComplimentaryPro")}
           </h2>
 

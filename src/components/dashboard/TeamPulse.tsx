@@ -37,7 +37,7 @@ export const TeamPulse: React.FC<TeamPulseProps> = ({
 
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center p-3 rounded-lg bg-surface-muted">
-          <Users className="w-5 h-5 mx-auto mb-1 text-team-primary" />
+          <Users className="w-5 h-5 mx-auto mb-1 text-primary" />
           <p className="text-xl font-bold">{playersCount}</p>
           <p className="text-xs text-text-muted">Players</p>
         </div>
@@ -49,7 +49,7 @@ export const TeamPulse: React.FC<TeamPulseProps> = ({
         </div>
 
         <div className="text-center p-3 rounded-lg bg-surface-muted">
-          <Target className="w-5 h-5 mx-auto mb-1 text-team-primary" />
+          <Target className="w-5 h-5 mx-auto mb-1 text-primary" />
           <p className="text-xl font-bold">
             {totalShots >= 1000
               ? `${(totalShots / 1000).toFixed(1)}k`

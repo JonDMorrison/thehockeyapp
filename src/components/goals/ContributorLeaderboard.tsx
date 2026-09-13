@@ -10,7 +10,7 @@ interface ContributorLeaderboardProps {
 }
 
 const rankIcons = [Trophy, Medal, Award];
-const rankColors = ['text-amber-500', 'text-slate-400', 'text-amber-700'];
+const rankColors = ['text-primary', 'text-slate-400', 'text-primary'];
 
 export function ContributorLeaderboard({ contributions, compact = false, className }: ContributorLeaderboardProps) {
   if (contributions.length === 0) return null;

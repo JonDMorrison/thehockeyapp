@@ -39,7 +39,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
         "relative w-full p-4 rounded-2xl text-left transition-all duration-200",
         "bg-card border-2 hover:shadow-medium active:scale-[0.98]",
         selected 
-          ? "border-team-primary shadow-medium ring-2 ring-team-primary/20" 
+          ? "border-primary shadow-medium ring-2 ring-primary/20"
           : "border-transparent hover:border-border"
       )}
     >
@@ -64,7 +64,7 @@ export const ThemeCard: React.FC<ThemeCardProps> = ({
 
       {/* Selected indicator */}
       {selected && (
-        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-team-primary flex items-center justify-center">
+        <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
           <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>

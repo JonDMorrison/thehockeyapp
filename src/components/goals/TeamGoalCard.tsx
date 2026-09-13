@@ -183,7 +183,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <h3 className="font-semibold text-foreground">Set a Team Goal</h3>
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <Sparkles className="w-4 h-4 text-primary" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Rally your team around a shared target
@@ -225,7 +225,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
                 <Calendar className="w-3.5 h-3.5" />
                 <span>
                   {goal.status === 'completed' ? (
-                    <span className="text-green-600 font-medium">Completed!</span>
+                    <span className="text-success font-medium">Completed!</span>
                   ) : daysLeft > 0 ? (
                     `${daysLeft} days left`
                   ) : daysLeft === 0 ? (
@@ -276,7 +276,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
             <div className="flex-1 min-w-0 space-y-4">
               {/* Progress badge */}
               {goal.status === 'completed' ? (
-                <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                <Badge className="bg-success/10 text-success border-success/20">
                   <Trophy className="w-3 h-3 mr-1" />
                   Goal Achieved!
                 </Badge>

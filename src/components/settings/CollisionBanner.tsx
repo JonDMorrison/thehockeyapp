@@ -30,9 +30,9 @@ export function CollisionBanner({ onManageSubscription, portalLoading, cardId = 
   if (dismissed) return null;
 
   return (
-    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+    <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 space-y-3">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium text-foreground">
             {t("practice.collision.title")}

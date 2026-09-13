@@ -301,7 +301,7 @@ export const GameDayModal: React.FC<GameDayModalProps> = ({
       <SheetContent side="bottom" className="h-auto max-h-[80vh]">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-team-primary" />
+            <Zap className="w-5 h-5 text-primary" />
             {t("teams.gameDay.title")}
           </SheetTitle>
           <SheetDescription>

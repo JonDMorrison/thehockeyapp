@@ -212,7 +212,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                 key={i}
                 className="flex items-center gap-3 p-3 rounded-lg bg-surface-muted"
               >
-                <div className="text-team-primary">
+                <div className="text-primary">
                   {taskTypeIcons[task.task_type]}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -270,7 +270,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
       <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-team-primary" />
+            <Sparkles className="w-5 h-5 text-primary" />
             {t('practice.aiAssist')}
           </SheetTitle>
           <SheetDescription>
@@ -379,7 +379,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                         key={option.id}
                         className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
                           isSelected
-                            ? "border-team-primary bg-team-primary/5"
+                            ? "border-primary bg-primary/5"
                             : "border-border hover:bg-surface-muted"
                         }`}
                         onClick={() => toggleFocus(option.id)}

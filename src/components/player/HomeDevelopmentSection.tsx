@@ -230,8 +230,8 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
 
             {/* Parent Streak */}
             <AppCard className="text-center py-4">
-              <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-500/10 to-red-500/10 flex items-center justify-center">
-                <Flame className="w-7 h-7 text-orange-500" />
+              <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-primary/10 to-red-500/10 flex items-center justify-center">
+                <Flame className="w-7 h-7 text-primary" />
               </div>
               <p className="text-lg font-bold">{stats?.currentStreak ?? 0}</p>
               <p className="text-xs text-muted-foreground font-medium">

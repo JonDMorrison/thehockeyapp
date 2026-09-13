@@ -182,7 +182,7 @@ const TeamNew: React.FC = () => {
 
           <AppCard>
             <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-              <Palette className="w-4 h-4 text-team-primary" />
+              <Palette className="w-4 h-4 text-primary" />
               {t("teams.new.colorsTitle")}
             </AppCardTitle>
             <AppCardDescription className="mb-4">

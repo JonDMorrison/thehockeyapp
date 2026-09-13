@@ -88,12 +88,12 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
           <SheetTitle className="flex items-center gap-2">
             {showGoal ? (
               <>
-                <Trophy className="w-5 h-5 text-amber-500" />
+                <Trophy className="w-5 h-5 text-primary" />
                 {t('practice.addATeamGoal')}
               </>
             ) : (
               <>
-                <CalendarPlus className="w-5 h-5 text-emerald-500" />
+                <CalendarPlus className="w-5 h-5 text-primary" />
                 {t('practice.pickADate')}
               </>
             )}
@@ -128,7 +128,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                     >
                       {label}
                       {hasWorkout(date) && (
-                        <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
                       )}
                     </Button>
                   ))}
@@ -145,7 +145,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                       hasWorkout: (date) => hasWorkout(date),
                     }}
                     modifiersClassNames={{
-                      hasWorkout: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-emerald-500",
+                      hasWorkout: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary",
                     }}
                     className="rounded-lg border"
                   />
@@ -156,7 +156,7 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
                   <div className="text-center text-sm text-muted-foreground">
                     {format(selectedDate, "EEEE, MMMM d, yyyy")}
                     {hasWorkout(selectedDate) && (
-                      <span className="text-amber-600 ml-2">{t('practice.hasWorkout')}</span>
+                      <span className="text-primary ml-2">{t('practice.hasWorkout')}</span>
                     )}
                   </div>
                 )}

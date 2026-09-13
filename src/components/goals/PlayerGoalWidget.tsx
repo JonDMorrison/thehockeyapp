@@ -25,13 +25,13 @@ const motivationalMessages = [
 
 // Reward display config matching GoalRewardPrompt options
 const rewardConfig: Record<string, { emoji: string; label: string; icon: LucideIcon; color: string }> = {
-  badges: { emoji: "🏅", label: "Badge Hunt", icon: Medal, color: "from-amber-500 to-yellow-500" },
-  scrimmage: { emoji: "🏒", label: "Scrimmage Game", icon: Gamepad2, color: "from-blue-500 to-cyan-500" },
-  pizza: { emoji: "🍕", label: "Pizza Party", icon: Pizza, color: "from-red-500 to-orange-500" },
-  trophy: { emoji: "🏆", label: "Team Trophy", icon: Trophy, color: "from-yellow-500 to-amber-600" },
-  stars: { emoji: "⭐", label: "Star Stickers", icon: Star, color: "from-purple-500 to-pink-500" },
-  surprise: { emoji: "🎁", label: "Mystery Prize", icon: Gift, color: "from-emerald-500 to-teal-500" },
-  custom: { emoji: "🎯", label: "Custom Reward", icon: Gift, color: "from-indigo-500 to-purple-500" },
+  badges: { emoji: "🏅", label: "Badge Hunt", icon: Medal, color: "from-primary to-brand-strong" },
+  scrimmage: { emoji: "🏒", label: "Scrimmage Game", icon: Gamepad2, color: "from-primary to-brand-strong" },
+  pizza: { emoji: "🍕", label: "Pizza Party", icon: Pizza, color: "from-red-500 to-primary" },
+  trophy: { emoji: "🏆", label: "Team Trophy", icon: Trophy, color: "from-primary to-brand-strong" },
+  stars: { emoji: "⭐", label: "Star Stickers", icon: Star, color: "from-primary to-brand-strong" },
+  surprise: { emoji: "🎁", label: "Mystery Prize", icon: Gift, color: "from-primary to-brand-strong" },
+  custom: { emoji: "🎯", label: "Custom Reward", icon: Gift, color: "from-primary to-brand-strong" },
 };
 
 export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
@@ -85,12 +85,12 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
         <div className={cn(
           'h-1.5',
           goal.status === 'completed' 
-            ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+            ? 'bg-gradient-to-r from-success to-success/75'
             : progress >= 75
-              ? 'bg-gradient-to-r from-orange-400 to-red-500'
+              ? 'bg-gradient-to-r from-primary to-red-500'
               : progress >= 50
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
-                : 'bg-gradient-to-r from-blue-400 to-cyan-500'
+                ? 'bg-gradient-to-r from-primary to-brand-strong'
+                : 'bg-gradient-to-r from-primary to-brand-strong'
         )} />
 
         <CardContent className="p-4">
@@ -121,11 +121,11 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
                   {goal.status === 'completed' ? (
-                    <span className="text-green-600 font-medium">Completed!</span>
+                    <span className="text-success font-medium">Completed!</span>
                   ) : daysLeft > 0 ? (
                     <span>{daysLeft} days remaining</span>
                   ) : daysLeft === 0 ? (
-                    <span className="text-orange-500 font-medium">Last day!</span>
+                    <span className="text-primary font-medium">Last day!</span>
                   ) : (
                     <span className="text-muted-foreground">Ended</span>
                   )}
@@ -165,9 +165,9 @@ export function PlayerGoalWidget({ teamId, className }: PlayerGoalWidgetProps) {
                   className={cn(
                     'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium',
                     goal.status === 'completed'
-                      ? 'bg-green-500/10 text-green-700'
+                      ? 'bg-success/10 text-success'
                       : progress >= 75
-                        ? 'bg-orange-500/10 text-orange-700'
+                        ? 'bg-primary/10 text-primary'
                         : 'bg-primary/10 text-primary'
                   )}
                 >

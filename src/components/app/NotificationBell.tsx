@@ -15,9 +15,9 @@ import { useTranslation } from 'react-i18next';
 function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'goal_created':
-      return <Target className="w-4 h-4 text-blue-500" />;
+      return <Target className="w-4 h-4 text-primary" />;
     case 'goal_achieved':
-      return <Trophy className="w-4 h-4 text-amber-500" />;
+      return <Trophy className="w-4 h-4 text-primary" />;
     default:
       return <Bell className="w-4 h-4 text-muted-foreground" />;
   }

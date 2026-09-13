@@ -180,7 +180,7 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
     <>
       <AppCard>
         <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-          <Baby className="w-4 h-4 text-team-primary" />
+          <Baby className="w-4 h-4 text-primary" />
           {t("teams.addChild.title")}
         </AppCardTitle>
         <AppCardDescription className="mb-4">
@@ -188,8 +188,8 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
         </AppCardDescription>
 
         {hasChildrenOnTeam && (
-          <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-            <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+          <div className="mb-4 p-3 rounded-lg bg-success/10 border border-success/20">
+            <div className="flex items-center gap-2 text-sm text-success dark:text-success">
               <Check className="w-4 h-4" />
               <span>
                 {childrenData!.childrenOnTeam.length === 1

@@ -382,8 +382,8 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                   <div className={cn(
                     "p-1.5 rounded-lg",
                     event.event_type === "game" 
-                      ? "bg-amber-500/10 text-amber-600" 
-                      : "bg-blue-500/10 text-blue-600"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-primary/10 text-primary"
                   )}>
                     {event.event_type === "game" ? (
                       <Zap className="h-3.5 w-3.5" />
@@ -583,17 +583,17 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-amber-500/10 rounded-lg">
+                  <div className="p-3 bg-primary/10 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-amber-600" />
-                      <span className="text-2xl font-bold text-amber-600">{previewResult.games_count}</span>
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-2xl font-bold text-primary">{previewResult.games_count}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Upcoming games</p>
                   </div>
-                  <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <div className="p-3 bg-primary/10 rounded-lg">
                     <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <span className="text-2xl font-bold text-blue-600">{previewResult.practices_count}</span>
+                      <Users className="h-4 w-4 text-primary" />
+                      <span className="text-2xl font-bold text-primary">{previewResult.practices_count}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Practices</p>
                   </div>

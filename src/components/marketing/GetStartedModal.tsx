@@ -52,7 +52,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         buttonVariant: "default" as const,
         smallText: t('marketing.get_started_coach_small') as string | null,
         directHref: null as string | null,
-        iconBgClass: "bg-gradient-to-br from-primary to-[hsl(221,70%,60%)]",
+        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
         hoverClass: "hover:border-primary/50",
       },
       {
@@ -67,8 +67,8 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         buttonVariant: "default" as const,
         smallText: (BETA_MODE ? t('marketing.get_started_parent_small_beta') : t('marketing.get_started_parent_small_normal')) as string | null,
         directHref: null,
-        iconBgClass: "bg-gradient-to-br from-orange-500 to-amber-500",
-        hoverClass: "hover:border-orange-500/50",
+        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
+        hoverClass: "hover:border-primary/50",
       },
       {
         id: "player-team",
@@ -80,8 +80,8 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         buttonVariant: "outline" as const,
         smallText: null as string | null,
         directHref: "/join" as string | null,
-        iconBgClass: "bg-gradient-to-br from-success to-[hsl(160,60%,40%)]",
-        hoverClass: "hover:border-success/50",
+        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
+        hoverClass: "hover:border-primary/50",
       },
     ];
 

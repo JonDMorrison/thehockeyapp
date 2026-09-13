@@ -308,7 +308,7 @@ const TeamProgress: React.FC = () => {
         <div className="w-6 text-center">
           {rank <= 3 ? (
             <span
-              className={`text-lg ${rank === 1 ? "text-yellow-500" : rank === 2 ? "text-gray-400" : "text-amber-600"}`}
+              className={`text-lg ${rank === 1 ? "text-primary" : rank === 2 ? "text-gray-400" : "text-primary"}`}
               aria-label={rank === 1 ? t("teams.progress.rank1st") : rank === 2 ? t("teams.progress.rank2nd") : t("teams.progress.rank3rd")}
             >
               {rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}
@@ -376,8 +376,8 @@ const TeamProgress: React.FC = () => {
         {/* Summary Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
           <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-2">
-              <Trophy className="w-6 h-6 text-team-primary" />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+              <Trophy className="w-6 h-6 text-primary" />
             </div>
             <p className="text-2xl font-bold">{totalBadges}</p>
             <p className="text-xs text-text-muted">{t("teams.progress.statTotalBadges")}</p>
@@ -392,16 +392,16 @@ const TeamProgress: React.FC = () => {
           </AppCard>
 
           <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-team-secondary/10 flex items-center justify-center mx-auto mb-2">
-              <Flame className="w-6 h-6 text-team-secondary" />
+            <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center mx-auto mb-2">
+              <Flame className="w-6 h-6 text-foreground" />
             </div>
             <p className="text-2xl font-bold">{activeThisWeek}</p>
             <p className="text-xs text-text-muted">{t("teams.progress.statActiveThisWeek")}</p>
           </AppCard>
 
           <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-6 h-6 text-purple-500" />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+              <TrendingUp className="w-6 h-6 text-primary" />
             </div>
             <p className="text-2xl font-bold">{avgSessionsPerPlayer}</p>
             <p className="text-xs text-text-muted">{t("teams.progress.statAvgPerPlayer")}</p>
@@ -411,7 +411,7 @@ const TeamProgress: React.FC = () => {
         {/* Weekly Activity Heatmap */}
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-1">
-            <BarChart3 className="w-4 h-4 text-team-primary" />
+            <BarChart3 className="w-4 h-4 text-primary" />
             {t("teams.progress.heatmapTitle")}
           </AppCardTitle>
           <AppCardDescription className="mb-4">
@@ -432,7 +432,7 @@ const TeamProgress: React.FC = () => {
 
             <TabsContent value="leaderboard" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle className="w-4 h-4 text-team-primary" />
+                <CheckCircle className="w-4 h-4 text-primary" />
                 <span className="font-medium text-sm">{t("teams.progress.leaderMostSessions")}</span>
               </div>
               {leaderboardBySession.slice(0, 10).map((player, idx) =>
@@ -445,7 +445,7 @@ const TeamProgress: React.FC = () => {
 
             <TabsContent value="week" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-team-primary" />
+                <Calendar className="w-4 h-4 text-primary" />
                 <span className="font-medium text-sm">{t("teams.progress.leaderThisWeek")}</span>
               </div>
               {leaderboardThisWeek.filter(p => p.thisWeekSessions > 0).slice(0, 10).map((player, idx) =>
@@ -458,7 +458,7 @@ const TeamProgress: React.FC = () => {
 
             <TabsContent value="badges" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
-                <Trophy className="w-4 h-4 text-team-primary" />
+                <Trophy className="w-4 h-4 text-primary" />
                 <span className="font-medium text-sm">{t("teams.progress.leaderMostBadges")}</span>
               </div>
               {leaderboardByBadges.filter(p => p.totalBadges > 0).slice(0, 10).map((player, idx) =>
@@ -471,7 +471,7 @@ const TeamProgress: React.FC = () => {
 
             <TabsContent value="streaks" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
-                <Flame className="w-4 h-4 text-team-primary" />
+                <Flame className="w-4 h-4 text-primary" />
                 <span className="font-medium text-sm">{t("teams.progress.leaderLongestStreaks")}</span>
               </div>
               {leaderboardByStreak.filter(p => p.streak > 0).slice(0, 10).map((player, idx) =>
@@ -487,7 +487,7 @@ const TeamProgress: React.FC = () => {
         {/* All Players Quick View */}
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-1">
-            <Users className="w-4 h-4 text-team-primary" />
+            <Users className="w-4 h-4 text-primary" />
             {t("teams.progress.allPlayersTitle", { count: playerStats.length })}
           </AppCardTitle>
           <AppCardDescription className="mb-4">
@@ -513,10 +513,10 @@ const TeamProgress: React.FC = () => {
                     src={player.profilePhotoUrl}
                     fallback={`${player.firstName} ${player.lastInitial || ""}`}
                     size="lg"
-                    className="mx-auto group-hover:ring-2 ring-team-primary transition-all"
+                    className="mx-auto group-hover:ring-2 ring-primary transition-all"
                   />
                   {player.streak >= 3 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center">
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                       <Flame className="w-3 h-3 text-white" />
                     </div>
                   )}
@@ -559,12 +559,12 @@ const TeamProgress: React.FC = () => {
                     <p className="text-xs text-text-muted">{t("teams.progress.detailSessions")}</p>
                   </div>
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
-                    <Trophy className="w-5 h-5 text-team-primary mx-auto mb-1" />
+                    <Trophy className="w-5 h-5 text-primary mx-auto mb-1" />
                     <p className="text-xl font-bold">{selectedPlayer.totalBadges}</p>
                     <p className="text-xs text-text-muted">{t("teams.progress.detailBadges")}</p>
                   </div>
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
-                    <Flame className="w-5 h-5 text-orange-500 mx-auto mb-1" />
+                    <Flame className="w-5 h-5 text-primary mx-auto mb-1" />
                     <p className="text-xl font-bold">{selectedPlayer.streak}</p>
                     <p className="text-xs text-text-muted">{t("teams.progress.detailTeamStreak")}</p>
                   </div>
@@ -574,7 +574,7 @@ const TeamProgress: React.FC = () => {
                 <div className="p-4 bg-surface-muted rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-team-primary" />
+                      <Calendar className="w-4 h-4 text-primary" />
                       {t("teams.progress.detailThisWeek")}
                     </span>
                     <span className="font-bold">{selectedPlayer.thisWeekSessions} {t("teams.progress.detailSessions")}</span>
@@ -594,7 +594,7 @@ const TeamProgress: React.FC = () => {
                 {selectedPlayer.badges.length > 0 && (
                   <div>
                     <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                      <Award className="w-4 h-4 text-team-primary" />
+                      <Award className="w-4 h-4 text-primary" />
                       {t("teams.progress.detailBadgesEarned")}
                     </h4>
                     <div className="space-y-2">
@@ -602,8 +602,8 @@ const TeamProgress: React.FC = () => {
                         const IconComponent = getBadgeIcon(badge.icon);
                         return (
                           <div key={idx} className="flex items-center gap-3 p-3 bg-surface-muted rounded-xl">
-                            <div className="w-10 h-10 rounded-full bg-team-primary/10 flex items-center justify-center">
-                              <IconComponent className="w-5 h-5 text-team-primary" />
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <IconComponent className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1">
                               <p className="font-medium text-sm">{badge.name}</p>

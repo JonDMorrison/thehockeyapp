@@ -275,7 +275,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       className="space-y-6"
     >
       <div className="text-center pb-4">
-        <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-4">
+        <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-primary to-red-500 flex items-center justify-center mb-4">
           <Flame className="w-8 h-8 text-white" />
         </div>
         <h3 className="text-lg font-bold">{t('practice.createA30DayChallenge')}</h3>
@@ -304,7 +304,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
       className="space-y-6"
     >
       <div className="text-center pb-2">
-        <CalendarIcon className="w-8 h-8 mx-auto text-orange-500 mb-2" />
+        <CalendarIcon className="w-8 h-8 mx-auto text-primary mb-2" />
         <h3 className="text-lg font-bold">{t('practice.pickAStartDate')}</h3>
         <p className="text-sm text-muted-foreground">
           {t('practice.challengeWillRunFor30Days')}
@@ -344,7 +344,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         <p className="text-sm text-muted-foreground">
           {t('practice.playersWillDoTheseExercisesEveryDay')}
         </p>
-        <p className="text-xs text-orange-500 font-medium mt-1">
+        <p className="text-xs text-primary font-medium mt-1">
           {t('practice.nSelected', { n: selectedExercises.length })}
         </p>
       </div>
@@ -373,7 +373,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         className="space-y-6"
       >
         <div className="text-center pb-2">
-          <Trophy className="w-10 h-10 mx-auto text-orange-500 mb-2" />
+          <Trophy className="w-10 h-10 mx-auto text-primary mb-2" />
           <h3 className="text-lg font-bold">{t('practice.reviewYourChallenge')}</h3>
         </div>
 
@@ -399,7 +399,7 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
               {selectedDetails.map((ex) => (
                 <span
                   key={ex.id}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-orange-500/10 text-orange-600 rounded-full text-xs font-medium"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
                 >
                   <ex.icon className="w-3 h-3" />
                   {ex.label}
@@ -429,13 +429,13 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
         }}
         className="relative"
       >
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-red-500 flex items-center justify-center">
           <Send className="w-10 h-10 text-white" />
         </div>
         <motion.div
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute -inset-4 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 -z-10"
+          className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/20 to-red-500/20 -z-10"
         />
       </motion.div>
 
@@ -452,9 +452,9 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
             className="flex items-center gap-3"
           >
             {i < sendingStep ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
+              <CheckCircle className="w-5 h-5 text-success" />
             ) : i === sendingStep ? (
-              <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
             ) : (
               <div className="w-5 h-5 rounded-full border-2 border-muted" />
             )}
@@ -484,9 +484,9 @@ export const ThirtyDayChallengeWizard: React.FC<ThirtyDayChallengeWizardProps> =
                   key={s}
                   className={`w-2 h-2 rounded-full transition-colors ${
                     s === step
-                      ? "bg-orange-500"
+                      ? "bg-primary"
                       : (["name", "dates", "exercises", "review"] as Step[]).indexOf(step) > i
-                      ? "bg-orange-500/50"
+                      ? "bg-primary/50"
                       : "bg-muted"
                   }`}
                 />

@@ -221,8 +221,8 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
       <>
         <AppCard>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <Check className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <Check className="w-5 h-5 text-success" />
             </div>
             <div className="flex-1">
               <p className="font-medium text-sm">{t("teams.joinAsPlayer.onRoster")}</p>
@@ -271,7 +271,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
     <>
       <AppCard>
         <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-          <Dumbbell className="w-4 h-4 text-team-primary" />
+          <Dumbbell className="w-4 h-4 text-primary" />
           {t("teams.joinAsPlayer.title")}
         </AppCardTitle>
         <AppCardDescription className="mb-4">

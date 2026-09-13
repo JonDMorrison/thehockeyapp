@@ -72,7 +72,7 @@ const Demo: React.FC = () => {
         {/* Background Effects */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-success/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           {/* Grid pattern */}
           <div
             className="absolute inset-0 opacity-[0.03]"
@@ -104,7 +104,7 @@ const Demo: React.FC = () => {
               onClick={() => setActiveView("coach")}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
                 activeView === "coach"
-                  ? "bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] text-white shadow-glow"
+                  ? "bg-primary text-white shadow-[0_8px_24px_hsl(var(--primary)/0.24)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -115,7 +115,7 @@ const Demo: React.FC = () => {
               onClick={() => setActiveView("player")}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
                 activeView === "player"
-                  ? "bg-gradient-to-r from-success to-[hsl(160,60%,40%)] text-white shadow-[0_0_40px_-10px_hsl(var(--success)/0.3)]"
+                  ? "bg-primary text-white shadow-[0_8px_24px_hsl(var(--primary)/0.24)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -135,7 +135,7 @@ const Demo: React.FC = () => {
             {/* Content */}
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-[hsl(221,70%,60%)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-sm font-medium text-foreground">{t('marketing.demo_badge_coach_dashboard')}</span>
@@ -181,12 +181,12 @@ const Demo: React.FC = () => {
       </section>
 
       {/* Player View Section */}
-      <section className={`py-20 lg:py-28 bg-gradient-to-b from-transparent via-success/5 to-transparent transition-opacity duration-500 ${activeView === "player" ? "opacity-100" : "hidden"}`}>
+      <section className={`py-20 lg:py-28 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent transition-opacity duration-500 ${activeView === "player" ? "opacity-100" : "hidden"}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Phone Mockup */}
             <div className="flex justify-center lg:order-1 order-2">
-              <PhoneMockup showGlow glowColor="success">
+              <PhoneMockup showGlow glowColor="primary">
                 <FeatureCheckoff />
               </PhoneMockup>
             </div>
@@ -194,7 +194,7 @@ const Demo: React.FC = () => {
             {/* Content */}
             <div className="lg:order-2 order-1">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-soft mb-6">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-success to-[hsl(160,60%,40%)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <UserCircle className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-sm font-medium text-foreground">{t('marketing.demo_badge_player_experience')}</span>
@@ -209,8 +209,8 @@ const Demo: React.FC = () => {
                 <ul className="space-y-4">
                   {playerFeatures.map((item, i) => (
                     <li key={i} className="flex items-start gap-4 group">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success/10 to-success/5 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <item.icon className="w-5 h-5 text-success" />
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <item.icon className="w-5 h-5 text-primary" />
                       </div>
                       <div>
                         <span className="font-medium text-foreground">{item.text}</span>
@@ -280,7 +280,7 @@ const Demo: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
-                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="text-base px-10 bg-primary hover:bg-brand-strong text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 onClick={() => setShowGetStarted(true)}
               >
                 {t('marketing.home_cta_get_started')}

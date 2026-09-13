@@ -59,10 +59,10 @@ export function GoalThermometer({
   };
 
   const getGradientColors = () => {
-    if (isComplete) return 'from-amber-400 via-orange-500 to-red-500';
-    if (isHot) return 'from-orange-400 via-orange-500 to-red-500';
-    if (isWarm) return 'from-yellow-400 via-orange-400 to-orange-500';
-    return 'from-blue-400 via-cyan-400 to-teal-500';
+    if (isComplete) return 'from-primary via-primary to-red-500';
+    if (isHot) return 'from-primary via-primary to-red-500';
+    if (isWarm) return 'from-primary to-brand-strong';
+    return 'from-primary via-primary to-success';
   };
 
   return (
@@ -135,7 +135,7 @@ export function GoalThermometer({
               exit={{ opacity: 0 }}
               transition={{ duration: 1.5, repeat: Infinity }}
               style={{
-                boxShadow: 'inset 0 0 20px rgba(249, 115, 22, 0.5)',
+                boxShadow: 'inset 0 0 20px hsl(var(--primary) / 0.35)',
               }}
             />
           )}

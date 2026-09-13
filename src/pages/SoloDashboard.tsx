@@ -273,7 +273,7 @@ export default function SoloDashboard() {
             {/* Card 1: Ready to Train */}
             <motion.button
               onClick={handleStartWorkout}
-              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-blue-500 to-indigo-600 text-left"
+              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-primary to-brand-strong text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -343,7 +343,7 @@ export default function SoloDashboard() {
             {/* Card 2: Plan Training */}
             <motion.button
               onClick={() => navigate(`/solo/planning/${playerId}`)}
-              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-emerald-500 to-teal-600 text-left"
+              className="relative overflow-hidden rounded-2xl border border-border p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-surface-muted to-card text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -369,7 +369,7 @@ export default function SoloDashboard() {
             {/* Card 3: Invite A Friend */}
             <motion.button
               onClick={() => setShowInviteModal(true)}
-              className="relative overflow-hidden rounded-2xl p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-orange-500 to-amber-500 text-left"
+              className="relative overflow-hidden rounded-2xl border border-border p-3 sm:p-4 min-h-[100px] sm:aspect-square flex flex-col justify-between bg-gradient-to-br from-surface to-card text-left"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -406,9 +406,9 @@ export default function SoloDashboard() {
                   className={cn(
                     "flex-1 aspect-square rounded-xl flex flex-col items-center justify-center transition-all",
                     day.completed
-                      ? "bg-primary/10"
+                      ? "bg-success/10"
                       : day.hasWorkout
-                        ? "bg-amber-500/10"
+                        ? "bg-primary/10"
                         : "bg-muted/50",
                     day.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-background"
                   )}
@@ -416,17 +416,17 @@ export default function SoloDashboard() {
                   <span className={cn(
                     "text-xs font-medium",
                     day.completed
-                      ? "text-primary"
+                      ? "text-success"
                       : day.hasWorkout
-                        ? "text-amber-600"
+                        ? "text-primary"
                         : "text-muted-foreground"
                   )}>
                     {day.dayLetter}
                   </span>
                   {day.completed ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success mt-0.5" />
                   ) : day.hasWorkout ? (
-                    <Dumbbell className="h-3 w-3 text-amber-600 mt-0.5" />
+                    <Dumbbell className="h-3 w-3 text-primary mt-0.5" />
                   ) : null}
                 </div>
               ))}

@@ -190,7 +190,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   return (
     <AppCard>
       <AppCardTitle className="flex items-center gap-2 mb-1">
-        <User className="w-4 h-4 text-team-primary" />
+        <User className="w-4 h-4 text-primary" />
         {t("teams.coachProfile.title")}
       </AppCardTitle>
       <AppCardDescription className="mb-4">
@@ -249,7 +249,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
         {isCoach && (
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-team-primary" />
+              <Heart className="w-4 h-4 text-primary" />
               <p className="text-sm font-medium text-foreground">
                 {t("teams.coachProfile.bioTitle")}
               </p>
@@ -260,7 +260,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="coachWhy" className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-500" />
+                <Heart className="w-4 h-4 text-primary" />
                 {t("teams.coachProfile.whyLabel")}
               </Label>
               <Textarea
@@ -279,7 +279,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="coachLove" className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-blue-500" />
+                <MessageCircle className="w-4 h-4 text-primary" />
                 {t("teams.coachProfile.loveLabel")}
               </Label>
               <Textarea
@@ -298,7 +298,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="coachMemory" className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-500" />
+                <Trophy className="w-4 h-4 text-primary" />
                 {t("teams.coachProfile.memoryLabel")}
               </Label>
               <Textarea

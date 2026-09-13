@@ -29,7 +29,7 @@ function PlanningCard({ title, subtitle, icon, badge, primary = false, onClick }
       className={cn(
         "group flex min-h-28 w-full items-center gap-4 rounded-lg border p-4 text-left transition duration-150 active:scale-[0.99]",
         primary
-          ? "border-primary bg-primary text-white shadow-[0_12px_30px_hsl(var(--primary)/0.2)] hover:bg-team-tertiary"
+          ? "border-primary bg-primary text-white shadow-[0_12px_30px_hsl(var(--primary)/0.2)] hover:bg-brand-strong"
           : "border-border bg-card hover:border-primary/35 hover:bg-primary/[0.035]",
       )}
     >

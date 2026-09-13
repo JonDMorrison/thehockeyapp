@@ -110,7 +110,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
       <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <LayoutTemplate className="w-5 h-5 text-team-primary" />
+            <LayoutTemplate className="w-5 h-5 text-primary" />
             {t("templates.pickerTitle")}
           </SheetTitle>
           <SheetDescription>{t("templates.pickerSubtitle")}</SheetDescription>

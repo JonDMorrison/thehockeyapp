@@ -17,20 +17,20 @@ export const FeaturePrivacy: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-emerald-500" />
+          <Shield className="w-4 h-4 text-success" />
           <h1 className="text-base font-bold text-foreground">{t('marketing.privacy_control_heading')}</h1>
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-4">
         {/* Parent control badge */}
-        <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20">
+        <div className="bg-success/10 rounded-xl p-4 border border-success/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-success flex items-center justify-center">
               <Lock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-emerald-700">{t('marketing.privacy_parent_account')}</p>
+              <p className="text-sm font-semibold text-success">{t('marketing.privacy_parent_account')}</p>
               <p className="text-[10px] text-muted-foreground">{t('marketing.privacy_you_control')}</p>
             </div>
           </div>
@@ -54,7 +54,7 @@ export const FeaturePrivacy: React.FC = () => {
                       {setting.label}
                     </p>
                     {setting.locked && (
-                      <p className="text-[9px] text-emerald-600">{t('marketing.privacy_always_off')}</p>
+                      <p className="text-[9px] text-success">{t('marketing.privacy_always_off')}</p>
                     )}
                   </div>
                 </div>
@@ -62,7 +62,7 @@ export const FeaturePrivacy: React.FC = () => {
                   setting.locked
                     ? "bg-muted cursor-not-allowed"
                     : setting.enabled
-                      ? "bg-emerald-500 justify-end"
+                      ? "bg-success justify-end"
                       : "bg-muted justify-start"
                 }`}>
                   <div className={`w-4 h-4 rounded-full ${
@@ -76,7 +76,7 @@ export const FeaturePrivacy: React.FC = () => {
 
         {/* Trust message */}
         <div className="bg-muted/30 rounded-xl p-4 text-center">
-          <Shield className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+          <Shield className="w-8 h-8 text-success mx-auto mb-2" />
           <p className="text-xs font-medium">{t('marketing.privacy_stay_private')}</p>
           <p className="text-[10px] text-muted-foreground mt-1">
             {t('marketing.privacy_no_social')}

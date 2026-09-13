@@ -123,7 +123,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
           {/* National Challenges */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-team-primary" />
+              <Trophy className="w-5 h-5 text-primary" />
               <Label className="text-base font-semibold">National Challenges</Label>
             </div>
 

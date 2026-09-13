@@ -10,19 +10,14 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: "player" | "team";
 }
 
-// Generate a consistent color based on the name
+// Generate a consistent on-brand fallback without turning avatar colour into status.
 const getAvatarColors = (name: string): { bg: string; text: string } => {
   const colors = [
-    { bg: "from-blue-500 to-blue-600", text: "text-white" },
-    { bg: "from-emerald-500 to-emerald-600", text: "text-white" },
-    { bg: "from-violet-500 to-violet-600", text: "text-white" },
-    { bg: "from-amber-500 to-amber-600", text: "text-white" },
-    { bg: "from-rose-500 to-rose-600", text: "text-white" },
-    { bg: "from-cyan-500 to-cyan-600", text: "text-white" },
-    { bg: "from-indigo-500 to-indigo-600", text: "text-white" },
-    { bg: "from-teal-500 to-teal-600", text: "text-white" },
-    { bg: "from-orange-500 to-orange-600", text: "text-white" },
-    { bg: "from-pink-500 to-pink-600", text: "text-white" },
+    { bg: "from-primary to-brand-strong", text: "text-white" },
+    { bg: "from-slate-500 to-slate-700", text: "text-white" },
+    { bg: "from-zinc-500 to-zinc-700", text: "text-white" },
+    { bg: "from-red-600 to-red-800", text: "text-white" },
+    { bg: "from-neutral-500 to-neutral-700", text: "text-white" },
   ];
   
   // Simple hash based on name to get consistent color

@@ -32,7 +32,7 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
         href={url}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-team-primary hover:bg-team-primary/5"
+        className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm font-semibold text-primary hover:bg-primary/5"
       >
         <Film className="h-4 w-4" />
         {t("players.today.openVideo")}
@@ -67,20 +67,20 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
         <CollapsibleTrigger asChild>
           <button
             type="button"
-            className="group flex min-h-[68px] min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-team-primary/5"
+            className="group flex min-h-[68px] min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-primary/5"
             aria-label={isOpen ? t("players.today.hideSkillVideo") : t("players.today.watchSkillVideo")}
           >
             <span className="relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-foreground text-background shadow-sm">
-              <span className="absolute inset-y-0 left-0 w-1 bg-team-primary" />
+              <span className="absolute inset-y-0 left-0 w-1 bg-primary" />
               <Play className="ml-0.5 h-5 w-5 fill-current" />
               {interaction.watched ? (
-                <span className="absolute bottom-0.5 right-0.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-foreground">
+                <span className="absolute bottom-0.5 right-0.5 grid h-4 w-4 place-items-center rounded-full bg-success text-white ring-2 ring-foreground">
                   <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               ) : null}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-team-primary">
+              <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-primary">
                 {interaction.watched
                   ? t("players.today.tipWatched")
                   : t("players.today.skillTip")}
@@ -135,7 +135,7 @@ export function SkillVideo({ url, taskTitle }: SkillVideoProps) {
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-text-secondary hover:text-team-primary"
+            className="inline-flex items-center gap-1 font-semibold text-text-secondary hover:text-primary"
             onClick={(event) => event.stopPropagation()}
           >
             {parsedVideo?.provider === "vimeo" ? t("players.today.watchOnVimeo") : t("players.today.watchOnYoutube")}

@@ -400,7 +400,7 @@ export default function AssociationDashboard() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="truncate font-black uppercase tracking-tight">{team.name}</h3>
-                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide ${team.has_published_week ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide ${team.has_published_week ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                             {team.has_published_week ? "Plan live" : "Plan needed"}
                           </span>
                         </div>
@@ -445,7 +445,7 @@ export default function AssociationDashboard() {
               </div>
             ) : (
               <div className="p-8 text-center">
-                {dashboard.teams.length === 0 ? <Link2 className="mx-auto h-8 w-8 text-primary" /> : <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-400" />}
+                {dashboard.teams.length === 0 ? <Link2 className="mx-auto h-8 w-8 text-primary" /> : <CheckCircle2 className="mx-auto h-8 w-8 text-success" />}
                 <h3 className="mt-3 font-black uppercase">{dashboard.teams.length === 0 ? "Connect the pilot team" : "No teams in this filter"}</h3>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
                   {dashboard.teams.length === 0
@@ -488,7 +488,7 @@ export default function AssociationDashboard() {
             )}
 
             <AppCard id="association-access" className="scroll-mt-24">
-              <AppCardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-400" /> Staff access</AppCardTitle>
+              <AppCardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Staff access</AppCardTitle>
               <AppCardDescription className="mt-1">{rolesQuery.data?.length || 0} people can open this association view.</AppCardDescription>
 
               {canManage && (

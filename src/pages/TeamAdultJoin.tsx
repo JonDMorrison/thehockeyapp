@@ -188,8 +188,8 @@ const TeamAdultJoin: React.FC = () => {
         <PageContainer className="min-h-screen flex items-center justify-center">
           <div className="max-w-sm w-full">
             <AppCard className="text-center">
-              <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-team-primary" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-primary" />
               </div>
               <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.inviteTitle")}</AppCardTitle>
               <AppCardDescription className="mb-4">
@@ -246,19 +246,19 @@ const TeamAdultJoin: React.FC = () => {
               </>
             ) : redeemInvite.isPending ? (
               <>
-                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-team-primary" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
                 <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.joiningTitle")}</AppCardTitle>
                 <AppCardDescription className="mb-4">
                   {t("auth.teamAdultJoin.joiningMessage", { teamName, role: roleLabels[invite.role || ""] || "Team Staff" })}
                 </AppCardDescription>
-                <Loader2 className="w-8 h-8 animate-spin text-team-primary mx-auto" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
               </>
             ) : (
               <>
-                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-team-primary" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
                 <AppCardTitle className="text-xl mb-2">Join {teamName}</AppCardTitle>
                 <AppCardDescription className="mb-5">

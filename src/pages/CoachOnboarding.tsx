@@ -242,7 +242,7 @@ const CoachOnboarding: React.FC = () => {
               <div
                 key={i}
                 className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  i < step ? "bg-team-primary" : "bg-muted"
+                  i < step ? "bg-primary" : "bg-muted"
                 }`}
               />
             ))}
@@ -311,7 +311,7 @@ const CoachOnboarding: React.FC = () => {
 
             <AppCard>
               <AppCardTitle className="text-lg flex items-center gap-2 mb-3">
-                <Palette className="w-4 h-4 text-team-primary" />
+                <Palette className="w-4 h-4 text-primary" />
                 {t("coachOnboarding.colorsLabel")}
               </AppCardTitle>
               <div className="space-y-4">
@@ -367,7 +367,7 @@ const CoachOnboarding: React.FC = () => {
           <div className="space-y-6">
             <div>
               <AppCardTitle className="text-xl flex items-center gap-2">
-                <Users className="w-5 h-5 text-team-primary" />
+                <Users className="w-5 h-5 text-primary" />
                 Invite your families
               </AppCardTitle>
               <AppCardDescription className="mt-1">
@@ -405,8 +405,8 @@ const CoachOnboarding: React.FC = () => {
               )}
             </AppCard>
 
-            <div className="flex items-start gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />
+            <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <p className="text-sm leading-6 text-muted-foreground">
                 This parent-led setup keeps children’s accounts, consent, and private photos under family control.
               </p>
@@ -446,12 +446,12 @@ const CoachOnboarding: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AppCard
-                className="cursor-pointer hover:border-team-primary"
+                className="cursor-pointer hover:border-primary"
                 onClick={goToTemplate}
               >
                 <div className="flex flex-col items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-team-primary/10 flex items-center justify-center">
-                    <LayoutTemplate className="w-6 h-6 text-team-primary" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <LayoutTemplate className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <AppCardTitle className="text-base">
@@ -464,10 +464,10 @@ const CoachOnboarding: React.FC = () => {
                 </div>
               </AppCard>
 
-              <AppCard className="cursor-pointer hover:border-team-primary" onClick={goToAi}>
+              <AppCard className="cursor-pointer hover:border-primary" onClick={goToAi}>
                 <div className="flex flex-col items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-team-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-team-primary" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <AppCardTitle className="text-base">

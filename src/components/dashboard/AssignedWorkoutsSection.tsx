@@ -197,10 +197,10 @@ export const AssignedWorkoutsSection: React.FC<AssignedWorkoutsSectionProps> = (
                         className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           allComplete
                             ? "bg-success/10"
-                            : "bg-team-primary/10"
+                            : "bg-primary/10"
                         }`}
                       >
-                        <Icon className={`w-5 h-5 ${allComplete ? "text-success" : "text-team-primary"}`} />
+                        <Icon className={`w-5 h-5 ${allComplete ? "text-success" : "text-primary"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">

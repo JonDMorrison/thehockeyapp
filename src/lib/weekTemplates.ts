@@ -7,8 +7,8 @@ export const WEEK_THEMES = [
     title: "Shooting Focus",
     icon: "Target",
     description: "High volume shots all week",
-    color: "bg-orange-500",
-    gradient: "from-orange-500 to-amber-500",
+    color: "bg-primary",
+    gradient: "from-primary to-brand-strong",
     defaultDays: 5,
   },
   {
@@ -16,8 +16,8 @@ export const WEEK_THEMES = [
     title: "Balanced Week",
     icon: "Scale",
     description: "Mix of shooting, mobility & prep",
-    color: "bg-blue-500",
-    gradient: "from-blue-500 to-cyan-500",
+    color: "bg-slate-600",
+    gradient: "from-slate-600 to-slate-800",
     tag: "Most Popular",
     defaultDays: 5,
   },
@@ -26,8 +26,8 @@ export const WEEK_THEMES = [
     title: "Recovery Week",
     icon: "Heart",
     description: "Light days with stretching focus",
-    color: "bg-green-500",
-    gradient: "from-green-500 to-emerald-500",
+    color: "bg-slate-500",
+    gradient: "from-slate-500 to-slate-700",
     defaultDays: 4,
   },
   {
@@ -35,8 +35,8 @@ export const WEEK_THEMES = [
     title: "Game Week",
     icon: "Trophy",
     description: "Build up to game day",
-    color: "bg-purple-500",
-    gradient: "from-purple-500 to-violet-500",
+    color: "bg-primary",
+    gradient: "from-primary to-brand-strong",
     defaultDays: 4,
   },
 ] as const;
@@ -238,7 +238,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "🎯",
     taskIds: ["dynamic_stretch", "wrist_shots", "snap_shots", "backhand", "quick_release"],
     estimatedMinutes: 25,
-    color: "bg-orange-500",
+    color: "bg-primary",
   },
   {
     id: "quick_skills",
@@ -247,7 +247,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "⚡",
     taskIds: ["dynamic_stretch", "wrist_shots", "toe_drags"],
     estimatedMinutes: 15,
-    color: "bg-yellow-500",
+    color: "bg-primary",
   },
   {
     id: "conditioning_day",
@@ -256,7 +256,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "🏋️",
     taskIds: ["dynamic_stretch", "wall_sits", "squats", "lunges", "planks"],
     estimatedMinutes: 20,
-    color: "bg-red-500",
+    color: "bg-slate-600",
   },
   {
     id: "recovery_day",
@@ -265,7 +265,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "💆",
     taskIds: ["foam_rolling", "hip_openers", "breathing"],
     estimatedMinutes: 18,
-    color: "bg-green-500",
+    color: "bg-slate-500",
   },
   {
     id: "balanced_day",
@@ -274,7 +274,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "⚖️",
     taskIds: ["dynamic_stretch", "wrist_shots", "puck_control", "squats"],
     estimatedMinutes: 20,
-    color: "bg-blue-500",
+    color: "bg-primary",
   },
   {
     id: "game_prep",
@@ -283,7 +283,7 @@ export const DAY_TEMPLATES: DayTemplate[] = [
     icon: "🏆",
     taskIds: ["visualization", "dynamic_stretch", "quick_release"],
     estimatedMinutes: 15,
-    color: "bg-purple-500",
+    color: "bg-primary",
   },
   {
     id: "rest_day",

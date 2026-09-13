@@ -78,7 +78,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
           <Button
             variant="ghost"
             size="icon-sm"
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-500/10"
+            className="text-primary hover:text-primary hover:bg-primary/10"
           >
             <Heart className="w-4 h-4" />
           </Button>
@@ -86,7 +86,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="text-pink-500 border-pink-500/30 hover:bg-pink-500/10"
+            className="text-primary border-primary/30 hover:bg-primary/10"
           >
             <Heart className="w-4 h-4 mr-1" />
             {t("players.teamCheerButton.cheer")}

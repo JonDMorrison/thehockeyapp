@@ -53,7 +53,7 @@ export default function SoloBadges() {
       icon: Calendar,
       metricTypes: ['sessions_completed'],
       description: t('solo.badgeCategoryConsistencyDesc'),
-      gradient: 'from-indigo-500 to-violet-600',
+      gradient: 'from-primary to-brand-strong',
     },
     {
       id: 'shooting',
@@ -61,7 +61,7 @@ export default function SoloBadges() {
       icon: Target,
       metricTypes: ['total_shots'],
       description: t('solo.badgeCategoryShootingDesc'),
-      gradient: 'from-blue-500 to-cyan-500',
+      gradient: 'from-primary to-brand-strong',
     },
     {
       id: 'gameday',
@@ -69,7 +69,7 @@ export default function SoloBadges() {
       icon: Zap,
       metricTypes: ['game_day_completed', 'prep_tasks_completed'],
       description: t('solo.badgeCategoryGameReadyDesc'),
-      gradient: 'from-yellow-500 to-green-500',
+      gradient: 'from-primary to-brand-strong',
     },
   ];
 
@@ -181,10 +181,10 @@ export default function SoloBadges() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 border border-amber-500/20 rounded-2xl p-6 text-center"
+            className="bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 border border-primary/20 rounded-2xl p-6 text-center"
           >
             <BadgeIcon badgeIcon="trophy" size="lg" className="mx-auto mb-3" />
-            <p className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+            <p className="text-3xl font-bold bg-gradient-to-r from-primary to-brand-strong bg-clip-text text-transparent">
               {totalEarned}
             </p>
             <p className="text-sm text-muted-foreground">
@@ -194,7 +194,7 @@ export default function SoloBadges() {
             {/* Progress bar */}
             <div className="mt-4 w-full bg-muted rounded-full h-2 overflow-hidden">
               <motion.div
-                className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full"
+                className="bg-gradient-to-r from-primary to-brand-strong h-2 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${totalChallenges > 0 ? (totalEarned / totalChallenges) * 100 : 0}%` }}
                 transition={{ duration: 0.8, delay: 0.3 }}

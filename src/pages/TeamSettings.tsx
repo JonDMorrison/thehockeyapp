@@ -436,7 +436,7 @@ const TeamSettings: React.FC = () => {
         {/* Appearance */}
         <AppCard>
           <AppCardTitle className="text-lg flex items-center gap-2 mb-1">
-            <Image className="w-4 h-4 text-team-primary" />
+            <Image className="w-4 h-4 text-primary" />
             {t("teams.settings.appearanceTitle")}
           </AppCardTitle>
           <AppCardDescription className="mb-4">
@@ -663,8 +663,8 @@ const TeamSettings: React.FC = () => {
         {/* Coach Profile Hint */}
         <AppCard className="bg-surface-muted/50 border-dashed">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-team-primary/10 flex items-center justify-center flex-shrink-0">
-              <UserPlus className="w-4 h-4 text-team-primary" />
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <UserPlus className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-text-primary">{t("teams.settings.coachProfileHint")}</p>
@@ -673,7 +673,7 @@ const TeamSettings: React.FC = () => {
               </p>
               <Link
                 to="/settings"
-                className="inline-flex items-center gap-1 text-sm font-medium text-team-primary hover:underline mt-2"
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline mt-2"
               >
                 {t("teams.settings.goToAccountSettings")}
                 <ChevronLeft className="w-3 h-3 rotate-180" />
@@ -708,7 +708,7 @@ const TeamSettings: React.FC = () => {
         <AppCard>
           <div className="flex items-center justify-between mb-4">
             <AppCardTitle className="text-lg flex items-center gap-2">
-              <Shield className="w-4 h-4 text-team-primary" />
+              <Shield className="w-4 h-4 text-primary" />
               {t("teams.settings.coachesManagersTitle")}
             </AppCardTitle>
             <Button

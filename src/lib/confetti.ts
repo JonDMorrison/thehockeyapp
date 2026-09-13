@@ -1,4 +1,5 @@
 import confetti from 'canvas-confetti';
+import { BRAND_CONFETTI_COLORS } from '@/lib/brand';
 
 export function fireGoalConfetti() {
   // First burst - center
@@ -6,7 +7,7 @@ export function fireGoalConfetti() {
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
-    colors: ['#FFD700', '#FFA500', '#FF6347', '#00CED1', '#9370DB'],
+    colors: BRAND_CONFETTI_COLORS,
   });
 
   // Side bursts after a short delay
@@ -16,14 +17,14 @@ export function fireGoalConfetti() {
       angle: 60,
       spread: 55,
       origin: { x: 0 },
-      colors: ['#FFD700', '#FFA500', '#FF6347'],
+      colors: BRAND_CONFETTI_COLORS,
     });
     confetti({
       particleCount: 50,
       angle: 120,
       spread: 55,
       origin: { x: 1 },
-      colors: ['#00CED1', '#9370DB', '#FFD700'],
+      colors: BRAND_CONFETTI_COLORS,
     });
   }, 150);
 
@@ -33,7 +34,7 @@ export function fireGoalConfetti() {
       particleCount: 75,
       spread: 100,
       origin: { y: 0.7 },
-      colors: ['#FFD700', '#FFA500', '#00FF00'],
+      colors: BRAND_CONFETTI_COLORS,
     });
   }, 300);
 }
@@ -43,15 +44,12 @@ export function fireSmallConfetti() {
     particleCount: 30,
     spread: 50,
     origin: { y: 0.7 },
-    colors: ['#FFD700', '#FFA500', '#00CED1'],
+    colors: BRAND_CONFETTI_COLORS,
     scalar: 0.8,
   });
 }
 
 export function fireStreakConfetti(milestone: number) {
-  // Fire-themed colors for streak celebrations
-  const fireColors = ['#FF4500', '#FF6347', '#FFA500', '#FFD700', '#FF8C00'];
-  
   // Intensity scales with milestone
   const intensity = milestone >= 30 ? 3 : milestone >= 14 ? 2 : 1;
   
@@ -60,7 +58,7 @@ export function fireStreakConfetti(milestone: number) {
     particleCount: 50 * intensity,
     spread: 60 + (intensity * 10),
     origin: { y: 0.6 },
-    colors: fireColors,
+    colors: BRAND_CONFETTI_COLORS,
   });
 
   // Side bursts for bigger milestones
@@ -71,14 +69,14 @@ export function fireStreakConfetti(milestone: number) {
         angle: 60,
         spread: 45,
         origin: { x: 0, y: 0.7 },
-        colors: fireColors,
+        colors: BRAND_CONFETTI_COLORS,
       });
       confetti({
         particleCount: 30 * intensity,
         angle: 120,
         spread: 45,
         origin: { x: 1, y: 0.7 },
-        colors: fireColors,
+        colors: BRAND_CONFETTI_COLORS,
       });
     }, 150);
   }
@@ -90,7 +88,7 @@ export function fireStreakConfetti(milestone: number) {
         particleCount: 100,
         spread: 120,
         origin: { y: 0.5 },
-        colors: [...fireColors, '#FFFFFF', '#FFE4B5'],
+        colors: BRAND_CONFETTI_COLORS,
         scalar: 1.2,
       });
     }, 300);

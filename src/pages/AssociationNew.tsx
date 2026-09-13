@@ -126,8 +126,8 @@ export default function AssociationNew() {
             </div>
           </AppCard>
 
-          <div className="flex items-start gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-sm">
-            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />
+          <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
+            <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <p className="leading-6 text-muted-foreground">
               Creating this workspace makes you its owner. Adding a team also requires that team’s head-coach access.
             </p>

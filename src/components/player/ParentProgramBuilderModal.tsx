@@ -360,7 +360,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       className="space-y-6"
     >
       <div className="text-center pb-2">
-        <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
+        <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center mb-4">
           <Target className="w-7 h-7 text-white" />
         </div>
         <h3 className="text-lg font-bold">Choose Skill Focus</h3>
@@ -427,7 +427,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       className="space-y-6"
     >
       <div className="text-center pb-2">
-        <Calendar className="w-8 h-8 mx-auto text-blue-500 mb-2" />
+        <Calendar className="w-8 h-8 mx-auto text-primary mb-2" />
         <h3 className="text-lg font-bold">Training Frequency</h3>
         <p className="text-sm text-muted-foreground">
           How often should they train each week?
@@ -488,7 +488,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       className="space-y-6"
     >
       <div className="text-center pb-2">
-        <Calendar className="w-8 h-8 mx-auto text-blue-500 mb-2" />
+        <Calendar className="w-8 h-8 mx-auto text-primary mb-2" />
         <h3 className="text-lg font-bold">Time Horizon</h3>
         <p className="text-sm text-muted-foreground">
           How far ahead should we plan?
@@ -533,7 +533,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       className="space-y-6"
     >
       <div className="text-center pb-2">
-        <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4">
+        <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center mb-4">
           <Brain className="w-7 h-7 text-white" />
         </div>
         <h3 className="text-lg font-bold">Your Goal</h3>
@@ -571,13 +571,13 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         transition={{ duration: 1.5, repeat: Infinity }}
         className="relative"
       >
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center">
           <Sparkles className="w-10 h-10 text-white" />
         </div>
         <motion.div
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute -inset-4 rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-600/20 -z-10"
+          className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/20 -z-10"
         />
       </motion.div>
 
@@ -594,9 +594,9 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
             className="flex items-center gap-3"
           >
             {i < sendingStep ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
+              <CheckCircle className="w-5 h-5 text-success" />
             ) : i === sendingStep ? (
-              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
             ) : (
               <div className="w-5 h-5 rounded-full border-2 border-muted" />
             )}

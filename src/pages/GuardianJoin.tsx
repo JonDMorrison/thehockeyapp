@@ -190,8 +190,8 @@ const GuardianJoin: React.FC = () => {
         <PageContainer className="min-h-screen flex items-center justify-center">
           <div className="max-w-sm w-full">
             <AppCard className="text-center">
-              <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-team-primary" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <UserPlus className="w-8 h-8 text-primary" />
               </div>
               <AppCardTitle className="text-xl mb-2">{t("auth.guardianJoin.inviteTitle")}</AppCardTitle>
               <AppCardDescription className="mb-6">
@@ -252,19 +252,19 @@ const GuardianJoin: React.FC = () => {
               </>
             ) : redeemInvite.isPending ? (
               <>
-                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-team-primary" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
                 <AppCardTitle className="text-xl mb-2">{t("auth.guardianJoin.joiningTitle")}</AppCardTitle>
                 <AppCardDescription className="mb-4">
                   {t("auth.guardianJoin.joiningMessage", { playerName })}
                 </AppCardDescription>
-                <Loader2 className="w-8 h-8 animate-spin text-team-primary mx-auto" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
               </>
             ) : (
               <>
-                <div className="w-16 h-16 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-team-primary" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-primary" />
                 </div>
                 <AppCardTitle className="text-xl mb-2">Confirm guardian access</AppCardTitle>
                 <AppCardDescription className="mb-5">

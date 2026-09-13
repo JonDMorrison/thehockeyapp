@@ -88,7 +88,7 @@ export const MarketingAppPreview: React.FC = () => {
                   className={cn(
                     "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
                     task.completed
-                      ? "bg-emerald-500 border-emerald-500 text-white"
+                      ? "bg-success border-success text-white"
                       : "border-muted-foreground/40"
                   )}
                 >

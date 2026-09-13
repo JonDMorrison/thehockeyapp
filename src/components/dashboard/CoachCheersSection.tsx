@@ -284,7 +284,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
     <AppCard>
       <div className="flex items-center justify-between mb-3">
         <AppCardTitle className="flex items-center gap-2 text-sm">
-          <Heart className="w-4 h-4 text-pink-500" />
+          <Heart className="w-4 h-4 text-primary" />
           Team Cheers
         </AppCardTitle>
         <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -321,8 +321,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                                   size="sm"
                                 />
                               ) : (
-                                <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
-                                  <Shield className="w-3 h-3 text-team-primary" />
+                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                  <Shield className="w-3 h-3 text-primary" />
                                 </div>
                               )}
                               <span className="ml-2 text-xs font-medium">
@@ -362,8 +362,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                                 size="sm"
                               />
                             ) : (
-                              <div className="w-6 h-6 rounded-full bg-team-primary/20 flex items-center justify-center">
-                                <Shield className="w-3 h-3 text-team-primary" />
+                              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Shield className="w-3 h-3 text-primary" />
                               </div>
                             )}
                             <span className="text-xs">
@@ -504,8 +504,8 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                       size="sm"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-team-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Shield className="w-4 h-4 text-team-primary" />
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Shield className="w-4 h-4 text-primary" />
                     </div>
                   )
                 ) : (

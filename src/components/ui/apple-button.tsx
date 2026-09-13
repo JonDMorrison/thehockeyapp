@@ -10,7 +10,7 @@ const appleButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-gradient-to-r from-primary to-[hsl(221,70%,60%)] text-white shadow-glow hover:brightness-110",
+          "bg-gradient-to-r from-primary to-brand-strong text-white shadow-glow hover:brightness-110",
         secondary:
           "bg-card text-primary border-2 border-primary/40 hover:bg-primary hover:text-white hover:border-primary",
         outline:
@@ -18,7 +18,7 @@ const appleButtonVariants = cva(
         ghost:
           "bg-transparent hover:bg-muted text-foreground",
         success:
-          "bg-gradient-to-r from-success to-[hsl(160,60%,40%)] text-white shadow-[0_0_40px_-10px_hsl(var(--success)/0.3)] hover:brightness-110",
+          "bg-success text-white shadow-[0_0_40px_-10px_hsl(var(--success)/0.3)] hover:brightness-110",
       },
       size: {
         sm: "h-9 px-4 text-sm",

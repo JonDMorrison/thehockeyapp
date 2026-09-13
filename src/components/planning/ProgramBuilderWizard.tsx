@@ -435,7 +435,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
                 key={option.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                   isSelected
-                    ? "border-purple-500 bg-purple-500/10"
+                    ? "border-primary bg-primary/10"
                     : "border-border hover:bg-muted"
                 }`}
                 onClick={() => toggleFocus(option.id)}
@@ -472,13 +472,13 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
         }}
         className="relative"
       >
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center">
           <Brain className="w-10 h-10 text-white" />
         </div>
         <motion.div
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute -inset-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 -z-10"
+          className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/20 -z-10"
         />
       </motion.div>
 
@@ -496,9 +496,9 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             className="flex items-center gap-3"
           >
             {i < generatingStep ? (
-              <CheckCircle className="w-5 h-5 text-green-500" />
+              <CheckCircle className="w-5 h-5 text-success" />
             ) : i === generatingStep ? (
-              <Loader2 className="w-5 h-5 text-purple-500 animate-spin" />
+              <Loader2 className="w-5 h-5 text-primary animate-spin" />
             ) : (
               <div className="w-5 h-5 rounded-full border-2 border-muted" />
             )}
@@ -525,7 +525,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
         <>
           {/* Header */}
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-brand-strong">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -555,7 +555,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
               {t('practice.regenerate')}
             </Button>
             <Button
-              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="flex-1 bg-gradient-to-r from-primary to-brand-strong hover:from-primary hover:to-primary"
               onClick={() => setStep("reward")}
             >
               <Rocket className="w-4 h-4 mr-2" />
@@ -596,7 +596,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
+            <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary to-brand-strong">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
             {t('practice.createAProgram')}

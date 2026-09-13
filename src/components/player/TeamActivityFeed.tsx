@@ -100,7 +100,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
     <AppCard>
       <div className="flex items-center justify-between mb-3">
         <AppCardTitle className="flex items-center gap-2 text-sm">
-          <Activity className="w-4 h-4 text-team-primary" />
+          <Activity className="w-4 h-4 text-primary" />
           {t("players.teamActivityFeed.title")}
         </AppCardTitle>
         {totalPlayers > 0 && (
@@ -122,7 +122,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
               {activities?.slice(0, 8).map((activity, i) => (
                 <div
                   key={activity.playerId}
-                  className={`relative ${activity.isCurrentPlayer ? "ring-2 ring-team-primary ring-offset-2 rounded-full" : ""}`}
+                  className={`relative ${activity.isCurrentPlayer ? "ring-2 ring-primary ring-offset-2 rounded-full" : ""}`}
                   style={{ zIndex: 10 - i }}
                 >
                   <Avatar
@@ -150,7 +150,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
               <div
                 key={activity.playerId}
                 className={`flex items-center gap-2 text-sm ${
-                  activity.isCurrentPlayer ? "text-team-primary font-medium" : "text-muted-foreground"
+                  activity.isCurrentPlayer ? "text-primary font-medium" : "text-muted-foreground"
                 }`}
               >
                 <CheckCircle className="w-3.5 h-3.5 text-success" />
@@ -169,7 +169,7 @@ export const TeamActivityFeed: React.FC<TeamActivityFeedProps> = ({
           {/* Encouragement message */}
           {completedCount >= 3 && (
             <div className="flex items-center gap-2 pt-2 border-t border-border">
-              <Flame className="w-4 h-4 text-orange-500" />
+              <Flame className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">
                 {t("players.teamActivityFeed.teamOnFire")}
               </span>

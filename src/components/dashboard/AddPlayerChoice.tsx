@@ -21,7 +21,7 @@ export const AddPlayerChoice: React.FC<AddPlayerChoiceProps> = ({
       description: "I'm a coach-parent",
       icon: Baby,
       onClick: onAddMyChild,
-      gradient: "from-amber-500 to-orange-500",
+      gradient: "from-primary to-brand-strong",
     },
     {
       id: "invite",
@@ -29,7 +29,7 @@ export const AddPlayerChoice: React.FC<AddPlayerChoiceProps> = ({
       description: "Send link to parents",
       icon: Users,
       onClick: onInviteFamilies,
-      gradient: "from-blue-500 to-indigo-500",
+      gradient: "from-primary to-brand-strong",
     },
   ];
 

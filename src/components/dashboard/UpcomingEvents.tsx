@@ -113,7 +113,7 @@ export const UpcomingEvents: React.FC<UpcomingEventsProps> = ({
                 className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   isGame
                     ? "bg-warning/20 text-warning"
-                    : "bg-team-primary/20 text-team-primary"
+                    : "bg-primary/20 text-primary"
                 }`}
               >
                 {isGame ? (

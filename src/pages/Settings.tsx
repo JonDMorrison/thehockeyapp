@@ -285,7 +285,7 @@ export default function Settings() {
             {/* Current Plan */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {isPro && <Crown className="h-5 w-5 text-amber-500" />}
+                {isPro && <Crown className="h-5 w-5 text-primary" />}
                 <div>
                   <p className="font-medium text-foreground">{getPlanDisplayLabel()}</p>
                   {periodEnd && (
@@ -294,7 +294,7 @@ export default function Settings() {
                 </div>
               </div>
               {badge && (
-                <span className="text-xs font-medium bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">
+                <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">
                   {badge}
                 </span>
               )}

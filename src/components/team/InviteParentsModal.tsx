@@ -354,8 +354,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
               ) : (
                 <>
                   {hasChildrenOnTeam && (
-                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                      <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                    <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                      <div className="flex items-center gap-2 text-sm text-success dark:text-success">
                         <Check className="w-4 h-4" />
                         <span>
                           {childrenData!.childrenOnTeam.length === 1
@@ -530,10 +530,10 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   )}
 
                   {/* Full Link */}
-                  <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="p-4 rounded-lg bg-success/10 border border-success/20">
                     <div className="flex items-center gap-2 mb-2">
-                      <LinkIcon className="w-4 h-4 text-green-600" />
-                      <p className="text-sm font-medium text-green-700 dark:text-green-400">{t("teams.inviteParents.inviteLink")}</p>
+                      <LinkIcon className="w-4 h-4 text-success" />
+                      <p className="text-sm font-medium text-success dark:text-success">{t("teams.inviteParents.inviteLink")}</p>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                       <Calendar className="w-3 h-3" />
@@ -548,7 +548,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                         onClick={handleCopy}
                       >
                         {copied ? (
-                          <Check className="w-4 h-4 text-green-600" />
+                          <Check className="w-4 h-4 text-success" />
                         ) : (
                           <Copy className="w-4 h-4" />
                         )}

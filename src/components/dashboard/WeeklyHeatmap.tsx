@@ -30,10 +30,10 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
   const getIntensity = (count: number) => {
     if (count === 0) return "bg-surface-muted";
     const ratio = count / maxCount;
-    if (ratio < 0.25) return "bg-team-primary/20";
-    if (ratio < 0.5) return "bg-team-primary/40";
-    if (ratio < 0.75) return "bg-team-primary/70";
-    return "bg-team-primary";
+    if (ratio < 0.25) return "bg-primary/20";
+    if (ratio < 0.5) return "bg-primary/40";
+    if (ratio < 0.75) return "bg-primary/70";
+    return "bg-primary";
   };
 
   // Find best day
@@ -63,10 +63,10 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
         <div className="flex items-center gap-1">
           <span className="text-text-muted">Less</span>
           <div className="w-3 h-3 rounded bg-surface-muted" />
-          <div className="w-3 h-3 rounded bg-team-primary/20" />
-          <div className="w-3 h-3 rounded bg-team-primary/40" />
-          <div className="w-3 h-3 rounded bg-team-primary/70" />
-          <div className="w-3 h-3 rounded bg-team-primary" />
+          <div className="w-3 h-3 rounded bg-primary/20" />
+          <div className="w-3 h-3 rounded bg-primary/40" />
+          <div className="w-3 h-3 rounded bg-primary/70" />
+          <div className="w-3 h-3 rounded bg-primary" />
           <span className="text-text-muted">More</span>
         </div>
         {bestDay && (

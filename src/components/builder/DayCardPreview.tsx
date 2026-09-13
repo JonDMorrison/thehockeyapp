@@ -112,7 +112,7 @@ export const DayCardEmpty: React.FC<{ dayName: string; onAdd: () => void }> = ({
       onClick={onAdd}
       className={cn(
         "w-full rounded-2xl p-4 transition-all duration-200",
-        "border-2 border-dashed border-border hover:border-team-primary/50",
+        "border-2 border-dashed border-border hover:border-primary/50",
         "bg-muted/50 hover:bg-muted",
         "flex flex-col items-center justify-center min-h-[120px]"
       )}

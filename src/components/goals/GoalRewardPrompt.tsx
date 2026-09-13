@@ -34,7 +34,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "🏅",
     icon: Medal,
     description: "Earn special badges as you progress",
-    color: "from-amber-500 to-yellow-500",
+    color: "from-primary to-brand-strong",
   },
   {
     id: "scrimmage",
@@ -42,7 +42,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "🏒",
     icon: Gamepad2,
     description: "Fun game at the end of practice",
-    color: "from-blue-500 to-cyan-500",
+    color: "from-primary to-brand-strong",
   },
   {
     id: "pizza",
@@ -50,7 +50,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "🍕",
     icon: Pizza,
     description: "Team pizza when goal is reached",
-    color: "from-red-500 to-orange-500",
+    color: "from-red-500 to-primary",
   },
   {
     id: "trophy",
@@ -58,7 +58,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "🏆",
     icon: Trophy,
     description: "Display trophy for the team",
-    color: "from-yellow-500 to-amber-600",
+    color: "from-primary to-brand-strong",
   },
   {
     id: "stars",
@@ -66,7 +66,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "⭐",
     icon: Star,
     description: "Players earn stars on their gear",
-    color: "from-purple-500 to-pink-500",
+    color: "from-primary to-brand-strong",
   },
   {
     id: "surprise",
@@ -74,7 +74,7 @@ const rewardOptions: RewardOption[] = [
     emoji: "🎁",
     icon: Gift,
     description: "Surprise reward to be revealed",
-    color: "from-emerald-500 to-teal-500",
+    color: "from-primary to-brand-strong",
   },
 ];
 
@@ -117,7 +117,7 @@ export const GoalRewardPrompt: React.FC<GoalRewardPromptProps> = ({
     >
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 mb-2">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-primary to-brand-strong mb-2">
           <PartyPopper className="w-7 h-7 text-white" />
         </div>
         <h3 className="text-xl font-bold">Set a Goal Reward</h3>
@@ -255,10 +255,10 @@ export const QuickGoalPrompt: React.FC<QuickGoalPromptProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20"
+      className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/10 border border-primary/20"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center flex-shrink-0">
           <Trophy className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">

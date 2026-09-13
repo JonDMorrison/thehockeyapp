@@ -108,7 +108,7 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
   return (
     <AppCard>
       <div className="flex items-center gap-2 mb-4">
-        <Settings2 className="h-5 w-5 text-team-primary" />
+        <Settings2 className="h-5 w-5 text-primary" />
         <AppCardTitle className="text-lg">{t("teams.trainingPrefs.title")}</AppCardTitle>
       </div>
       <AppCardDescription className="mb-4">

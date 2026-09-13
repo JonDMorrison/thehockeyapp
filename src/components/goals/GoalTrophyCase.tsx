@@ -40,10 +40,10 @@ const goalTypeIcons = {
 };
 
 const goalTypeColors = {
-  shots: 'bg-blue-100 text-blue-600 border-blue-200',
-  sessions: 'bg-green-100 text-green-600 border-green-200',
-  participation: 'bg-purple-100 text-purple-600 border-purple-200',
-  badges: 'bg-amber-100 text-amber-600 border-amber-200',
+  shots: 'bg-success/10 text-success border-success/20',
+  sessions: 'bg-success/10 text-success border-success/20',
+  participation: 'bg-success/10 text-success border-success/20',
+  badges: 'bg-success/10 text-success border-success/20',
 };
 
 export function GoalTrophyCase({ teamId, onViewAll, compact = false }: GoalTrophyCaseProps) {
@@ -84,10 +84,10 @@ export function GoalTrophyCase({ teamId, onViewAll, compact = false }: GoalTroph
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-500" />
+            <Trophy className="w-5 h-5 text-primary" />
             Trophy Case
             {goalStreak >= 3 && (
-              <Badge variant="secondary" className="bg-amber-100 text-amber-700 gap-1">
+              <Badge variant="secondary" className="gap-1 border-success/20 bg-success/10 text-success">
                 <Flame className="w-3 h-3" />
                 {goalStreak} Goals Crushed
               </Badge>
@@ -127,7 +127,7 @@ export function GoalTrophyCase({ teamId, onViewAll, compact = false }: GoalTroph
                     {goal.target_value.toLocaleString()} {goal.goal_type} • {format(new Date(goal.completed_at!), 'MMM d, yyyy')}
                   </p>
                 </div>
-                <Star className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <Star className="w-4 h-4 text-success flex-shrink-0" />
               </motion.div>
             );
           })}
@@ -138,17 +138,17 @@ export function GoalTrophyCase({ teamId, onViewAll, compact = false }: GoalTroph
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800"
+            className="mt-4 rounded-lg border border-success/20 bg-success/5 p-3"
           >
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success">
                 <Trophy className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                <p className="text-sm font-semibold text-foreground">
                   Goal Champion Team! 🏆
                 </p>
-                <p className="text-xs text-amber-600 dark:text-amber-400">
+                <p className="text-xs text-muted-foreground">
                   {goalStreak} goals achieved together
                 </p>
               </div>

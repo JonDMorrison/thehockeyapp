@@ -580,11 +580,11 @@ const QuickAssign: React.FC = () => {
       <PageContainer className="space-y-4 pb-32">
         {/* Game Day Warning */}
         {isGameDayFlag && (
-          <AppCard className="border-amber-500/50 bg-amber-500/10">
+          <AppCard className="border-primary/50 bg-primary/10">
             <div className="flex items-start gap-3">
-              <Zap className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Zap className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-amber-700 dark:text-amber-400">{t('practice.gameDay')}</p>
+                <p className="font-medium text-primary dark:text-primary">{t('practice.gameDay')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {gameEvent ? `${gameEvent.title || t('practice.game')} at ${format(new Date(gameEvent.start_time), "h:mm a")}` : t('practice.keepWorkoutsLight')}
                 </p>
@@ -595,11 +595,11 @@ const QuickAssign: React.FC = () => {
 
         {/* Practice Event Info */}
         {hasPracticeEvent && !isGameDayFlag && practiceEvent && (
-          <AppCard className="border-blue-500/50 bg-blue-500/10">
+          <AppCard className="border-primary/50 bg-primary/10">
             <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-700 dark:text-blue-400">{t('practice.practiceScheduled')}</p>
+                <p className="font-medium text-primary dark:text-primary">{t('practice.practiceScheduled')}</p>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {practiceEvent.title || t('practice.practice')} at {format(new Date(practiceEvent.start_time), "h:mm a")}
                   {practiceEvent.location && ` • ${practiceEvent.location}`}

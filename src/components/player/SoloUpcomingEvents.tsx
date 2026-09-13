@@ -105,12 +105,12 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
       <div className="grid grid-cols-2 gap-2">
         {/* Next Game */}
         {nextGame ? (
-          <div className="p-3 bg-amber-500/10 rounded-xl">
+          <div className="p-3 bg-primary/10 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
-              <Zap className="h-3.5 w-3.5 text-amber-600" />
-              <span className="text-xs font-medium text-amber-600">{t("players.soloUpcomingEvents.game")}</span>
+              <Zap className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">{t("players.soloUpcomingEvents.game")}</span>
             </div>
-            <p className="text-lg font-bold text-amber-600">{formatCountdown(nextGame.start_time)}</p>
+            <p className="text-lg font-bold text-primary">{formatCountdown(nextGame.start_time)}</p>
             <p className="text-xs text-muted-foreground truncate">
               {format(new Date(nextGame.start_time), "EEE h:mma")}
             </p>
@@ -127,12 +127,12 @@ export function SoloUpcomingEvents({ playerId, onConnectSchedule }: SoloUpcoming
 
         {/* Next Practice */}
         {nextPractice ? (
-          <div className="p-3 bg-blue-500/10 rounded-xl">
+          <div className="p-3 bg-primary/10 rounded-xl">
             <div className="flex items-center gap-1.5 mb-1">
-              <Users className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-xs font-medium text-blue-600">{t("players.soloUpcomingEvents.practice")}</span>
+              <Users className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">{t("players.soloUpcomingEvents.practice")}</span>
             </div>
-            <p className="text-lg font-bold text-blue-600">{formatCountdown(nextPractice.start_time)}</p>
+            <p className="text-lg font-bold text-primary">{formatCountdown(nextPractice.start_time)}</p>
             <p className="text-xs text-muted-foreground truncate">
               {format(new Date(nextPractice.start_time), "EEE h:mma")}
             </p>

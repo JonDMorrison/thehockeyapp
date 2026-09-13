@@ -193,8 +193,8 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
       lifetime: totals.totalPushups,
       monthly: totals.monthlyPushups,
       prevMonthly: totals.prevMonthPushups,
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/10",
+      color: "text-primary",
+      bgColor: "bg-primary/10",
     },
     {
       label: "Conditioning Minutes",
@@ -202,8 +202,8 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
       lifetime: totals.totalConditioningMinutes,
       monthly: totals.monthlyConditioningMinutes,
       prevMonthly: totals.prevMonthConditioningMinutes,
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-500/10",
+      color: "text-primary",
+      bgColor: "bg-primary/10",
     },
     {
       label: "Workouts Completed",
@@ -211,8 +211,8 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
       lifetime: totals.totalWorkoutsCompleted,
       monthly: totals.monthlyWorkoutsCompleted,
       prevMonthly: totals.prevMonthWorkoutsCompleted,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10",
+      color: "text-success",
+      bgColor: "bg-success/10",
     },
   ];
 

@@ -13,8 +13,6 @@ interface GettingStartedChecklistProps {
   onInvite: () => void;
 }
 
-const NAVY = "#0f2a4a";
-
 const dismissedKey = (teamId: string) =>
   `hockeyapp-getting-started-dismissed-${teamId}`;
 const invitedKey = (teamId: string) =>
@@ -196,7 +194,7 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
     <AppCard className="relative">
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="min-w-0">
-          <p className="font-semibold text-sm" style={{ color: NAVY }}>
+          <p className="text-sm font-semibold text-primary">
             {t("gettingStarted.title")}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -216,9 +214,8 @@ export const GettingStartedChecklist: React.FC<GettingStartedChecklistProps> = (
           >
             <span
               className={`flex items-center justify-center w-5 h-5 rounded-full shrink-0 ${
-                step.done ? "text-white" : "text-muted-foreground"
+                step.done ? "bg-success text-white" : "text-muted-foreground"
               }`}
-              style={step.done ? { backgroundColor: NAVY } : undefined}
             >
               {step.done ? (
                 <Check className="w-3.5 h-3.5" />

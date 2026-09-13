@@ -35,12 +35,12 @@ export const FeatureCoachView: React.FC = () => {
       <div className="px-4 py-4 space-y-4">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-emerald-500/10 rounded-xl p-3 text-center">
-            <p className="text-lg font-bold text-emerald-600">{completedCount}</p>
+          <div className="bg-success/10 rounded-xl p-3 text-center">
+            <p className="text-lg font-bold text-success">{completedCount}</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.coach_view_done')}</p>
           </div>
-          <div className="bg-amber-500/10 rounded-xl p-3 text-center">
-            <p className="text-lg font-bold text-amber-600">{players.length - completedCount}</p>
+          <div className="bg-muted/50 rounded-xl p-3 text-center">
+            <p className="text-lg font-bold text-text-secondary">{players.length - completedCount}</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.coach_view_pending')}</p>
           </div>
           <div className="bg-primary/10 rounded-xl p-3 text-center">
@@ -59,24 +59,24 @@ export const FeatureCoachView: React.FC = () => {
               <div
                 key={player.name}
                 className={`flex items-center gap-3 p-3 rounded-xl ${
-                  player.completed ? "bg-emerald-500/5 border border-emerald-500/20" : "bg-muted/30"
+                  player.completed ? "bg-success/5 border border-success/20" : "bg-muted/30"
                 }`}
               >
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                  player.completed ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
+                  player.completed ? "bg-success text-white" : "bg-muted text-muted-foreground"
                 }`}>
                   {player.initial}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{player.name}</p>
                   {player.completed ? (
-                    <p className="text-[10px] text-emerald-600">Completed at {player.time}</p>
+                    <p className="text-[10px] text-success">Completed at {player.time}</p>
                   ) : (
                     <p className="text-[10px] text-muted-foreground">{t('marketing.coach_view_not_yet_started')}</p>
                   )}
                 </div>
                 {player.completed && (
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle className="w-5 h-5 text-success" />
                 )}
               </div>
             ))}

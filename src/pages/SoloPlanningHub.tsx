@@ -209,7 +209,7 @@ export default function SoloPlanningHub() {
                     {t('solo.activePlanDays', { days: activePlan.days_per_week })}
                   </p>
                 </div>
-                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
             </motion.div>
           )}
@@ -229,7 +229,7 @@ export default function SoloPlanningHub() {
                 badge={recentWorkouts && recentWorkouts > 0 ? `${recentWorkouts} today` : undefined}
                 onClick={() => navigate(`/solo/workout/${playerId}`)}
                 delay={0}
-                gradient="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700"
+                gradient="bg-gradient-to-br from-primary to-brand-strong"
                 iconBg="bg-white/20 backdrop-blur-sm"
               />
 
@@ -240,7 +240,7 @@ export default function SoloPlanningHub() {
                 icon={<CalendarRange className="w-6 h-6 text-white" />}
                 onClick={() => navigate(`/solo/week-planner/${playerId}`)}
                 delay={0.1}
-                gradient="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700"
+                gradient="bg-gradient-to-br from-slate-600 to-slate-800"
                 iconBg="bg-white/20 backdrop-blur-sm"
               />
 
@@ -253,7 +253,7 @@ export default function SoloPlanningHub() {
                 badgeVariant="premium"
                 onClick={() => navigate(`/solo/program/${playerId}`)}
                 delay={0.2}
-                gradient="bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500"
+                gradient="bg-gradient-to-br from-primary to-brand-strong"
                 iconBg="bg-white/20 backdrop-blur-sm"
               />
             </div>

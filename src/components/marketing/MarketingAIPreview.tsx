@@ -41,10 +41,10 @@ export const MarketingAIPreview: React.FC = () => {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-500" />
+            <Sparkles className="w-4 h-4 text-primary" />
             <h1 className="text-base font-bold text-foreground">{t('marketing.ai_preview_offline_program_builder')}</h1>
           </div>
-          <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-600 px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Brain className="w-3 h-3" />
             <span className="text-[10px] font-semibold">{t('marketing.ai_preview_generating')}</span>
           </div>
@@ -77,14 +77,14 @@ export const MarketingAIPreview: React.FC = () => {
         </div>
 
         {/* AI Generation Animation */}
-        <div className="relative bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent rounded-xl p-4 border border-purple-500/20">
+        <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-4 border border-primary/20">
           {/* Animated Brain Icon */}
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center animate-pulse">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-brand-strong flex items-center justify-center animate-pulse">
                 <Brain className="w-7 h-7 text-white" />
               </div>
-              <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 -z-10 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-primary/30 to-primary/30 -z-10 animate-ping" style={{ animationDuration: '2s' }} />
             </div>
           </div>
 
@@ -99,16 +99,16 @@ export const MarketingAIPreview: React.FC = () => {
                 )}
               >
                 {step.done ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-success shrink-0" />
                 ) : step.active ? (
-                  <Loader2 className="w-4 h-4 text-purple-500 animate-spin shrink-0" />
+                  <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
                 ) : (
                   <div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
                 )}
                 <span className={cn(
                   "text-xs",
                   step.done && "text-foreground",
-                  step.active && "text-purple-600 font-medium",
+                  step.active && "text-primary font-medium",
                   !step.done && !step.active && "text-muted-foreground"
                 )}>
                   {step.text}
@@ -121,14 +121,14 @@ export const MarketingAIPreview: React.FC = () => {
         {/* Live Preview Card */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t('marketing.ai_preview_live_preview')}</p>
           </div>
 
           <div className="bg-card rounded-xl border border-border p-3 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">{t('marketing.ai_preview_monday_shooting')}</p>
-              <span className="text-[10px] font-medium text-purple-600 bg-purple-500/10 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 REP
               </span>
             </div>
@@ -139,11 +139,11 @@ export const MarketingAIPreview: React.FC = () => {
                   key={task.label}
                   className="flex items-center gap-2 p-2 rounded-lg bg-muted/30"
                 >
-                  <div className="w-6 h-6 rounded-md bg-purple-500/10 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
                     {task.type === "shooting" ? (
-                      <Target className="w-3 h-3 text-purple-500" />
+                      <Target className="w-3 h-3 text-primary" />
                     ) : (
-                      <Heart className="w-3 h-3 text-purple-500" />
+                      <Heart className="w-3 h-3 text-primary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -164,7 +164,7 @@ export const MarketingAIPreview: React.FC = () => {
         </div>
 
         {/* Bottom stats */}
-        <div className="flex items-center justify-around bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-xl p-3">
+        <div className="flex items-center justify-around bg-gradient-to-r from-primary/10 via-primary/10 to-primary/10 rounded-xl p-3">
           <div className="text-center">
             <p className="text-lg font-bold text-foreground">20</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.ai_preview_days')}</p>
@@ -176,7 +176,7 @@ export const MarketingAIPreview: React.FC = () => {
           </div>
           <div className="w-px h-8 bg-border" />
           <div className="text-center">
-            <p className="text-lg font-bold text-purple-500">✨</p>
+            <p className="text-lg font-bold text-primary">✨</p>
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.ai_preview_ai_built')}</p>
           </div>
         </div>

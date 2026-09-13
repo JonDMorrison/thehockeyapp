@@ -136,7 +136,7 @@ export const TodayHeroCard: React.FC<TodayHeroCardProps> = (props) => {
     <AppCard className="relative overflow-hidden">
       {/* Celebration background effect */}
       {content.celebration && (
-        <div className="absolute inset-0 bg-gradient-to-br from-team-primary/10 via-transparent to-team-tertiary/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-brand-strong/10 pointer-events-none" />
       )}
       
       <div className="relative flex flex-col items-center text-center py-4">
@@ -168,7 +168,7 @@ export const TodayHeroCard: React.FC<TodayHeroCardProps> = (props) => {
         
         {/* All set state shows celebration icon */}
         {state === "all_set" && (
-          <div className="flex items-center gap-2 text-team-primary">
+          <div className="flex items-center gap-2 text-primary">
             <PartyPopper className="w-5 h-5" />
             <span className="text-sm font-medium">Come back tomorrow</span>
           </div>

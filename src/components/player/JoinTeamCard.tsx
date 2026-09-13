@@ -120,7 +120,7 @@ export const JoinTeamCard: React.FC<JoinTeamCardProps> = ({ playerId }) => {
   // Team preview state - show join confirmation
   if (teamPreview) {
     return (
-      <AppCard className="border-team-primary/30 bg-team-primary/5">
+      <AppCard className="border-primary/30 bg-primary/5">
         <div className="flex items-center gap-3">
           <Avatar
             src={teamPreview.team_logo_url || teamPreview.team_photo_url}

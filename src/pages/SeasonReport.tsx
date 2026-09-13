@@ -175,7 +175,7 @@ const SeasonReport: React.FC = () => {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-team-primary no-print" />
+              <BarChart3 className="w-6 h-6 text-primary no-print" />
               {t("seasonReport.title")}
             </h1>
             <p className="text-sm text-text-secondary mt-0.5">
@@ -261,8 +261,8 @@ const SeasonReport: React.FC = () => {
             {/* Team totals */}
             <div className="grid grid-cols-3 gap-3">
               <AppCard className="text-center">
-                <div className="w-12 h-12 rounded-full bg-team-primary/10 flex items-center justify-center mx-auto mb-2 no-print">
-                  <CheckCircle className="w-6 h-6 text-team-primary" />
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2 no-print">
+                  <CheckCircle className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-2xl font-bold">{totals.total_sessions}</p>
                 <p className="text-xs text-text-muted">{t("seasonReport.totalSessions")}</p>
@@ -275,8 +275,8 @@ const SeasonReport: React.FC = () => {
                 <p className="text-xs text-text-muted">{t("seasonReport.totalShots")}</p>
               </AppCard>
               <AppCard className="text-center">
-                <div className="w-12 h-12 rounded-full bg-team-secondary/10 flex items-center justify-center mx-auto mb-2 no-print">
-                  <TrendingUp className="w-6 h-6 text-team-secondary" />
+                <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center mx-auto mb-2 no-print">
+                  <TrendingUp className="w-6 h-6 text-foreground" />
                 </div>
                 <p className="text-2xl font-bold">{totals.avg_completion_rate}%</p>
                 <p className="text-xs text-text-muted">{t("seasonReport.avgCompletion")}</p>

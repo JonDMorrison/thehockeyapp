@@ -125,11 +125,11 @@ export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
     return (
       <AppCard>
         <AppCardTitle className="flex items-center gap-2 text-sm mb-3">
-          <Heart className="w-4 h-4 text-pink-500" />
+          <Heart className="w-4 h-4 text-primary" />
           {t("players.teamCheersFeed.title")}
         </AppCardTitle>
         <div className="text-center py-6">
-          <Sparkles className="w-8 h-8 text-pink-500/30 mx-auto mb-2" />
+          <Sparkles className="w-8 h-8 text-primary/30 mx-auto mb-2" />
           <p className="text-sm text-muted-foreground mb-4">
             {t("players.teamCheersFeed.noCheerYet")}
           </p>
@@ -138,7 +138,7 @@ export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
               variant="outline"
               size="sm"
               onClick={onSendCheer}
-              className="text-pink-500 border-pink-500/30 hover:bg-pink-500/10"
+              className="text-primary border-primary/30 hover:bg-primary/10"
             >
               <Users className="w-4 h-4 mr-2" />
               {t("players.teamCheersFeed.sendACheer")}
@@ -152,7 +152,7 @@ export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
   return (
     <AppCard>
       <AppCardTitle className="flex items-center gap-2 text-sm mb-3">
-        <Heart className="w-4 h-4 text-pink-500" />
+        <Heart className="w-4 h-4 text-primary" />
         {t("players.teamCheersFeed.title")}
       </AppCardTitle>
 
@@ -162,7 +162,7 @@ export const TeamCheersFeed: React.FC<TeamCheersFeedProps> = ({
             key={cheer.id}
             className={`flex items-start gap-3 p-2 rounded-lg ${
               cheer.isForCurrentPlayer
-                ? "bg-pink-500/10 border border-pink-500/20"
+                ? "bg-primary/10 border border-primary/20"
                 : "bg-muted/30"
             }`}
           >

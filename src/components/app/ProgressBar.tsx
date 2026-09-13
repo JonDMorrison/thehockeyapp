@@ -27,7 +27,7 @@ const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
           aria-valuemax={max}
         >
           <div
-            className="h-full rounded-full bg-team-primary transition-all duration-500 ease-out"
+            className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -87,7 +87,7 @@ const ProgressRing = React.forwardRef<SVGSVGElement, ProgressRingProps>(
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            className="text-team-primary transition-all duration-500 ease-out"
+            className="text-primary transition-all duration-500 ease-out"
           />
         </svg>
         {showLabel && (

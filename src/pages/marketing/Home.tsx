@@ -104,9 +104,9 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
 
 function AssociationPreview() {
   const teams = [
-    { name: "U13 A1", status: "Plan live", value: 82, tone: "text-emerald-400" },
-    { name: "U15 A2", status: "Plan live", value: 71, tone: "text-emerald-400" },
-    { name: "U11 C1", status: "Plan needed", value: 46, tone: "text-amber-400" },
+    { name: "U13 A1", status: "Plan live", value: 82, tone: "text-success" },
+    { name: "U15 A2", status: "Plan live", value: 71, tone: "text-success" },
+    { name: "U11 C1", status: "Plan needed", value: 46, tone: "text-white/45" },
   ];
 
   return (
@@ -116,7 +116,7 @@ function AssociationPreview() {
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Sample workspace</p>
           <p className="mt-1 font-display text-lg font-black uppercase text-white">Abbotsford Hawks</p>
         </div>
-        <span className="rounded-md bg-emerald-400/10 px-2 py-1 text-[9px] font-black uppercase text-emerald-300">
+        <span className="rounded-md bg-success/10 px-2 py-1 text-[9px] font-black uppercase text-success">
           Season live
         </span>
       </div>
@@ -155,13 +155,13 @@ function CoachPreview() {
         </div>
         <span className="text-xs font-bold text-white/55">18 players</span>
       </div>
-      <div className="mt-4 rounded-lg border border-amber-400/20 bg-amber-400/5 p-4">
+      <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-wide text-amber-300">Needs attention</p>
+            <p className="text-[10px] font-black uppercase tracking-wide text-primary">Needs attention</p>
             <p className="mt-1 text-sm font-bold text-white">Thursday has no workout</p>
           </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-amber-300" />
+          <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
         </div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-3">
@@ -200,7 +200,7 @@ function FamilyPreview() {
           <p className="font-display text-5xl font-black text-white">4/5</p>
           <p className="mt-1 text-xs text-white/45">sessions complete</p>
         </div>
-        <span className="rounded-md bg-emerald-400/10 px-2.5 py-1.5 text-xs font-bold text-emerald-300">On track</span>
+        <span className="rounded-md bg-success/10 px-2.5 py-1.5 text-xs font-bold text-success">On track</span>
       </div>
       <div className="mt-6 grid grid-cols-7 gap-2">
         {[true, true, true, true, false, false, false].map((done, index) => (
@@ -213,7 +213,7 @@ function FamilyPreview() {
         ))}
       </div>
       <div className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400/10 text-amber-300">🔥</div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">🔥</div>
         <div>
           <p className="text-sm font-bold text-white">7-day streak</p>
           <p className="text-xs text-white/45">Best week this month</p>
@@ -427,7 +427,7 @@ export default function Home() {
                   <span className="font-display text-xs font-black text-white/25">0{index + 1}</span>
                   <area.icon className="h-5 w-5 text-primary" />
                   <span className="font-display text-xl font-black uppercase text-white sm:text-2xl">{area.label}</span>
-                  <CheckCircle2 className="ml-auto h-5 w-5 text-emerald-400" />
+                  <CheckCircle2 className="ml-auto h-5 w-5 text-success" />
                 </div>
               ))}
               <div className="mt-5 flex items-center gap-3 text-sm text-white/52">

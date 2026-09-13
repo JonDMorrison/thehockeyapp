@@ -80,8 +80,8 @@ export const FeatureProgramCalendar: React.FC = () => {
         </div>
 
         {/* Streak */}
-        <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/5 rounded-xl p-3 flex items-center gap-3 border border-orange-500/15">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 flex items-center gap-3 border border-primary/15">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-red-500 flex items-center justify-center">
             <Flame className="w-4 h-4 text-white" />
           </div>
           <div>

@@ -315,8 +315,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       <AppCard>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
-              <Check className="w-4 h-4 text-green-500" />
+            <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
+              <Check className="w-4 h-4 text-success" />
             </div>
             <div>
               <h3 className="font-semibold">{t("teams.scheduleSync.connectedTitle")}</h3>
@@ -520,8 +520,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 </CollapsibleContent>
               </Collapsible>
 
-              <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <p className="text-sm text-amber-700 dark:text-amber-300"
+              <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-sm text-primary dark:text-primary"
                   dangerouslySetInnerHTML={{ __html: t("teams.scheduleSync.tip") }}
                 />
               </div>
@@ -563,10 +563,10 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
               <div className="space-y-3">
                 {preview.success ? (
                   <>
-                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <Check className="w-5 h-5 text-green-500" />
-                        <span className="font-semibold text-green-700 dark:text-green-300">
+                        <Check className="w-5 h-5 text-success" />
+                        <span className="font-semibold text-success dark:text-success">
                           {t("teams.scheduleSync.previewFound", { count: preview.future_events })}
                         </span>
                       </div>

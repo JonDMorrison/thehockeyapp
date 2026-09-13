@@ -86,7 +86,7 @@ export default function AssociationJoin() {
     <AppShell hideNav>
       <PageContainer className="mx-auto max-w-lg pt-10 sm:pt-20">
         <AppCard className="overflow-hidden border-primary/30" contentClassName="p-0">
-          <div className="h-1.5 bg-gradient-to-r from-primary to-cyan-400" />
+          <div className="h-1.5 bg-gradient-to-r from-primary to-brand-strong" />
           <div className="p-6 text-center sm:p-8">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
               <Building2 className="h-8 w-8 text-primary" />
@@ -96,8 +96,8 @@ export default function AssociationJoin() {
             <p className="mt-2 text-sm text-muted-foreground">
               {[preview.season_label, preview.region].filter(Boolean).join(" · ")}
             </p>
-            <div className="mx-auto mt-6 flex max-w-sm items-start gap-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4 text-left">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-400" />
+            <div className="mx-auto mt-6 flex max-w-sm items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <p className="text-sm leading-5 text-muted-foreground">
                 You are being offered <span className="font-semibold capitalize text-foreground">{preview.role}</span> access to association-level reporting. This does not automatically grant access to individual player records.
               </p>

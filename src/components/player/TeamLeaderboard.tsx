@@ -146,11 +146,11 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown className="w-4 h-4 text-amber-500" />;
+        return <Crown className="w-4 h-4 text-primary" />;
       case 2:
         return <Medal className="w-4 h-4 text-gray-400" />;
       case 3:
-        return <Medal className="w-4 h-4 text-amber-700" />;
+        return <Medal className="w-4 h-4 text-primary" />;
       default:
         return <span className="text-xs font-bold text-muted-foreground">{rank}</span>;
     }
@@ -168,7 +168,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
     <AppCard>
       <div className="flex items-center justify-between mb-3">
         <AppCardTitle className="flex items-center gap-2 text-sm">
-          <Trophy className="w-4 h-4 text-amber-500" />
+          <Trophy className="w-4 h-4 text-primary" />
           {t("players.teamLeaderboard.title")}
         </AppCardTitle>
         <div className="flex gap-1">
@@ -205,7 +205,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
               key={entry.playerId}
               className={`flex items-center gap-3 p-2 rounded-lg ${
                 entry.isCurrentPlayer
-                  ? "bg-team-primary/10 ring-1 ring-team-primary/30"
+                  ? "bg-primary/10 ring-1 ring-primary/30"
                   : "hover:bg-muted/50"
               }`}
             >
@@ -242,7 +242,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
                 • • •
               </div>
               <div
-                className="flex items-center gap-3 p-2 rounded-lg bg-team-primary/10 ring-1 ring-team-primary/30"
+                className="flex items-center gap-3 p-2 rounded-lg bg-primary/10 ring-1 ring-primary/30"
               >
                 <div className="w-6 h-6 flex items-center justify-center">
                   <span className="text-xs font-bold text-muted-foreground">
@@ -274,7 +274,7 @@ export const TeamLeaderboard: React.FC<TeamLeaderboardProps> = ({
           {/* Motivation message */}
           {currentPlayerEntry && currentPlayerEntry.rank > 1 && (
             <div className="flex items-center gap-2 pt-2 border-t border-border">
-              <Flame className="w-4 h-4 text-orange-500" />
+              <Flame className="w-4 h-4 text-primary" />
               <span className="text-xs text-muted-foreground">
                 {currentPlayerEntry.rank === 2
                   ? t("players.teamLeaderboard.soCloseToFirst")

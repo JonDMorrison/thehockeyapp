@@ -156,7 +156,7 @@ const PlayerBadges: React.FC = () => {
       <Helmet><title>Badges | Hockey App</title></Helmet>
       <PageContainer>
         {/* Summary */}
-        <AppCard className="text-center bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 border-amber-500/20">
+        <AppCard className="text-center bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 border-primary/20">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -164,7 +164,7 @@ const PlayerBadges: React.FC = () => {
           >
             <BadgeIcon badgeIcon="trophy" size="lg" className="mx-auto mb-3" />
           </motion.div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-brand-strong bg-clip-text text-transparent">
             {earnedBadges.length}
           </h2>
           <p className="text-text-muted">
@@ -175,7 +175,7 @@ const PlayerBadges: React.FC = () => {
         {/* Earned Badges */}
         <div>
           <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-500" />
+            <Trophy className="w-4 h-4 text-primary" />
             {t("players.badges.earnedSection")}
           </AppCardTitle>
           {earnedBadges.length > 0 ? (

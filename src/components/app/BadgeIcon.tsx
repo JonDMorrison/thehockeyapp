@@ -18,7 +18,31 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Badge theme configurations with unique color palettes
+const BRAND_BADGE_THEME = {
+  gradient: "from-primary to-brand-strong",
+  iconColor: "text-white",
+  glowColor: "shadow-primary/40",
+  ringColor: "ring-primary/30",
+  lockedBg: "bg-muted",
+};
+
+const SUCCESS_BADGE_THEME = {
+  gradient: "from-success to-success/75",
+  iconColor: "text-white",
+  glowColor: "shadow-success/40",
+  ringColor: "ring-success/30",
+  lockedBg: "bg-muted",
+};
+
+const NEUTRAL_BADGE_THEME = {
+  gradient: "from-slate-500 to-zinc-700",
+  iconColor: "text-white",
+  glowColor: "shadow-black/30",
+  ringColor: "ring-white/15",
+  lockedBg: "bg-muted",
+};
+
+// Shape and icon distinguish achievements; colour stays within the brand system.
 const BADGE_THEMES: Record<string, {
   gradient: string;
   iconColor: string;
@@ -26,97 +50,19 @@ const BADGE_THEMES: Record<string, {
   ringColor: string;
   lockedBg: string;
 }> = {
-  target: {
-    gradient: "from-blue-500 via-cyan-400 to-teal-500",
-    iconColor: "text-white",
-    glowColor: "shadow-blue-500/40",
-    ringColor: "ring-blue-400/30",
-    lockedBg: "bg-blue-100 dark:bg-blue-950/30",
-  },
-  flame: {
-    gradient: "from-orange-500 via-red-500 to-rose-600",
-    iconColor: "text-white",
-    glowColor: "shadow-orange-500/40",
-    ringColor: "ring-orange-400/30",
-    lockedBg: "bg-orange-100 dark:bg-orange-950/30",
-  },
-  trophy: {
-    gradient: "from-amber-400 via-yellow-500 to-orange-500",
-    iconColor: "text-white",
-    glowColor: "shadow-amber-500/40",
-    ringColor: "ring-amber-400/30",
-    lockedBg: "bg-amber-100 dark:bg-amber-950/30",
-  },
-  medal: {
-    gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
-    iconColor: "text-white",
-    glowColor: "shadow-purple-500/40",
-    ringColor: "ring-purple-400/30",
-    lockedBg: "bg-purple-100 dark:bg-purple-950/30",
-  },
-  "check-circle": {
-    gradient: "from-emerald-400 via-green-500 to-teal-600",
-    iconColor: "text-white",
-    glowColor: "shadow-emerald-500/40",
-    ringColor: "ring-emerald-400/30",
-    lockedBg: "bg-emerald-100 dark:bg-emerald-950/30",
-  },
-  calendar: {
-    gradient: "from-indigo-500 via-blue-600 to-violet-600",
-    iconColor: "text-white",
-    glowColor: "shadow-indigo-500/40",
-    ringColor: "ring-indigo-400/30",
-    lockedBg: "bg-indigo-100 dark:bg-indigo-950/30",
-  },
-  star: {
-    gradient: "from-yellow-400 via-amber-500 to-orange-400",
-    iconColor: "text-white",
-    glowColor: "shadow-yellow-500/40",
-    ringColor: "ring-yellow-400/30",
-    lockedBg: "bg-yellow-100 dark:bg-yellow-950/30",
-  },
-  award: {
-    gradient: "from-pink-500 via-rose-500 to-red-500",
-    iconColor: "text-white",
-    glowColor: "shadow-pink-500/40",
-    ringColor: "ring-pink-400/30",
-    lockedBg: "bg-pink-100 dark:bg-pink-950/30",
-  },
-  zap: {
-    gradient: "from-yellow-400 via-lime-500 to-green-500",
-    iconColor: "text-white",
-    glowColor: "shadow-lime-500/40",
-    ringColor: "ring-lime-400/30",
-    lockedBg: "bg-lime-100 dark:bg-lime-950/30",
-  },
-  shield: {
-    gradient: "from-slate-500 via-zinc-600 to-neutral-700",
-    iconColor: "text-white",
-    glowColor: "shadow-zinc-500/40",
-    ringColor: "ring-zinc-400/30",
-    lockedBg: "bg-zinc-100 dark:bg-zinc-950/30",
-  },
-  crown: {
-    gradient: "from-amber-500 via-yellow-400 to-amber-600",
-    iconColor: "text-white",
-    glowColor: "shadow-amber-500/50",
-    ringColor: "ring-amber-400/40",
-    lockedBg: "bg-amber-100 dark:bg-amber-950/30",
-  },
-  brain: {
-    gradient: "from-fuchsia-500 via-pink-500 to-rose-500",
-    iconColor: "text-white",
-    glowColor: "shadow-fuchsia-500/40",
-    ringColor: "ring-fuchsia-400/30",
-    lockedBg: "bg-fuchsia-100 dark:bg-fuchsia-950/30",
-  },
-  dumbbell: {
-    gradient: "from-cyan-500 via-blue-500 to-indigo-500",
-    iconColor: "text-white",
-    glowColor: "shadow-cyan-500/40",
-    ringColor: "ring-cyan-400/30",
-    lockedBg: "bg-cyan-100 dark:bg-cyan-950/30",
-  },
+  target: BRAND_BADGE_THEME,
+  flame: BRAND_BADGE_THEME,
+  trophy: BRAND_BADGE_THEME,
+  medal: BRAND_BADGE_THEME,
+  "check-circle": SUCCESS_BADGE_THEME,
+  calendar: NEUTRAL_BADGE_THEME,
+  star: BRAND_BADGE_THEME,
+  award: BRAND_BADGE_THEME,
+  zap: BRAND_BADGE_THEME,
+  shield: NEUTRAL_BADGE_THEME,
+  crown: BRAND_BADGE_THEME,
+  brain: NEUTRAL_BADGE_THEME,
+  dumbbell: NEUTRAL_BADGE_THEME,
 };
 
 // Icon component mapping

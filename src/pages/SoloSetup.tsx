@@ -179,7 +179,7 @@ const SoloSetup: React.FC = () => {
             <div
               key={s}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                s <= stepNumber ? "bg-orange-500" : "bg-muted"
+                s <= stepNumber ? "bg-primary" : "bg-muted"
               }`}
             />
           ))}
@@ -188,8 +188,8 @@ const SoloSetup: React.FC = () => {
         {step === "player" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-orange-500" />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mb-2">{t('solo.letsPersonalizeYourTraining')}</h1>
               <p className="text-muted-foreground">
@@ -249,8 +249,8 @@ const SoloSetup: React.FC = () => {
         {step === "focus" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-                <Target className="w-8 h-8 text-orange-500" />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Target className="w-8 h-8 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mb-2">{t('solo.whatDoYouWantToWorkOn')}</h1>
               <p className="text-muted-foreground">
@@ -269,13 +269,13 @@ const SoloSetup: React.FC = () => {
                     onClick={() => toggleFocus(focus.id)}
                     className={`relative p-4 rounded-xl border-2 text-left transition-all ${
                       isSelected
-                        ? "border-orange-500 bg-orange-500/5"
-                        : "border-border bg-card hover:border-orange-500/50"
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-card hover:border-primary/50"
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        isSelected ? "bg-orange-500 text-white" : "bg-muted"
+                        isSelected ? "bg-primary text-white" : "bg-muted"
                       }`}>
                         <Icon className="w-6 h-6" />
                       </div>
@@ -295,8 +295,8 @@ const SoloSetup: React.FC = () => {
         {step === "schedule" && (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 text-orange-500" />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-8 h-8 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mb-2">{t('solo.howOftenCanYouTrain')}</h1>
               <p className="text-muted-foreground">
@@ -311,8 +311,8 @@ const SoloSetup: React.FC = () => {
                   onClick={() => setDaysPerWeek(days)}
                   className={`p-4 rounded-xl border-2 text-center transition-all ${
                     daysPerWeek === days
-                      ? "border-orange-500 bg-orange-500/5"
-                      : "border-border bg-card hover:border-orange-500/50"
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-card hover:border-primary/50"
                   }`}
                 >
                   <p className="text-2xl font-bold">{days}</p>
@@ -321,10 +321,10 @@ const SoloSetup: React.FC = () => {
               ))}
             </div>
 
-            <AppCard className="bg-orange-500/5 border-orange-500/20">
+            <AppCard className="bg-primary/5 border-primary/20">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-orange-500" />
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{t('solo.yourPlanAtAGlance')}</p>
@@ -349,7 +349,7 @@ const SoloSetup: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur border-t border-border">
         <Button
           size="xl"
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+          className="w-full bg-primary hover:bg-primary text-white"
           onClick={handleNext}
           disabled={createSoloPlayer.isPending}
         >

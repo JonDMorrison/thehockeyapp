@@ -45,12 +45,12 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
 };
 
 const taskTypeColors: Record<string, string> = {
-  shooting: "bg-orange-500",
-  conditioning: "bg-red-500",
-  mobility: "bg-green-500",
-  recovery: "bg-blue-500",
-  prep: "bg-purple-500",
-  other: "bg-gray-500",
+  shooting: "bg-primary",
+  conditioning: "bg-brand-strong",
+  mobility: "bg-slate-400",
+  recovery: "bg-slate-600",
+  prep: "bg-primary/60",
+  other: "bg-muted-foreground",
 };
 
 export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
@@ -141,7 +141,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
             className={cn(
               "w-2 h-2 rounded-full transition-all",
               i === currentWeekIndex
-                ? "bg-purple-500 w-4"
+                ? "bg-primary w-4"
                 : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
             )}
           />
@@ -168,8 +168,8 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
               "aspect-square rounded-xl flex flex-col items-center justify-center p-1 border transition-all",
               day
                 ? selectedDay?.date === day.date
-                  ? "border-purple-500 bg-purple-500/10"
-                  : "border-border bg-card hover:border-purple-500/50"
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
                 : "border-transparent bg-muted/30"
             )}
           >
@@ -185,7 +185,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
                   ).slice(0, 3).map(([type]) => (
                     <div
                       key={type}
-                      className={cn("w-1.5 h-1.5 rounded-full", taskTypeColors[type] || "bg-gray-500")}
+                      className={cn("w-1.5 h-1.5 rounded-full", taskTypeColors[type] || "bg-muted-foreground")}
                     />
                   ))}
                 </div>
@@ -247,17 +247,17 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-2 pt-2">
         <div className="text-center p-2 rounded-lg bg-muted/50">
-          <p className="text-lg font-bold text-purple-500">{weeks.length}</p>
+          <p className="text-lg font-bold text-primary">{weeks.length}</p>
           <p className="text-xs text-muted-foreground">{t('practice.weeks')}</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/50">
-          <p className="text-lg font-bold text-purple-500">
+          <p className="text-lg font-bold text-primary">
             {weeks.reduce((acc, w) => acc + w.days.length, 0)}
           </p>
           <p className="text-xs text-muted-foreground">{t('practice.sessions')}</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-muted/50">
-          <p className="text-lg font-bold text-purple-500">
+          <p className="text-lg font-bold text-primary">
             {weeks.reduce((acc, w) => acc + w.days.reduce((a, d) => a + (d.tasks.filter(t => t.shots_expected).reduce((s, t) => s + (t.shots_expected || 0), 0)), 0), 0)}
           </p>
           <p className="text-xs text-muted-foreground">{t('practice.totalShots')}</p>

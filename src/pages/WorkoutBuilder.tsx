@@ -194,8 +194,8 @@ const WorkoutBuilder: React.FC = () => {
                     onClick={() => navigate(`/teams/${teamId}/builder/${plan.id}`)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-team-primary/10 flex items-center justify-center">
-                        <Layers className="w-6 h-6 text-team-primary" />
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Layers className="w-6 h-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">

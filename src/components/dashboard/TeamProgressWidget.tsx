@@ -48,8 +48,8 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
       value: momentumScore,
       suffix: "%",
       icon: Zap,
-      color: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-500/10",
+      color: "from-primary to-brand-strong",
+      bgColor: "bg-primary/10",
       description: momentumScore >= 70 ? "On fire!" : momentumScore >= 40 ? "Building steam" : "Getting started",
     },
     {
@@ -57,8 +57,8 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
       value: engagementRate,
       suffix: "%",
       icon: Users,
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-500/10",
+      color: "from-primary to-brand-strong",
+      bgColor: "bg-primary/10",
       description: `${activeToday} of ${playersCount} active`,
     },
     {
@@ -66,8 +66,8 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
       value: sessionsComplete,
       suffix: "",
       icon: Target,
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-500/10",
+      color: "from-success to-success/75",
+      bgColor: "bg-success/10",
       description: "Completed today",
     },
     {
@@ -75,8 +75,8 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
       value: shotsLogged,
       suffix: "",
       icon: Trophy,
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-500/10",
+      color: "from-primary to-brand-strong",
+      bgColor: "bg-primary/10",
       description: "Logged today",
     },
   ];
@@ -100,10 +100,10 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-red-500/10 border border-primary/20"
           >
-            <Flame className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-bold text-orange-600">{streakDays}</span>
+            <Flame className="w-4 h-4 text-primary" />
+            <span className="text-sm font-bold text-primary">{streakDays}</span>
             <span className="text-xs text-muted-foreground">day streak</span>
           </motion.div>
         )}
@@ -160,11 +160,7 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
                     "w-9 h-9 rounded-lg flex items-center justify-center",
                     stat.bgColor
                   )}>
-                    <stat.icon className="w-4 h-4" style={{
-                      color: stat.color.includes("blue") ? "#3b82f6" :
-                             stat.color.includes("green") ? "#22c55e" :
-                             stat.color.includes("purple") ? "#a855f7" : "#f59e0b"
-                    }} />
+                    <stat.icon className="w-4 h-4 text-primary" />
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -191,7 +187,7 @@ export const TeamProgressWidget: React.FC<TeamProgressWidgetProps> = ({
           transition={{ delay: 0.4 }}
           className="flex items-center gap-2 p-3 rounded-lg bg-muted/50"
         >
-          <Star className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <Star className="w-4 h-4 text-primary flex-shrink-0" />
           <p className="text-sm text-muted-foreground">
             {activeToday === playersCount && playersCount > 0 ? (
               <span><span className="font-medium text-foreground">Full team participation!</span> Everyone's putting in work today.</span>

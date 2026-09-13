@@ -299,11 +299,11 @@ const CoachDashboard: React.FC = () => {
           ))}
         </section>
 
-        <section className={`relative overflow-hidden rounded-xl border p-5 sm:p-6 ${attention.complete ? "border-emerald-500/25 bg-emerald-500/[0.06]" : "border-primary/30 bg-primary/[0.07]"}`}>
+        <section className={`relative overflow-hidden rounded-xl border p-5 sm:p-6 ${attention.complete ? "border-success/25 bg-success/[0.06]" : "border-primary/30 bg-primary/[0.07]"}`}>
           <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${attention.complete ? "bg-emerald-500/12 text-emerald-400" : "bg-primary/12 text-primary"}`}>
+              <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${attention.complete ? "bg-success/12 text-success" : "bg-primary/12 text-primary"}`}>
                 {attention.complete ? <CheckCircle2 className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
               </div>
               <div>
@@ -348,7 +348,7 @@ const CoachDashboard: React.FC = () => {
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Planning</p>
               <h2 className="mt-1 font-display text-2xl font-black uppercase">Plan the week</h2>
             </div>
-            <Button variant="ghost" className="min-h-11 text-amber-400 hover:text-amber-300" onClick={() => setShowGameDayModal(true)}>
+            <Button variant="ghost" className="min-h-11 text-primary hover:text-primary" onClick={() => setShowGameDayModal(true)}>
               <Swords className="h-4 w-4" /> Game day
             </Button>
           </div>

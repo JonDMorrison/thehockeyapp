@@ -215,7 +215,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
               className="w-full h-full object-cover"
             />
             {photo.visibility === "team_adults" && (
-              <div className="absolute top-1 right-1 w-4 h-4 bg-team-primary rounded-full flex items-center justify-center">
+              <div className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
                 <Share2 className="w-2.5 h-2.5 text-white" />
               </div>
             )}

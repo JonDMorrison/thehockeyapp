@@ -335,7 +335,7 @@ const JoinTeamPlayer: React.FC = () => {
                   key={player.id}
                   className={`cursor-pointer transition-all duration-200 ${
                     selectedPlayerId === player.id
-                      ? "ring-2 ring-team-primary ring-offset-2"
+                      ? "ring-2 ring-primary ring-offset-2"
                       : ""
                   }`}
                   onClick={() => setSelectedPlayerId(player.id)}
@@ -362,7 +362,7 @@ const JoinTeamPlayer: React.FC = () => {
                       </div>
                     </div>
                     {selectedPlayerId === player.id && (
-                      <div className="w-6 h-6 rounded-full bg-team-primary flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                         <Check className="w-4 h-4 text-primary-foreground" />
                       </div>
                     )}

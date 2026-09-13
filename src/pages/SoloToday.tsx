@@ -367,14 +367,14 @@ const SoloToday: React.FC = () => {
         <AppCard
           className={`transition-all ${
             isAllDone
-              ? "bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30"
-              : "bg-gradient-to-br from-orange-500/10 to-amber-500/5 border-orange-500/20"
+              ? "bg-gradient-to-br from-success/10 to-success/5 border-success/30"
+              : "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
           }`}
         >
           <div className="flex items-center gap-4">
             <div
               className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                isAllDone ? "bg-green-500" : "bg-orange-500"
+                isAllDone ? "bg-success" : "bg-primary"
               }`}
             >
               {isAllDone ? (
@@ -472,8 +472,8 @@ const SoloToday: React.FC = () => {
             </div>
 
             {isAllDone && (
-              <AppCard className="bg-green-500/10 border-green-500/30 text-center py-6">
-                <Trophy className="w-12 h-12 text-green-500 mx-auto mb-3" />
+              <AppCard className="bg-success/10 border-success/30 text-center py-6">
+                <Trophy className="w-12 h-12 text-success mx-auto mb-3" />
                 <p className="font-bold text-lg">{t('solo.workoutComplete')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t('solo.greatWorkSeeYouTomorrow', { name: player.first_name })}
@@ -528,7 +528,7 @@ const SoloToday: React.FC = () => {
           <AppCardTitle className="text-base mb-3">{t('solo.thisWeek')}</AppCardTitle>
           <div className="flex justify-center text-center">
             <div>
-              <p className="text-2xl font-bold text-orange-500">
+              <p className="text-2xl font-bold text-primary">
                 {trainingPlan?.days_per_week || 4}
               </p>
               <p className="text-xs text-muted-foreground">{t('solo.dayGoal')}</p>

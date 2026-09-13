@@ -42,7 +42,7 @@ const About: React.FC = () => {
               </p>
               <Button
                 size="lg"
-                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="text-base px-10 bg-primary hover:bg-brand-strong transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 asChild
               >
                 <Link to="/demo">
@@ -158,7 +158,7 @@ const About: React.FC = () => {
               </p>
               <Button
                 size="lg"
-                className="text-base px-10 bg-primary hover:bg-[hsl(22,85%,40%)] transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
+                className="text-base px-10 bg-primary hover:bg-brand-strong transition-colors text-white rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.08)]"
                 asChild
               >
                 <Link to="/auth">{t('marketing.about_section_cta_get_started')}</Link>

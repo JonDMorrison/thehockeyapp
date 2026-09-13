@@ -6,9 +6,9 @@ export const FeatureBuilder: React.FC = () => {
   const { t } = useTranslation();
 
   const taskTypes = [
-    { icon: Target, label: t('marketing.builder_shooting'), color: "bg-blue-500" },
-    { icon: Dumbbell, label: t('marketing.builder_conditioning'), color: "bg-orange-500" },
-    { icon: Heart, label: t('marketing.builder_mobility'), color: "bg-pink-500" },
+    { icon: Target, label: t('marketing.builder_shooting'), color: "bg-primary" },
+    { icon: Dumbbell, label: t('marketing.builder_conditioning'), color: "bg-primary" },
+    { icon: Heart, label: t('marketing.builder_mobility'), color: "bg-primary" },
   ];
 
   const draftTasks = [
@@ -22,7 +22,7 @@ export const FeatureBuilder: React.FC = () => {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-base font-bold text-foreground">{t('marketing.builder_build_practice')}</h1>
-          <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-600 px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-1 rounded-full">
             <Sparkles className="w-3 h-3" />
             <span className="text-[10px] font-semibold">{t('marketing.builder_ai_assist')}</span>
           </div>
@@ -36,9 +36,9 @@ export const FeatureBuilder: React.FC = () => {
             <p className="text-[9px] text-muted-foreground uppercase">{t('marketing.builder_date')}</p>
             <p className="text-xs font-medium">Today</p>
           </div>
-          <div className="flex-1 bg-purple-500/10 rounded-lg p-2.5 border border-purple-500/30">
-            <p className="text-[9px] text-purple-600 uppercase">{t('marketing.builder_tier')}</p>
-            <p className="text-xs font-medium text-purple-600">REP</p>
+          <div className="flex-1 bg-primary/10 rounded-lg p-2.5 border border-primary/30">
+            <p className="text-[9px] text-primary uppercase">{t('marketing.builder_tier')}</p>
+            <p className="text-xs font-medium text-primary">REP</p>
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export const FeatureBuilder: React.FC = () => {
         </div>
 
         {/* AI button */}
-        <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-3 flex items-center justify-center gap-2">
+        <button className="w-full bg-gradient-to-r from-primary to-brand-strong text-white rounded-xl p-3 flex items-center justify-center gap-2">
           <Sparkles className="w-4 h-4" />
           <span className="text-sm font-semibold">{t('marketing.builder_generate_with_ai')}</span>
         </button>

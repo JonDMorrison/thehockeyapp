@@ -204,7 +204,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
                     className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
                       program.is_challenge
-                        ? "bg-orange-500/10 text-orange-500"
+                        ? "bg-primary/10 text-primary"
                         : "bg-primary/10 text-primary"
                     )}
                   >

@@ -187,14 +187,14 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
       <AppCard>
         <div className="flex items-center justify-between mb-3">
           <AppCardTitle className="flex items-center gap-2 text-sm">
-            <Users className="w-4 h-4 text-team-primary" />
+            <Users className="w-4 h-4 text-primary" />
             {t("players.teammateRoster.title", { count: otherTeammates.length })}
           </AppCardTitle>
           {otherTeammates.length > 5 && (
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-team-primary"
+              className="text-xs text-primary"
               onClick={() => setShowAll(!showAll)}
             >
               {showAll ? t("common.showLess") : t("common.viewAll")}
@@ -233,7 +233,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
                         </span>
                       )}
                       {teammate.badgeCount > 0 && (
-                        <span className="text-xs text-amber-600 flex items-center gap-0.5">
+                        <span className="text-xs text-primary flex items-center gap-0.5">
                           <Trophy className="w-3 h-3" />
                           {teammate.badgeCount}
                         </span>
@@ -288,7 +288,7 @@ export const TeammateRoster: React.FC<TeammateRosterProps> = ({
             {selectedBadges && selectedBadges.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-500" />
+                  <Trophy className="w-4 h-4 text-primary" />
                   {t("players.teammateRoster.badgesEarned", { count: selectedBadges.length })}
                 </h3>
                 <div className="grid grid-cols-3 gap-3">

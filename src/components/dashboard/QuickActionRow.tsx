@@ -31,7 +31,7 @@ export const QuickActionRow: React.FC<QuickActionRowProps> = ({
           className="flex-col h-auto py-3 gap-1.5"
           onClick={onClick}
         >
-          <Icon className="w-5 h-5 text-team-primary" />
+          <Icon className="w-5 h-5 text-primary" />
           <span className="text-xs font-medium">{label}</span>
         </Button>
       ))}

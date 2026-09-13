@@ -956,16 +956,8 @@ const PlayerToday: React.FC = () => {
 
           {isSessionComplete && (
             <div className="space-y-3">
-              <AppCard
-                className="text-center"
-                style={{
-                  background: palette ? `hsl(${palette.primary} / 0.05)` : undefined,
-                }}
-              >
-                <Trophy
-                  className="w-8 h-8 mx-auto mb-2"
-                  style={{ color: palette ? `hsl(${palette.primary})` : undefined }}
-                />
+              <AppCard className="border-success/20 bg-success/5 text-center">
+                <Trophy className="mx-auto mb-2 h-8 w-8 text-success" />
                 <p className="font-semibold">{t("players.today.sessionCompleteMessage")}</p>
                 {sessionCompletion?.completed_at && (
                   <p className="text-sm text-text-muted">
