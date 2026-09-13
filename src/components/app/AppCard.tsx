@@ -5,16 +5,17 @@ interface AppCardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "muted";
   header?: React.ReactNode;
   actions?: React.ReactNode;
+  contentClassName?: string;
 }
 
 const AppCard = React.forwardRef<HTMLDivElement, AppCardProps>(
-  ({ className, variant = "default", header, actions, children, ...props }, ref) => {
+  ({ className, variant = "default", header, actions, contentClassName, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "rounded-lg border transition-shadow duration-200",
-          variant === "default" && "bg-card shadow-subtle hover:shadow-medium",
+          "rounded-lg border",
+          variant === "default" && "bg-card shadow-subtle",
           variant === "muted" && "bg-surface-muted border-transparent",
           className
         )}
@@ -26,7 +27,7 @@ const AppCard = React.forwardRef<HTMLDivElement, AppCardProps>(
             {actions && <div className="flex items-center gap-2">{actions}</div>}
           </div>
         )}
-        <div className={cn((header || actions) ? "p-4" : "p-4")}>
+        <div className={cn("p-4", contentClassName)}>
           {children}
         </div>
       </div>

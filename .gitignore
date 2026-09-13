@@ -34,3 +34,4 @@ supabase/.branches/
 .env.local
 .env.local.notes
 .env.test
+.env*.local

@@ -6,6 +6,7 @@ import {
   BarChart3,
   Building2,
   CalendarCheck2,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clipboard,
@@ -15,7 +16,6 @@ import {
   Plus,
   RefreshCw,
   ShieldCheck,
-  Target,
   Unlink,
   UserPlus,
   Users,
@@ -32,8 +32,19 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/app/Toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AssociationRole = "owner" | "director" | "admin" | "viewer";
+type TeamFilter = "all" | "needs_plan" | "low_adoption";
 
 interface AssociationTeamMetric {
   id: string;
@@ -94,6 +105,8 @@ export default function AssociationDashboard() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("viewer");
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
+  const [teamFilter, setTeamFilter] = useState<TeamFilter>("all");
+  const [teamToDisconnect, setTeamToDisconnect] = useState<AssociationTeamMetric | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/auth", { replace: true });
@@ -196,6 +209,7 @@ export default function AssociationDashboard() {
     },
     onSuccess: () => {
       toast.success("Team disconnected", "The team workspace and its data were not deleted.");
+      setTeamToDisconnect(null);
       refresh();
     },
     onError: (error: Error) => toast.error("Could not disconnect team", error.message),
@@ -278,6 +292,15 @@ export default function AssociationDashboard() {
   const adoption = dashboard.totals.players_count > 0
     ? Math.round((dashboard.totals.active_players_count / dashboard.totals.players_count) * 100)
     : 0;
+  const teamsWithoutPlan = dashboard.teams.filter((team) => !team.has_published_week);
+  const lowAdoptionTeams = dashboard.teams.filter((team) => team.adoption_percent < 50);
+  const attentionTeamIds = new Set([...teamsWithoutPlan, ...lowAdoptionTeams].map((team) => team.id));
+  const attentionCount = attentionTeamIds.size;
+  const visibleTeams = dashboard.teams.filter((team) => {
+    if (teamFilter === "needs_plan") return !team.has_published_week;
+    if (teamFilter === "low_adoption") return team.adoption_percent < 50;
+    return true;
+  });
 
   return (
     <AppShell
@@ -295,10 +318,9 @@ export default function AssociationDashboard() {
           </Button>
         </div>
       }
-      hideNav
     >
       <PageContainer className="mx-auto max-w-6xl space-y-5 sm:space-y-7">
-        <section className="relative overflow-hidden rounded-2xl border border-primary/30 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.18),transparent_38%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--background)))] p-5 sm:p-8">
+        <section className="relative overflow-hidden rounded-xl border border-primary/30 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.18),transparent_38%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--background)))] p-5 sm:p-8">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -307,10 +329,12 @@ export default function AssociationDashboard() {
                 {dashboard.association.region && <><span>·</span><span>{dashboard.association.region}</span></>}
               </div>
               <h2 className="mt-4 text-3xl font-black uppercase leading-none tracking-[-0.04em] sm:text-5xl">
-                {formatNumber(dashboard.totals.active_players_count)} players active
+                {attentionCount > 0 ? <>{attentionCount} team{attentionCount === 1 ? "" : "s"} need attention</> : <>Every team is on track</>}
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-                Across {dashboard.totals.teams_count} teams in the last {dashboard.window_days} days. Individual player details stay inside each authorized team.
+                {attentionCount > 0
+                  ? "Start with missing weekly plans and low participation. Player details stay inside each authorized team."
+                  : `${formatNumber(dashboard.totals.active_players_count)} players were active across ${dashboard.totals.teams_count} teams in the last ${dashboard.window_days} days.`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -328,30 +352,48 @@ export default function AssociationDashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <section className="grid grid-cols-2 divide-x divide-y divide-border overflow-hidden rounded-lg border border-border bg-card sm:grid-cols-4 sm:divide-y-0">
           <Metric icon={Building2} label="Teams" value={dashboard.totals.teams_count} />
-          <Metric icon={Users} label="Rostered" value={dashboard.totals.players_count} />
           <Metric icon={Activity} label="Adoption" value={`${adoption}%`} accent />
-          <Metric icon={CalendarCheck2} label="Sessions" value={dashboard.totals.sessions_count} />
-          <Metric icon={Target} label="Shots" value={dashboard.totals.shots_count} className="col-span-2 lg:col-span-1" />
+          <Metric icon={CalendarCheck2} label="Weeks live" value={`${dashboard.totals.teams_with_plan_count}/${dashboard.totals.teams_count}`} />
+          <Metric icon={Users} label="Active players" value={dashboard.totals.active_players_count} />
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <AppCard className="overflow-hidden p-0">
-            <div className="flex items-center justify-between gap-3 border-b border-border p-5">
-              <div>
-                <AppCardTitle className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Team rollout</AppCardTitle>
-                <AppCardDescription className="mt-1">Participation and published-plan health</AppCardDescription>
+          <AppCard id="association-teams" className="scroll-mt-24 overflow-hidden" contentClassName="p-0">
+            <div className="border-b border-border p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <AppCardTitle className="flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Team rollout</AppCardTitle>
+                  <AppCardDescription className="mt-1">Find the teams that need support first.</AppCardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-black">{visibleTeams.length}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">shown</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-xl font-black">{dashboard.totals.teams_with_plan_count}/{dashboard.totals.teams_count}</p>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">weeks live</p>
+              <div className="mt-4 flex gap-2 overflow-x-auto" aria-label="Filter teams">
+                {([
+                  ["all", `All ${dashboard.teams.length}`],
+                  ["needs_plan", `Needs plan ${teamsWithoutPlan.length}`],
+                  ["low_adoption", `Low activity ${lowAdoptionTeams.length}`],
+                ] as Array<[TeamFilter, string]>).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={teamFilter === value}
+                    onClick={() => setTeamFilter(value)}
+                    className={`min-h-10 shrink-0 rounded-md px-3 text-xs font-bold transition-colors ${teamFilter === value ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {dashboard.teams.length > 0 ? (
+            {visibleTeams.length > 0 ? (
               <div className="divide-y divide-border">
-                {dashboard.teams.map((team) => (
+                {visibleTeams.map((team) => (
                   <div key={team.id} className="group p-4 sm:p-5">
                     <div className="flex items-center gap-3">
                       <Avatar src={team.team_logo_url} fallback={team.name} size="lg" />
@@ -392,7 +434,7 @@ export default function AssociationDashboard() {
                           size="sm"
                           className="h-7 text-[11px] text-muted-foreground hover:text-destructive"
                           disabled={unlinkTeam.isPending}
-                          onClick={() => unlinkTeam.mutate(team.id)}
+                          onClick={() => setTeamToDisconnect(team)}
                         >
                           <Unlink className="h-3.5 w-3.5" /> Disconnect
                         </Button>
@@ -403,9 +445,13 @@ export default function AssociationDashboard() {
               </div>
             ) : (
               <div className="p-8 text-center">
-                <Link2 className="mx-auto h-8 w-8 text-primary" />
-                <h3 className="mt-3 font-black uppercase">Connect the pilot team</h3>
-                <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">A head coach can connect an existing team without changing who can see player data.</p>
+                {dashboard.teams.length === 0 ? <Link2 className="mx-auto h-8 w-8 text-primary" /> : <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-400" />}
+                <h3 className="mt-3 font-black uppercase">{dashboard.teams.length === 0 ? "Connect the pilot team" : "No teams in this filter"}</h3>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                  {dashboard.teams.length === 0
+                    ? "Connect an existing coach workspace without changing who can see player data."
+                    : "Change the filter to see the rest of the association."}
+                </p>
               </div>
             )}
           </AppCard>
@@ -441,7 +487,7 @@ export default function AssociationDashboard() {
               </AppCard>
             )}
 
-            <AppCard>
+            <AppCard id="association-access" className="scroll-mt-24">
               <AppCardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-cyan-400" /> Staff access</AppCardTitle>
               <AppCardDescription className="mt-1">{rolesQuery.data?.length || 0} people can open this association view.</AppCardDescription>
 
@@ -498,6 +544,31 @@ export default function AssociationDashboard() {
           </div>
         </section>
       </PageContainer>
+
+      <AlertDialog open={!!teamToDisconnect} onOpenChange={(open) => !open && setTeamToDisconnect(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect {teamToDisconnect?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The team workspace and player data will stay intact. Its totals will no longer appear in this association.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep connected</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={unlinkTeam.isPending || !teamToDisconnect}
+              onClick={(event) => {
+                event.preventDefault();
+                if (teamToDisconnect) unlinkTeam.mutate(teamToDisconnect.id);
+              }}
+            >
+              {unlinkTeam.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlink className="h-4 w-4" />}
+              Disconnect team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
@@ -516,8 +587,8 @@ function Metric({
   className?: string;
 }) {
   return (
-    <div className={`rounded-xl border p-4 ${accent ? "border-primary/30 bg-primary/10" : "border-border bg-card"} ${className}`}>
-      <Icon className={`h-4 w-4 ${accent ? "text-primary" : "text-cyan-400"}`} />
+    <div className={`p-4 sm:p-5 ${accent ? "bg-primary/[0.06]" : "bg-card"} ${className}`}>
+      <Icon className={`h-4 w-4 ${accent ? "text-primary" : "text-muted-foreground"}`} />
       <p className="mt-3 text-2xl font-black tracking-tight">{typeof value === "number" ? formatNumber(value) : value}</p>
       <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
     </div>

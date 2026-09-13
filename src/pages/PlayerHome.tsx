@@ -48,9 +48,7 @@ import { TeammateRoster } from "@/components/player/TeammateRoster";
 import { TeamLeaderboard } from "@/components/player/TeamLeaderboard";
 import { TeamCheersFeed } from "@/components/player/TeamCheersFeed";
 import { UpcomingWorkouts } from "@/components/player/UpcomingWorkouts";
-import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { format, subDays, parseISO } from "date-fns";
-import logoImage from "@/assets/hockey-app-logo.png";
 import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
 import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
@@ -418,7 +416,6 @@ const PlayerHome: React.FC = () => {
 
   return (
     <AppShell
-      hideNav
       header={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
@@ -429,12 +426,12 @@ const PlayerHome: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <img src={logoImage} alt="The Hockey App" className="w-8 h-8 object-contain" />
+            <div className="min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Player home</p>
+              <p className="truncate font-display text-base font-black uppercase">{player.first_name}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <ContextSwitcher currentPlayerId={id} compact />
-            <NotificationBell />
-          </div>
+          <NotificationBell />
         </div>
       }
     >
@@ -639,23 +636,23 @@ const PlayerHome: React.FC = () => {
         {/* Mobile Layout - Keep existing stacked layout */}
         <div className="md:hidden space-y-4">
           {/* Player Header - Mobile only */}
-          <AppCard className="text-center relative overflow-hidden">
+          <section className="flex items-center gap-4 border-b border-border pb-5">
             <Avatar
               src={player.profile_photo_url}
               fallback={`${player.first_name} ${player.last_initial || ""}`}
-              size="xl"
-              className="mx-auto mb-4"
+              size="lg"
             />
-            <h2 className="text-xl font-bold">
-              {player.first_name} {player.last_initial && `${player.last_initial}.`}
-            </h2>
-            <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-              <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
-              {player.jersey_number && (
-                <Tag variant="tier">#{player.jersey_number}</Tag>
-              )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Ready to train</p>
+              <h2 className="mt-1 font-display text-2xl font-black uppercase">
+                {player.first_name} {player.last_initial && `${player.last_initial}.`}
+              </h2>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
+                {player.jersey_number && <Tag variant="tier">#{player.jersey_number}</Tag>}
+              </div>
             </div>
-          </AppCard>
+          </section>
 
           {/* Section 1 — Team Assignments - Mobile */}
           {preferences?.active_team_id && activeTeam && (
@@ -693,29 +690,35 @@ const PlayerHome: React.FC = () => {
             />
           )}
 
-          {/* Team Activity & Social - Mobile */}
+          {/* Team Activity & Social - Mobile, progressively disclosed */}
           {preferences?.active_team_id && (
-            <>
-              <TeamActivityFeed
-                teamId={preferences.active_team_id}
-                currentPlayerId={id!}
-              />
-              <TeamLeaderboard
-                teamId={preferences.active_team_id}
-                currentPlayerId={id!}
-              />
-              <div ref={teammatesRef}>
-                <TeammateRoster
+            <details className="group overflow-hidden rounded-lg border border-border bg-card">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center px-4 font-semibold [&::-webkit-details-marker]:hidden">
+                <span className="flex-1">Team activity</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="space-y-4 border-t border-border p-4">
+                <TeamActivityFeed
                   teamId={preferences.active_team_id}
                   currentPlayerId={id!}
                 />
+                <TeamLeaderboard
+                  teamId={preferences.active_team_id}
+                  currentPlayerId={id!}
+                />
+                <div ref={teammatesRef}>
+                  <TeammateRoster
+                    teamId={preferences.active_team_id}
+                    currentPlayerId={id!}
+                  />
+                </div>
+                <TeamCheersFeed
+                  teamId={preferences.active_team_id}
+                  currentPlayerId={id!}
+                  onSendCheer={scrollToTeammates}
+                />
               </div>
-              <TeamCheersFeed
-                teamId={preferences.active_team_id}
-                currentPlayerId={id!}
-                onSendCheer={scrollToTeammates}
-              />
-            </>
+            </details>
           )}
 
           {/* Teams Section - Mobile */}
@@ -771,49 +774,6 @@ const PlayerHome: React.FC = () => {
             <JoinTeamCard playerId={id!} />
           </div>
 
-          {/* Quick Actions - Mobile */}
-          <div className="grid grid-cols-4 gap-3">
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/players/${id}/week`)}
-              className="flex flex-col items-center gap-1 h-auto py-3"
-            >
-              <CalendarDays className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">{t("playerWeek.thisWeek")}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/players/${id}/goals`)}
-              className="flex flex-col items-center gap-1 h-auto py-3"
-            >
-              <Target className="w-5 h-5 text-team-primary" />
-              <span className="text-xs">{t("players.home.goals")}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/players/${id}/badges`)}
-              className="flex flex-col items-center gap-1 h-auto py-3"
-            >
-              <Trophy className="w-5 h-5 text-amber-500" />
-              <span className="text-xs">{t("players.home.badges")}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/players/${id}`)}
-              className="flex flex-col items-center gap-1 h-auto py-3"
-            >
-              <User className="w-5 h-5 text-text-muted" />
-              <span className="text-xs">{t("players.home.profile")}</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/players")}
-              className="flex flex-col items-center gap-1 h-auto py-3"
-            >
-              <Users className="w-5 h-5 text-text-muted" />
-              <span className="text-xs">{t("players.home.switch")}</span>
-            </Button>
-          </div>
         </div>
       </PageContainer>
 
