@@ -19,7 +19,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Barlow Condensed"', '"Arial Narrow"', '"Inter Tight"', "Inter", "sans-serif"],
+        display: ['"Inter Tight"', "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       colors: {

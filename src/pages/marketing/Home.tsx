@@ -113,7 +113,7 @@ function AssociationPreview() {
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Sample workspace</p>
-          <p className="mt-1 font-display text-lg font-black uppercase text-white">North Shore Hockey</p>
+          <p className="mt-1 font-display text-lg font-black uppercase text-white">Abbotsford Hawks</p>
         </div>
         <span className="rounded-md bg-emerald-400/10 px-2 py-1 text-[9px] font-black uppercase text-emerald-300">
           Season live
@@ -263,7 +263,7 @@ export default function Home() {
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-8 lg:pb-28 lg:pt-24">
             <div>
               <SectionEyebrow>Off-ice development for every team</SectionEyebrow>
-              <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.9] tracking-[-0.045em] sm:text-6xl lg:text-[76px]">
+              <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-6xl lg:text-[72px]">
                 Turn the days between practices <span className="text-primary">into an advantage.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-7 text-white/68 sm:text-xl">
