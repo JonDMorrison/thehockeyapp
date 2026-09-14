@@ -24,7 +24,7 @@ import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
-import familyNexlevel from "@/assets/family-founder-unbranded-v2.webp";
+import founderCoaching from "@/assets/brand/founder-jon-coaching.jpg";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
 import drivewayPlayer from "@/assets/brand/driveway-wrist-shot-v2.jpg";
 import teamHuddle from "@/assets/brand/team-huddle-v2.jpg";
@@ -494,10 +494,19 @@ export default function Home() {
         {/* 6. Founder and trust */}
         <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#111319] py-16 sm:py-20 lg:py-24">
           <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-primary/8 blur-3xl" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16 lg:px-8">
-            <div className="relative mx-auto max-w-[330px] self-end">
-              <div className="absolute inset-x-5 bottom-2 h-24 rounded-full bg-black/55 blur-2xl" />
-              <img src={familyNexlevel} alt="Founder Jon Morrison with his three hockey-playing daughters" className="relative w-full" loading="lazy" />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 lg:px-8">
+            <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
+              <img
+                src={founderCoaching}
+                alt="Founder Jon Morrison coaching from the bench during a youth hockey game"
+                className="aspect-[3/2] w-full object-cover object-[54%_center]"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 border-l-2 border-primary px-5 py-4">
+                <p className="font-display text-sm font-black uppercase tracking-[0.12em] text-white">Jon Morrison</p>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Coach · Parent · Founder</p>
+              </div>
             </div>
             <div>
               <SectionEyebrow>Built inside a hockey family</SectionEyebrow>
