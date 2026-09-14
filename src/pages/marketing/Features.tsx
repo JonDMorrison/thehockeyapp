@@ -30,7 +30,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { FeatureBuilder } from "@/components/marketing/features";
-import heroOutdoorTraining from "@/assets/brand/hero-outdoor-training.jpg";
+import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
 import drivewayPlayer from "@/assets/brand/driveway-wrist-shot.jpg";
 import coachPlanning from "@/assets/brand/coach-planning.jpg";
 import familyProgress from "@/assets/brand/family-progress.jpg";
@@ -290,7 +290,7 @@ export default function Features() {
 
       <main>
         <section className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
-          <img src={heroOutdoorTraining} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[70%_center] opacity-38" loading="eager" decoding="async" />
+          <img src={heroHomeTraining} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[70%_center] opacity-38" loading="eager" decoding="async" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,#090a0e_0%,rgba(9,10,14,0.97)_43%,rgba(9,10,14,0.7)_72%,rgba(9,10,14,0.54)_100%)]" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#090a0e] via-transparent to-[#090a0e]/45" />
           <div className="absolute right-[12%] top-[14%] h-80 w-80 rounded-full bg-primary/12 blur-3xl" />

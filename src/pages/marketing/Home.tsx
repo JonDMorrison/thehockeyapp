@@ -25,7 +25,7 @@ import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview"
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
 import familyNexlevel from "@/assets/family-nexlevel-optimized.png";
-import heroOutdoorTraining from "@/assets/brand/hero-outdoor-training.jpg";
+import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
 import drivewayPlayer from "@/assets/brand/driveway-wrist-shot.jpg";
 import teamHuddle from "@/assets/brand/team-huddle.jpg";
 import coachPlanning from "@/assets/brand/coach-planning.jpg";
@@ -278,7 +278,7 @@ export default function Home() {
         {/* 1. Hero */}
         <section className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
           <img
-            src={heroOutdoorTraining}
+            src={heroHomeTraining}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover object-[62%_center] opacity-50"
