@@ -31,7 +31,7 @@ import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { FeatureBuilder } from "@/components/marketing/features";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
-import drivewayPlayer from "@/assets/brand/driveway-wrist-shot.jpg";
+import drivewayPlayer from "@/assets/brand/driveway-wrist-shot-v2.jpg";
 import coachPlanning from "@/assets/brand/coach-planning.jpg";
 import familyProgress from "@/assets/brand/family-progress.jpg";
 import teamCelebration from "@/assets/brand/team-celebration.jpg";

@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import teamHuddleImage from "@/assets/brand/team-huddle.jpg";
+import teamHuddleImage from "@/assets/brand/team-huddle-v2.jpg";
 import {
   Select,
   SelectContent,

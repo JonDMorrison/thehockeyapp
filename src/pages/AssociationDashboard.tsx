@@ -42,7 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import teamHuddle from "@/assets/brand/team-huddle.jpg";
+import teamHuddle from "@/assets/brand/team-huddle-v2.jpg";
 
 type AssociationRole = "owner" | "director" | "admin" | "viewer";
 type TeamFilter = "all" | "needs_plan" | "low_adoption";
