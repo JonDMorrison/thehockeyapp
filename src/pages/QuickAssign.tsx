@@ -243,6 +243,7 @@ const QuickAssign: React.FC = () => {
         .select("id, published_at")
         .eq("team_id", id)
         .eq("date", selectedDateStr)
+        .eq("program_source", "team")
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -302,6 +303,7 @@ const QuickAssign: React.FC = () => {
           )
         `)
         .eq("team_id", id)
+        .eq("program_source", "team")
         .gte("date", weekAgo)
         .neq("date", selectedDateStr)
         .order("date", { ascending: false })
@@ -369,40 +371,7 @@ const QuickAssign: React.FC = () => {
         throw new Error("No tasks to copy");
       }
 
-      let practiceCardId = existingCard?.id;
-
-      // Create or update practice card
-      if (practiceCardId) {
-        // Delete existing tasks
-        await supabase.from("practice_tasks").delete().eq("practice_card_id", practiceCardId);
-
-        // Update card
-        const { error } = await supabase
-          .from("practice_cards")
-          .update({
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", practiceCardId);
-        if (error) throw error;
-      } else {
-        // Create new card
-        const { data: newCard, error } = await supabase
-          .from("practice_cards")
-          .insert({
-            team_id: id,
-            date: selectedDateStr,
-            tier: "rep",
-            created_by_user_id: user!.id,
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        practiceCardId = newCard.id;
-      }
-
-      // Copy tasks from source card
       const tasks = sourceCard.practice_tasks.map((task, index) => ({
-        practice_card_id: practiceCardId,
         sort_order: task.sort_order ?? index,
         task_type: task.task_type,
         label: task.label,
@@ -414,10 +383,15 @@ const QuickAssign: React.FC = () => {
         video_url: task.video_url,
       }));
 
-      const { error: tasksError } = await supabase
-        .from("practice_tasks")
-        .insert(tasks);
-      if (tasksError) throw tasksError;
+      const { error } = await supabase.rpc("replace_team_practice_card", {
+        p_team_id: id!,
+        p_date: selectedDateStr,
+        p_publish: !!existingCard?.published_at,
+        p_tier: "rep",
+        p_title: sourceCard.title,
+        p_tasks: tasks,
+      });
+      if (error) throw error;
 
       return { taskCount: tasks.length };
     },
@@ -442,43 +416,8 @@ const QuickAssign: React.FC = () => {
         throw new Error(t('practice.selectAtLeastOneExercise'));
       }
 
-      let practiceCardId = existingCard?.id;
-
-      // Create or update practice card
-      if (practiceCardId) {
-        // Delete existing tasks
-        await supabase.from("practice_tasks").delete().eq("practice_card_id", practiceCardId);
-
-        // Update card
-        const { error } = await supabase
-          .from("practice_cards")
-          .update({
-            published_at: publish ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", practiceCardId);
-        if (error) throw error;
-      } else {
-        // Create new card
-        const { data: newCard, error } = await supabase
-          .from("practice_cards")
-          .insert({
-            team_id: id,
-            date: selectedDateStr,
-            tier: "rep",
-            created_by_user_id: user!.id,
-            published_at: publish ? new Date().toISOString() : null,
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        practiceCardId = newCard.id;
-      }
-
-      // Insert selected exercises as tasks
       const selectedPresets = EXERCISE_PRESETS.filter((p) => selectedExercises.has(p.id));
       const tasks = selectedPresets.map((preset, index) => ({
-        practice_card_id: practiceCardId,
         sort_order: index,
         task_type: preset.task_type,
         label: preset.label,
@@ -490,10 +429,15 @@ const QuickAssign: React.FC = () => {
         video_url: videoExercises.has(preset.id) ? preset.video_url : null,
       }));
 
-      const { error: tasksError } = await supabase
-        .from("practice_tasks")
-        .insert(tasks);
-      if (tasksError) throw tasksError;
+      const { error } = await supabase.rpc("replace_team_practice_card", {
+        p_team_id: id!,
+        p_date: selectedDateStr,
+        p_publish: publish,
+        p_tier: "rep",
+        p_title: `${formatDateLabel(selectedDate)} workout`,
+        p_tasks: tasks,
+      });
+      if (error) throw error;
 
       return { published: publish };
     },

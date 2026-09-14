@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +21,6 @@ import { ParentWeeklySummary } from "./ParentWeeklySummary";
 
 interface HomeDevelopmentSectionProps {
   playerId: string;
-  teamId: string;
   onBuildPlan: () => void;
 }
 
@@ -30,25 +30,24 @@ interface ParentProgramStats {
   totalShots: number;
   totalConditioningReps: number;
   currentStreak: number;
+  hasTodayWorkout: boolean;
 }
 
 export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
   playerId,
-  teamId,
   onBuildPlan,
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // Query parent program stats — only program_source='parent'
+  // Home plans use the player-specific tables so they stay private from team staff.
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["parent-program-stats", playerId, teamId],
+    queryKey: ["parent-program-stats", playerId],
     queryFn: async (): Promise<ParentProgramStats> => {
-      // Get parent practice cards for this team
       const { data: cards, error: cardsError } = await supabase
-        .from("practice_cards")
+        .from("personal_practice_cards")
         .select("id, date")
-        .eq("team_id", teamId)
-        .eq("program_source", "parent")
+        .eq("player_id", playerId)
         .not("published_at", "is", null)
         .order("date", { ascending: false });
 
@@ -60,28 +59,27 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
           totalShots: 0,
           totalConditioningReps: 0,
           currentStreak: 0,
+          hasTodayWorkout: false,
         };
       }
 
       const cardIds = cards.map((c) => c.id);
 
-      // Get session completions for these parent cards
-      const { data: completions } = await supabase
-        .from("session_completions")
-        .select("practice_card_id, status, completed_at")
+      const { data: completions, error: completionsError } = await supabase
+        .from("personal_session_completions")
+        .select("personal_practice_card_id, status, completed_at")
         .eq("player_id", playerId)
-        .eq("program_source", "parent")
-        .in("practice_card_id", cardIds);
+        .in("personal_practice_card_id", cardIds);
+      if (completionsError) throw completionsError;
 
       const completedCards =
         completions?.filter((c) => c.status === "complete").length ?? 0;
 
-      // Get task completions for shots & conditioning
-      const { data: tasks } = await supabase
-        .from("practice_tasks")
+      const { data: tasks, error: tasksError } = await supabase
+        .from("personal_practice_tasks")
         .select("id, task_type, shots_expected, target_value")
-        .eq("program_source", "parent")
-        .in("practice_card_id", cardIds);
+        .in("personal_practice_card_id", cardIds);
+      if (tasksError) throw tasksError;
 
       const taskIds = tasks?.map((t) => t.id) ?? [];
 
@@ -89,18 +87,19 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
       let totalConditioningReps = 0;
 
       if (taskIds.length > 0) {
-        const { data: taskCompletions } = await supabase
-          .from("task_completions")
-          .select("practice_task_id, completed, shots_logged")
+        const { data: taskCompletions, error: taskCompletionsError } = await supabase
+          .from("personal_task_completions")
+          .select("personal_practice_task_id, completed")
           .eq("player_id", playerId)
           .eq("completed", true)
-          .in("practice_task_id", taskIds);
+          .in("personal_practice_task_id", taskIds);
+        if (taskCompletionsError) throw taskCompletionsError;
 
         if (taskCompletions && tasks) {
           for (const tc of taskCompletions) {
-            const task = tasks.find((t) => t.id === tc.practice_task_id);
+            const task = tasks.find((t) => t.id === tc.personal_practice_task_id);
             if (!task) continue;
-            totalShots += tc.shots_logged ?? task.shots_expected ?? 0;
+            totalShots += task.shots_expected ?? 0;
             if (
               task.task_type === "conditioning" ||
               task.task_type === "fitness"
@@ -130,7 +129,14 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         let startOffset = 0;
         if (reversed.includes(today)) startOffset = 0;
         else if (reversed.includes(yesterday)) startOffset = 1;
-        else return { totalCards: cards.length, completedCards, totalShots, totalConditioningReps, currentStreak: 0 };
+        else return {
+          totalCards: cards.length,
+          completedCards,
+          totalShots,
+          totalConditioningReps,
+          currentStreak: 0,
+          hasTodayWorkout: cards.some((card) => card.date === today),
+        };
 
         for (let i = startOffset; i < 365; i++) {
           const d = format(subDays(now, i), "yyyy-MM-dd");
@@ -145,9 +151,10 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         totalShots,
         totalConditioningReps,
         currentStreak,
+        hasTodayWorkout: cards.some((card) => card.date === format(new Date(), "yyyy-MM-dd")),
       };
     },
-    enabled: !!user && !!playerId && !!teamId,
+    enabled: !!user && !!playerId,
   });
 
   const hasParentPlan = (stats?.totalCards ?? 0) > 0;
@@ -194,6 +201,13 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
 
       {hasParentPlan ? (
         <>
+          {stats?.hasTodayWorkout && (
+            <Button className="w-full" onClick={() => navigate(`/solo/today/${playerId}`)}>
+              <Target className="mr-2 h-4 w-4" />
+              Start today&apos;s home workout
+              <ChevronRight className="ml-auto h-4 w-4" />
+            </Button>
+          )}
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3">
             {/* Program Progress */}
@@ -270,7 +284,7 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
           <ParentWeeklySummary playerId={playerId} />
 
           {/* Parent Totals Panel */}
-          <ParentTotalsPanel playerId={playerId} teamId={teamId} />
+          <ParentTotalsPanel playerId={playerId} />
 
           {/* Build another plan CTA */}
           <Button

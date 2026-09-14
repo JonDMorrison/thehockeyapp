@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { logger } from "@/core";
-import { format, addDays, addWeeks, addMonths } from "date-fns";
+import { format, addDays, addWeeks, parseISO } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,7 +45,6 @@ interface ParentProgramBuilderModalProps {
   playerAge?: number;
   playerShoots?: string | null;
   playerTier?: string;
-  teamId?: string;
 }
 
 type Step = "focus" | "frequency" | "horizon" | "goal" | "generate";
@@ -94,7 +93,6 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
   playerAge,
   playerShoots,
   playerTier = "rep",
-  teamId,
 }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -131,11 +129,6 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
 
   const getHorizonWeeks = (): number => {
     return HORIZON_OPTIONS.find((h) => h.id === horizon)?.weeks ?? 4;
-  };
-
-  const getEndDate = (): Date => {
-    const weeks = getHorizonWeeks();
-    return addWeeks(new Date(), weeks);
   };
 
   // AI generation + save
@@ -200,7 +193,8 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
 
       setSendingStep(2);
 
-      // Save practice cards with program_source='parent'
+      // Save the whole plan in the player's private training area. The RPC is
+      // transactional, so a failed task cannot leave a partial program behind.
       const plan = aiResult.data;
       const days: Array<{
         date: string;
@@ -218,84 +212,50 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       }> = plan.days || [];
 
       if (days.length === 0) throw new Error("AI returned no days");
-
-      // We need a team_id for practice_cards. If none provided, we can't save to
-      // team practice_cards. For now, require a team context.
-      if (!teamId) {
-        throw new Error("No team context for saving cards");
-      }
-
-      // Batch insert cards
-      const cardInserts = days.map((day) => ({
-        team_id: teamId,
-        created_by_user_id: user.id,
-        date: day.date,
-        title: day.title || `${plan.name || "Training"} – ${day.date}`,
-        tier: plan.tier || playerTier,
-        mode: "normal",
-        notes: day.notes || null,
-        published_at: new Date().toISOString(),
-        program_source: "parent" as const,
-      }));
-
-      const { data: cards, error: cardsError } = await supabase
-        .from("practice_cards")
-        .insert(cardInserts)
-        .select("id");
-
-      if (cardsError) throw cardsError;
-
-      setSendingStep(3);
-
-      // Build tasks for all cards
-      const taskInserts: Array<{
-        practice_card_id: string;
-        label: string;
-        task_type: string;
-        sort_order: number;
-        target_type: string;
-        target_value: number | null;
-        shot_type: string;
-        shots_expected: number | null;
-        is_required: boolean;
-        program_source: "parent";
-        video_url: string | null;
-      }> = [];
-
-      cards.forEach((card, cardIdx) => {
-        const dayTasks = days[cardIdx]?.tasks || [];
-        dayTasks.forEach((task, taskIdx) => {
-          taskInserts.push({
-            practice_card_id: card.id,
-            label: task.label,
-            task_type: task.task_type,
-            sort_order: taskIdx,
-            target_type: task.target_type || "none",
-            target_value: task.target_value ?? null,
-            shot_type: task.shot_type || "none",
-            shots_expected: task.shots_expected ?? null,
-            is_required: task.is_required ?? true,
-            program_source: "parent",
+      // The generator returns a strong seven-day template. Expand that template
+      // across the chosen horizon with a gentle monthly progression, avoiding 24
+      // slow and expensive AI calls for a season plan.
+      const privateDays = Array.from({ length: horizonWeeks }, (_, weekIndex) => {
+        const progression = 1 + Math.min(0.3, Math.floor(weekIndex / 4) * 0.05);
+        return days.map((day) => ({
+          ...day,
+          date: format(addWeeks(parseISO(day.date), weekIndex), "yyyy-MM-dd"),
+          title: day.title || `${plan.name || "Home training"} – ${day.date}`,
+          tasks: day.tasks.map((task, index) => ({
+            ...task,
+            target_value: task.target_value == null ? null : Math.round(task.target_value * progression),
+            shots_expected: task.shots_expected == null ? null : Math.round(task.shots_expected * progression),
+            sort_order: index,
             video_url: getRecommendedCoachingVideoUrl({
               label: task.label,
               taskType: task.task_type,
               shotType: task.shot_type,
             }),
-          });
-        });
+          })),
+        }));
+      }).flat();
+
+      setSendingStep(3);
+      const { data, error } = await supabase.rpc("replace_personal_training_program", {
+        p_player_id: playerId,
+        p_name: plan.name || "Home Development Plan",
+        p_tier: plan.tier || playerTier,
+        p_days_per_week: daysPerWeek,
+        p_training_focus: selectedFocuses,
+        p_days: privateDays,
       });
+      if (error) throw error;
 
-      if (taskInserts.length > 0) {
-        const { error: tasksError } = await supabase
-          .from("practice_tasks")
-          .insert(taskInserts);
-        if (tasksError) throw tasksError;
-      }
-
-      return { cardCount: cards.length, taskCount: taskInserts.length };
+      const result = data as { card_count?: number; task_count?: number } | null;
+      return {
+        cardCount: result?.card_count ?? days.length,
+        taskCount: result?.task_count ?? privateDays.reduce((sum, day) => sum + day.tasks.length, 0),
+      };
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["practice-cards"] });
+      queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
+      queryClient.invalidateQueries({ queryKey: ["parent-program-stats", playerId] });
+      queryClient.invalidateQueries({ queryKey: ["parent-totals-panel", playerId] });
       queryClient.invalidateQueries({ queryKey: ["player-home"] });
       fireGoalConfetti();
       toast.success(

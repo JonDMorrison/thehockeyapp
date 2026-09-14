@@ -45,6 +45,7 @@ const SoloSetup: React.FC = () => {
   ];
 
   const [step, setStep] = useState<"player" | "focus" | "schedule">("player");
+  const [profileFor, setProfileFor] = useState<"child" | "self">("child");
   const [firstName, setFirstName] = useState("");
   const [birthYear, setBirthYear] = useState(new Date().getFullYear() - 12);
   const [selectedFocuses, setSelectedFocuses] = useState<string[]>(["shooting", "conditioning"]);
@@ -58,13 +59,13 @@ const SoloSetup: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Prefill name from user metadata
+  // Only use the account holder's name when they explicitly choose themselves.
   useEffect(() => {
-    if (user?.user_metadata?.display_name) {
+    if (profileFor === "self" && user?.user_metadata?.display_name && !firstName) {
       const name = user.user_metadata.display_name.split(" ")[0];
       setFirstName(name);
     }
-  }, [user]);
+  }, [profileFor, user, firstName]);
 
   const createSoloPlayer = useMutation({
     mutationFn: async () => {
@@ -88,8 +89,8 @@ const SoloSetup: React.FC = () => {
     },
     onSuccess: (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
-      toast.success(t('solo.allSet'), t('solo.soloTrainingReady'));
-      navigate(`/solo/dashboard/${player.id}`);
+      toast.success(t('solo.allSet'), "Choose a first workout and start training now.");
+      navigate(`/solo/today/${player.id}`);
     },
     onError: (error: Error) => {
       toast.error(t('solo.setupFailed'), error.message);
@@ -166,7 +167,7 @@ const SoloSetup: React.FC = () => {
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <p className="text-sm font-semibold">{t('solo.trainOnMyOwn')}</p>
+            <p className="text-sm font-semibold">Set up training</p>
             <p className="text-xs text-muted-foreground">{t('solo.stepNOf3', { n: stepNumber })}</p>
           </div>
         </div>
@@ -191,23 +192,47 @@ const SoloSetup: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">{t('solo.letsPersonalizeYourTraining')}</h1>
+              <h1 className="text-2xl font-bold mb-2">Who is this plan for?</h1>
               <p className="text-muted-foreground">
-                {t('solo.createCustomPlanForYou')}
+                We&apos;ll tailor every workout to the player.
               </p>
             </div>
 
             <AppCard>
-              <AppCardTitle className="text-lg mb-4">{t('solo.aboutYou')}</AppCardTitle>
+              <div className="mb-5 grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileFor("child");
+                    if (firstName === user?.user_metadata?.display_name?.split(" ")[0]) setFirstName("");
+                  }}
+                  className={`rounded-xl border p-4 text-left transition-colors ${profileFor === "child" ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
+                >
+                  <span className="block font-semibold">My child</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">A player I manage</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfileFor("self")}
+                  className={`rounded-xl border p-4 text-left transition-colors ${profileFor === "self" ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
+                >
+                  <span className="block font-semibold">Myself</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">My own training</span>
+                </button>
+              </div>
+
+              <AppCardTitle className="text-lg mb-4">
+                {profileFor === "child" ? "About the player" : "About you"}
+              </AppCardTitle>
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">{t('solo.firstName')}</Label>
+                  <Label htmlFor="firstName">{profileFor === "child" ? "Player's first name" : "Your first name"}</Label>
                   <Input
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={t('solo.yourFirstName')}
+                    placeholder={profileFor === "child" ? "e.g., Alex" : t('solo.yourFirstName')}
                     className={errors.first_name ? "border-destructive" : ""}
                     autoFocus
                   />
@@ -217,7 +242,7 @@ const SoloSetup: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthYear">{t('solo.birthYear')}</Label>
+                  <Label htmlFor="birthYear">{profileFor === "child" ? "Player's birth year" : t('solo.birthYear')}</Label>
                   <select
                     id="birthYear"
                     value={birthYear}

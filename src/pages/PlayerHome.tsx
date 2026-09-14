@@ -348,13 +348,21 @@ const PlayerHome: React.FC = () => {
   const { data: sessionCount } = useQuery({
     queryKey: ["player-session-count", id],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("session_completions")
-        .select("id", { count: "exact", head: true })
-        .eq("player_id", id!)
-        .eq("status", "complete");
-      if (error) throw error;
-      return count ?? 0;
+      const [teamResult, personalResult] = await Promise.all([
+        supabase
+          .from("session_completions")
+          .select("id", { count: "exact", head: true })
+          .eq("player_id", id!)
+          .eq("status", "complete"),
+        supabase
+          .from("personal_session_completions")
+          .select("id", { count: "exact", head: true })
+          .eq("player_id", id!)
+          .eq("status", "complete"),
+      ]);
+      if (teamResult.error) throw teamResult.error;
+      if (personalResult.error) throw personalResult.error;
+      return (teamResult.count ?? 0) + (personalResult.count ?? 0);
     },
     enabled: !!user && !!id,
   });
@@ -497,13 +505,10 @@ const PlayerHome: React.FC = () => {
               )}
 
               {/* Section 2 — Home Development */}
-              {preferences?.active_team_id && (
-                <HomeDevelopmentSection
-                  playerId={id!}
-                  teamId={preferences.active_team_id}
-                  onBuildPlan={() => setShowProgramBuilder(true)}
-                />
-              )}
+              <HomeDevelopmentSection
+                playerId={id!}
+                onBuildPlan={() => setShowProgramBuilder(true)}
+              />
 
               {/* Upcoming Workouts - All Teams */}
               <UpcomingWorkouts playerId={id!} />
@@ -678,13 +683,10 @@ const PlayerHome: React.FC = () => {
           )}
 
           {/* Section 2 — Home Development - Mobile */}
-          {preferences?.active_team_id && (
-            <HomeDevelopmentSection
-              playerId={id!}
-              teamId={preferences.active_team_id}
-              onBuildPlan={() => setShowProgramBuilder(true)}
-            />
-          )}
+          <HomeDevelopmentSection
+            playerId={id!}
+            onBuildPlan={() => setShowProgramBuilder(true)}
+          />
 
           {/* Upcoming Workouts - All Teams - Mobile */}
           <UpcomingWorkouts playerId={id!} compact />
@@ -837,14 +839,13 @@ const PlayerHome: React.FC = () => {
       </Sheet>
 
       {/* Parent Program Builder Modal */}
-      {id && preferences?.active_team_id && (
+      {id && (
         <ParentProgramBuilderModal
           open={showProgramBuilder}
           onOpenChange={setShowProgramBuilder}
           playerId={id}
           playerAge={player ? new Date().getFullYear() - player.birth_year : undefined}
           playerShoots={player?.shoots}
-          teamId={preferences.active_team_id}
         />
       )}
 
@@ -858,6 +859,8 @@ const PlayerHome: React.FC = () => {
               handleDismissFirstRun();
               if (preferences?.active_team_id) {
                 navigate(`/players/${id}/today`);
+              } else {
+                navigate(`/solo/today/${id}`);
               }
             }}
             onDismiss={handleDismissFirstRun}

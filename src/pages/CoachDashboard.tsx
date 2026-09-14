@@ -352,13 +352,31 @@ const CoachDashboard: React.FC = () => {
               <Swords className="h-4 w-4" /> Game day
             </Button>
           </div>
-          <PlanningHubCards
-            teamId={id!}
-            onAddWorkout={() => setShowDatePicker(true)}
-            onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
-            onCreateProgram={() => setShowProgramWizard(true)}
-            onStartChallenge={() => setShowChallengeWizard(true)}
-          />
+          {!hasPlayers || needsPlan ? (
+            <details className="group overflow-hidden rounded-lg border border-border bg-card">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+                <span className="flex-1">More planning options</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="border-t border-border p-4">
+                <PlanningHubCards
+                  teamId={id!}
+                  onAddWorkout={() => setShowDatePicker(true)}
+                  onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+                  onCreateProgram={() => setShowProgramWizard(true)}
+                  onStartChallenge={() => setShowChallengeWizard(true)}
+                />
+              </div>
+            </details>
+          ) : (
+            <PlanningHubCards
+              teamId={id!}
+              onAddWorkout={() => setShowDatePicker(true)}
+              onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+              onCreateProgram={() => setShowProgramWizard(true)}
+              onStartChallenge={() => setShowChallengeWizard(true)}
+            />
+          )}
         </section>
 
         <section className="grid items-start gap-5 xl:grid-cols-2">

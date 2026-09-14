@@ -28,6 +28,8 @@ interface ProgramWithStats {
   progress_percent: number;
   sessions_completed: number;
   active_players: number;
+  next_plan_id: string | null;
+  next_plan_status: string | null;
 }
 
 export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
@@ -71,6 +73,21 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
     enabled: !!teamId,
   });
 
+  const { data: programPlans, isLoading: plansLoading } = useQuery({
+    queryKey: ["active-program-week-plans", teamId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_week_plans")
+        .select("id, program_id, start_date, status")
+        .eq("team_id", teamId)
+        .not("program_id", "is", null)
+        .order("start_date", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!teamId,
+  });
+
   // Fetch session completions for stats
   const { data: sessionStats } = useQuery({
     queryKey: ["program-session-stats", teamId],
@@ -87,7 +104,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
         `)
         .eq("practice_cards.team_id", teamId)
         .eq("program_source", "team")
-        .eq("status", "done");
+        .eq("status", "complete");
 
       if (error) throw error;
       return data || [];
@@ -102,6 +119,8 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
     // Add training programs
     if (programs) {
       for (const program of programs) {
+        const plans = (programPlans || []).filter((plan) => plan.program_id === program.id);
+        const nextPlan = plans.find((plan) => plan.status === "draft") || plans[0];
         const startDate = new Date(program.start_date);
         const endDate = new Date(program.end_date);
         const totalDays = differenceInDays(endDate, startDate) + 1;
@@ -125,6 +144,8 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
           progress_percent: progressPercent,
           sessions_completed: 0,
           active_players: 0,
+          next_plan_id: nextPlan?.id ?? null,
+          next_plan_status: nextPlan?.status ?? null,
         });
       }
     }
@@ -164,13 +185,15 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
         progress_percent: progressPercent,
         sessions_completed: sessionsCompleted,
         active_players: activePlayers,
+        next_plan_id: null,
+        next_plan_status: null,
       });
     }
 
     return result;
-  }, [programs, challengeCards, sessionStats, today]);
+  }, [programs, programPlans, challengeCards, sessionStats, today]);
 
-  const isLoading = programsLoading || challengesLoading;
+  const isLoading = programsLoading || challengesLoading || plansLoading;
 
   if (isLoading) {
     return <SkeletonProgramCard />;
@@ -192,8 +215,11 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
             key={program.id} 
             className="p-4 cursor-pointer hover:bg-accent/50 transition-colors active:scale-[0.99]"
             onClick={() => {
-              // Navigate to team practice page - challenges and programs show in the card list
-              navigate(`/teams/${teamId}/practice`);
+              if (!program.is_challenge && program.next_plan_id) {
+                navigate(`/teams/${teamId}/builder/${program.next_plan_id}`);
+              } else {
+                navigate(`/teams/${teamId}/practice`);
+              }
             }}
           >
             <div className="space-y-3">
@@ -222,6 +248,9 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
                       {format(new Date(program.start_date), "MMM d")} –{" "}
                       {format(new Date(program.end_date), "MMM d, yyyy")}
                     </p>
+                    {!program.is_challenge && program.next_plan_status === "draft" && (
+                      <p className="mt-1 text-xs font-medium text-primary">Review and publish next week</p>
+                    )}
                   </div>
                 </div>
 

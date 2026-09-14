@@ -25,7 +25,6 @@ import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 
 interface ParentTotalsPanelProps {
   playerId: string;
-  teamId: string;
 }
 
 interface ParentTotals {
@@ -46,21 +45,19 @@ interface ParentTotals {
 
 export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
   playerId,
-  teamId,
 }) => {
   const { user } = useAuth();
   const [showLifetime, setShowLifetime] = useState(false);
 
   const { data: totals, isLoading } = useQuery({
-    queryKey: ["parent-totals-panel", playerId, teamId],
+    queryKey: ["parent-totals-panel", playerId],
     queryFn: async (): Promise<ParentTotals> => {
-      // Get all parent practice cards
-      const { data: cards } = await supabase
-        .from("practice_cards")
+      const { data: cards, error: cardsError } = await supabase
+        .from("personal_practice_cards")
         .select("id, date")
-        .eq("team_id", teamId)
-        .eq("program_source", "parent")
+        .eq("player_id", playerId)
         .not("published_at", "is", null);
+      if (cardsError) throw cardsError;
 
       if (!cards || cards.length === 0) {
         return {
@@ -80,34 +77,33 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
       // Date lookup for cards
       const cardDateMap = new Map(cards.map((c) => [c.id, c.date]));
 
-      // Session completions (parent only)
-      const { data: completions } = await supabase
-        .from("session_completions")
-        .select("practice_card_id, status, completed_at")
+      const { data: completions, error: completionsError } = await supabase
+        .from("personal_session_completions")
+        .select("personal_practice_card_id, status, completed_at")
         .eq("player_id", playerId)
-        .eq("program_source", "parent")
-        .in("practice_card_id", cardIds)
+        .in("personal_practice_card_id", cardIds)
         .eq("status", "complete");
+      if (completionsError) throw completionsError;
 
       const totalWorkoutsCompleted = completions?.length ?? 0;
 
       // Monthly/prev workouts
       const monthlyWorkoutsCompleted = (completions ?? []).filter((c) => {
-        const d = cardDateMap.get(c.practice_card_id);
+        const d = cardDateMap.get(c.personal_practice_card_id);
         return d && d >= monthStart && d <= monthEnd;
       }).length;
 
       const prevMonthWorkoutsCompleted = (completions ?? []).filter((c) => {
-        const d = cardDateMap.get(c.practice_card_id);
+        const d = cardDateMap.get(c.personal_practice_card_id);
         return d && d >= prevStart && d <= prevEnd;
       }).length;
 
       // Get tasks
-      const { data: tasks } = await supabase
-        .from("practice_tasks")
-        .select("id, practice_card_id, task_type, shots_expected, target_value, target_type")
-        .eq("program_source", "parent")
-        .in("practice_card_id", cardIds);
+      const { data: tasks, error: tasksError } = await supabase
+        .from("personal_practice_tasks")
+        .select("id, personal_practice_card_id, task_type, shots_expected, target_value, target_type")
+        .in("personal_practice_card_id", cardIds);
+      if (tasksError) throw tasksError;
 
       const taskIds = tasks?.map((t) => t.id) ?? [];
 
@@ -116,23 +112,24 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
       let prevMonthShots = 0, prevMonthPushups = 0, prevMonthConditioningMinutes = 0;
 
       if (taskIds.length > 0) {
-        const { data: taskCompletions } = await supabase
-          .from("task_completions")
-          .select("practice_task_id, completed, shots_logged")
+        const { data: taskCompletions, error: taskCompletionsError } = await supabase
+          .from("personal_task_completions")
+          .select("personal_practice_task_id, completed")
           .eq("player_id", playerId)
           .eq("completed", true)
-          .in("practice_task_id", taskIds);
+          .in("personal_practice_task_id", taskIds);
+        if (taskCompletionsError) throw taskCompletionsError;
 
         if (taskCompletions && tasks) {
           for (const tc of taskCompletions) {
-            const task = tasks.find((t) => t.id === tc.practice_task_id);
+            const task = tasks.find((t) => t.id === tc.personal_practice_task_id);
             if (!task) continue;
 
-            const cardDate = cardDateMap.get(task.practice_card_id) ?? "";
+            const cardDate = cardDateMap.get(task.personal_practice_card_id) ?? "";
             const isThisMonth = cardDate >= monthStart && cardDate <= monthEnd;
             const isPrevMonth = cardDate >= prevStart && cardDate <= prevEnd;
 
-            const shots = tc.shots_logged ?? task.shots_expected ?? 0;
+            const shots = task.shots_expected ?? 0;
             totalShots += shots;
             if (isThisMonth) monthlyShots += shots;
             if (isPrevMonth) prevMonthShots += shots;
@@ -160,7 +157,7 @@ export const ParentTotalsPanel: React.FC<ParentTotalsPanelProps> = ({
         prevMonthShots, prevMonthPushups, prevMonthConditioningMinutes, prevMonthWorkoutsCompleted,
       };
     },
-    enabled: !!user && !!playerId && !!teamId,
+    enabled: !!user && !!playerId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     gcTime: 10 * 60 * 1000,
   });

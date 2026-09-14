@@ -97,7 +97,7 @@ const JoinTeam: React.FC = () => {
     if (!isAuthenticated) {
       // Store token in sessionStorage to continue after auth
       sessionStorage.setItem("pendingJoinToken", token!);
-      navigate("/auth");
+      navigate(`/auth?redirect=${encodeURIComponent(`/join/${token}/player`)}`);
     } else {
       navigate(`/join/${token}/player`);
     }

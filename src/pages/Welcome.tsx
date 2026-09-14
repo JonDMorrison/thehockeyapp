@@ -75,7 +75,7 @@ const Welcome: React.FC = () => {
       if (storedRole) {
         clearSelectedRole();
         if (storedRole === "coach") {
-          navigate("/teams/new", { replace: true });
+          navigate("/onboarding/coach", { replace: true });
         } else if (storedRole === "solo") {
           navigate("/solo/setup", { replace: true });
         } else if (storedRole === "player") {

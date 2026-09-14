@@ -62,7 +62,7 @@ const JoinTeamPlayer: React.FC = () => {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       sessionStorage.setItem("pendingJoinToken", token!);
-      navigate("/auth", { replace: true });
+      navigate(`/auth?redirect=${encodeURIComponent(`/join/${token}/player`)}`, { replace: true });
     }
   }, [authLoading, isAuthenticated, navigate, token]);
 

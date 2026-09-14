@@ -131,16 +131,11 @@ export default function SoloProgramBuilder() {
     mutationFn: async () => {
       if (!startDate) throw new Error("Start date required");
 
-      // Simulate progress steps
-      for (let i = 0; i < generatingSteps.length; i++) {
-        setGeneratingStep(i);
-        await new Promise((r) => setTimeout(r, 800));
-      }
-
       // Generate each week using AI
       const weeks: GeneratedProgram["weeks"] = [];
 
       for (let weekNum = 0; weekNum < duration; weekNum++) {
+        setGeneratingStep(Math.min(generatingSteps.length - 1, weekNum + 1));
         const weekStart = addWeeks(startDate, weekNum);
 
         const { data, error } = await supabase.functions.invoke("generate-workout-ai", {
@@ -191,42 +186,11 @@ export default function SoloProgramBuilder() {
         throw new Error("Missing data");
       }
 
-      // Update or create personal training plan
-      const { error: planError } = await supabase
-        .from("personal_training_plans")
-        .upsert({
-          player_id: playerId,
-          name: generatedProgram.name,
-          tier,
-          days_per_week: daysPerWeek,
-          training_focus: selectedFocus,
-          is_active: true,
-        }, { onConflict: 'player_id' });
-
-      if (planError) throw planError;
-
-      // Create practice cards for each day in each week
-      for (const week of generatedProgram.weeks) {
-        for (const day of week.days) {
-          const { data: card, error: cardError } = await supabase
-            .from("personal_practice_cards")
-            .insert({
-              player_id: playerId,
-              date: day.date,
-              title: day.title,
-              notes: day.notes,
-              tier,
-              mode: "normal",
-            })
-            .select()
-            .single();
-
-          if (cardError) throw cardError;
-
-          // Insert tasks
-          if (day.tasks.length > 0) {
-            const taskInserts = day.tasks.map((task, index) => ({
-              personal_practice_card_id: card.id,
+      const days = generatedProgram.weeks.flatMap((week) =>
+        week.days.map((day) => ({
+          ...day,
+          tasks: day.tasks.map((task, index) => ({
+              ...task,
               label: task.label,
               task_type: task.task_type,
               sort_order: index,
@@ -240,16 +204,19 @@ export default function SoloProgramBuilder() {
                 taskType: task.task_type,
                 shotType: task.shot_type,
               }),
-            }));
+            })),
+        }))
+      );
 
-            const { error: tasksError } = await supabase
-              .from("personal_practice_tasks")
-              .insert(taskInserts);
-
-            if (tasksError) throw tasksError;
-          }
-        }
-      }
+      const { error } = await supabase.rpc("replace_personal_training_program", {
+        p_player_id: playerId!,
+        p_name: generatedProgram.name,
+        p_tier: tier,
+        p_days_per_week: daysPerWeek,
+        p_training_focus: selectedFocus,
+        p_days: days,
+      });
+      if (error) throw error;
 
       return true;
     },

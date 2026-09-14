@@ -213,7 +213,7 @@ const CoachOnboarding: React.FC = () => {
     // Fire-and-forget welcome email — must never affect navigation.
     sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
-      navigate(`/teams/${teamId}?onboarding=true`);
+      navigate(`/teams/${teamId}`);
     } else {
       navigate("/teams");
     }
@@ -230,7 +230,7 @@ const CoachOnboarding: React.FC = () => {
   const goToAi = () => {
     // Open the existing program builder / AI flow on the coach dashboard.
     if (teamId) {
-      navigate(`/teams/${teamId}?onboarding=true`);
+      navigate(`/teams/${teamId}`);
     } else {
       finish();
     }

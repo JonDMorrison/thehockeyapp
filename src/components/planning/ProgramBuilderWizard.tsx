@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { logger } from "@/core";
 import { format, addWeeks, startOfWeek, addDays } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
 import { fireGoalConfetti } from "@/lib/confetti";
+import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 import {
   Sparkles,
   Rocket,
@@ -87,6 +89,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   const { t } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const focusOptions = [
     { id: "shooting_accuracy", label: t('practice.focusShootingAccuracy'), icon: Target },
@@ -121,7 +124,6 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
   const [step, setStep] = useState<Step>("setup");
   const [generatingStep, setGeneratingStep] = useState(0);
   const [generatedProgram, setGeneratedProgram] = useState<GeneratedProgram | null>(null);
-  const [selectedReward, setSelectedReward] = useState<{ type: string; description?: string } | null>(null);
 
   const toggleFocus = (id: string) => {
     setSelectedFocus((prev) =>
@@ -134,16 +136,11 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     mutationFn: async () => {
       if (!startDate) throw new Error("Start date required");
 
-      // Simulate progress steps
-      for (let i = 0; i < generatingSteps.length; i++) {
-        setGeneratingStep(i);
-        await new Promise((r) => setTimeout(r, 800));
-      }
-
       // Generate each week
       const weeks: GeneratedProgram["weeks"] = [];
 
       for (let weekNum = 0; weekNum < duration; weekNum++) {
+        setGeneratingStep(Math.min(generatingSteps.length - 1, weekNum + 1));
         const weekStart = addWeeks(startDate, weekNum);
 
         const { data, error } = await supabase.functions.invoke("generate-workout-ai", {
@@ -196,93 +193,54 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
 
   // Apply program mutation
   const applyMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (reward: { type: string; description?: string } | null) => {
       if (!generatedProgram || !user || !startDate) {
         throw new Error("Missing data");
       }
 
-      // Create the program record
-      const { data: program, error: programError } = await supabase
-        .from("training_programs")
-        .insert({
-          team_id: teamId,
-          name: generatedProgram.name,
-          start_date: format(startDate, "yyyy-MM-dd"),
-          end_date: format(addWeeks(startDate, duration), "yyyy-MM-dd"),
-          tier,
-          days_per_week: daysPerWeek,
-          focus_areas: selectedFocus,
-          time_budget_minutes: timeBudget,
-          status: "active",
-          created_by_user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (programError) throw programError;
-
-      // Create week plans for each week
-      for (const week of generatedProgram.weeks) {
-        const { data: weekPlan, error: planError } = await supabase
-          .from("team_week_plans")
-          .insert({
-            team_id: teamId,
-            created_by_user_id: user.id,
-            name: `${programName} - Week ${week.weekNumber}`,
-            start_date: week.startDate,
-            tier,
-            status: "draft",
-            program_id: program.id,
-          })
-          .select()
-          .single();
-
-        if (planError) throw planError;
-
-        // Create days and tasks
-        for (const day of week.days) {
-          const { data: dayData, error: dayError } = await supabase
-            .from("team_week_plan_days")
-            .insert({
-              team_week_plan_id: weekPlan.id,
-              date: day.date,
-              title: day.title,
-              notes: day.notes,
-            })
-            .select()
-            .single();
-
-          if (dayError) throw dayError;
-
-          // Insert tasks
-          if (day.tasks.length > 0) {
-            const taskInserts = day.tasks.map((task, index) => ({
-              team_week_plan_day_id: dayData.id,
+      const weeks = generatedProgram.weeks.map((week) => ({
+        ...week,
+        days: week.days.map((day) => ({
+          ...day,
+          tasks: day.tasks.map((task, index) => ({
+            ...task,
+            sort_order: index,
+            video_url: getRecommendedCoachingVideoUrl({
               label: task.label,
-              task_type: task.task_type,
-              sort_order: index,
-              shots_expected: task.shots_expected || null,
-              target_value: task.target_value || null,
-              target_type: task.target_type || "none",
-              is_required: task.is_required,
-            }));
+              taskType: task.task_type,
+              shotType: task.shot_type,
+            }),
+          })),
+        })),
+      }));
 
-            const { error: tasksError } = await supabase
-              .from("team_week_plan_tasks")
-              .insert(taskInserts);
-
-            if (tasksError) throw tasksError;
-          }
-        }
-      }
-
-      return program;
+      const { data, error } = await supabase.rpc("create_team_training_program", {
+        p_team_id: teamId,
+        p_name: generatedProgram.name,
+        p_start_date: format(startDate, "yyyy-MM-dd"),
+        p_end_date: format(addWeeks(startDate, duration), "yyyy-MM-dd"),
+        p_tier: tier,
+        p_days_per_week: daysPerWeek,
+        p_focus_areas: selectedFocus,
+        p_time_budget: timeBudget,
+        p_reward_type: reward?.type ?? "",
+        p_reward_description: reward?.description ?? "",
+        p_weeks: weeks,
+      });
+      if (error) throw error;
+      return data as { first_plan_id?: string; program_id?: string } | null;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["training-programs", teamId] });
-      toast.success(t('practice.programCreated'), t('practice.nWeeksOfTrainingReady', { n: duration }));
+      toast.success(
+        t('practice.programCreated'),
+        "Your weeks are saved as drafts. Review and publish Week 1 for players."
+      );
       handleClose();
+      if (result?.first_plan_id) {
+        navigate(`/teams/${teamId}/builder/${result.first_plan_id}`);
+      }
     },
     onError: (error: Error) => {
       logger.error("Apply program error", { error });
@@ -297,7 +255,6 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       setStep("setup");
       setGeneratingStep(0);
       setGeneratedProgram(null);
-      setSelectedReward(null);
     }, 300);
   };
 
@@ -571,12 +528,10 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
     <GoalRewardPrompt
       context="program"
       onSetGoal={(rewardType, customReward) => {
-        setSelectedReward({ type: rewardType, description: customReward });
-        applyMutation.mutate();
+        applyMutation.mutate({ type: rewardType, description: customReward });
       }}
       onSkip={() => {
-        setSelectedReward(null);
-        applyMutation.mutate();
+        applyMutation.mutate(null);
       }}
     />
   );

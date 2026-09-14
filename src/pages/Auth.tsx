@@ -20,7 +20,7 @@ const getRedirectPath = (): string => {
   const role = getSelectedRole();
   if (role === "coach") {
     clearSelectedRole();
-    return "/teams/new";
+    return "/onboarding/coach";
   } else if (role === "solo") {
     clearSelectedRole();
     return "/solo/setup";

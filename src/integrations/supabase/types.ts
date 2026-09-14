@@ -2606,6 +2606,7 @@ export type Database = {
           target_value: number | null
           task_type: string
           team_week_plan_day_id: string
+          video_url: string | null
         }
         Insert: {
           created_at?: string | null
@@ -2619,6 +2620,7 @@ export type Database = {
           target_value?: number | null
           task_type: string
           team_week_plan_day_id: string
+          video_url?: string | null
         }
         Update: {
           created_at?: string | null
@@ -2632,6 +2634,7 @@ export type Database = {
           target_value?: number | null
           task_type?: string
           team_week_plan_day_id?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -2802,6 +2805,8 @@ export type Database = {
           focus_areas: string[] | null
           id: string
           name: string
+          reward_description: string | null
+          reward_type: string | null
           start_date: string
           status: string | null
           team_id: string
@@ -2818,6 +2823,8 @@ export type Database = {
           focus_areas?: string[] | null
           id?: string
           name: string
+          reward_description?: string | null
+          reward_type?: string | null
           start_date: string
           status?: string | null
           team_id: string
@@ -2834,6 +2841,8 @@ export type Database = {
           focus_areas?: string[] | null
           id?: string
           name?: string
+          reward_description?: string | null
+          reward_type?: string | null
           start_date?: string
           status?: string | null
           team_id?: string
@@ -3064,6 +3073,22 @@ export type Database = {
         }
         Returns: Json
       }
+      create_team_training_program: {
+        Args: {
+          p_days_per_week: number
+          p_end_date: string
+          p_focus_areas: string[]
+          p_name: string
+          p_reward_description: string
+          p_reward_type: string
+          p_start_date: string
+          p_team_id: string
+          p_tier: string
+          p_time_budget: number
+          p_weeks: Json
+        }
+        Returns: Json
+      }
       create_team_with_owner: {
         Args: {
           p_age_division?: string
@@ -3072,6 +3097,28 @@ export type Database = {
           p_name: string
           p_palette_id?: string
           p_season_label?: string
+        }
+        Returns: Json
+      }
+      replace_personal_training_program: {
+        Args: {
+          p_days: Json
+          p_days_per_week: number
+          p_name: string
+          p_player_id: string
+          p_tier: string
+          p_training_focus: string[]
+        }
+        Returns: Json
+      }
+      replace_team_practice_card: {
+        Args: {
+          p_date: string
+          p_publish: boolean
+          p_tasks: Json
+          p_team_id: string
+          p_tier: string
+          p_title: string | null
         }
         Returns: Json
       }

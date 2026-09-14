@@ -40,7 +40,7 @@ const TeamNew: React.FC = () => {
   const [formData, setFormData] = useState<TeamFormData>({
     name: "",
     season_label: "",
-    palette_id: "toronto",
+    palette_id: "brand",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [backendError, setBackendError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ const TeamNew: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["association-dashboard", team.associationId] });
       toast.success(t("teams.new.toastSuccess"), `${team.name} ${t("teams.new.toastSuccessReady")}`);
       // Redirect to team home with onboarding flag
-      navigate(`/teams/${team.id}?onboarding=true`);
+      navigate(`/teams/${team.id}`);
     },
     onError: (error: Error) => {
       if (error.message.includes("row-level security") || error.message.includes("permission")) {
@@ -160,7 +160,7 @@ const TeamNew: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   className={errors.name ? "border-destructive" : ""}
-                  placeholder="Toronto Hawks"
+                  placeholder="Abbotsford Hawks"
                   autoFocus
                 />
                 {errors.name && (

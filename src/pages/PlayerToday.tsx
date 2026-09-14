@@ -239,6 +239,7 @@ const PlayerToday: React.FC = () => {
             .eq("team_id", teamData!.id)
             .eq("date", todayStr)
             .eq("mode", "game_day")
+            .eq("program_source", "team")
             .not("published_at", "is", null)
             .maybeSingle();
 
@@ -261,6 +262,7 @@ const PlayerToday: React.FC = () => {
           .eq("team_id", teamData!.id)
           .eq("date", todayStr)
           .eq("mode", "normal")
+          .eq("program_source", "team")
           .not("published_at", "is", null)
           .maybeSingle();
 
