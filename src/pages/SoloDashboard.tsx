@@ -23,7 +23,7 @@ import { UserMenu } from "@/components/app/UserMenu";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import logoImage from "@/assets/hockey-app-logo.png";
 import { BETA_MODE } from "@/core/constants";
-import soloGarageTraining from "@/assets/brand/solo-garage-training.jpg";
+import soloGarageTraining from "@/assets/brand/solo-garage-training-v2.jpg";
 
 // Map database icon names to Lucide components
 const BADGE_ICONS: Record<string, React.ElementType> = {

@@ -24,13 +24,13 @@ import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
-import familyNexlevel from "@/assets/family-nexlevel-optimized.png";
+import familyNexlevel from "@/assets/family-founder-unbranded-v2.webp";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
 import drivewayPlayer from "@/assets/brand/driveway-wrist-shot.jpg";
 import teamHuddle from "@/assets/brand/team-huddle.jpg";
 import coachPlanning from "@/assets/brand/coach-planning.jpg";
 import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
-import soloGarageTraining from "@/assets/brand/solo-garage-training.jpg";
+import soloGarageTraining from "@/assets/brand/solo-garage-training-v2.jpg";
 import familyProgress from "@/assets/brand/family-progress.jpg";
 import teamCelebration from "@/assets/brand/team-celebration.jpg";
 
