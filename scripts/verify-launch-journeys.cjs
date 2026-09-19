@@ -53,5 +53,13 @@ expect("src/lib/templateRanking.ts", /ageMatches && levelMatches\) score = 0/, "
 expect("src/components/app/RouteMetadata.tsx", /noindex, nofollow/, "private and invite pages are not indexable");
 expect("vercel.json", /X-Robots-Tag[\s\S]*noindex, nofollow/, "private routes send a server-level noindex header");
 expect("scripts/prerender.cjs", /writeMetadataFallbacks\(\)/, "public routes receive distinct crawler metadata without JavaScript");
+expect("supabase/migrations/20260919203204_team_invite_player_onboarding.sql", /ADD COLUMN IF NOT EXISTS collect_player_profile boolean NOT NULL DEFAULT false/, "team invites can request player profile onboarding");
+expect("supabase/migrations/20260919203204_team_invite_player_onboarding.sql", /position IN \('forward', 'defence', 'goalie', 'unsure'\)/, "player position values are constrained");
+expect("src/pages/CoachOnboarding.tsx", /Collect player profiles[\s\S]*coach-collect-player-profile/, "team creation offers the player profile toggle");
+expect("src/components/team/InviteParentsModal.tsx", /Collect player profile after joining[\s\S]*collect-player-profile/, "family invite management offers the player profile toggle");
+expect("src/pages/JoinTeamPlayer.tsx", /collect_player_profile[\s\S]*team-onboarding/, "enabled invites continue into player profile onboarding");
+expect("src/pages/PlayerTeamOnboarding.tsx", /Position[\s\S]*Favourite player[\s\S]*Favourite thing about hockey[\s\S]*Hockey dream[\s\S]*Add a player photo/, "player onboarding collects the requested profile details");
+expect("src/pages/Auth.tsx", /new URLSearchParams\(current\)[\s\S]*next\.set\("mode", nextMode\)/, "switching from sign in to sign up preserves the invite return path");
+expect("src/pages/CoachOnboarding.tsx", /void queryClient\.invalidateQueries\(\{ queryKey: \["user-coach-roles"\]/, "coach onboarding does not wait on background refreshes before showing the invite step");
 
 console.log(`Launch journey checks passed (${checks.length}).`);

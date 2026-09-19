@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Share2,
 } from "lucide-react";
+import { getPlayerPositionLabel } from "@/lib/playerProfile";
 
 interface SessionPhoto {
   id: string;
@@ -83,6 +84,7 @@ const RosterPlayerDetail: React.FC = () => {
             shoots,
             jersey_number,
             profile_photo_url,
+            position,
             fav_nhl_city,
             fav_nhl_player,
             hockey_love,
@@ -219,6 +221,9 @@ const RosterPlayerDetail: React.FC = () => {
             )}
             {player.jersey_number && (
               <Tag variant="tier">#{player.jersey_number}</Tag>
+            )}
+            {getPlayerPositionLabel(player.position) && (
+              <Tag variant="neutral">{getPlayerPositionLabel(player.position)}</Tag>
             )}
           </div>
           <div className="mt-4">

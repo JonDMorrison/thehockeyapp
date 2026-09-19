@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import teamHuddleImage from "@/assets/brand/team-huddle-v2.jpg";
 import {
   Select,
@@ -37,6 +38,7 @@ import {
   Sparkles,
   Link2,
   Clipboard,
+  ClipboardList,
   ShieldCheck,
 } from "lucide-react";
 
@@ -103,6 +105,7 @@ const CoachOnboarding: React.FC = () => {
 
   // Step 2 — parent-led roster invitation
   const [familyInviteLink, setFamilyInviteLink] = useState("");
+  const [collectPlayerProfile, setCollectPlayerProfile] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -138,9 +141,9 @@ const CoachOnboarding: React.FC = () => {
       const team = data as unknown as CreateTeamResult;
       if (!team.team_id) throw new Error("Team was not created");
 
-      queryClient.invalidateQueries({ queryKey: ["teams"] });
-      await queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
-      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      void queryClient.invalidateQueries({ queryKey: ["teams"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
+      void queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
       setActiveView("coach");
       setActiveTeamId(team.team_id);
       setTeamId(team.team_id);
@@ -163,6 +166,14 @@ const CoachOnboarding: React.FC = () => {
       const result = data as unknown as TeamInviteResult;
       if (!result.success || !result.token)
         throw new Error(result.error || "Invite could not be created");
+
+      const { error: optionError } = await supabase
+        .from("team_invites")
+        .update({ collect_player_profile: collectPlayerProfile })
+        .eq("team_id", teamId)
+        .eq("status", "active");
+      if (optionError) throw optionError;
+
       setFamilyInviteLink(`${window.location.origin}/join/${result.token}`);
       toast.success(
         "Family invite ready",
@@ -175,6 +186,23 @@ const CoachOnboarding: React.FC = () => {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleProfileCollectionChange = async (enabled: boolean) => {
+    const previous = collectPlayerProfile;
+    setCollectPlayerProfile(enabled);
+    if (!teamId || !familyInviteLink) return;
+
+    const { error } = await supabase
+      .from("team_invites")
+      .update({ collect_player_profile: enabled })
+      .eq("team_id", teamId)
+      .eq("status", "active");
+
+    if (error) {
+      setCollectPlayerProfile(previous);
+      toast.error("Could not update invite", "Please try the profile toggle again.");
     }
   };
 
@@ -679,6 +707,27 @@ const CoachOnboarding: React.FC = () => {
                       join.
                     </AppCardDescription>
                   </div>
+                </div>
+
+                <div className="mt-5 flex items-start gap-3 rounded-xl border border-border bg-background/60 p-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <ClipboardList className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Label htmlFor="coach-collect-player-profile" className="font-semibold">
+                      Collect player profiles
+                    </Label>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Families will be asked for position, favourite player, hockey dream, what they love about hockey, and an optional photo after joining.
+                    </p>
+                  </div>
+                  <Switch
+                    id="coach-collect-player-profile"
+                    checked={collectPlayerProfile}
+                    onCheckedChange={handleProfileCollectionChange}
+                    disabled={submitting}
+                    aria-label="Collect player profiles with this invite"
+                  />
                 </div>
 
                 {familyInviteLink ? (
