@@ -22,6 +22,12 @@ expect("src/pages/Welcome.tsx", /storedRole === "coach"[\s\S]{0,120}navigate\("\
 expect("src/pages/JoinTeam.tsx", /\/auth\?redirect=.*\/join\//, "team invite survives authentication");
 expect("src/pages/JoinTeamPlayer.tsx", /\/auth\?redirect=.*\/join\//, "player selection invite survives authentication");
 expect("src/pages/PlayerToday.tsx", /\.eq\("program_source", "team"\)/, "team workout view excludes private family workouts");
+expect("src/pages/PlayerToday.tsx", /const allRequiredTasksComplete = requiredCompletedCount >= requiredCount/, "session completion requires all required tasks");
+expect("src/pages/PlayerToday.tsx", /disabled=\{!allRequiredTasksComplete \|\| pendingTaskWrites > 0\}/, "session completion waits for required task writes");
+expect("src/pages/PlayerToday.tsx", /if \(!allRequiredTasksComplete \|\| pendingTaskWrites > 0\) return/, "session completion handler rejects incomplete workouts");
+const surfacedPlayerWriteErrors = [...read("src/pages/PlayerToday.tsx").matchAll(/if \((?:insert|update)Error\) throw (?:insert|update)Error;/g)];
+if (surfacedPlayerWriteErrors.length < 6) throw new Error("player completion writes must surface database errors (src/pages/PlayerToday.tsx)");
+checks.push("player completion writes surface database errors");
 expect("src/components/player/ParentProgramBuilderModal.tsx", /rpc\("replace_personal_training_program"/, "family plan uses atomic private storage");
 reject("src/components/player/ParentProgramBuilderModal.tsx", /\.from\("practice_cards"\)/, "family plan never writes shared team cards");
 expect("src/pages/SoloProgramBuilder.tsx", /rpc\("replace_personal_training_program"/, "solo program uses atomic storage");

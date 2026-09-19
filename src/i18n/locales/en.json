@@ -1199,6 +1199,7 @@
     },
     "today": {
       "cached": "Cached",
+      "completeRequiredTasks": "Complete all required tasks to finish the session.",
       "completeSession": "Complete Session",
       "dismissVideo": "Hide this skill tip",
       "done": "Done",
