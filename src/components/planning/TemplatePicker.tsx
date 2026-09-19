@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { startOfWeek } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Sheet,
@@ -21,6 +20,7 @@ import {
   type ProgramTemplate,
   type TemplateTaskEntry,
 } from "@/lib/materializeTemplate";
+import { getNextProgramWeekStart } from "@/lib/programStartDate";
 
 interface TemplatePickerProps {
   teamId: string;
@@ -86,7 +86,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
   const handleUse = async (template: ProgramTemplate) => {
     setApplyingId(template.id);
     try {
-      const comingMonday = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const comingMonday = getNextProgramWeekStart();
       const { cardsCreated } = await materializeTemplate(
         template,
         teamId,
