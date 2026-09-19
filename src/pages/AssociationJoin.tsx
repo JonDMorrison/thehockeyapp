@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Loader2, ShieldCheck, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,9 @@ interface RedeemResult {
 export default function AssociationJoin() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { setActiveView, setActiveAssociationId } = useActiveView();
 
   const previewQuery = useQuery({
     queryKey: ["association-invite-preview", token],
@@ -54,8 +57,12 @@ export default function AssociationJoin() {
       if (!result.success || !result.association_id) throw new Error(result.error || "Could not accept invitation");
       return result.association_id;
     },
-    onSuccess: (associationId) => {
+    onSuccess: async (associationId) => {
       sessionStorage.removeItem("pendingAssociationInvite");
+      await queryClient.invalidateQueries({ queryKey: ["user-association-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      setActiveView("association");
+      setActiveAssociationId(associationId);
       toast.success("Association access accepted", "Welcome to the association workspace.");
       navigate(`/associations/${associationId}`, { replace: true });
     },

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardDescription, AppCardTitle } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
@@ -102,6 +103,7 @@ export default function AssociationDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActiveAssociationId } = useActiveView();
   const [windowDays, setWindowDays] = useState(7);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("viewer");
@@ -112,6 +114,13 @@ export default function AssociationDashboard() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/auth", { replace: true });
   }, [authLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (id) {
+      setActiveView("association");
+      setActiveAssociationId(id);
+    }
+  }, [id, setActiveAssociationId, setActiveView]);
 
   const dashboardQuery = useQuery({
     queryKey: ["association-dashboard", id, windowDays],
@@ -337,7 +346,7 @@ export default function AssociationDashboard() {
               <p className="mt-3 max-w-xl text-sm leading-6 text-white/62">
                 {attentionCount > 0
                   ? "Start with missing weekly plans and low participation. Player details stay inside each authorized team."
-                  : `${formatNumber(dashboard.totals.active_players_count)} players were active across ${dashboard.totals.teams_count} teams in the last ${dashboard.window_days} days.`}
+                  : `${formatNumber(dashboard.totals.active_players_count)} ${dashboard.totals.active_players_count === 1 ? "player was" : "players were"} active across ${dashboard.totals.teams_count} ${dashboard.totals.teams_count === 1 ? "team" : "teams"} in the last ${dashboard.window_days} days.`}
               </p>
             </div>
             <div className="flex items-center gap-2">

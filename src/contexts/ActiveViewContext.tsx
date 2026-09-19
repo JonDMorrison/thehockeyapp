@@ -16,6 +16,10 @@ interface ActiveViewContextType {
   activePlayerId: string | null;
   /** Set the active player */
   setActivePlayerId: (playerId: string | null) => void;
+  /** Currently active association ID */
+  activeAssociationId: string | null;
+  /** Set the active association */
+  setActiveAssociationId: (associationId: string | null) => void;
 }
 
 const ActiveViewContext = createContext<ActiveViewContextType | undefined>(undefined);
@@ -23,6 +27,7 @@ const ActiveViewContext = createContext<ActiveViewContextType | undefined>(undef
 const STORAGE_KEY = "hockey-app-active-view";
 const TEAM_STORAGE_KEY = "hockey-app-active-team";
 const PLAYER_STORAGE_KEY = "hockey-app-active-player";
+const ASSOCIATION_STORAGE_KEY = "hockey-app-active-association";
 
 export function ActiveViewProvider({ children }: { children: React.ReactNode }) {
   const [activeView, setActiveViewState] = useState<UserRole | null>(() => {
@@ -36,6 +41,10 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
 
   const [activePlayerId, setActivePlayerIdState] = useState<string | null>(() => {
     return localStorage.getItem(PLAYER_STORAGE_KEY);
+  });
+
+  const [activeAssociationId, setActiveAssociationIdState] = useState<string | null>(() => {
+    return localStorage.getItem(ASSOCIATION_STORAGE_KEY);
   });
 
   const setActiveView = useCallback((view: UserRole) => {
@@ -61,6 +70,15 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  const setActiveAssociationId = useCallback((associationId: string | null) => {
+    setActiveAssociationIdState(associationId);
+    if (associationId) {
+      localStorage.setItem(ASSOCIATION_STORAGE_KEY, associationId);
+    } else {
+      localStorage.removeItem(ASSOCIATION_STORAGE_KEY);
+    }
+  }, []);
+
   const isViewActive = useCallback(
     (view: UserRole) => activeView === view,
     [activeView]
@@ -83,6 +101,8 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
         setActiveTeamId,
         activePlayerId,
         setActivePlayerId,
+        activeAssociationId,
+        setActiveAssociationId,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { toast } from "@/components/app/Toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Mail, Lock, User, ChevronLeft } from "lucide-react";
@@ -14,11 +15,15 @@ import logoImage from "@/assets/hockey-app-logo.png";
 import rinkGear from "@/assets/brand/rink-gear.jpg";
 import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
+import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 
 // Helper to get the redirect path based on stored role
 const getRedirectPath = (): string => {
   const role = getSelectedRole();
-  if (role === "coach") {
+  if (role === "association") {
+    clearSelectedRole();
+    return "/associations/new";
+  } else if (role === "coach") {
     clearSelectedRole();
     return "/onboarding/coach";
   } else if (role === "solo") {
@@ -90,36 +95,34 @@ const Auth: React.FC = () => {
   }, [isAuthenticated, authLoading, mode, navigate, getPostAuthPath]);
 
   const validate = () => {
-    try {
-      const values = mode === "reset"
-        ? { password, confirmPassword }
-        : { email, password, displayName: mode === "signup" ? displayName : undefined };
-      const schema = mode === "reset" ? resetSchema : mode === "signup" ? signUpSchema : signInSchema;
-      schema.parse(values);
-      if (mode === "signup" && !acceptedTerms) {
-        setErrors({ terms: "Please agree to the Terms and Privacy Policy" });
-        return false;
-      }
+    const values = mode === "reset"
+      ? { password, confirmPassword }
+      : { email, password, displayName: mode === "signup" ? displayName : undefined };
+    const schema = mode === "reset" ? resetSchema : mode === "signup" ? signUpSchema : signInSchema;
+    const result = schema.safeParse(values);
+    const nextErrors = result.success ? {} : getZodFieldErrors(result.error);
+    if (mode === "signup" && !acceptedTerms) {
+      nextErrors.terms = "Please agree to the Terms and Privacy Policy";
+    }
+    if (Object.keys(nextErrors).length === 0) {
       setErrors({});
       return true;
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        err.errors.forEach((e) => {
-          if (e.path[0]) {
-            newErrors[e.path[0] as string] = e.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-      return false;
     }
+    setErrors(nextErrors);
+    focusFirstInvalidField(nextErrors, {
+      email: "email",
+      password: "password",
+      confirmPassword: "confirmPassword",
+      terms: "acceptTerms",
+    });
+    return false;
   };
 
   const handleForgotPassword = async () => {
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      setErrors({ email: "Please enter a valid email address" });
+      setErrors({ email: emailResult.error.errors[0]?.message || "Please enter a valid email address" });
+      focusFirstInvalidField({ email: "invalid" }, { email: "email" });
       return;
     }
     setForgotLoading(true);
@@ -258,7 +261,7 @@ const Auth: React.FC = () => {
               {mode === "signup" && (
                 <div className="space-y-2">
                   <Label htmlFor="displayName" className="text-sm font-medium">
-                    {t("auth.yourNameLabel")}
+                    {t("auth.yourNameLabel")} <span className="font-normal text-muted-foreground">(optional)</span>
                   </Label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -266,8 +269,9 @@ const Auth: React.FC = () => {
                       id="displayName"
                       type="text"
                       placeholder={t("auth.yourNamePlaceholder")}
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    maxLength={100}
                       className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.displayName ? "border-destructive" : ""}`}
                       autoComplete="name"
                     />
@@ -280,7 +284,7 @@ const Auth: React.FC = () => {
 
               {mode !== "reset" && <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  {t("auth.emailLabel")}
+                  {t("auth.emailLabel")}<RequiredMark />
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -289,20 +293,26 @@ const Auth: React.FC = () => {
                     type="email"
                     placeholder={t("auth.emailPlaceholder")}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors((current) => ({ ...current, email: "" }));
+                    }}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.email ? "border-destructive" : ""}`}
                     autoComplete="email"
+                    maxLength={255}
                     autoFocus
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? "email-error" : undefined}
                   />
                 </div>
                 {errors.email && (
-                  <p className="text-xs text-destructive pl-1">{errors.email}</p>
+                  <p id="email-error" role="alert" className="text-xs text-destructive pl-1">{errors.email}</p>
                 )}
               </div>}
 
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium">
-                  {t("auth.passwordLabel")}
+                  {t("auth.passwordLabel")}<RequiredMark />
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -311,13 +321,19 @@ const Auth: React.FC = () => {
                     type="password"
                     placeholder={t("auth.passwordPlaceholder")}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((current) => ({ ...current, password: "" }));
+                    }}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.password ? "border-destructive" : ""}`}
                     autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    maxLength={128}
+                    aria-invalid={Boolean(errors.password)}
+                    aria-describedby={errors.password ? "password-error" : undefined}
                   />
                 </div>
               {errors.password && (
-                <p className="text-xs text-destructive pl-1">{errors.password}</p>
+                <p id="password-error" role="alert" className="text-xs text-destructive pl-1">{errors.password}</p>
               )}
               {mode === "signin" && (
                 <div className="flex justify-end">
@@ -336,7 +352,7 @@ const Auth: React.FC = () => {
             {mode === "reset" && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm new password
+                  Confirm new password<RequiredMark />
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -345,13 +361,19 @@ const Auth: React.FC = () => {
                     type="password"
                     placeholder="Repeat your new password"
                     value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) setErrors((current) => ({ ...current, confirmPassword: "" }));
+                    }}
                     className={`pl-12 h-14 rounded-xl bg-background/50 border-border/50 text-base ${errors.confirmPassword ? "border-destructive" : ""}`}
                     autoComplete="new-password"
+                    maxLength={128}
+                    aria-invalid={Boolean(errors.confirmPassword)}
+                    aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
                   />
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-xs text-destructive pl-1">{errors.confirmPassword}</p>
+                  <p id="confirm-password-error" role="alert" className="text-xs text-destructive pl-1">{errors.confirmPassword}</p>
                 )}
               </div>
             )}
@@ -367,13 +389,14 @@ const Auth: React.FC = () => {
                       if (checked === true) setErrors((current) => ({ ...current, terms: "" }));
                     }}
                     aria-describedby={errors.terms ? "terms-error" : undefined}
+                    aria-invalid={Boolean(errors.terms)}
                     className="mt-0.5"
                   />
                   <Label htmlFor="acceptTerms" className="text-xs leading-5 text-muted-foreground font-normal">
-                    I agree to the <Link to="/terms" className="text-primary hover:underline">Terms</Link> and acknowledge the <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                    I agree to the <Link to="/terms" className="text-primary hover:underline">Terms</Link> and acknowledge the <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.<RequiredMark />
                   </Label>
                 </div>
-                {errors.terms && <p id="terms-error" className="text-xs text-destructive">{errors.terms}</p>}
+                {errors.terms && <p id="terms-error" role="alert" className="text-xs text-destructive">{errors.terms}</p>}
               </div>
             )}
 

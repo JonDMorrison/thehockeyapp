@@ -8,6 +8,7 @@ import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppC
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
@@ -24,13 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
+import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 import { Baby, Loader2, Plus, Check } from "lucide-react";
 
 type CreatePlayerResult = { success?: boolean; player_id?: string };
 
 const childSchema = z.object({
-  first_name: z.string().trim().min(1, "First name is required").max(50),
-  birth_year: z.number().int().min(2008).max(2024),
+  first_name: z.string().trim().min(1, "Enter the player's first name").max(50, "First name must be 50 characters or fewer"),
+  birth_year: z.number().int().min(2008, "Choose a valid birth year").max(new Date().getFullYear(), "Choose a valid birth year"),
   shoots: z.enum(["left", "right", "unknown"]),
 });
 
@@ -57,12 +59,13 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
   const { data: childrenData, isLoading: loadingChildren } = useQuery({
     queryKey: ["user-children-not-on-team", teamId, user?.id],
     queryFn: async () => {
+      const adultBirthYear = new Date().getFullYear() - 18;
       // Get all child players owned by this user
       const { data: children } = await supabase
         .from("players")
         .select("id, first_name, last_initial, birth_year")
         .eq("owner_user_id", user!.id)
-        .gte("birth_year", 2008); // Children only (born 2008 or later)
+        .gt("birth_year", adultBirthYear);
 
       if (!children || children.length === 0) {
         return { childrenOnTeam: [], childrenNotOnTeam: [] };
@@ -145,13 +148,13 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
     },
     onError: (error: Error) => {
       if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        error.errors.forEach((e) => {
-          if (e.path[0]) {
-            newErrors[e.path[0] as string] = e.message;
-          }
-        });
+        const newErrors = getZodFieldErrors(error);
         setErrors(newErrors);
+        focusFirstInvalidField(newErrors, {
+          first_name: "addChildFirstName",
+          birth_year: "addChildBirthYear",
+          shoots: "addChildShoots",
+        });
       } else {
         toast.error(t("teams.addChild.toastFailedTitle"), error.message);
       }
@@ -165,6 +168,31 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
     setSelectedChildId(null);
     setErrors({});
     setAdultAcknowledged(false);
+  };
+
+  const handleAddChild = () => {
+    if (selectedChildId) {
+      setErrors({});
+      addChildMutation.mutate();
+      return;
+    }
+
+    const result = childSchema.safeParse({ first_name: firstName, birth_year: birthYear, shoots });
+    const nextErrors = result.success ? {} : getZodFieldErrors(result.error);
+    if (!adultAcknowledged) {
+      nextErrors.consent = "Confirm that you are authorized to manage this player profile";
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      focusFirstInvalidField(nextErrors, {
+        first_name: "addChildFirstName",
+        birth_year: "addChildBirthYear",
+        shoots: "addChildShoots",
+        consent: "addChildAdultAcknowledgement",
+      });
+      return;
+    }
+    addChildMutation.mutate();
   };
 
   const currentYear = new Date().getFullYear();
@@ -267,26 +295,32 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
             {!selectedChildId && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="childFirstName">{t("teams.addChild.firstName")}</Label>
+                  <Label htmlFor="addChildFirstName">{t("teams.addChild.firstName")}<RequiredMark /></Label>
                   <Input
-                    id="childFirstName"
+                    id="addChildFirstName"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (errors.first_name) setErrors((current) => ({ ...current, first_name: "" }));
+                    }}
                     placeholder="e.g. Alex"
+                    maxLength={50}
                     className={errors.first_name ? "border-destructive" : ""}
+                    aria-invalid={Boolean(errors.first_name)}
+                    aria-describedby={errors.first_name ? "add-child-first-name-error" : undefined}
                   />
                   {errors.first_name && (
-                    <p className="text-xs text-destructive">{errors.first_name}</p>
+                    <p id="add-child-first-name-error" role="alert" className="text-xs text-destructive">{errors.first_name}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="childBirthYear">{t("teams.addChild.birthYear")}</Label>
+                  <Label htmlFor="addChildBirthYear">{t("teams.addChild.birthYear")}<RequiredMark /></Label>
                   <Select
                     value={String(birthYear)}
                     onValueChange={(v) => setBirthYear(Number(v))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="addChildBirthYear">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -300,9 +334,9 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>{t("teams.addChild.shoots")}</Label>
+                  <Label htmlFor="addChildShoots">{t("teams.addChild.shoots")}<RequiredMark /></Label>
                   <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
-                    <SelectTrigger>
+                    <SelectTrigger id="addChildShoots">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -313,25 +347,32 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
                   </Select>
                 </div>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                <label htmlFor="addChildAdultAcknowledgement" className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm ${errors.consent ? "border-destructive" : "border-border"}`}>
                   <Checkbox
+                    id="addChildAdultAcknowledgement"
                     checked={adultAcknowledged}
-                    onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                    onCheckedChange={(checked) => {
+                      setAdultAcknowledged(checked === true);
+                      if (checked === true) setErrors((current) => ({ ...current, consent: "" }));
+                    }}
+                    aria-invalid={Boolean(errors.consent)}
+                    aria-describedby={errors.consent ? "add-child-consent-error" : undefined}
                     className="mt-0.5"
                   />
                   <span>
-                    I am this player’s parent or legal guardian and I am authorized to create this profile.
+                    I am this player’s parent or legal guardian and I am authorized to create this profile.<RequiredMark />
                     <span className="mt-1 block text-xs text-muted-foreground">Private photos and AI personalization remain off by default.</span>
                   </span>
                 </label>
+                {errors.consent && <p id="add-child-consent-error" role="alert" className="text-xs text-destructive">{errors.consent}</p>}
               </>
             )}
 
             <Button
               variant="team"
               className="w-full"
-              onClick={() => addChildMutation.mutate()}
-              disabled={addChildMutation.isPending || (!selectedChildId && (!firstName.trim() || !adultAcknowledged))}
+              onClick={handleAddChild}
+              disabled={addChildMutation.isPending}
             >
               {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}

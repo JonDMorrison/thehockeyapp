@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -17,7 +18,9 @@ const GuardianJoin: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
   const [redeemStatus, setRedeemStatus] = useState<"idle" | "success" | "error">("idle");
   const [relationshipConfirmed, setRelationshipConfirmed] = useState(false);
 
@@ -64,7 +67,13 @@ const GuardianJoin: React.FC = () => {
 
       return result;
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      if (result.player_id) {
+        setActiveView("parent");
+        setActivePlayerId(result.player_id);
+      }
       setRedeemStatus("success");
       toast.success(t("auth.guardianJoin.successTitle"), t("auth.guardianJoin.successMessage"));
       setTimeout(() => {

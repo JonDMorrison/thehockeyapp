@@ -1,75 +1,83 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { Loader2 } from "lucide-react";
 
 /**
- * Today route - redirects to the appropriate player home page
- * Uses the persisted activePlayerId from context, or finds the first available player
+ * Universal account home. One account may hold association, coach, parent,
+ * and player roles, so restore the last valid workspace before using a
+ * deterministic fallback.
  */
 const Today: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const { activePlayerId } = useActiveView();
+  const { loading: authLoading, isAuthenticated } = useAuth();
+  const {
+    activeView,
+    activeAssociationId,
+    activeTeamId,
+    activePlayerId,
+  } = useActiveView();
+  const {
+    associationWorkspaces,
+    coachTeams,
+    guardedPlayers,
+    ownPlayer,
+    isLoading: rolesLoading,
+  } = useUserRoles();
 
-  // Redirect to auth if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth", { replace: true });
+      return;
     }
-  }, [authLoading, isAuthenticated, navigate]);
+    if (authLoading || rolesLoading || !isAuthenticated) return;
 
-  // If we already have an active player stored, redirect immediately
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && activePlayerId) {
+    const associationIds = associationWorkspaces.map(({ associationId }) => associationId);
+    const teamIds = coachTeams.map(({ teamId }) => teamId);
+    const playerIds = guardedPlayers.map(({ playerId }) => playerId);
+
+    if (activeView === "association" && activeAssociationId && associationIds.includes(activeAssociationId)) {
+      navigate(`/associations/${activeAssociationId}`, { replace: true });
+      return;
+    }
+    if (activeView === "coach" && activeTeamId && teamIds.includes(activeTeamId)) {
+      navigate(`/teams/${activeTeamId}`, { replace: true });
+      return;
+    }
+    if (activeView === "parent" && activePlayerId && playerIds.includes(activePlayerId)) {
       navigate(`/players/${activePlayerId}/home`, { replace: true });
+      return;
     }
-  }, [authLoading, isAuthenticated, activePlayerId, navigate]);
-
-  // Fetch players only if we don't have an active player stored
-  const { data: players, isLoading: playersLoading } = useQuery({
-    queryKey: ["my-players-redirect"],
-    queryFn: async () => {
-      // First get players user owns
-      const { data: ownedPlayers, error: ownedError } = await supabase
-        .from("players")
-        .select("id")
-        .eq("owner_user_id", user!.id)
-        .limit(1);
-
-      if (ownedError) throw ownedError;
-      if (ownedPlayers && ownedPlayers.length > 0) {
-        return ownedPlayers;
-      }
-
-      // Otherwise check for guardian relationships
-      const { data: guardianships, error: guardError } = await supabase
-        .from("player_guardians")
-        .select("player_id")
-        .eq("user_id", user!.id)
-        .limit(1);
-
-      if (guardError) throw guardError;
-      return guardianships?.map(g => ({ id: g.player_id })) || [];
-    },
-    enabled: !!user && !activePlayerId, // Only fetch if no stored player
-  });
-
-  // Redirect once we have the data (fallback when no stored player)
-  useEffect(() => {
-    if (!activePlayerId && !playersLoading && players) {
-      if (players.length > 0) {
-        navigate(`/players/${players[0].id}/home`, { replace: true });
-      } else {
-        navigate("/players", { replace: true });
-      }
+    if (activeView === "player" && ownPlayer) {
+      navigate(`/players/${ownPlayer.id}/home`, { replace: true });
+      return;
     }
-  }, [players, playersLoading, activePlayerId, navigate]);
 
-  // Show loading spinner while determining redirect
+    const firstAssociation = associationWorkspaces[0];
+    const firstTeam = coachTeams[0];
+    const firstPlayer = guardedPlayers[0];
+    if (firstAssociation) navigate(`/associations/${firstAssociation.associationId}`, { replace: true });
+    else if (firstTeam) navigate(`/teams/${firstTeam.teamId}`, { replace: true });
+    else if (firstPlayer) navigate(`/players/${firstPlayer.playerId}/home`, { replace: true });
+    else if (ownPlayer) navigate(`/players/${ownPlayer.id}/home`, { replace: true });
+    else navigate("/welcome", { replace: true });
+  }, [
+    activeAssociationId,
+    activePlayerId,
+    activeTeamId,
+    activeView,
+    associationWorkspaces,
+    authLoading,
+    coachTeams,
+    guardedPlayers,
+    isAuthenticated,
+    navigate,
+    ownPlayer,
+    rolesLoading,
+  ]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />

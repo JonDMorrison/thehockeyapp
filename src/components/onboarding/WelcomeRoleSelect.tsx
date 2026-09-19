@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, UserCircle, Dumbbell, ArrowRight, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
+import { Building2, Users, UserCircle, Dumbbell, ArrowRight, Shield, Calendar, Zap, Target, Clock } from "lucide-react";
 import { AppleButton } from "@/components/ui/apple-button";
 import logoImage from "@/assets/hockey-app-logo.png";
 
@@ -12,12 +12,14 @@ interface WelcomeRoleSelectProps {
 export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayName }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<"coach" | "player" | "solo" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"association" | "coach" | "player" | "solo" | null>(null);
 
   const firstName = displayName?.split(" ")[0] || t("welcome.roleSelect.defaultFirstName");
 
   const handleContinue = () => {
-    if (selectedRole === "coach") {
+    if (selectedRole === "association") {
+      navigate("/associations/new");
+    } else if (selectedRole === "coach") {
       navigate("/onboarding/coach");
     } else if (selectedRole === "solo") {
       navigate("/solo/setup");
@@ -43,7 +45,7 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
       </div>
 
       <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-8">
-        <div className="max-w-lg md:max-w-4xl w-full text-center">
+        <div className="max-w-lg md:max-w-6xl w-full text-center">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <img src={logoImage} alt={t("auth.logoAlt")} className="w-10 h-10 object-contain" />
@@ -60,7 +62,49 @@ export const WelcomeRoleSelect: React.FC<WelcomeRoleSelectProps> = ({ displayNam
           </p>
 
           {/* Role Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
+            {/* Association Option */}
+            <button
+              onClick={() => setSelectedRole("association")}
+              aria-pressed={selectedRole === "association"}
+              className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 h-full ${
+                selectedRole === "association"
+                  ? "border-primary bg-primary/5 shadow-glow ring-2 ring-primary/40"
+                  : "border-primary/60 bg-primary/5 shadow-soft hover:border-primary hover:shadow-glow"
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                  selectedRole === "association"
+                    ? "bg-gradient-to-br from-primary to-brand-strong"
+                    : "bg-primary/10"
+                }`}>
+                  <Building2 className={`w-7 h-7 ${selectedRole === "association" ? "text-white" : "text-primary"}`} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold mb-1">{t("welcome.roleSelect.associationTitle")}</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {t("welcome.roleSelect.associationDescription")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+                      {t("welcome.roleSelect.associationFeature1")}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-xs font-medium text-muted-foreground">
+                      {t("welcome.roleSelect.associationFeature2")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {selectedRole === "association" && (
+                <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+            </button>
+
             {/* Coach Option */}
             <button
               onClick={() => setSelectedRole("coach")}

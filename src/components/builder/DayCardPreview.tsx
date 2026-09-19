@@ -93,7 +93,7 @@ export const DayCardPreview: React.FC<DayCardPreviewProps> = ({
           <Clock className="w-3 h-3" />
           <span>{t('practice.nMin', { n: template.estimatedMinutes })}</span>
           <span className="mx-1">•</span>
-          <span>{t('practice.nTasksCount', { n: template.taskIds.length })}</span>
+          <span>{t('practice.nTasksCount', { count: template.taskIds.length })}</span>
         </div>
       )}
     </div>

@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/app/Avatar";
 import { useUserRoles, UserRole } from "@/hooks/useUserRoles";
 import { useActiveView } from "@/contexts/ActiveViewContext";
-import { teamPalettes } from "@/lib/themes";
 import {
+  Building2,
   Users,
   User,
   Dumbbell,
@@ -31,6 +31,8 @@ interface ContextSwitcherProps {
   currentTeamId?: string;
   /** Current player ID (for highlighting) */
   currentPlayerId?: string;
+  /** Current association ID (for highlighting) */
+  currentAssociationId?: string;
   /** Compact mode - just show avatar */
   compact?: boolean;
   /** Additional className */
@@ -38,6 +40,7 @@ interface ContextSwitcherProps {
 }
 
 const roleConfig: Record<UserRole, { labelKey: string; icon: React.ElementType }> = {
+  association: { labelKey: "nav.roleAssociation", icon: Building2 },
   coach: { labelKey: "nav.roleCoach", icon: Users },
   parent: { labelKey: "nav.roleParent", icon: User },
   player: { labelKey: "nav.roleTraining", icon: Dumbbell },
@@ -46,6 +49,7 @@ const roleConfig: Record<UserRole, { labelKey: string; icon: React.ElementType }
 export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   currentTeamId,
   currentPlayerId,
+  currentAssociationId,
   compact = false,
   className,
 }) => {
@@ -53,16 +57,28 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const {
+    associationWorkspaces,
     availableRoles,
     isLoading,
     coachTeams,
     guardedPlayers,
     ownPlayer,
+    isAssociation,
     isCoach,
     isParent,
     hasOwnPlayerProfile,
   } = useUserRoles();
-  const { activeView, setActiveView, setActiveTeamId, setActivePlayerId } = useActiveView();
+  const {
+    activeView,
+    setActiveView,
+    setActiveTeamId,
+    setActivePlayerId,
+    setActiveAssociationId,
+  } = useActiveView();
+
+  const routeTeamId = currentTeamId ?? location.pathname.match(/^\/teams\/([^/]+)/)?.[1];
+  const routePlayerId = currentPlayerId ?? location.pathname.match(/^\/players\/([^/]+)/)?.[1];
+  const routeAssociationId = currentAssociationId ?? location.pathname.match(/^\/associations\/([^/]+)/)?.[1];
 
   // Loading state
   if (isLoading) {
@@ -75,20 +91,25 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
 
   // Determine what to show as the current context label
   const getCurrentContextLabel = () => {
+    if (routeAssociationId && associationWorkspaces.length > 0) {
+      const association = associationWorkspaces.find(a => a.associationId === routeAssociationId);
+      if (association) return association.associationName;
+    }
+
     // If on a team page, show team name
-    if (currentTeamId && coachTeams.length > 0) {
-      const team = coachTeams.find(t => t.teamId === currentTeamId);
+    if (routeTeamId && coachTeams.length > 0) {
+      const team = coachTeams.find(t => t.teamId === routeTeamId);
       if (team) return team.teamName;
     }
 
     // If on a player page, find player name
-    if (currentPlayerId) {
+    if (routePlayerId) {
       // Check guarded players
-      const guarded = guardedPlayers.find(p => p.playerId === currentPlayerId);
+      const guarded = guardedPlayers.find(p => p.playerId === routePlayerId);
       if (guarded) return guarded.playerName;
 
       // Check if it's own player
-      if (ownPlayer?.id === currentPlayerId) {
+      if (ownPlayer?.id === routePlayerId) {
         return `${ownPlayer.firstName} ${ownPlayer.lastName || ""}`.trim();
       }
     }
@@ -101,10 +122,19 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     return t("nav.switch");
   };
 
+  const handleAssociationSelect = (associationId: string) => {
+    setActiveView("association");
+    setActiveAssociationId(associationId);
+    setActiveTeamId(null);
+    setActivePlayerId(null);
+    navigate(`/associations/${associationId}`);
+  };
+
   const handleTeamSelect = (teamId: string) => {
     setActiveView("coach");
     setActiveTeamId(teamId);
     setActivePlayerId(null);
+    setActiveAssociationId(null);
     navigate(`/teams/${teamId}`);
   };
 
@@ -112,6 +142,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
     setActiveView(isOwn ? "player" : "parent");
     setActivePlayerId(playerId);
     setActiveTeamId(null);
+    setActiveAssociationId(null);
     navigate(`/players/${playerId}/home`);
   };
 
@@ -119,10 +150,6 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   const CurrentIcon = activeView ? roleConfig[activeView]?.icon : Users;
 
   // Nothing to switch to
-  if (availableRoles.length === 0 && coachTeams.length === 0 && guardedPlayers.length === 0 && !ownPlayer) {
-    return null;
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -130,6 +157,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           variant="ghost"
           size={compact ? "icon-sm" : "sm"}
           className={cn("gap-1.5 max-w-[180px]", className)}
+          aria-label={t("nav.switchWorkspace")}
         >
           <CurrentIcon className="w-4 h-4 shrink-0" />
           {!compact && (
@@ -142,6 +170,44 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-y-auto">
 
+        {/* Association Workspaces Section */}
+        {isAssociation && associationWorkspaces.length > 0 && (
+          <>
+            <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Building2 className="w-3 h-3" />
+              {t("nav.myAssociations")}
+            </DropdownMenuLabel>
+            {associationWorkspaces.map((association) => {
+              const isActive = routeAssociationId === association.associationId && activeView === "association";
+
+              return (
+                <DropdownMenuItem
+                  key={association.associationId}
+                  onClick={() => handleAssociationSelect(association.associationId)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <Avatar fallback={association.associationName} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{association.associationName}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{association.role.replace("_", " ")}</p>
+                    </div>
+                    {isActive && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuItem
+              onClick={() => navigate("/associations/new")}
+              className="cursor-pointer text-muted-foreground"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("nav.createNewAssociation")}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
         {/* Coach Teams Section */}
         {isCoach && coachTeams.length > 0 && (
           <>
@@ -150,8 +216,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               {t("nav.myTeams")}
             </DropdownMenuLabel>
             {coachTeams.map((team) => {
-              const isActive = currentTeamId === team.teamId && activeView === "coach";
-              const palette = teamPalettes.find(p => p.id === team.teamId);
+              const isActive = routeTeamId === team.teamId && activeView === "coach";
 
               return (
                 <DropdownMenuItem
@@ -192,7 +257,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
               {t("nav.myPlayers")}
             </DropdownMenuLabel>
             {guardedPlayers.map((player) => {
-              const isActive = currentPlayerId === player.playerId && activeView === "parent";
+              const isActive = routePlayerId === player.playerId && activeView === "parent";
 
               return (
                 <DropdownMenuItem
@@ -247,7 +312,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
                   </p>
                   <p className="text-xs text-muted-foreground">{t("nav.soloTraining")}</p>
                 </div>
-                {currentPlayerId === ownPlayer.id && activeView === "player" && (
+                {routePlayerId === ownPlayer.id && activeView === "player" && (
                   <Check className="w-4 h-4 text-primary shrink-0" />
                 )}
               </div>
@@ -255,33 +320,36 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           </>
         )}
 
-        {/* Quick Actions at bottom */}
-        {(coachTeams.length === 0 && guardedPlayers.length === 0 && !ownPlayer) && (
+        {/* Missing roles can be added to this same account. */}
+        {(!isAssociation || !isCoach || !isParent || !hasOwnPlayerProfile) && (
           <>
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              {t("nav.getStarted")}
+              {availableRoles.length === 0 ? t("nav.getStarted") : t("nav.addAnotherRole")}
             </DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigate("/teams/new")}
-              className="cursor-pointer"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              {t("nav.createATeam")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigate("/players/new")}
-              className="cursor-pointer"
-            >
-              <User className="w-4 h-4 mr-2" />
-              {t("nav.addAPlayer")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigate("/solo/setup")}
-              className="cursor-pointer"
-            >
-              <Dumbbell className="w-4 h-4 mr-2" />
-              {t("nav.soloTraining")}
-            </DropdownMenuItem>
+            {!isAssociation && (
+              <DropdownMenuItem onClick={() => navigate("/associations/new")} className="cursor-pointer">
+                <Building2 className="w-4 h-4 mr-2" />
+                {t("nav.createAnAssociation")}
+              </DropdownMenuItem>
+            )}
+            {!isCoach && (
+              <DropdownMenuItem onClick={() => navigate("/teams/new")} className="cursor-pointer">
+                <Users className="w-4 h-4 mr-2" />
+                {t("nav.createATeam")}
+              </DropdownMenuItem>
+            )}
+            {!isParent && (
+              <DropdownMenuItem onClick={() => navigate("/players/new")} className="cursor-pointer">
+                <User className="w-4 h-4 mr-2" />
+                {t("nav.addAPlayer")}
+              </DropdownMenuItem>
+            )}
+            {!hasOwnPlayerProfile && (
+              <DropdownMenuItem onClick={() => navigate("/solo/setup")} className="cursor-pointer">
+                <Dumbbell className="w-4 h-4 mr-2" />
+                {t("nav.soloTraining")}
+              </DropdownMenuItem>
+            )}
           </>
         )}
       </DropdownMenuContent>

@@ -275,7 +275,7 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
                 <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
                   <div className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5" />
-                    <span>{program.active_players} players active</span>
+                    <span>{program.active_players} {program.active_players === 1 ? "player" : "players"} active</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />

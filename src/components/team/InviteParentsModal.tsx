@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -36,13 +37,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/app/Toast";
 import { SkeletonListItem } from "@/components/app/Skeleton";
+import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2, Mail } from "lucide-react";
 
 const childSchema = z.object({
-  first_name: z.string().trim().min(1, "First name is required").max(50),
-  birth_year: z.number().int().min(2008).max(2024),
+  first_name: z.string().trim().min(1, "Enter the player's first name").max(50, "First name must be 50 characters or fewer"),
+  birth_year: z.number().int().min(2008, "Choose a valid birth year").max(new Date().getFullYear(), "Choose a valid birth year"),
   shoots: z.enum(["left", "right", "unknown"]),
 });
+
+const inviteEmailSchema = z.string().trim().email("Enter a valid parent or guardian email address").max(255, "Email address must be 255 characters or fewer");
 
 interface InviteParentsModalProps {
   open: boolean;
@@ -78,11 +82,14 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   // Email invite state
   const [inviteEmail, setInviteEmail] = useState("");
   const [invitePlayerName, setInvitePlayerName] = useState("");
+  const [inviteEmailError, setInviteEmailError] = useState("");
 
   // Reset tab when modal opens
   useEffect(() => {
     if (open) {
       setActiveTab(initialTab);
+      setErrors({});
+      setInviteEmailError("");
     }
   }, [open, initialTab]);
 
@@ -109,11 +116,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const { data: childrenData, isLoading: loadingChildren } = useQuery({
     queryKey: ["user-children-not-on-team", teamId, user?.id],
     queryFn: async () => {
+      const adultBirthYear = new Date().getFullYear() - 18;
       const { data: children } = await supabase
         .from("players")
         .select("id, first_name, last_initial, birth_year")
         .eq("owner_user_id", user!.id)
-        .gte("birth_year", 2008);
+        .gt("birth_year", adultBirthYear);
 
       if (!children || children.length === 0) {
         return { childrenOnTeam: [], childrenNotOnTeam: [] };
@@ -204,6 +212,17 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
   });
 
+  const handleSendEmailInvite = () => {
+    const result = inviteEmailSchema.safeParse(inviteEmail);
+    if (!result.success) {
+      setInviteEmailError(result.error.errors[0]?.message || "Enter a valid email address");
+      focusFirstInvalidField({ email: "invalid" }, { email: "parentInviteEmail" });
+      return;
+    }
+    setInviteEmailError("");
+    sendEmailInvite.mutate();
+  };
+
   // Add child to team
   const addChildMutation = useMutation({
     mutationFn: async () => {
@@ -260,13 +279,13 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
     onError: (error: Error) => {
       if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        error.errors.forEach((e) => {
-          if (e.path[0]) {
-            newErrors[e.path[0] as string] = e.message;
-          }
-        });
+        const newErrors = getZodFieldErrors(error);
         setErrors(newErrors);
+        focusFirstInvalidField(newErrors, {
+          first_name: "childFirstName",
+          birth_year: "childBirthYear",
+          shoots: "childShoots",
+        });
       } else {
         toast.error(t("teams.inviteParents.toastAddFailedTitle"), error.message);
       }
@@ -280,6 +299,31 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     setSelectedChildId(null);
     setErrors({});
     setAdultAcknowledged(false);
+  };
+
+  const handleAddChild = () => {
+    if (selectedChildId) {
+      setErrors({});
+      addChildMutation.mutate();
+      return;
+    }
+
+    const result = childSchema.safeParse({ first_name: firstName, birth_year: birthYear, shoots });
+    const nextErrors = result.success ? {} : getZodFieldErrors(result.error);
+    if (!adultAcknowledged) {
+      nextErrors.consent = "Confirm that you are authorized to manage this player profile";
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      focusFirstInvalidField(nextErrors, {
+        first_name: "childFirstName",
+        birth_year: "childBirthYear",
+        shoots: "childShoots",
+        consent: "childAdultAcknowledgement",
+      });
+      return;
+    }
+    addChildMutation.mutate();
   };
 
   const inviteLink = invite?.token
@@ -329,9 +373,15 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("teams.inviteParents.title")}</DialogTitle>
+            <DialogTitle>
+              {activeTab === "add-child"
+                ? t("teams.inviteParents.addChildTitle")
+                : t("teams.inviteParents.title")}
+            </DialogTitle>
             <DialogDescription>
-              {t("teams.inviteParents.description", { teamName })}
+              {activeTab === "add-child"
+                ? t("teams.inviteParents.addChildDescription", { teamName })
+                : t("teams.inviteParents.description", { teamName })}
             </DialogDescription>
           </DialogHeader>
 
@@ -407,26 +457,32 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                   {!selectedChildId && (
                     <>
                       <div className="space-y-2">
-                        <Label htmlFor="childFirstName">{t("teams.addChild.firstName")}</Label>
+                        <Label htmlFor="childFirstName">{t("teams.addChild.firstName")}<RequiredMark /></Label>
                         <Input
                           id="childFirstName"
                           value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
+                          onChange={(e) => {
+                            setFirstName(e.target.value);
+                            if (errors.first_name) setErrors((current) => ({ ...current, first_name: "" }));
+                          }}
                           placeholder="e.g. Alex"
+                          maxLength={50}
                           className={errors.first_name ? "border-destructive" : ""}
+                          aria-invalid={Boolean(errors.first_name)}
+                          aria-describedby={errors.first_name ? "child-first-name-error" : undefined}
                         />
                         {errors.first_name && (
-                          <p className="text-xs text-destructive">{errors.first_name}</p>
+                          <p id="child-first-name-error" role="alert" className="text-xs text-destructive">{errors.first_name}</p>
                         )}
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="childBirthYear">{t("teams.addChild.birthYear")}</Label>
+                        <Label htmlFor="childBirthYear">{t("teams.addChild.birthYear")}<RequiredMark /></Label>
                         <Select
                           value={String(birthYear)}
                           onValueChange={(v) => setBirthYear(Number(v))}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger id="childBirthYear">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -440,9 +496,9 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       </div>
 
                       <div className="space-y-2">
-                        <Label>{t("teams.addChild.shoots")}</Label>
+                        <Label htmlFor="childShoots">{t("teams.addChild.shoots")}<RequiredMark /></Label>
                         <Select value={shoots} onValueChange={(v) => setShoots(v as "left" | "right" | "unknown")}>
-                          <SelectTrigger>
+                          <SelectTrigger id="childShoots">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -453,25 +509,29 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                         </Select>
                       </div>
 
-                      <label className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+                      <label htmlFor="childAdultAcknowledgement" className={`flex items-start gap-3 rounded-lg border bg-muted/40 p-3 text-sm ${errors.consent ? "border-destructive" : "border-border"}`}>
                         <Checkbox
+                          id="childAdultAcknowledgement"
                           checked={adultAcknowledged}
-                          onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                          onCheckedChange={(checked) => {
+                            setAdultAcknowledged(checked === true);
+                            if (checked === true) setErrors((current) => ({ ...current, consent: "" }));
+                          }}
+                          aria-invalid={Boolean(errors.consent)}
+                          aria-describedby={errors.consent ? "child-consent-error" : undefined}
                           className="mt-0.5"
                         />
-                        <span>I confirm I am this player's parent or legal guardian and may manage their profile.</span>
+                        <span>I confirm I am this player's parent or legal guardian and may manage their profile.<RequiredMark /></span>
                       </label>
+                      {errors.consent && <p id="child-consent-error" role="alert" className="text-xs text-destructive">{errors.consent}</p>}
                     </>
                   )}
 
                   <Button
                     variant="team"
                     className="w-full"
-                    onClick={() => addChildMutation.mutate()}
-                    disabled={
-                      addChildMutation.isPending
-                      || (!selectedChildId && (!firstName.trim() || !adultAcknowledged))
-                    }
+                    onClick={handleAddChild}
+                    disabled={addChildMutation.isPending}
                   >
                     {addChildMutation.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                     {selectedChildId ? t("teams.addChild.addToTeam") : t("teams.addChild.createAndAdd")}
@@ -615,17 +675,29 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       <p className="text-sm font-medium">{t("teams.inviteParents.emailInviteTitle")}</p>
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="parentInviteEmail">Parent or guardian email<RequiredMark /></Label>
                       <Input
+                        id="parentInviteEmail"
                         type="email"
                         value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
+                        onChange={(e) => {
+                          setInviteEmail(e.target.value);
+                          if (inviteEmailError) setInviteEmailError("");
+                        }}
                         placeholder={t("teams.inviteParents.emailInvitePlaceholder")}
-                        className="text-sm"
+                        maxLength={255}
+                        className={`text-sm ${inviteEmailError ? "border-destructive" : ""}`}
+                        aria-invalid={Boolean(inviteEmailError)}
+                        aria-describedby={inviteEmailError ? "parent-invite-email-error" : undefined}
                       />
+                      {inviteEmailError && <p id="parent-invite-email-error" role="alert" className="text-xs text-destructive">{inviteEmailError}</p>}
+                      <Label htmlFor="parentInvitePlayerName">Player's name <span className="font-normal text-muted-foreground">(optional)</span></Label>
                       <Input
+                        id="parentInvitePlayerName"
                         value={invitePlayerName}
                         onChange={(e) => setInvitePlayerName(e.target.value)}
                         placeholder={t("teams.inviteParents.emailInvitePlayerPlaceholder")}
+                        maxLength={100}
                         className="text-sm"
                       />
                     </div>
@@ -633,8 +705,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       variant="secondary"
                       size="sm"
                       className="w-full"
-                      onClick={() => sendEmailInvite.mutate()}
-                      disabled={sendEmailInvite.isPending || !inviteEmail.trim()}
+                      onClick={handleSendEmailInvite}
+                      disabled={sendEmailInvite.isPending}
                     >
                       {sendEmailInvite.isPending ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

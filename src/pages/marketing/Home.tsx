@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -254,24 +253,6 @@ export default function Home() {
 
   return (
     <div className="marketing-performance min-h-screen bg-background">
-      <Helmet>
-        <title>The Hockey App — Off-Ice Development for Hockey Associations</title>
-        <meta
-          name="description"
-          content="Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress."
-        />
-        <meta property="og:title" content="The Hockey App — Off-Ice Development for Hockey Associations" />
-        <meta property="og:description" content="Build better players across every team with simple weekly plans and visible association-wide progress." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.hockeyapp.ca/" />
-        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="The Hockey App — Off-Ice Development for Hockey Associations" />
-        <meta name="twitter:description" content="Build better players across every team with simple weekly plans and visible association-wide progress." />
-        <meta name="twitter:image" content="https://www.hockeyapp.ca/SitePreview.png" />
-        <link rel="canonical" href="https://www.hockeyapp.ca/" />
-      </Helmet>
-
       <MarketingNav />
 
       <main>

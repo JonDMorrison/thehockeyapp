@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Users, UserCircle, Dumbbell, ArrowRight } from "lucide-react";
+import { Building2, Users, UserCircle, Dumbbell, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from 'react-i18next';
 
@@ -17,7 +17,7 @@ interface GetStartedModalProps {
 }
 
 // Role type for localStorage
-export type SelectedRole = "coach" | "player" | "solo";
+export type SelectedRole = "association" | "coach" | "player" | "solo";
 
 // Helper to store/retrieve selected role
 export const SELECTED_ROLE_KEY = "hockey_app_selected_role";
@@ -40,6 +40,19 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
     const navigate = useNavigate();
 
     const options = [
+      {
+        id: "association",
+        role: "association" as SelectedRole,
+        title: t('marketing.get_started_association_title'),
+        description: t('marketing.get_started_association_desc'),
+        icon: Building2,
+        buttonLabel: t('marketing.get_started_association_button'),
+        buttonVariant: "default" as const,
+        smallText: t('marketing.get_started_one_account') as string | null,
+        directHref: null as string | null,
+        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
+        hoverClass: "hover:border-primary/50",
+      },
       {
         id: "coach",
         role: "coach" as SelectedRole,
@@ -108,6 +121,9 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
               {BETA_MODE
                 ? t('marketing.get_started_all_features_unlocked_beta')
                 : t('marketing.get_started_coaches_subtitle')}
+            </p>
+            <p className="mt-2 text-xs font-medium text-primary">
+              {t('marketing.get_started_one_account')}
             </p>
           </DialogHeader>
 

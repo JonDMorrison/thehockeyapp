@@ -5,12 +5,14 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -21,12 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
+import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 import { Loader2, ChevronLeft, AlertTriangle } from "lucide-react";
 
 const playerSchema = z.object({
-  first_name: z.string().trim().min(1, "First name is required").max(50),
-  last_initial: z.string().trim().max(1).optional(),
-  birth_year: z.number().int().min(2000).max(new Date().getFullYear()),
+  first_name: z.string().trim().min(1, "Enter the player's first name").max(50, "First name must be 50 characters or fewer"),
+  last_initial: z.string().trim().max(1, "Use one letter for the last initial").optional(),
+  birth_year: z.number().int().min(2000, "Choose a valid birth year").max(new Date().getFullYear(), "Choose a valid birth year"),
   shoots: z.enum(["left", "right", "unknown"]),
   jersey_number: z.string().trim().max(3).optional(),
   fav_nhl_city: z.string().trim().max(50).optional(),
@@ -43,6 +46,7 @@ const PlayerNew: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
 
   const [formData, setFormData] = useState<PlayerFormData>({
     first_name: "",
@@ -110,8 +114,13 @@ const PlayerNew: React.FC = () => {
       if (!player.player_id) throw new Error("Player profile was not created");
       return { id: player.player_id, first_name: player.first_name || data.first_name.trim() };
     },
-    onSuccess: (player) => {
+    onSuccess: async (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      setActiveView("parent");
+      setActivePlayerId(player.id);
       toast.success(t("players.new.toastAddedTitle"), t("players.new.toastAddedDescription", { name: player.first_name }));
 
       // Check if we need to return to team join flow
@@ -132,22 +141,20 @@ const PlayerNew: React.FC = () => {
   });
 
   const validate = () => {
-    try {
-      playerSchema.parse(formData);
+    const result = playerSchema.safeParse(formData);
+    if (result.success) {
       setErrors({});
       return true;
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        err.errors.forEach((e) => {
-          if (e.path[0]) {
-            newErrors[e.path[0] as string] = e.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-      return false;
     }
+    const newErrors = getZodFieldErrors(result.error);
+    setErrors(newErrors);
+    focusFirstInvalidField(newErrors, {
+      first_name: "first_name",
+      last_initial: "last_initial",
+      birth_year: "birth_year",
+      shoots: "shoots",
+    });
+    return false;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -155,6 +162,7 @@ const PlayerNew: React.FC = () => {
     if (!validate()) return;
     if (!adultAcknowledged) {
       setErrors((current) => ({ ...current, consent: "An adult account holder must confirm this profile." }));
+      focusFirstInvalidField({ consent: "required" }, { consent: "adult-acknowledgement" });
       return;
     }
     createPlayer.mutate(formData);
@@ -162,6 +170,7 @@ const PlayerNew: React.FC = () => {
 
   const updateField = <K extends keyof PlayerFormData>(key: K, value: PlayerFormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((current) => ({ ...current, [key]: "" }));
   };
 
   const currentYear = new Date().getFullYear();
@@ -192,17 +201,20 @@ const PlayerNew: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 space-y-2">
-                  <Label htmlFor="first_name">{t("players.new.firstNameLabel")}</Label>
+                  <Label htmlFor="first_name">{t("players.new.firstNameLabel")}<RequiredMark /></Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
                     onChange={(e) => updateField("first_name", e.target.value)}
                     className={errors.first_name ? "border-destructive" : ""}
+                    aria-invalid={Boolean(errors.first_name)}
+                    aria-describedby={errors.first_name ? "first-name-error" : undefined}
                     placeholder="Jake"
+                    maxLength={50}
                     autoFocus
                   />
                   {errors.first_name && (
-                    <p className="text-xs text-destructive">{errors.first_name}</p>
+                    <p id="first-name-error" role="alert" className="text-xs text-destructive">{errors.first_name}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -231,12 +243,12 @@ const PlayerNew: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="birth_year">{t("players.new.birthYearLabel")}</Label>
+                  <Label htmlFor="birth_year">{t("players.new.birthYearLabel")}<RequiredMark /></Label>
                   <Select
                     value={String(formData.birth_year)}
                     onValueChange={(v) => updateField("birth_year", parseInt(v))}
                   >
-                    <SelectTrigger className={errors.birth_year ? "border-destructive" : ""}>
+                    <SelectTrigger id="birth_year" className={errors.birth_year ? "border-destructive" : ""}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -249,12 +261,12 @@ const PlayerNew: React.FC = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shoots">{t("players.new.shootsLabel")}</Label>
+                  <Label htmlFor="shoots">{t("players.new.shootsLabel")}<RequiredMark /></Label>
                   <Select
                     value={formData.shoots}
                     onValueChange={(v) => updateField("shoots", v as "left" | "right" | "unknown")}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="shoots">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -314,6 +326,7 @@ const PlayerNew: React.FC = () => {
                     value={formData.fav_nhl_player}
                     onChange={(e) => updateField("fav_nhl_player", e.target.value)}
                     placeholder="McDavid"
+                    maxLength={100}
                   />
                 </div>
               </div>
@@ -325,6 +338,7 @@ const PlayerNew: React.FC = () => {
                   value={formData.hockey_love}
                   onChange={(e) => updateField("hockey_love", e.target.value)}
                   placeholder="Scoring goals, being with teammates..."
+                  maxLength={500}
                   rows={2}
                 />
               </div>
@@ -336,6 +350,7 @@ const PlayerNew: React.FC = () => {
                   value={formData.season_goals}
                   onChange={(e) => updateField("season_goals", e.target.value)}
                   placeholder="Improve skating speed, make the travel team..."
+                  maxLength={500}
                   rows={2}
                 />
               </div>
@@ -352,16 +367,17 @@ const PlayerNew: React.FC = () => {
                   if (checked === true) setErrors((current) => ({ ...current, consent: "" }));
                 }}
                 aria-describedby={errors.consent ? "consent-error" : "consent-help"}
+                aria-invalid={Boolean(errors.consent)}
                 className="mt-0.5"
               />
               <div>
                 <Label htmlFor="adult-acknowledgement" className="text-sm leading-5">
-                  I am this player, or I am their parent or legal guardian and I am authorized to create this profile.
+                  I am this player, or I am their parent or legal guardian and I am authorized to create this profile.<RequiredMark />
                 </Label>
                 <p id="consent-help" className="text-xs text-muted-foreground mt-1">
                   Player profiles are managed through an adult account. Review our <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
                 </p>
-                {errors.consent && <p id="consent-error" className="text-xs text-destructive mt-1">{errors.consent}</p>}
+                {errors.consent && <p id="consent-error" role="alert" className="text-xs text-destructive mt-1">{errors.consent}</p>}
               </div>
             </div>
 

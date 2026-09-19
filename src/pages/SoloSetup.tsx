@@ -5,13 +5,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/app/Toast";
+import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 import {
   Loader2,
   ChevronLeft,
@@ -27,8 +30,8 @@ import {
 const DAYS_OPTIONS = [3, 4, 5, 6, 7];
 
 const playerSchema = z.object({
-  first_name: z.string().trim().min(1, "Name is required").max(50),
-  birth_year: z.number().int().min(2000).max(new Date().getFullYear()),
+  first_name: z.string().trim().min(1, "Enter the player's first name").max(50, "First name must be 50 characters or fewer"),
+  birth_year: z.number().int().min(2000, "Choose a valid birth year").max(new Date().getFullYear(), "Choose a valid birth year"),
 });
 
 const SoloSetup: React.FC = () => {
@@ -36,6 +39,7 @@ const SoloSetup: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
 
   const TRAINING_FOCUSES = [
     { id: "shooting", label: t('solo.focusLabelShooting'), icon: Target, description: t('solo.focusDescShooting') },
@@ -87,8 +91,13 @@ const SoloSetup: React.FC = () => {
       if (!player.player_id) throw new Error("Player profile was not created");
       return { id: player.player_id, first_name: player.first_name || firstName.trim() };
     },
-    onSuccess: (player) => {
+    onSuccess: async (player) => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      setActiveView(profileFor === "self" ? "player" : "parent");
+      setActivePlayerId(player.id);
       toast.success(t('solo.allSet'), "Choose a first workout and start training now.");
       navigate(`/solo/today/${player.id}`);
     },
@@ -109,11 +118,14 @@ const SoloSetup: React.FC = () => {
     if (step === "player") {
       const validation = playerSchema.safeParse({ first_name: firstName, birth_year: birthYear });
       if (!validation.success) {
-        setErrors({ first_name: validation.error.errors[0].message });
+        const newErrors = getZodFieldErrors(validation.error);
+        setErrors(newErrors);
+        focusFirstInvalidField(newErrors, { first_name: "firstName", birth_year: "birthYear" });
         return;
       }
       if (!adultAcknowledged) {
         setErrors({ adult: "An adult must confirm responsibility for this profile." });
+        focusFirstInvalidField({ adult: "required" }, { adult: "soloAdultAcknowledgement" });
         return;
       }
       setErrors({});
@@ -121,6 +133,7 @@ const SoloSetup: React.FC = () => {
     } else if (step === "focus") {
       if (selectedFocuses.length === 0) {
         toast.error(t('solo.selectAtLeastOneFocus'), t('solo.pickWhatYouWantToWorkOn'));
+        document.getElementById("training-focus-shooting")?.focus();
         return;
       }
       setStep("schedule");
@@ -204,6 +217,7 @@ const SoloSetup: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setProfileFor("child");
+                    setBirthYear(new Date().getFullYear() - 12);
                     if (firstName === user?.user_metadata?.display_name?.split(" ")[0]) setFirstName("");
                   }}
                   className={`rounded-xl border p-4 text-left transition-colors ${profileFor === "child" ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
@@ -213,7 +227,10 @@ const SoloSetup: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setProfileFor("self")}
+                  onClick={() => {
+                    setProfileFor("self");
+                    setBirthYear(new Date().getFullYear() - 25);
+                  }}
                   className={`rounded-xl border p-4 text-left transition-colors ${profileFor === "self" ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
                 >
                   <span className="block font-semibold">Myself</span>
@@ -227,22 +244,28 @@ const SoloSetup: React.FC = () => {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">{profileFor === "child" ? "Player's first name" : "Your first name"}</Label>
+                  <Label htmlFor="firstName">{profileFor === "child" ? "Player's first name" : "Your first name"}<RequiredMark /></Label>
                   <Input
                     id="firstName"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (errors.first_name) setErrors((current) => ({ ...current, first_name: "" }));
+                    }}
                     placeholder={profileFor === "child" ? "e.g., Alex" : t('solo.yourFirstName')}
+                    maxLength={50}
                     className={errors.first_name ? "border-destructive" : ""}
                     autoFocus
+                    aria-invalid={Boolean(errors.first_name)}
+                    aria-describedby={errors.first_name ? "solo-first-name-error" : undefined}
                   />
                   {errors.first_name && (
-                    <p className="text-xs text-destructive">{errors.first_name}</p>
+                    <p id="solo-first-name-error" role="alert" className="text-xs text-destructive">{errors.first_name}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="birthYear">{profileFor === "child" ? "Player's birth year" : t('solo.birthYear')}</Label>
+                  <Label htmlFor="birthYear">{profileFor === "child" ? "Player's birth year" : t('solo.birthYear')}<RequiredMark /></Label>
                   <select
                     id="birthYear"
                     value={birthYear}
@@ -257,15 +280,21 @@ const SoloSetup: React.FC = () => {
                   </select>
                 </div>
 
-                <label className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-4 text-sm">
+                <label htmlFor="soloAdultAcknowledgement" className={`flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm ${errors.adult ? "border-destructive" : "border-border"}`}>
                   <Checkbox
+                    id="soloAdultAcknowledgement"
                     checked={adultAcknowledged}
-                    onCheckedChange={(checked) => setAdultAcknowledged(checked === true)}
+                    onCheckedChange={(checked) => {
+                      setAdultAcknowledged(checked === true);
+                      if (checked === true) setErrors((current) => ({ ...current, adult: "" }));
+                    }}
+                    aria-invalid={Boolean(errors.adult)}
+                    aria-describedby={errors.adult ? "solo-adult-error" : undefined}
                     className="mt-0.5"
                   />
-                  <span>I am 18 or older and I am creating this profile for myself or a player I am authorized to manage.</span>
+                  <span>I am 18 or older and I am creating this profile for myself or a player I am authorized to manage.<RequiredMark /></span>
                 </label>
-                {errors.adult && <p className="text-xs text-destructive">{errors.adult}</p>}
+                {errors.adult && <p id="solo-adult-error" role="alert" className="text-xs text-destructive">{errors.adult}</p>}
               </div>
             </AppCard>
           </div>
@@ -291,6 +320,7 @@ const SoloSetup: React.FC = () => {
                 return (
                   <button
                     key={focus.id}
+                    id={`training-focus-${focus.id}`}
                     onClick={() => toggleFocus(focus.id)}
                     className={`relative p-4 rounded-xl border-2 text-left transition-all ${
                       isSelected

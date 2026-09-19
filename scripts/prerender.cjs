@@ -20,6 +20,66 @@ const WAIT_MS = 3000;
 // Add it back when BETA_MODE is set to false
 const routes = ['/', '/features', '/about', '/privacy', '/terms', '/contact', '/demo'];
 
+const routeMetadata = {
+  '/pricing': {
+    title: 'Pricing — The Hockey App',
+    description: 'Simple plans for hockey associations, coaches, players, and families.',
+  },
+  '/features': {
+    title: 'Features — The Hockey App',
+    description: 'Weekly plans, player workouts, Hockey Canada skill videos, team participation, and association-wide progress in one private hockey development app.',
+  },
+  '/about': {
+    title: 'About — The Hockey App',
+    description: 'Why The Hockey App was built to connect association standards, coaching plans, player work, and family support.',
+  },
+  '/privacy': {
+    title: 'Privacy Policy — The Hockey App',
+    description: 'How The Hockey App handles account, team, player, and training data.',
+  },
+  '/terms': {
+    title: 'Terms of Service — The Hockey App',
+    description: 'Terms and conditions for using The Hockey App.',
+  },
+  '/contact': {
+    title: 'Contact — The Hockey App',
+    description: 'Contact The Hockey App about association pilots, product support, or privacy requests.',
+  },
+  '/demo': {
+    title: 'Product Tour — The Hockey App',
+    description: 'See how associations, coaches, players, and families use one shared hockey development system.',
+  },
+};
+
+function escapeAttribute(value) {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+function writeMetadataFallbacks() {
+  const sourcePath = path.join(distDir, 'index.html');
+  if (!fs.existsSync(sourcePath)) return;
+  const source = fs.readFileSync(sourcePath, 'utf8');
+
+  for (const [route, meta] of Object.entries(routeMetadata)) {
+    const url = `https://www.hockeyapp.ca${route}`;
+    const title = escapeAttribute(meta.title);
+    const description = escapeAttribute(meta.description);
+    const html = source
+      .replace(/<title>[^<]*<\/title>/, `<title>${meta.title}</title>`)
+      .replace(/<meta data-rh="true" name="description" content="[^"]*" \/>/, `<meta data-rh="true" name="description" content="${description}" />`)
+      .replace(/<link data-rh="true" rel="canonical" href="[^"]*" \/>/, `<link data-rh="true" rel="canonical" href="${url}" />`)
+      .replace(/<meta data-rh="true" property="og:url" content="[^"]*" \/>/, `<meta data-rh="true" property="og:url" content="${url}" />`)
+      .replace(/<meta data-rh="true" property="og:title" content="[^"]*" \/>/, `<meta data-rh="true" property="og:title" content="${title}" />`)
+      .replace(/<meta data-rh="true" property="og:description" content="[^"]*" \/>/, `<meta data-rh="true" property="og:description" content="${description}" />`)
+      .replace(/<meta data-rh="true" property="og:image:alt" content="[^"]*" \/>/, `<meta data-rh="true" property="og:image:alt" content="${title}" />`)
+      .replace(/<meta data-rh="true" name="twitter:title" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:title" content="${title}" />`)
+      .replace(/<meta data-rh="true" name="twitter:description" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:description" content="${description}" />`);
+    const routeDir = path.join(distDir, route);
+    fs.mkdirSync(routeDir, { recursive: true });
+    fs.writeFileSync(path.join(routeDir, 'index.html'), html);
+  }
+}
+
 // Never let an unhandled rejection crash the build — log and succeed with the static shell.
 process.on('unhandledRejection', (err) => {
   console.warn('Prerender skipped (unhandled rejection):', err && err.message ? err.message : err);
@@ -28,11 +88,16 @@ process.on('unhandledRejection', (err) => {
 });
 
 async function prerender() {
+  // Always emit route-specific metadata first. The rendered pass below replaces these
+  // fallbacks when Chromium is available; production still has correct route metadata
+  // when its build image cannot launch a browser.
+  writeMetadataFallbacks();
+
   // Vercel's build image does not include Chromium's native Linux libraries. The source
   // document already contains a complete crawlable marketing shell, so keep that shell
   // there instead of attempting a browser launch that cannot succeed.
   if (process.env.VERCEL === '1') {
-    console.log('Prerender skipped on Vercel; using the crawlable static marketing shell.');
+    console.log('Browser prerender skipped on Vercel; using route-specific metadata fallbacks.');
     return;
   }
 
@@ -68,7 +133,16 @@ async function prerender() {
       await new Promise((resolve) => setTimeout(resolve, WAIT_MS));
 
       const html = await page.content();
+      const renderedTitle = await page.title();
       await page.close();
+
+      // If the application failed to mount (for example, a local build without
+      // runtime environment variables), keep the route-specific fallback instead
+      // of overwriting it with the homepage shell.
+      if (routeMetadata[route] && renderedTitle !== routeMetadata[route].title) {
+        console.warn(`Prerender skipped for ${route}: route metadata did not mount.`);
+        continue;
+      }
 
       const routeDir = route === '/' ? distDir : path.join(distDir, route);
       if (!fs.existsSync(routeDir)) {

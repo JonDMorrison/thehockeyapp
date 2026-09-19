@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Building2, ChevronLeft, Loader2, MapPin, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardDescription, AppCardTitle } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RequiredMark } from "@/components/ui/required-mark";
 import { toast } from "@/components/app/Toast";
+import { focusFirstInvalidField } from "@/lib/formValidation";
 
 type CreateAssociationResult = {
   success?: boolean;
@@ -17,11 +21,14 @@ type CreateAssociationResult = {
 
 export default function AssociationNew() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActiveAssociationId } = useActiveView();
   const [name, setName] = useState("");
   const [seasonLabel, setSeasonLabel] = useState("");
   const [region, setRegion] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [nameError, setNameError] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) navigate("/auth", { replace: true });
@@ -30,9 +37,11 @@ export default function AssociationNew() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (name.trim().length < 2) {
-      toast.error("Association name required", "Enter the name used by your members and teams.");
+      setNameError("Enter an association name with at least 2 characters");
+      focusFirstInvalidField({ name: "required" }, { name: "association-name" });
       return;
     }
+    setNameError("");
 
     setSubmitting(true);
     try {
@@ -44,6 +53,10 @@ export default function AssociationNew() {
       if (error) throw error;
       const result = data as CreateAssociationResult;
       if (!result.association_id) throw new Error("Association was not created");
+      await queryClient.invalidateQueries({ queryKey: ["user-association-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      setActiveView("association");
+      setActiveAssociationId(result.association_id);
       toast.success("Association workspace created", "Connect the pilot team next.");
       navigate(`/associations/${result.association_id}`, { replace: true });
     } catch (error) {
@@ -89,15 +102,20 @@ export default function AssociationNew() {
             <AppCardDescription className="mt-1">You can update these labels as the season changes.</AppCardDescription>
             <div className="mt-5 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="association-name">Association name</Label>
+                <Label htmlFor="association-name">Association name<RequiredMark /></Label>
                 <Input
                   id="association-name"
                   value={name}
-                  onChange={(event) => setName(event.target.value.slice(0, 120))}
+                  onChange={(event) => {
+                    setName(event.target.value.slice(0, 120));
+                    if (nameError) setNameError("");
+                  }}
                   placeholder="North Shore Minor Hockey"
                   autoFocus
-                  required
+                  aria-invalid={Boolean(nameError)}
+                  aria-describedby={nameError ? "association-name-error" : undefined}
                 />
+                {nameError && <p id="association-name-error" role="alert" className="text-xs text-destructive">{nameError}</p>}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
