@@ -28,4 +28,30 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log('Crawlability check passed: dist/index.html contains required homepage copy.');
+const privatePages = {
+  'auth.html': 'Sign in or create an account — The Hockey App',
+  'join.html': 'Join a team — The Hockey App',
+  'guardianInvite.html': 'Accept guardian access — The Hockey App',
+  'teamStaffInvite.html': 'Join team staff — The Hockey App',
+  'associationInvite.html': 'Join an association — The Hockey App',
+  'sharedWorkout.html': 'Try a workout — The Hockey App',
+  'unsubscribe.html': 'Email preferences — The Hockey App',
+};
+
+for (const [file, title] of Object.entries(privatePages)) {
+  const privatePath = path.join(__dirname, '..', 'dist', '_private', file);
+  if (!fs.existsSync(privatePath)) {
+    console.error(`Crawlability check failed: ${file} metadata fallback does not exist.`);
+    process.exit(1);
+  }
+  const privateHtml = fs.readFileSync(privatePath, 'utf8');
+  if (!privateHtml.includes(`<title>${title}</title>`)
+    || !privateHtml.includes('name="robots" content="noindex, nofollow"')
+    || privateHtml.includes('rel="canonical"')
+    || privateHtml.includes('property="og:url"')) {
+    console.error(`Crawlability check failed: ${file} exposes incorrect private-route metadata.`);
+    process.exit(1);
+  }
+}
+
+console.log('Crawlability check passed: public copy and private-route metadata are correct.');
