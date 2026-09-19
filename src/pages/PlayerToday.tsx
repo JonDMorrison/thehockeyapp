@@ -17,7 +17,6 @@ import {
   getCompletionSnapshot,
 } from "@/lib/offlineStorage";
 import { startSyncInterval, stopSyncInterval, syncPendingEvents } from "@/lib/syncEngine";
-import { logger } from "@/core";
 import { fireGoalConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -144,6 +143,7 @@ const PlayerToday: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [isFirstWorkout, setIsFirstWorkout] = useState(false);
+  const [pendingTaskWrites, setPendingTaskWrites] = useState(0);
   
   // Local state for offline optimistic updates
   const [localCompletions, setLocalCompletions] = useState<Record<string, LocalCompletion>>({});
@@ -398,6 +398,7 @@ const PlayerToday: React.FC = () => {
   const requiredCompletedCount = tasks.filter(
     (t: PracticeTask) => t.is_required && completionMap[t.id]?.completed
   ).length;
+  const allRequiredTasksComplete = requiredCompletedCount >= requiredCount;
   const totalShots = Object.values(completionMap).reduce((sum, c) => sum + (c.shotsLogged || 0), 0);
   const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
@@ -422,18 +423,18 @@ const PlayerToday: React.FC = () => {
       [taskId]: { completed, shotsLogged: existingShots },
     };
     setLocalCompletions(newCompletions);
+    setPendingTaskWrites((count) => count + 1);
 
     // Determine session status
     const newCompletedCount = tasks.filter((t: PracticeTask) => newCompletions[t.id]?.completed).length;
     const newSessionStatus = newCompletedCount === 0 ? 'none' : 
       newCompletedCount === tasks.length ? 'complete' : 'partial';
 
-    // Save to local storage
-    await saveLocalSnapshot(newCompletions, newSessionStatus);
+    try {
+      // Save to local storage before attempting the server write.
+      await saveLocalSnapshot(newCompletions, newSessionStatus);
 
-    if (isOnline) {
-      // Try online update
-      try {
+      if (isOnline) {
         const existingCompletion = taskCompletions?.find((c) => c.practice_task_id === taskId);
         
         if (existingCompletion) {
@@ -445,7 +446,7 @@ const PlayerToday: React.FC = () => {
               updated_at: now,
             })
             .eq("id", existingCompletion.id);
-          if (updateError) logger.error("Failed to update task completion", { updateError });
+          if (updateError) throw updateError;
         } else {
           const { error: insertError } = await supabase
             .from("task_completions")
@@ -456,19 +457,20 @@ const PlayerToday: React.FC = () => {
               completed_at: completed ? now : null,
               completed_by: "parent",
             });
-          if (insertError) logger.error("Failed to insert task completion", { insertError });
+          if (insertError) throw insertError;
         }
 
         queryClient.invalidateQueries({ queryKey: ["task-completions", practiceCard?.id, playerId] });
-      } catch (err) {
-        // Queue for offline sync
+      } else {
         await queueForSync('task_toggle', taskId, completed, existingShots, now);
         toast.info(t("common.savedOffline"));
       }
-    } else {
-      // Queue for offline sync
+    } catch (err) {
+      // A rejected online write is treated like an offline write so it is not lost.
       await queueForSync('task_toggle', taskId, completed, existingShots, now);
       toast.info(t("common.savedOffline"));
+    } finally {
+      setPendingTaskWrites((count) => Math.max(0, count - 1));
     }
   }, [completionMap, localCompletions, tasks, taskCompletions, playerId, practiceCard?.id, isOnline, queryClient, saveLocalSnapshot]);
 
@@ -572,7 +574,7 @@ const PlayerToday: React.FC = () => {
               updated_at: now,
             })
             .eq("id", existingCompletion.id);
-          if (updateError) logger.error("Failed to update shots logged", { updateError });
+          if (updateError) throw updateError;
         } else {
           const { error: insertError } = await supabase
             .from("task_completions")
@@ -583,7 +585,7 @@ const PlayerToday: React.FC = () => {
               shots_logged: shots,
               completed_by: "parent",
             });
-          if (insertError) logger.error("Failed to insert shots logged", { insertError });
+          if (insertError) throw insertError;
         }
 
         queryClient.invalidateQueries({ queryKey: ["task-completions", practiceCard?.id, playerId] });
@@ -600,6 +602,8 @@ const PlayerToday: React.FC = () => {
 
   // Handle session completion
   const handleSessionComplete = useCallback(async () => {
+    if (!allRequiredTasksComplete || pendingTaskWrites > 0) return;
+
     const now = new Date().toISOString();
 
     // Optimistic update
@@ -627,7 +631,7 @@ const PlayerToday: React.FC = () => {
               updated_at: now,
             })
             .eq("id", sessionCompletion.id);
-          if (updateError) logger.error("Failed to update session completion", { updateError });
+          if (updateError) throw updateError;
         } else {
           const { error: insertError } = await supabase
             .from("session_completions")
@@ -638,7 +642,7 @@ const PlayerToday: React.FC = () => {
               completed_at: now,
               completed_by: "parent",
             });
-          if (insertError) logger.error("Failed to insert session completion", { insertError });
+          if (insertError) throw insertError;
         }
         
         queryClient.invalidateQueries({ queryKey: ["session-completion", practiceCard?.id, playerId] });
@@ -665,7 +669,7 @@ const PlayerToday: React.FC = () => {
       setShowSuccess(true);
       toast.info(t("players.today.sessionSavedOnDevice"));
     }
-  }, [localCompletions, sessionCompletion, practiceCard?.id, playerId, isOnline, queryClient, saveLocalSnapshot, evaluateBadges]);
+  }, [allRequiredTasksComplete, pendingTaskWrites, localCompletions, sessionCompletion, practiceCard?.id, playerId, isOnline, queryClient, saveLocalSnapshot, evaluateBadges]);
 
   const handleShotsClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -949,10 +953,16 @@ const PlayerToday: React.FC = () => {
                 className="min-h-12 w-full font-black uppercase tracking-wide"
                 size="lg"
                 onClick={handleSessionComplete}
+                disabled={!allRequiredTasksComplete || pendingTaskWrites > 0}
               >
                 <Trophy className="w-5 h-5 mr-2" />
-                {t("players.today.completeSession")}
+                {pendingTaskWrites > 0 ? t("common.saving") : t("players.today.completeSession")}
               </Button>
+              {!allRequiredTasksComplete && (
+                <p className="mt-2 text-center text-xs text-text-muted">
+                  {t("players.today.completeRequiredTasks")}
+                </p>
+              )}
             </div>
           )}
 
