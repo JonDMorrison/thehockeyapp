@@ -42,6 +42,18 @@ test.describe('Public launch experience', () => {
     await expect(page.getByRole('heading', { name: /terms/i }).first()).toBeVisible();
   });
 
+  test('contact form explains errors and focuses the first required field', async ({ page }) => {
+    await page.goto('/contact');
+
+    await expect(page.locator('label .sr-only')).toHaveCount(3);
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    await expect(page.locator('#contact-name')).toBeFocused();
+    await expect(page.getByText('Enter your name')).toBeVisible();
+    await expect(page.getByText('Enter your email address')).toBeVisible();
+    await expect(page.getByText('Tell us how we can help')).toBeVisible();
+  });
+
   test('skill-video experience appears on Home and How It Works', async ({ page }) => {
     for (const route of ['/', '/demo']) {
       await page.goto(route);

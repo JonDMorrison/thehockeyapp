@@ -18,7 +18,17 @@ function reject(file, pattern, message) {
 }
 
 expect("src/pages/Auth.tsx", /role === "coach"[\s\S]{0,120}return "\/onboarding\/coach"/, "coach signup enters guided onboarding");
+expect("src/pages/Auth.tsx", /role === "association"[\s\S]{0,120}return "\/associations\/new"/, "association signup enters association setup");
 expect("src/pages/Welcome.tsx", /storedRole === "coach"[\s\S]{0,120}navigate\("\/onboarding\/coach"/, "coach welcome resumes guided onboarding");
+expect("src/pages/Welcome.tsx", /storedRole === "association"[\s\S]{0,120}navigate\("\/associations\/new"/, "association welcome resumes association setup");
+expect("src/hooks/useUserRoles.ts", /\.from\("association_roles"\)/, "one account discovers association roles");
+expect("src/hooks/useUserRoles.ts", /\.from\("team_roles"\)/, "one account discovers coaching roles");
+expect("src/hooks/useUserRoles.ts", /\.from\("player_guardians"\)/, "one account discovers parent roles");
+expect("src/components/app/ContextSwitcher.tsx", /navigate\(`\/associations\/\$\{associationId\}`\)/, "workspace switcher opens association workspaces");
+expect("src/components/app/ContextSwitcher.tsx", /navigate\(`\/teams\/\$\{teamId\}`\)/, "workspace switcher opens coaching workspaces");
+expect("src/components/app/ContextSwitcher.tsx", /navigate\(`\/players\/\$\{playerId\}\/home`\)/, "workspace switcher opens parent and player workspaces");
+expect("src/components/app/ContextSwitcher.tsx", /navigate\("\/associations\/new"\)[\s\S]*navigate\("\/teams\/new"\)[\s\S]*navigate\("\/players\/new"\)[\s\S]*navigate\("\/solo\/setup"\)/, "existing accounts can add every role without signing out");
+expect("src/pages/Today.tsx", /activeView === "association"[\s\S]*activeView === "coach"[\s\S]*activeView === "parent"[\s\S]*activeView === "player"/, "account home restores every active role");
 expect("src/pages/JoinTeam.tsx", /\/auth\?redirect=.*\/join\//, "team invite survives authentication");
 expect("src/pages/JoinTeamPlayer.tsx", /\/auth\?redirect=.*\/join\//, "player selection invite survives authentication");
 expect("src/pages/PlayerToday.tsx", /\.eq\("program_source", "team"\)/, "team workout view excludes private family workouts");
@@ -37,5 +47,11 @@ expect("src/components/planning/ProgramBuilderWizard.tsx", /rpc\("create_team_tr
 expect("src/components/planning/ProgramBuilderWizard.tsx", /navigate\(`\/teams\/\$\{teamId\}\/builder\/\$\{result\.first_plan_id\}`\)/, "coach is taken to review and publish Week 1");
 expect("supabase/migrations/20260914053407_launch_journey_integrity.sql", /AS RESTRICTIVE FOR SELECT TO authenticated/, "legacy family privacy uses restrictive RLS");
 expect("supabase/config.toml", /\[auth\.email\][\s\S]*enable_confirmations = false/, "new accounts do not require email confirmation");
+expect("src/components/team/InviteParentsModal.tsx", /addChildTitle/, "add-child flow has its own title");
+expect("src/components/team/InviteParentsModal.tsx", /focusFirstInvalidField/, "add-child validation focuses the first invalid field");
+expect("src/lib/templateRanking.ts", /ageMatches && levelMatches\) score = 0/, "exact age and level templates rank first");
+expect("src/components/app/RouteMetadata.tsx", /noindex, nofollow/, "private and invite pages are not indexable");
+expect("vercel.json", /X-Robots-Tag[\s\S]*noindex, nofollow/, "private routes send a server-level noindex header");
+expect("scripts/prerender.cjs", /writeMetadataFallbacks\(\)/, "public routes receive distinct crawler metadata without JavaScript");
 
 console.log(`Launch journey checks passed (${checks.length}).`);

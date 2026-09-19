@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
@@ -51,6 +52,7 @@ const JoinTeamPlayer: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
 
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
@@ -132,6 +134,13 @@ const JoinTeamPlayer: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["team-roster"] });
       queryClient.invalidateQueries({ queryKey: ["player-memberships", selectedPlayerId] });
       queryClient.invalidateQueries({ queryKey: ["player-preferences", selectedPlayerId] });
+      queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+
+      if (selectedPlayerId) {
+        setActiveView("parent");
+        setActivePlayerId(selectedPlayerId);
+      }
 
       const player = players?.find((p) => p.id === selectedPlayerId);
       setJoinedPlayerName(player?.first_name || t("auth.joinTeamPlayer.playerFallback"));

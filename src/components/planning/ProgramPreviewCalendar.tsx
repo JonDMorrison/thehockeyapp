@@ -215,7 +215,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
                   </p>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
-                  {t('practice.nTasksCount', { n: selectedDay.tasks.length })}
+                  {t('practice.nTasksCount', { count: selectedDay.tasks.length })}
                 </span>
               </div>
 

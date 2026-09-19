@@ -401,7 +401,7 @@ const QuickAssign: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["practice-card-date", id] });
 
       const dateLabel = isToday(selectedDate) ? t('common.today').toLowerCase() : formatDateLabel(selectedDate);
-      toast.success(t('practice.copied'), t('practice.nTasksCopiedTo', { n: result.taskCount, dateLabel }));
+      toast.success(t('practice.copied'), t('practice.nTasksCopiedTo', { count: result.taskCount, dateLabel }));
       setCopySheetOpen(false);
       navigate(-1);
     },
@@ -586,7 +586,7 @@ const QuickAssign: React.FC = () => {
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-medium">{format(cardDate, "EEEE, MMM d")}</span>
-                          <span className="text-xs text-muted-foreground">{t('practice.nTasksCount', { n: taskCount })}</span>
+                          <span className="text-xs text-muted-foreground">{t('practice.nTasksCount', { count: taskCount })}</span>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">
                           {taskLabels}{hasMore && `, +${taskCount - 3} ${t('common.more')}`}

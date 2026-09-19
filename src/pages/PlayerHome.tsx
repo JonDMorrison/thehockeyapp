@@ -288,12 +288,15 @@ const PlayerHome: React.FC = () => {
         setTeamTheme(activeTeam.palette_id);
       }
     }
-    // Persist player context
-    if (id) {
-      setActiveView("parent");
+    // Persist the correct role for this profile. Adult-owned profiles are the
+    // account holder's training view; managed youth profiles are the parent view.
+    if (id && player) {
+      const isOwnTrainingProfile = player.owner_user_id === user?.id
+        && player.birth_year <= new Date().getFullYear() - 18;
+      setActiveView(isOwnTrainingProfile ? "player" : "parent");
       setActivePlayerId(id);
     }
-  }, [preferences, memberships, setTeamTheme, id, setActiveView, setActivePlayerId]);
+  }, [preferences, memberships, player, user?.id, setTeamTheme, id, setActiveView, setActivePlayerId]);
 
   // Check for streak milestones and celebrate
   useEffect(() => {

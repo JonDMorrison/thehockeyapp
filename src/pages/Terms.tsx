@@ -1,20 +1,10 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const Terms: React.FC = () => {
   return (
     <div className="marketing-performance min-h-screen bg-background flex flex-col">
-      <Helmet>
-        <title>Terms of Service — The Hockey App</title>
-        <meta name="description" content="Terms and conditions for using The Hockey App." />
-        <meta property="og:title" content="Terms of Service — The Hockey App" />
-        <meta property="og:description" content="Terms and conditions for using The Hockey App." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://hockeyapp.ca/terms" />
-        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
-      </Helmet>
       <MarketingNav />
 
       <main className="flex-1 pt-28 pb-16">

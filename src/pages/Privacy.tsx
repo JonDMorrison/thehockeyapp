@@ -1,5 +1,4 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -7,15 +6,6 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 const Privacy: React.FC = () => {
   return (
     <div className="marketing-performance min-h-screen bg-background flex flex-col">
-      <Helmet>
-        <title>Privacy Policy — The Hockey App</title>
-        <meta name="description" content="How The Hockey App handles your data." />
-        <meta property="og:title" content="Privacy Policy — The Hockey App" />
-        <meta property="og:description" content="How The Hockey App handles your data." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://hockeyapp.ca/privacy" />
-        <meta property="og:image" content="https://www.hockeyapp.ca/SitePreview.png" />
-      </Helmet>
       <MarketingNav />
 
       <main className="flex-1 pt-28 pb-16">

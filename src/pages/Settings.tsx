@@ -121,6 +121,19 @@ export default function Settings() {
     enabled: !!user,
   });
 
+  const { data: associationRoles } = useQuery({
+    queryKey: ["my-association-roles", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("association_roles")
+        .select("association_id, role")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   const emailPreferences = useQuery({
     queryKey: ["email-preferences", user?.id],
     queryFn: async () => {
@@ -167,6 +180,7 @@ export default function Settings() {
 
   const isLoading = authLoading || profileLoading;
   const isCoach = (coachRoles?.length ?? 0) > 0;
+  const hasAssociationAccess = (associationRoles?.length ?? 0) > 0;
 
   // Derive plan display label
   const getPlanDisplayLabel = () => {
@@ -431,7 +445,7 @@ export default function Settings() {
         </section>
 
         {/* Association workspace */}
-        {isCoach && (
+        {(isCoach || hasAssociationAccess) && (
           <section>
             <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
               <Building2 className="h-4 w-4" />

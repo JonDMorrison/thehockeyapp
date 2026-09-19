@@ -504,7 +504,7 @@ const QuickCheckoff: React.FC = () => {
           className="w-full h-14 text-lg font-semibold"
           disabled={!allDone}
         >
-          {allDone ? t('solo.completeSession') : t('solo.nTasksRemaining', { n: requiredTasks.length - completedCount })}
+          {allDone ? t('solo.completeSession') : t('solo.nTasksRemaining', { count: requiredTasks.length - completedCount })}
         </Button>
       </footer>
     </div>

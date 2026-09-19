@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { teamPalettes } from "@/lib/themes";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import {
@@ -23,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
+import { focusFirstInvalidField } from "@/lib/formValidation";
 import { TemplatePicker } from "@/components/planning/TemplatePicker";
 import {
   Loader2,
@@ -83,6 +85,7 @@ const CoachOnboarding: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActiveTeamId } = useActiveView();
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -119,6 +122,7 @@ const CoachOnboarding: React.FC = () => {
     const trimmed = teamName.trim();
     if (!trimmed) {
       setNameError(t("coachOnboarding.teamNameRequired"));
+      focusFirstInvalidField({ name: "required" }, { name: "teamName" });
       return;
     }
     setNameError(null);
@@ -135,6 +139,10 @@ const CoachOnboarding: React.FC = () => {
       if (!team.team_id) throw new Error("Team was not created");
 
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      setActiveView("coach");
+      setActiveTeamId(team.team_id);
       setTeamId(team.team_id);
       setStep(2);
     } catch {

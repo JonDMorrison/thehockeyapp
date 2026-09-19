@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -22,7 +23,9 @@ const TeamAdultJoin: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { loading: authLoading, isAuthenticated } = useAuth();
+  const { setActiveView, setActiveTeamId } = useActiveView();
   const [redeemStatus, setRedeemStatus] = useState<"idle" | "success" | "error">("idle");
 
   // Fetch invite details
@@ -67,7 +70,13 @@ const TeamAdultJoin: React.FC = () => {
 
       return result;
     },
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: ["user-coach-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      if (result.team_id) {
+        setActiveView("coach");
+        setActiveTeamId(result.team_id);
+      }
       setRedeemStatus("success");
       toast.success(t("auth.teamAdultJoin.welcomeTitle"), t("auth.teamAdultJoin.welcomeMessage"));
       setTimeout(() => {

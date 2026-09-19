@@ -10,6 +10,7 @@ import { logger, ErrorBoundary } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
+import { RouteMetadata } from "@/components/app/RouteMetadata";
 import { BETA_MODE } from "@/core/constants";
 
 // Marketing pages - loaded eagerly for fast landing page
@@ -235,6 +236,7 @@ const App = () => {
               }}
             />
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <RouteMetadata />
               <Suspense fallback={<PageLoader />}>
                 <AnimatedRoutes />
               </Suspense>

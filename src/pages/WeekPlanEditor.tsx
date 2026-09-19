@@ -749,7 +749,7 @@ const WeekPlanEditor: React.FC = () => {
                       <p className="text-sm text-text-muted">
                         {taskCount === 0
                           ? t('practice.noTasks')
-                          : t('practice.nTasks', { n: taskCount })}
+                          : t('practice.nTasks', { count: taskCount })}
                       </p>
                     </div>
                     {taskCount > 0 && (

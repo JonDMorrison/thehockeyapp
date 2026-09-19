@@ -226,7 +226,7 @@ const CoachDashboard: React.FC = () => {
         }
       : {
           title: "Today is moving",
-          description: `${dashboard.pulse.active_today_count} of ${dashboard.pulse.players_count} players are active.`,
+          description: `${dashboard.pulse.active_today_count} of ${dashboard.pulse.players_count} ${dashboard.pulse.players_count === 1 ? "player is" : "players are"} active.`,
           action: "View progress",
           complete: true,
           onClick: () => navigate(`/teams/${id}/progress`),

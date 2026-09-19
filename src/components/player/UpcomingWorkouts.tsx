@@ -228,7 +228,7 @@ export const UpcomingWorkouts: React.FC<UpcomingWorkoutsProps> = ({
                             <>
                               <span className="text-text-muted">•</span>
                               <span className="text-xs text-text-muted">
-                                {t("players.upcomingWorkouts.nTasks", { n: workout.task_count })}
+                                {t("players.upcomingWorkouts.nTasks", { count: workout.task_count })}
                               </span>
                             </>
                           )}

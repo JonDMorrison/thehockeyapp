@@ -156,7 +156,7 @@ export default function SoloTryWorkout() {
                       {workout.title || t('solo.trainingWorkout')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {t('solo.nTasks', { n: workout.tasks?.length || 0 })}
+                      {t('solo.nTasks', { count: workout.tasks?.length || 0 })}
                     </p>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export default function SoloTryWorkout() {
                     ))}
                     {workout.tasks.length > 3 && (
                       <p className="text-xs text-muted-foreground pl-6">
-                        {t('solo.nMoreTasks', { n: workout.tasks.length - 3 })}
+                        {t('solo.nMoreTasks', { count: workout.tasks.length - 3 })}
                       </p>
                     )}
                   </div>

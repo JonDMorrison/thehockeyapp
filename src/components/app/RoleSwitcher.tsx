@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import { useUserRoles, UserRole } from "@/hooks/useUserRoles";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import {
   Users,
+  Building2,
   User,
   Dumbbell,
   ChevronDown,
@@ -23,6 +24,11 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 const roleConfig: Record<UserRole, { labelKey: string; icon: React.ElementType; descriptionKey: string }> = {
+  association: {
+    labelKey: "nav.roleAssociationView",
+    icon: Building2,
+    descriptionKey: "nav.roleAssociationDesc",
+  },
   coach: {
     labelKey: "nav.roleCoachView",
     icon: Users,
@@ -59,8 +65,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { availableRoles, isLoading, coachTeams, guardedPlayers, ownPlayer } = useUserRoles();
+  const { availableRoles, isLoading, associationWorkspaces, coachTeams, guardedPlayers, ownPlayer } = useUserRoles();
   const { activeView, setActiveView } = useActiveView();
 
   // Don't show if user only has one role
@@ -85,6 +90,13 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
 
     // Navigate to appropriate view based on role
     switch (role) {
+      case "association":
+        if (associationWorkspaces.length > 0) {
+          navigate(`/associations/${associationWorkspaces[0].associationId}`);
+        } else {
+          navigate("/associations");
+        }
+        break;
       case "coach":
         if (teamId) {
           navigate(`/teams/${teamId}`);

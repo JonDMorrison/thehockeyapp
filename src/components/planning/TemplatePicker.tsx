@@ -21,6 +21,7 @@ import {
   type TemplateTaskEntry,
 } from "@/lib/materializeTemplate";
 import { getNextProgramWeekStart } from "@/lib/programStartDate";
+import { rankProgramTemplates } from "@/lib/templateRanking";
 
 interface TemplatePickerProps {
   teamId: string;
@@ -70,17 +71,10 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
     enabled: open,
   });
 
-  // Client-side filter: prefer templates matching this team's age/level, but
-  // never hide everything — if nothing matches, show all.
+  // Exact age + level matches come first, followed by age-only and level-only
+  // matches. Never hide every option when no recommendation matches.
   const filtered = React.useMemo(() => {
-    const all = templates ?? [];
-    if (!ageDivision && !level) return all;
-    const matches = all.filter((tpl) => {
-      const ageOk = ageDivision ? tpl.age_divisions.includes(ageDivision) : false;
-      const levelOk = level ? tpl.levels.includes(level) : false;
-      return ageOk || levelOk;
-    });
-    return matches.length > 0 ? matches : all;
+    return rankProgramTemplates(templates ?? [], ageDivision, level);
   }, [templates, ageDivision, level]);
 
   const handleUse = async (template: ProgramTemplate) => {

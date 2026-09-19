@@ -253,7 +253,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                 <div>
                   <p className="font-medium text-sm">{day.title}</p>
                   <p className="text-xs text-text-muted">
-                    {t('practice.nTasksCount', { n: day.tasks.length })} • ~{day.estimated_minutes} min
+                    {t('practice.nTasksCount', { count: day.tasks.length })} • ~{day.estimated_minutes} min
                   </p>
                 </div>
                 <Tag variant="neutral" size="sm">{day.date}</Tag>

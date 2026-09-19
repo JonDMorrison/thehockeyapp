@@ -13,7 +13,7 @@ const Welcome: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const { activeView, activeTeamId, activePlayerId } = useActiveView();
+  const { activeView, activeAssociationId, activeTeamId, activePlayerId } = useActiveView();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -33,6 +33,12 @@ const Welcome: React.FC = () => {
         .eq("user_id", user!.id)
         .limit(10);
 
+      const { data: associations } = await supabase
+        .from("association_roles")
+        .select("association_id")
+        .eq("user_id", user!.id)
+        .limit(10);
+
       // Check for players (owned or guarded)
       const { data: ownedPlayers } = await supabase
         .from("players")
@@ -48,12 +54,16 @@ const Welcome: React.FC = () => {
 
       // Validate persisted IDs still exist
       const teamIds = teams?.map(t => t.team_id) || [];
+      const associationIds = associations?.map(a => a.association_id) || [];
       const playerIds = [
         ...(ownedPlayers?.map(p => p.id) || []),
         ...(guardedPlayers?.map(p => p.player_id) || []),
       ];
 
       return {
+        hasAssociations: associationIds.length > 0,
+        associationIds,
+        firstAssociationId: associationIds[0] || null,
         hasTeams: teamIds.length > 0,
         teamIds,
         firstTeamId: teamIds[0] || null,
@@ -74,13 +84,24 @@ const Welcome: React.FC = () => {
       const storedRole = getSelectedRole();
       if (storedRole) {
         clearSelectedRole();
-        if (storedRole === "coach") {
+        if (storedRole === "association") {
+          navigate("/associations/new", { replace: true });
+        } else if (storedRole === "coach") {
           navigate("/onboarding/coach", { replace: true });
         } else if (storedRole === "solo") {
           navigate("/solo/setup", { replace: true });
         } else if (storedRole === "player") {
           navigate("/players/new", { replace: true });
         }
+        return;
+      }
+
+      if (activeView === "association" && existingData.hasAssociations) {
+        const targetAssociationId = activeAssociationId && existingData.associationIds.includes(activeAssociationId)
+          ? activeAssociationId
+          : existingData.firstAssociationId;
+
+        navigate(targetAssociationId ? `/associations/${targetAssociationId}` : "/associations", { replace: true });
         return;
       }
 
@@ -124,7 +145,13 @@ const Welcome: React.FC = () => {
       }
 
       // No stored activeView or doesn't match available roles - use default logic
-      if (existingData.hasTeams) {
+      if (existingData.hasAssociations) {
+        const targetAssociationId = activeAssociationId && existingData.associationIds.includes(activeAssociationId)
+          ? activeAssociationId
+          : existingData.firstAssociationId;
+
+        navigate(targetAssociationId ? `/associations/${targetAssociationId}` : "/associations", { replace: true });
+      } else if (existingData.hasTeams) {
         const targetTeamId = activeTeamId && existingData.teamIds.includes(activeTeamId)
           ? activeTeamId
           : existingData.firstTeamId;
@@ -147,10 +174,10 @@ const Welcome: React.FC = () => {
       }
       // Otherwise stay on welcome to show role selection
     }
-  }, [existingData, activeView, activeTeamId, activePlayerId, navigate]);
+  }, [existingData, activeView, activeAssociationId, activeTeamId, activePlayerId, navigate]);
 
   // Show loading state for auth, data checking, or when redirect is pending
-  const isRedirecting = existingData?.hasTeams || existingData?.hasPlayers;
+  const isRedirecting = existingData?.hasAssociations || existingData?.hasTeams || existingData?.hasPlayers;
   
   if (authLoading || checkingData || isRedirecting) {
     return (
