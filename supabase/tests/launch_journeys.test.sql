@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(19);
+SELECT plan(24);
 
 SELECT has_function(
   'public', 'replace_personal_training_program',
@@ -52,8 +52,36 @@ VALUES ('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Launch Test Hawks', '51111111-1
 INSERT INTO public.team_roles (team_id, user_id, role)
 VALUES ('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '51111111-1111-1111-1111-111111111111', 'head_coach');
 
+INSERT INTO public.team_memberships (team_id, player_id, status)
+VALUES ('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '5ddddddd-dddd-dddd-dddd-dddddddddddd', 'active');
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims', '{"sub":"51111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
+
+SELECT is(
+  (public.get_team_dashboard_snapshot('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')->>'success')::boolean,
+  true,
+  'the team dashboard snapshot succeeds for team staff'
+);
+SELECT is(
+  (public.get_team_dashboard_snapshot('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')->'pulse'->>'players_count')::integer,
+  1,
+  'the dashboard contract exposes the active roster count'
+);
+SELECT ok(
+  public.get_team_dashboard_snapshot('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')->'pulse' ?&
+    ARRAY['players_count', 'active_today_count', 'sessions_complete_today', 'total_shots_today'],
+  'the dashboard pulse uses the frontend contract keys'
+);
+SELECT ok(
+  public.get_team_dashboard_snapshot('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa') #> '{today,practice_card}' IS NOT NULL,
+  'the dashboard nests practice-card state under today'
+);
+SELECT is(
+  jsonb_typeof(public.get_team_dashboard_snapshot('5aaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')->'upcoming'),
+  'array',
+  'the dashboard exposes upcoming events as an array'
+);
 
 SELECT lives_ok(
   $$ SELECT public.replace_personal_training_program(
