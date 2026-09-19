@@ -1300,6 +1300,7 @@ export type Database = {
           jersey_number: string | null
           last_initial: string | null
           owner_user_id: string
+          position: string | null
           profile_photo_url: string | null
           season_goals: string | null
           shoots: string | null
@@ -1315,6 +1316,7 @@ export type Database = {
           jersey_number?: string | null
           last_initial?: string | null
           owner_user_id: string
+          position?: string | null
           profile_photo_url?: string | null
           season_goals?: string | null
           shoots?: string | null
@@ -1330,6 +1332,7 @@ export type Database = {
           jersey_number?: string | null
           last_initial?: string | null
           owner_user_id?: string
+          position?: string | null
           profile_photo_url?: string | null
           season_goals?: string | null
           shoots?: string | null
@@ -2249,6 +2252,7 @@ export type Database = {
       }
       team_invites: {
         Row: {
+          collect_player_profile: boolean
           created_at: string | null
           created_by_user_id: string
           expires_at: string
@@ -2259,6 +2263,7 @@ export type Database = {
           token: string
         }
         Insert: {
+          collect_player_profile?: boolean
           created_at?: string | null
           created_by_user_id: string
           expires_at: string
@@ -2269,6 +2274,7 @@ export type Database = {
           token: string
         }
         Update: {
+          collect_player_profile?: boolean
           created_at?: string | null
           created_by_user_id?: string
           expires_at?: string

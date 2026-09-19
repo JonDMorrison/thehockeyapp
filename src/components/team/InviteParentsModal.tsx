@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,7 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/app/Toast";
 import { SkeletonListItem } from "@/components/app/Skeleton";
 import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
-import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2, Mail } from "lucide-react";
+import { Loader2, Copy, Check, Link as LinkIcon, RefreshCw, Calendar, Baby, Users, Share2, Mail, ClipboardList } from "lucide-react";
 
 const childSchema = z.object({
   first_name: z.string().trim().min(1, "Enter the player's first name").max(50, "First name must be 50 characters or fewer"),
@@ -70,6 +71,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [collectPlayerProfile, setCollectPlayerProfile] = useState(true);
 
   // Add child form state
   const [firstName, setFirstName] = useState("");
@@ -111,6 +113,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
     enabled: open && !!user,
   });
+
+  useEffect(() => {
+    if (invite) {
+      setCollectPlayerProfile(invite.collect_player_profile);
+    }
+  }, [invite]);
 
   // Get user's children that are NOT on this team yet
   const { data: childrenData, isLoading: loadingChildren } = useQuery({
@@ -158,6 +166,13 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         throw new Error(result.error || "Failed to generate invite");
       }
 
+      const { error: optionError } = await supabase
+        .from("team_invites")
+        .update({ collect_player_profile: collectPlayerProfile })
+        .eq("team_id", teamId)
+        .eq("status", "active");
+      if (optionError) throw optionError;
+
       return result;
     },
     onSuccess: () => {
@@ -167,6 +182,24 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
     onError: (error: Error) => {
       toast.error(t("teams.inviteParents.toastGenerateFailedTitle"), error.message);
+    },
+  });
+
+  const updateProfileCollection = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      if (!invite?.id) return;
+      const { error } = await supabase
+        .from("team_invites")
+        .update({ collect_player_profile: enabled })
+        .eq("id", invite.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["team-parent-invite", teamId] });
+    },
+    onError: (_error, enabled) => {
+      setCollectPlayerProfile(!enabled);
+      toast.error("Could not update invite", "Please try the profile toggle again.");
     },
   });
 
@@ -542,6 +575,30 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
 
             {/* Invite Parents Tab */}
             <TabsContent value="invite" className="space-y-4 mt-4">
+              <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <ClipboardList className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="collect-player-profile" className="font-semibold">
+                    Collect player profile after joining
+                  </Label>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Ask families for position, favourite player, hockey dream, what they love about hockey, and an optional photo.
+                  </p>
+                </div>
+                <Switch
+                  id="collect-player-profile"
+                  checked={collectPlayerProfile}
+                  disabled={isLoadingInvite || updateProfileCollection.isPending}
+                  onCheckedChange={(enabled) => {
+                    setCollectPlayerProfile(enabled);
+                    if (invite?.id) updateProfileCollection.mutate(enabled);
+                  }}
+                  aria-label="Collect player profile after joining"
+                />
+              </div>
+
               {isLoadingInvite ? (
                 <SkeletonListItem />
               ) : !invite || isExpired ? (

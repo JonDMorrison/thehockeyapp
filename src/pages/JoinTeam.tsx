@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { Users, AlertCircle, ChevronRight, Loader2 } from "lucide-react";
+import { Users, AlertCircle, ChevronRight, ClipboardList } from "lucide-react";
 
 interface TeamPreview {
   success: boolean;
@@ -24,6 +24,7 @@ interface TeamPreview {
   team_photo_url?: string;
   team_logo_url?: string;
   palette_id?: string;
+  collect_player_profile?: boolean;
 }
 
 const JoinTeam: React.FC = () => {
@@ -134,6 +135,14 @@ const JoinTeam: React.FC = () => {
               <p className="text-sm text-text-muted">
                 {t("auth.joinTeam.invitePrompt")}
               </p>
+              {preview.collect_player_profile && (
+                <div className="mt-3 flex items-start gap-2 border-t border-border pt-3 text-left">
+                  <ClipboardList className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    After joining, you’ll complete a short player profile for the coaching staff. A photo is optional.
+                  </p>
+                </div>
+              )}
             </div>
 
             <Button

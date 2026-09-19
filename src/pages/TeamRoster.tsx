@@ -16,6 +16,7 @@ import { ChevronLeft, UserPlus, Search } from "lucide-react";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { Helmet } from "react-helmet-async";
+import { getPlayerPositionLabel } from "@/lib/playerProfile";
 
 interface Membership {
   id: string;
@@ -30,6 +31,7 @@ interface Membership {
     shoots: string | null;
     jersey_number: string | null;
     profile_photo_url: string | null;
+    position: string | null;
   } | null;
 }
 
@@ -95,7 +97,8 @@ const TeamRoster: React.FC = () => {
             birth_year,
             shoots,
             jersey_number,
-            profile_photo_url
+            profile_photo_url,
+            position
           )
         `)
         .eq("team_id", id)
@@ -213,6 +216,11 @@ const TeamRoster: React.FC = () => {
                         {player.jersey_number && (
                           <Tag variant="tier" size="sm">
                             #{player.jersey_number}
+                          </Tag>
+                        )}
+                        {getPlayerPositionLabel(player.position) && (
+                          <Tag variant="neutral" size="sm">
+                            {getPlayerPositionLabel(player.position)}
                           </Tag>
                         )}
                       </div>

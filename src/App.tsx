@@ -32,6 +32,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Players = lazy(() => import("./pages/Players"));
 const PlayerNew = lazy(() => import("./pages/PlayerNew"));
 const PlayerProfile = lazy(() => import("./pages/PlayerProfile"));
+const PlayerTeamOnboarding = lazy(() => import("./pages/PlayerTeamOnboarding"));
 const PlayerHome = lazy(() => import("./pages/PlayerHome"));
 const GuardianJoin = lazy(() => import("./pages/GuardianJoin"));
 const Teams = lazy(() => import("./pages/Teams"));
@@ -145,6 +146,7 @@ const AnimatedRoutes = () => {
             <Route path="/players" element={<Players />} />
             <Route path="/players/new" element={<PlayerNew />} />
             <Route path="/players/:id" element={<PlayerProfile />} />
+            <Route path="/players/:playerId/team-onboarding/:teamId" element={<PlayerTeamOnboarding />} />
             <Route path="/players/:id/home" element={<PlayerHome />} />
             <Route path="/players/:id/today" element={<PlayerToday />} />
             <Route path="/players/:id/week" element={<PlayerWeek />} />

@@ -36,6 +36,7 @@ interface TeamPreview {
   team_photo_url?: string;
   team_logo_url?: string;
   palette_id?: string;
+  collect_player_profile?: boolean;
 }
 
 interface JoinResult {
@@ -144,8 +145,6 @@ const JoinTeamPlayer: React.FC = () => {
 
       const player = players?.find((p) => p.id === selectedPlayerId);
       setJoinedPlayerName(player?.first_name || t("auth.joinTeamPlayer.playerFallback"));
-      setJoinSuccess(true);
-
       // Auto-set this team as active for the player
       if (result.team_id && selectedPlayerId) {
         try {
@@ -170,6 +169,13 @@ const JoinTeamPlayer: React.FC = () => {
 
       // Clear pending token
       sessionStorage.removeItem("pendingJoinToken");
+
+      if (preview?.collect_player_profile && selectedPlayerId && result.team_id) {
+        navigate(`/players/${selectedPlayerId}/team-onboarding/${result.team_id}`, { replace: true });
+        return;
+      }
+
+      setJoinSuccess(true);
     },
     onError: (error: Error) => {
       toast.error(t("auth.joinTeamPlayer.failedToJoinTitle"), error.message);

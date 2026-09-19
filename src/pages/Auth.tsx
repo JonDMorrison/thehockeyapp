@@ -184,7 +184,11 @@ const Auth: React.FC = () => {
               "Please sign in with the email and password you just used.",
             );
             setMode("signin");
-            setSearchParams({ mode: "signin" }, { replace: true });
+            setSearchParams((current) => {
+              const next = new URLSearchParams(current);
+              next.set("mode", "signin");
+              return next;
+            }, { replace: true });
             setPassword("");
           }
         }
@@ -434,7 +438,11 @@ const Auth: React.FC = () => {
               onClick={() => {
                 const nextMode = mode === "signin" ? "signup" : "signin";
                 setMode(nextMode);
-                setSearchParams({ mode: nextMode }, { replace: true });
+                setSearchParams((current) => {
+                  const next = new URLSearchParams(current);
+                  next.set("mode", nextMode);
+                  return next;
+                }, { replace: true });
                 setErrors({});
               }}
               className="w-full py-3 text-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"

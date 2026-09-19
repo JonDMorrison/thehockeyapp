@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { privateMediaReference, validateImageUpload } from "@/lib/media";
+import { getPlayerPositionLabel, NHL_TEAMS, PLAYER_POSITIONS } from "@/lib/playerProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/core";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
@@ -73,18 +74,6 @@ interface Badge {
   };
 }
 
-const NHL_TEAMS = [
-  "Anaheim Ducks", "Arizona Coyotes", "Boston Bruins", "Buffalo Sabres",
-  "Calgary Flames", "Carolina Hurricanes", "Chicago Blackhawks", "Colorado Avalanche",
-  "Columbus Blue Jackets", "Dallas Stars", "Detroit Red Wings", "Edmonton Oilers",
-  "Florida Panthers", "Los Angeles Kings", "Minnesota Wild", "Montreal Canadiens",
-  "Nashville Predators", "New Jersey Devils", "New York Islanders", "New York Rangers",
-  "Ottawa Senators", "Philadelphia Flyers", "Pittsburgh Penguins", "San Jose Sharks",
-  "Seattle Kraken", "St. Louis Blues", "Tampa Bay Lightning", "Toronto Maple Leafs",
-  "Utah Hockey Club", "Vancouver Canucks", "Vegas Golden Knights", "Washington Capitals",
-  "Winnipeg Jets"
-];
-
 const PlayerProfile: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -103,6 +92,7 @@ const PlayerProfile: React.FC = () => {
     first_name: "",
     last_initial: "",
     jersey_number: "",
+    position: "",
     shoots: "",
     fav_nhl_city: "",
     fav_nhl_player: "",
@@ -205,6 +195,7 @@ const PlayerProfile: React.FC = () => {
         first_name: player.first_name || "",
         last_initial: player.last_initial || "",
         jersey_number: player.jersey_number || "",
+        position: player.position || "",
         shoots: player.shoots || "",
         fav_nhl_city: player.fav_nhl_city || "",
         fav_nhl_player: player.fav_nhl_player || "",
@@ -232,6 +223,7 @@ const PlayerProfile: React.FC = () => {
           first_name: updates.first_name,
           last_initial: updates.last_initial || null,
           jersey_number: updates.jersey_number || null,
+          position: updates.position || null,
           shoots: updates.shoots || null,
           fav_nhl_city: updates.fav_nhl_city || null,
           fav_nhl_player: updates.fav_nhl_player || null,
@@ -448,6 +440,22 @@ const PlayerProfile: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <Label htmlFor="position">Position</Label>
+                  <Select
+                    value={editForm.position}
+                    onValueChange={(value) => setEditForm({ ...editForm, position: value })}
+                  >
+                    <SelectTrigger id="position">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PLAYER_POSITIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="jersey_number">{t("players.profile.jerseyLabel")}</Label>
                   <Input
                     id="jersey_number"
@@ -484,6 +492,9 @@ const PlayerProfile: React.FC = () => {
                   <Tag variant="accent">
                     {t("players.profile.shootsSide", { side: player.shoots === "left" ? t("teams.addChild.shootsLeft") : t("teams.addChild.shootsRight") })}
                   </Tag>
+                )}
+                {getPlayerPositionLabel(player.position) && (
+                  <Tag variant="neutral">{getPlayerPositionLabel(player.position)}</Tag>
                 )}
                 {player.jersey_number && (
                   <Tag variant="tier">#{player.jersey_number}</Tag>
