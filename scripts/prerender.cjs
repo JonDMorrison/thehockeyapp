@@ -51,6 +51,37 @@ const routeMetadata = {
   },
 };
 
+const privateRouteMetadata = {
+  auth: {
+    title: 'Sign in or create an account — The Hockey App',
+    description: 'Use one Hockey App account for every association, team, and player role.',
+  },
+  join: {
+    title: 'Join a team — The Hockey App',
+    description: 'Use a private team invitation to connect your existing Hockey App account.',
+  },
+  guardianInvite: {
+    title: 'Accept guardian access — The Hockey App',
+    description: 'Review and accept a private player guardian invitation.',
+  },
+  teamStaffInvite: {
+    title: 'Join team staff — The Hockey App',
+    description: 'Review and accept a private team staff invitation.',
+  },
+  associationInvite: {
+    title: 'Join an association — The Hockey App',
+    description: 'Review and accept a private association invitation using your existing account.',
+  },
+  sharedWorkout: {
+    title: 'Try a workout — The Hockey App',
+    description: 'Open a privately shared Hockey App workout.',
+  },
+  unsubscribe: {
+    title: 'Email preferences — The Hockey App',
+    description: 'Update your Hockey App email preferences.',
+  },
+};
+
 function escapeAttribute(value) {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
@@ -77,6 +108,25 @@ function writeMetadataFallbacks() {
     const routeDir = path.join(distDir, route);
     fs.mkdirSync(routeDir, { recursive: true });
     fs.writeFileSync(path.join(routeDir, 'index.html'), html);
+  }
+
+  const privateDir = path.join(distDir, '_private');
+  fs.mkdirSync(privateDir, { recursive: true });
+  for (const [fileName, meta] of Object.entries(privateRouteMetadata)) {
+    const title = escapeAttribute(meta.title);
+    const description = escapeAttribute(meta.description);
+    const html = source
+      .replace(/<title>[^<]*<\/title>/, `<title>${meta.title}</title>`)
+      .replace(/<meta data-rh="true" name="description" content="[^"]*" \/>/, `<meta data-rh="true" name="description" content="${description}" />`)
+      .replace(/<meta data-rh="true" name="robots" content="[^"]*" \/>/, '<meta data-rh="true" name="robots" content="noindex, nofollow" />')
+      .replace(/\s*<link data-rh="true" rel="canonical" href="[^"]*" \/>/, '')
+      .replace(/\s*<meta data-rh="true" property="og:url" content="[^"]*" \/>/, '')
+      .replace(/<meta data-rh="true" property="og:title" content="[^"]*" \/>/, `<meta data-rh="true" property="og:title" content="${title}" />`)
+      .replace(/<meta data-rh="true" property="og:description" content="[^"]*" \/>/, `<meta data-rh="true" property="og:description" content="${description}" />`)
+      .replace(/<meta data-rh="true" property="og:image:alt" content="[^"]*" \/>/, `<meta data-rh="true" property="og:image:alt" content="${title}" />`)
+      .replace(/<meta data-rh="true" name="twitter:title" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:title" content="${title}" />`)
+      .replace(/<meta data-rh="true" name="twitter:description" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:description" content="${description}" />`);
+    fs.writeFileSync(path.join(privateDir, `${fileName}.html`), html);
   }
 }
 

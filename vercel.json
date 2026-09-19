@@ -19,6 +19,14 @@
     }
   ],
   "rewrites": [
+    { "source": "/auth", "destination": "/_private/auth.html" },
+    { "source": "/join", "destination": "/_private/join.html" },
+    { "source": "/join/:path*", "destination": "/_private/join.html" },
+    { "source": "/guardian/join/:path*", "destination": "/_private/guardianInvite.html" },
+    { "source": "/team/adult/join/:path*", "destination": "/_private/teamStaffInvite.html" },
+    { "source": "/association/join/:path*", "destination": "/_private/associationInvite.html" },
+    { "source": "/solo/try/:path*", "destination": "/_private/sharedWorkout.html" },
+    { "source": "/unsubscribe/:path*", "destination": "/_private/unsubscribe.html" },
     { "source": "/features", "destination": "/features/index.html" },
     { "source": "/pricing", "destination": "/pricing/index.html" },
     { "source": "/about", "destination": "/about/index.html" },
