@@ -258,6 +258,40 @@ BEGIN
 END;
 $$;
 
+-- team_goals used one SELECT policy plus one ALL policy. Split the ALL policy
+-- by action so SELECT can be consolidated without weakening write access.
+
+DROP POLICY "Guardians of team players can view goals" ON public.team_goals;
+DROP POLICY "Team adults can manage goals" ON public.team_goals;
+
+CREATE POLICY "Authenticated users can view allowed team goals"
+ON public.team_goals
+FOR SELECT
+TO authenticated
+USING (
+  public.is_guardian_of_team_player(team_id, (SELECT auth.uid()))
+  OR public.is_team_adult(team_id, (SELECT auth.uid()))
+);
+
+CREATE POLICY "Team adults can create goals"
+ON public.team_goals
+FOR INSERT
+TO authenticated
+WITH CHECK (public.is_team_adult(team_id, (SELECT auth.uid())));
+
+CREATE POLICY "Team adults can update goals"
+ON public.team_goals
+FOR UPDATE
+TO authenticated
+USING (public.is_team_adult(team_id, (SELECT auth.uid())))
+WITH CHECK (public.is_team_adult(team_id, (SELECT auth.uid())));
+
+CREATE POLICY "Team adults can delete goals"
+ON public.team_goals
+FOR DELETE
+TO authenticated
+USING (public.is_team_adult(team_id, (SELECT auth.uid())));
+
 -- Storage policies used both PUBLIC and authenticated for the same actions.
 -- Public reads remain limited to the intentionally public team-media bucket;
 -- all identity-dependent paths are consolidated under authenticated.
