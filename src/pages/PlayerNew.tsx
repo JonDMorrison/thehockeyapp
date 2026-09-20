@@ -307,7 +307,7 @@ const PlayerNew: React.FC = () => {
                     value={formData.fav_nhl_city || ""}
                     onValueChange={(v) => updateField("fav_nhl_city", v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="fav_nhl_city">
                       <SelectValue placeholder={t("players.new.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -384,14 +384,24 @@ const PlayerNew: React.FC = () => {
             <div className="mt-4 space-y-3 border-t border-border pt-4">
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Optional permissions</p>
               <label className="flex cursor-pointer items-start gap-3 text-sm">
-                <Checkbox checked={photoSharingAllowed} onCheckedChange={(checked) => setPhotoSharingAllowed(checked === true)} className="mt-0.5" />
+                <Checkbox
+                  id="player-photo-sharing"
+                  checked={photoSharingAllowed}
+                  onCheckedChange={(checked) => setPhotoSharingAllowed(checked === true)}
+                  className="mt-0.5"
+                />
                 <span>
                   Allow private training photos to be shared with authorized team staff.
                   <span className="mt-0.5 block text-xs text-muted-foreground">Photos are never public and this can be changed later.</span>
                 </span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 text-sm">
-                <Checkbox checked={aiPersonalizationAllowed} onCheckedChange={(checked) => setAiPersonalizationAllowed(checked === true)} className="mt-0.5" />
+                <Checkbox
+                  id="player-ai-personalization"
+                  checked={aiPersonalizationAllowed}
+                  onCheckedChange={(checked) => setAiPersonalizationAllowed(checked === true)}
+                  className="mt-0.5"
+                />
                 <span>
                   Allow player details to personalize AI-assisted training suggestions.
                   <span className="mt-0.5 block text-xs text-muted-foreground">AI access is optional; core training works without it.</span>
