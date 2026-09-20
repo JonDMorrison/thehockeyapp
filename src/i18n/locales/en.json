@@ -2109,7 +2109,7 @@
       "cancelButton": "Cancel",
       "description": "Invite parents and guardians to connect their own player to {{teamName}}.",
       "saveButton": "Save & Get Link",
-      "title": "Invite Parents",
+      "title": "Invite Families",
       "copyCode": "Copy Code",
       "copyMessage": "Copy Message",
       "done": "Done",
@@ -2131,7 +2131,7 @@
       "regenerateDescription": "This will invalidate the old link.",
       "regenerateTitle": "Regenerate Invite Link?",
       "shareInvite": "Share Invite",
-      "tabInviteParents": "Invite Parents",
+      "tabInviteParents": "Invite Families",
       "tabMyChild": "My Child",
       "teamCode": "Team Code",
       "toastAddFailedTitle": "Could not add player",
@@ -2520,7 +2520,7 @@
       "createTodayButton": "Create today's practice",
       "createWeekButton": "Create this week's plan",
       "goToTeamHome": "Go to team home",
-      "inviteParentsButton": "Invite parents",
+      "inviteParentsButton": "Invite families",
       "subtitle": "{{teamName}} is all set up. What would you like to do first?",
       "title": "Your team is ready!"
     },
@@ -2735,9 +2735,9 @@
     }
   },
   "coachDashboard": {
-    "inviteCardTitle": "Invite parents and players",
+    "inviteCardTitle": "Invite families and players",
     "inviteCardDescription": "Get families on board so everyone stays in sync.",
-    "inviteCardButton": "Invite parents",
+    "inviteCardButton": "Invite families",
     "inviteCardDismiss": "Dismiss"
   },
   "gettingStarted": {
@@ -2748,7 +2748,7 @@
       "createTeam": "Create your team",
       "addPlayers": "Add players to your roster",
       "publishWeek": "Publish your first week",
-      "invite": "Invite parents and players"
+      "invite": "Invite families and players"
     },
     "actions": {
       "addPlayers": "Add players",
