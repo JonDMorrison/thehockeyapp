@@ -1,5 +1,6 @@
+import { clearSelectedRole } from "@/components/marketing/GetStartedModal";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -87,6 +88,8 @@ type TeamInviteResult = { success?: boolean; token?: string; error?: string };
 const CoachOnboarding: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const shootingDays = ["7", "14", "30"].includes(search.get("shootingDays") || "") ? search.get("shootingDays") : null;
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setActiveView, setActiveTeamId } = useActiveView();
@@ -111,9 +114,11 @@ const CoachOnboarding: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      navigate("/auth", { replace: true });
+      navigate(shootingDays ? `/auth?redirect=${encodeURIComponent(`/onboarding/coach?shootingDays=${shootingDays}`)}` : "/auth", { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate]);
+  }, [authLoading, isAuthenticated, navigate, shootingDays]);
+
+  useEffect(() => { if (shootingDays && isAuthenticated) clearSelectedRole(); }, [shootingDays, isAuthenticated]);
 
   const selectedPalette =
     teamPalettes.find((p) => p.id === paletteId) ?? teamPalettes[0];
@@ -268,7 +273,7 @@ const CoachOnboarding: React.FC = () => {
   const goToShooting = () => {
     sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
-      navigate(`/teams/${teamId}/shooting/new`);
+      navigate(`/teams/${teamId}/shooting/new${shootingDays ? `?days=${shootingDays}` : ""}`);
     } else {
       finish();
     }

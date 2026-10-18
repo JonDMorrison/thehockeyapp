@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,10 +34,15 @@ export default function ShootingChallengeNew() {
   const { id: teamId } = useParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
   const [name, setName] = useState("Team Shooting Challenge");
   const [zone, setZone] = useState(zones[0]);
   const [start, setStart] = useState(() => dateInZone(zones[0]));
-  const [duration, setDuration] = useState("7");
+  const [duration, setDuration] = useState(() =>
+    ["7", "14", "30"].includes(search.get("days") || "")
+      ? search.get("days")!
+      : "7",
+  );
   const [customEnd, setCustomEnd] = useState(() =>
     addCalendarDays(dateInZone(zones[0]), 6),
   );
@@ -67,10 +72,10 @@ export default function ShootingChallengeNew() {
   useEffect(() => {
     if (!loading && !user)
       navigate(
-        `/auth?redirect=${encodeURIComponent(`/teams/${teamId}/shooting/new`)}`,
+        `/auth?redirect=${encodeURIComponent(`/teams/${teamId}/shooting/new${search.toString() ? `?${search}` : ""}`)}`,
         { replace: true },
       );
-  }, [loading, user, navigate, teamId]);
+  }, [loading, user, navigate, teamId, search]);
   const publish = async (event: React.FormEvent) => {
     event.preventDefault();
     if (busyRef.current || !user || !teamId) return;

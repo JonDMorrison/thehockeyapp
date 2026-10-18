@@ -1,3 +1,4 @@
+import { ShootingChallengeTeaser } from "@/components/marketing/SampleShootingChallenge";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -315,6 +316,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <ShootingChallengeTeaser />
 
         {/* 2. Product loop */}
         <section className="border-b border-white/[0.06] bg-[#0b0d11] py-16 sm:py-20 lg:py-24">
