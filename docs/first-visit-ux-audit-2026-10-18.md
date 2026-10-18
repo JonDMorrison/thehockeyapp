@@ -84,9 +84,9 @@ Evidence shorthand:
 | 45 | Route animation respects the visitor's reduced-motion preference. | MotionConfig and existing CSS review | Done |
 | 46 | Public metadata matches team/family positioning; private routes remain nonindexable. | Check | Done |
 | 47 | Typecheck genuinely checks the application and tooling, with the ten discovered errors repaired. | Check | Done |
-| 48 | Public first-visit and recovery checks become a persistent CI gate. | CI configuration; release checks | Verification pending |
+| 48 | Public first-visit and recovery checks become a persistent CI gate. | GitHub quality gate passed on 083e87f, including all 39 public/recovery checks | Done |
 | 49 | Final required checks and authenticated browser suite have reviewed results. | Final verification below | Done |
-| 50 | Changes are reviewed, merged, and checked on the production release. | Release record below | Verification pending |
+| 50 | Changes are reviewed, merged, and checked on the production release. | PR #17 merged; production READY; 39 live browser checks passed | Done |
 
 ## Findings and repairs
 
@@ -137,10 +137,24 @@ Local final verification:
 - Real persisted/failure-injection journey suite: **6 passed**, including offline reconnection and failed template cleanup.
 - Mobile shared account and player profile wizard: **2 passed**.
 - Legacy coach/player/parent/database rechecks: **31 passed, 3 skipped**. Skipped cases lack an unfinished task/shooting task or a complete-session action in the selected fixture; they are not counted as passing coverage. The new dedicated persisted suite independently verifies required task and session completion.
-- The initial 91-case broad run exposed ten failures: ambiguous older selectors, missing older database-test configuration, and an unselected required player-position field in the phone test. Those failures were repaired and rechecked in the groups above. This is not a claim that a subsequent single 104-case run passed.
+- The initial 91-case broad run exposed ten failures: ambiguous older selectors, missing older database-test configuration, and an unselected required player-position field in the phone test. Those failures were repaired and rechecked in the groups above. This is not a claim that a subsequent single full-suite run passed.
 
-CI and production release checks remain the final gates.
+GitHub quality checks passed on `083e87f` ([run 39132617454](https://github.com/JonDMorrison/thehockeyapp/actions/runs/39132617454)), including the public browser gate. The final authenticated replay also passed 8/8 after the route-scroll fix. The complete public/recovery group then passed **39/39 against production**, including desktop/mobile About screenshots, sample completion, signup handoffs, and navigation destinations. All 50 bounded release milestones are complete.
 
 ## Release record
 
-Pending commit, pull request, merge, and production confirmation.
+[PR #17](https://github.com/JonDMorrison/thehockeyapp/pull/17) merged as `90507fa50ef725127f3d50ac43f46290ef2c5271` on October 18 at 6:44 a.m. Vancouver time. Superseded preview builds were canceled. The production deployment is READY and all 39 public/recovery browser checks passed against the live custom domain. The redesigned About section was also inspected in the app browser.
+
+
+| Deployment evidence | Result |
+| --- | --- |
+| URL | [Live About section](https://www.hockeyapp.ca/about#why-teams) |
+| Target / state | Production / READY |
+| Code commit | `90507fa50ef725127f3d50ac43f46290ef2c5271` |
+| Deployment | `dpl_224WWzYE4tk31ACCDqM3KSyFyvoX` |
+| Framework | Vite |
+| Build duration | About 7.7 seconds, from the platform's building/ready timestamps |
+| Browser error scan | No page errors in the exercised public-route checks |
+| Runtime logs / drains | Not separately inspected; no monitoring configuration changes |
+
+Fictional test fixtures and their credentials are kept in ignored local test configuration for reproducibility. No credentials are included in this audit or the commits. Hosted preview builds superseded by the production release were canceled; unrelated project builds were left unchanged.
