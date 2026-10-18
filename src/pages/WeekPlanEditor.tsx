@@ -563,7 +563,7 @@ const WeekPlanEditor: React.FC = () => {
       setShowPublishDialog(false);
       setStatus("published");
       // Onboarding invites come after a successfully published program.
-      navigate(`/teams/${teamId}${searchParams.get("inviteAfter") === "1" ? "?inviteFamilies=1" : ""}`);
+      navigate(`/teams/${teamId}${searchParams.get("inviteAfter") === "1" ? "?inviteFamilies=1&programReady=1" : ""}`);
     },
     onError: (error: Error) => {
       toast.error(t('practice.failedToPublish'), error.message);

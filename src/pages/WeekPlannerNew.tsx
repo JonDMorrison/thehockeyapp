@@ -260,9 +260,9 @@ const WeekPlannerNew: React.FC = () => {
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold">
-              {step === "theme" ? t('practice.newWeekPlan') : t('practice.customizeWeek')}
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words text-lg font-bold">
+              {step === "theme" ? inviteAfter ? `Start a program for ${team?.name || "your team"}` : t('practice.newWeekPlan') : t('practice.customizeWeek')}
             </h1>
             <p className="text-xs text-muted-foreground">
               {format(startDate, "MMM d")} – {format(addDays(startDate, 6), "MMM d")}
@@ -277,10 +277,10 @@ const WeekPlannerNew: React.FC = () => {
             {/* Question */}
             <div className="text-center py-4">
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {t('practice.whatDoYouWantToWorkOn')}
+                {inviteAfter ? 'Start with a ready-made week' : t('practice.whatDoYouWantToWorkOn')}
               </h2>
               <p className="text-muted-foreground">
-                {t('practice.pickFocusAndWellSetUpYourWeek')}
+                {inviteAfter ? 'Pick a focus. Review the days, then make it yours.' : t('practice.pickFocusAndWellSetUpYourWeek')}
               </p>
             </div>
 
@@ -292,7 +292,7 @@ const WeekPlannerNew: React.FC = () => {
               onClick={() => setTemplatePickerOpen(true)}
             >
               <LayoutTemplate className="w-5 h-5 mr-2" />
-              {t('templates.startFromTemplate')}
+              {inviteAfter ? 'Browse more templates' : t('templates.startFromTemplate')}
             </Button>
 
             {/* Theme Cards */}

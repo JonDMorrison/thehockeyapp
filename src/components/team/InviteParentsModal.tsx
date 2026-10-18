@@ -55,6 +55,7 @@ interface InviteParentsModalProps {
   teamId: string;
   teamName: string;
   initialTab?: "invite" | "add-child";
+  programReady?: boolean;
 }
 
 export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
@@ -63,6 +64,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   teamId,
   teamName,
   initialTab = "invite",
+  programReady = false,
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -409,12 +411,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
             <DialogTitle>
               {activeTab === "add-child"
                 ? t("teams.inviteParents.addChildTitle")
-                : t("teams.inviteParents.title")}
+                : programReady ? "Your team’s first week is ready" : t("teams.inviteParents.title")}
             </DialogTitle>
             <DialogDescription>
               {activeTab === "add-child"
                 ? t("teams.inviteParents.addChildDescription", { teamName })
-                : t("teams.inviteParents.description", { teamName })}
+                : programReady ? `Bring ${teamName} in. Share an invitation so families can join and see the plan.` : t("teams.inviteParents.description", { teamName })}
             </DialogDescription>
           </DialogHeader>
 

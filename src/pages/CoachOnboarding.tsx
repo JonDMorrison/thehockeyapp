@@ -1,10 +1,11 @@
+import { SetupProgress } from "@/components/onboarding/SetupProgress";
+import { TrainingChoice } from "@/components/onboarding/TrainingChoice";
 import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { clearSelectedRole } from "@/components/marketing/GetStartedModal";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/app/Toast";
 import { focusFirstInvalidField } from "@/lib/formValidation";
-import { TemplatePicker } from "@/components/planning/TemplatePicker";
 import {
   Loader2,
   ChevronLeft,
@@ -37,8 +37,6 @@ import {
   Check,
   Clock3,
   Users,
-  LayoutTemplate,
-  Sparkles,
   Link2,
   Clipboard,
   ClipboardList,
@@ -101,7 +99,6 @@ const CoachOnboarding: React.FC = () => {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const creatingTeam = useRef(false);
-  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   // Step 1 — team
   const [teamName, setTeamName] = useState("");
@@ -134,12 +131,6 @@ const CoachOnboarding: React.FC = () => {
 
   const selectedPalette =
     teamPalettes.find((p) => p.id === paletteId) ?? teamPalettes[0];
-  const progressSteps = [
-    t("coachOnboarding.progress.team"),
-    "Set up activity",
-    t("coachOnboarding.progress.families"),
-  ];
-
   const handleCreateTeam = async () => {
     if (creatingTeam.current) return;
     const trimmed = teamName.trim();
@@ -284,14 +275,6 @@ const CoachOnboarding: React.FC = () => {
       navigate(`/teams/${teamId}`);
     } else {
       navigate("/teams");
-    }
-  };
-
-  const goToTemplate = () => {
-    if (teamId) {
-      setTemplatePickerOpen(true);
-    } else {
-      finish();
     }
   };
 
@@ -456,50 +439,7 @@ const CoachOnboarding: React.FC = () => {
           className="pointer-events-none absolute -right-40 top-0 h-[32rem] w-[32rem] rounded-full bg-primary/[0.07] blur-3xl"
         />
         <PageContainer className="relative max-w-5xl space-y-8 py-7 sm:py-10">
-          {/* Progress indicator */}
-          <nav
-            aria-label={t("coachOnboarding.progressLabel")}
-            className="rounded-xl border border-border/70 bg-card/60 px-4 py-3 shadow-subtle backdrop-blur-sm sm:px-5"
-          >
-            <ol className="grid grid-cols-3 gap-2 sm:gap-4">
-              {progressSteps.map((label, index) => {
-                const progressStep = index + 1;
-                const isComplete = progressStep < step;
-                const isCurrent = progressStep === step;
-
-                return (
-                  <li
-                    key={label}
-                    aria-current={isCurrent ? "step" : undefined}
-                    className="relative flex items-center gap-2.5"
-                  >
-                    <span
-                      className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold transition-colors sm:h-8 sm:w-8 ${
-                        isComplete || isCurrent
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-muted-foreground"
-                      }`}
-                    >
-                      {isComplete ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        progressStep
-                      )}
-                    </span>
-                    <span
-                      className={
-                        isCurrent
-                          ? "text-xs font-semibold text-foreground sm:text-sm"
-                          : "text-xs font-medium text-muted-foreground sm:text-sm"
-                      }
-                    >
-                      {label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
+          <SetupProgress step={step} />
 
           {/* STEP 1 — TEAM */}
           {step === 1 && (
@@ -899,110 +839,16 @@ const CoachOnboarding: React.FC = () => {
             </div>
           )}
 
-          {/* STEP 2 — SET UP AN ACTIVITY */}
           {step === 2 && (
-            <div className="mx-auto max-w-3xl space-y-6 animate-fade-up">
-              <div>
-                <AppCardTitle className="text-xl">
-                  What would you like to set up?
-                </AppCardTitle>
-                <AppCardDescription className="mt-1">
-                  Build a program, choose a template, or start a shooting
-                  challenge. Invite families after your activity is set up.
-                </AppCardDescription>
-              </div>
-
-              <AppCard className="border-primary/30 bg-primary/[0.06]">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-                    <Target className="h-6 w-6" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <AppCardTitle>
-                      {t("coachOnboarding.shootingTitle")}
-                    </AppCardTitle>
-                    <AppCardDescription className="mt-1 leading-5">
-                      {t("coachOnboarding.shootingDescription")}
-                    </AppCardDescription>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="team"
-                  size="xl"
-                  className="mt-5 w-full justify-between"
-                  onClick={goToShooting}
-                >
-                  {t("coachOnboarding.shootingAction")}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </AppCard>
-
-              <section aria-label="Program options">
-                <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
-                    onClick={goToTemplate}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <LayoutTemplate className="h-5 w-5 text-primary" />
-                    </span>
-                    <span>
-                      <span className="block font-semibold">
-                        {t("coachOnboarding.templateTitle")}
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                        {t("coachOnboarding.templateDescription")}
-                      </span>
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
-                    onClick={goToProgram}
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                    </span>
-                    <span>
-                      <span className="block font-semibold">
-                        Build a program
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                        Choose a weekly plan, customize the activities, and
-                        publish it before inviting families.
-                      </span>
-                    </span>
-                  </button>
-                </div>
-              </section>
-
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => setStep(3)}
-                >
-                  I’ll set up my activity later
-                </Button>
-              </div>
-            </div>
+            <TrainingChoice
+              teamName={teamName}
+              onProgram={goToProgram}
+              onChallenge={goToShooting}
+              onLater={() => setStep(3)}
+            />
           )}
         </PageContainer>
       </div>
-
-      {teamId && (
-        <TemplatePicker
-          teamId={teamId}
-          userId={user!.id}
-          ageDivision={ageDivision || null}
-          level={level || null}
-          open={templatePickerOpen}
-          onOpenChange={setTemplatePickerOpen}
-          onDone={() => setStep(3)}
-        />
-      )}
     </AppShell>
   );
 };
