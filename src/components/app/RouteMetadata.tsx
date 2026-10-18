@@ -63,6 +63,9 @@ const publicRoutes: Record<string, RouteMeta> = {
 };
 
 function getPrivateRouteMeta(pathname: string): RouteMeta {
+  if (pathname.startsWith("/shooting/")) {
+    return { title: "Shooting challenge — The Hockey App", description: "Sign in to your team to log daily shots and view private challenge standings." };
+  }
   if (pathname === "/auth") {
     return { title: "Sign in or create an account — The Hockey App", description: "Use one Hockey App account for every association, team, and player role." };
   }

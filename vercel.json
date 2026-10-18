@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/(auth|welcome|today|settings|teams|players|associations|join|guardian|team|association|solo|unsubscribe)(/.*)?",
+      "source": "/(auth|welcome|today|settings|teams|players|associations|join|guardian|team|association|solo|shooting|unsubscribe)(/.*)?",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
       ]
@@ -26,6 +26,7 @@
     { "source": "/team/adult/join/:path*", "destination": "/_private/teamStaffInvite.html" },
     { "source": "/association/join/:path*", "destination": "/_private/associationInvite.html" },
     { "source": "/solo/try/:path*", "destination": "/_private/sharedWorkout.html" },
+    { "source": "/shooting/:path*", "destination": "/_private/shooting.html" },
     { "source": "/unsubscribe/:path*", "destination": "/_private/unsubscribe.html" },
     { "source": "/features", "destination": "/features/index.html" },
     { "source": "/pricing", "destination": "/pricing/index.html" },

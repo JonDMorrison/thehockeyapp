@@ -1,3 +1,4 @@
+import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -745,6 +746,7 @@ const PlayerToday: React.FC = () => {
             </Button>
             <h1 className="text-lg font-bold">{t("players.today.pageTitle")}</h1>
           </div>
+          <ChallengeLinks playerId={playerId} inline />
           <AppCard>
             <EmptyState
               icon={Calendar}
@@ -848,6 +850,7 @@ const PlayerToday: React.FC = () => {
     >
       <Helmet><title>Today's Workout | Hockey App</title></Helmet>
       <PageContainer className="max-w-2xl space-y-5">
+        <ChallengeLinks playerId={playerId} inline />
         {/* Progress */}
         <section className="rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-5">
           <div className="flex items-end justify-between gap-4">

@@ -1,3 +1,4 @@
+import { challengeReturn } from "@/lib/shooting";
 import React, { useState, useEffect } from "react";
 import { logger } from "@/core";
 import { useNavigate, useParams } from "react-router-dom";
@@ -175,6 +176,8 @@ const JoinTeamPlayer: React.FC = () => {
         return;
       }
 
+      const shootingReturn = result.team_id && selectedPlayerId ? challengeReturn(result.team_id, selectedPlayerId) : null;
+      if (shootingReturn) { navigate(shootingReturn, { replace: true }); return; }
       setJoinSuccess(true);
     },
     onError: (error: Error) => {

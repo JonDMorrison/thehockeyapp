@@ -61,6 +61,8 @@ const WidgetSettings = lazy(() => import("./pages/WidgetSettings"));
 const CoachDashboard = lazy(() => import("./pages/CoachDashboard"));
 const CoachOnboarding = lazy(() => import("./pages/CoachOnboarding"));
 const Welcome = lazy(() => import("./pages/Welcome"));
+const ShootingChallenge = lazy(() => import("./pages/ShootingChallenge"));
+const ShootingChallengeNew = lazy(() => import("./pages/ShootingChallengeNew"));
 const QuickAssign = lazy(() => import("./pages/QuickAssign"));
 const SoloSetup = lazy(() => import("./pages/SoloSetup"));
 const SoloToday = lazy(() => import("./pages/SoloToday"));
@@ -178,6 +180,9 @@ const AnimatedRoutes = () => {
             <Route path="/associations/:id" element={<AssociationDashboard />} />
             <Route path="/association/join/:token" element={<AssociationJoin />} />
             
+            <Route path="/shooting/:challengeId" element={<ShootingChallenge />} />
+            <Route path="/teams/:id/shooting/new" element={<ShootingChallengeNew />} />
+
             {/* Team management */}
             <Route path="/teams" element={<Teams />} />
             <Route path="/teams/new" element={<TeamNew />} />

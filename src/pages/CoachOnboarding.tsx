@@ -268,9 +268,7 @@ const CoachOnboarding: React.FC = () => {
   const goToShooting = () => {
     sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
-      const date = format(new Date(), "yyyy-MM-dd");
-      const returnTo = encodeURIComponent(`/teams/${teamId}`);
-      navigate(`/teams/${teamId}/assign?date=${date}&preset=wrist_shots&returnTo=${returnTo}`);
+      navigate(`/teams/${teamId}/shooting/new`);
     } else {
       finish();
     }

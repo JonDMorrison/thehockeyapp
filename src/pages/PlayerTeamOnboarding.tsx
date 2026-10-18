@@ -1,3 +1,4 @@
+import { challengeReturn } from "@/lib/shooting";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -219,7 +220,7 @@ const PlayerTeamOnboarding: React.FC = () => {
         queryClient.invalidateQueries({ queryKey: ["roster-player", teamId, playerId] }),
       ]);
       toast.success("Player profile ready", `${data?.player.first_name || "Player"} is ready to join the team.`);
-      navigate(`/players/${playerId}/home`, { replace: true });
+      navigate(challengeReturn(teamId!, playerId!) || `/players/${playerId}/home`, { replace: true });
     },
     onError: (saveError: Error) => {
       if (saveError.message === "Check the highlighted player details") return;
@@ -227,7 +228,7 @@ const PlayerTeamOnboarding: React.FC = () => {
     },
   });
 
-  const skip = () => navigate(`/players/${playerId}/home`, { replace: true });
+  const skip = () => navigate(challengeReturn(teamId!, playerId!) || `/players/${playerId}/home`, { replace: true });
 
   if (authLoading || isLoading) {
     return (
