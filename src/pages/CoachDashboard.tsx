@@ -27,6 +27,7 @@ import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
+import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import { Helmet } from "react-helmet-async";
 
 const CoachDashboard: React.FC = () => {
@@ -275,6 +276,8 @@ const CoachDashboard: React.FC = () => {
           onUpdateTeamName={(newName) => updateTeamNameMutation.mutateAsync(newName)}
           isUpdating={updateTeamNameMutation.isPending}
         />
+
+        <ChallengeLinks teamId={id!} />
 
         <section className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border bg-card">
           {[

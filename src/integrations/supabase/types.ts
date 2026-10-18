@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -1664,6 +1669,168 @@ export type Database = {
           },
         ]
       }
+      shooting_challenge_audit: {
+        Row: {
+          actor_id: string
+          challenge_id: string
+          created_at: string
+          player_id: string
+          previous_shots: number
+          reason: string | null
+          request_id: string
+          shot_date: string
+          shots: number
+          version: number
+        }
+        Insert: {
+          actor_id: string
+          challenge_id: string
+          created_at?: string
+          player_id: string
+          previous_shots: number
+          reason?: string | null
+          request_id: string
+          shot_date: string
+          shots: number
+          version: number
+        }
+        Update: {
+          actor_id?: string
+          challenge_id?: string
+          created_at?: string
+          player_id?: string
+          previous_shots?: number
+          reason?: string | null
+          request_id?: string
+          shot_date?: string
+          shots?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenge_audit_challenge_id_player_id_fkey"
+            columns: ["challenge_id", "player_id"]
+            isOneToOne: false
+            referencedRelation: "shooting_challenge_players"
+            referencedColumns: ["challenge_id", "player_id"]
+          },
+        ]
+      }
+      shooting_challenge_days: {
+        Row: {
+          challenge_id: string
+          player_id: string
+          shot_date: string
+          shots: number
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          challenge_id: string
+          player_id: string
+          shot_date: string
+          shots: number
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          challenge_id?: string
+          player_id?: string
+          shot_date?: string
+          shots?: number
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenge_days_challenge_id_player_id_fkey"
+            columns: ["challenge_id", "player_id"]
+            isOneToOne: false
+            referencedRelation: "shooting_challenge_players"
+            referencedColumns: ["challenge_id", "player_id"]
+          },
+        ]
+      }
+      shooting_challenge_players: {
+        Row: {
+          challenge_id: string
+          enrolled_at: string
+          first_name: string
+          last_initial: string | null
+          player_id: string
+        }
+        Insert: {
+          challenge_id: string
+          enrolled_at?: string
+          first_name: string
+          last_initial?: string | null
+          player_id: string
+        }
+        Update: {
+          challenge_id?: string
+          enrolled_at?: string
+          first_name?: string
+          last_initial?: string | null
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenge_players_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "shooting_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shooting_challenge_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shooting_challenges: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          team_id: string
+          timezone: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          team_id: string
+          timezone: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          team_id?: string
+          timezone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenges_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solo_events: {
         Row: {
           created_at: string | null
@@ -3070,6 +3237,17 @@ export type Database = {
         }
         Returns: Json
       }
+      create_shooting_challenge: {
+        Args: {
+          p_end: string
+          p_id: string
+          p_name: string
+          p_start: string
+          p_team: string
+          p_timezone: string
+        }
+        Returns: string
+      }
       create_solo_player_with_plan: {
         Args: {
           p_birth_year: number
@@ -3103,28 +3281,6 @@ export type Database = {
           p_name: string
           p_palette_id?: string
           p_season_label?: string
-        }
-        Returns: Json
-      }
-      replace_personal_training_program: {
-        Args: {
-          p_days: Json
-          p_days_per_week: number
-          p_name: string
-          p_player_id: string
-          p_tier: string
-          p_training_focus: string[]
-        }
-        Returns: Json
-      }
-      replace_team_practice_card: {
-        Args: {
-          p_date: string
-          p_publish: boolean
-          p_tasks: Json
-          p_team_id: string
-          p_tier: string
-          p_title: string | null
         }
         Returns: Json
       }
@@ -3207,6 +3363,7 @@ export type Database = {
         Args: { p_end_date: string; p_start_date: string; p_team_id: string }
         Returns: Json
       }
+      get_shooting_challenge: { Args: { p_id: string }; Returns: Json }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
       get_team_coverage_for_user: {
         Args: { p_user_id: string }
@@ -3291,6 +3448,10 @@ export type Database = {
         Args: { p_player_id: string; p_team_id: string }
         Returns: boolean
       }
+      list_shooting_challenges: {
+        Args: { p_player?: string; p_team?: string }
+        Returns: Json
+      }
       log_admin_event: {
         Args: {
           p_actor?: string
@@ -3326,9 +3487,43 @@ export type Database = {
         Args: { p_association_id: string; p_team_id: string }
         Returns: Json
       }
+      replace_personal_training_program: {
+        Args: {
+          p_days: Json
+          p_days_per_week: number
+          p_name: string
+          p_player_id: string
+          p_tier: string
+          p_training_focus: string[]
+        }
+        Returns: Json
+      }
+      replace_team_practice_card: {
+        Args: {
+          p_date: string
+          p_publish: boolean
+          p_tasks: Json
+          p_team_id: string
+          p_tier: string
+          p_title: string
+        }
+        Returns: Json
+      }
       revoke_association_invite: {
         Args: { p_invite_id: string }
         Returns: boolean
+      }
+      save_shooting_challenge_day: {
+        Args: {
+          p_date: string
+          p_id: string
+          p_player: string
+          p_reason?: string
+          p_request: string
+          p_shots: number
+          p_version: number
+        }
+        Returns: Json
       }
       unsubscribe_email: {
         Args: { p_kind?: string; p_token: string }
@@ -3357,12 +3552,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3386,11 +3581,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3411,11 +3606,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3436,11 +3631,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -3453,11 +3648,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

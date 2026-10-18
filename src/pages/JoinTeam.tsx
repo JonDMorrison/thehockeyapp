@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ const JoinTeam: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { setTeamTheme } = useTeamTheme();
 
@@ -95,6 +96,10 @@ const JoinTeam: React.FC = () => {
   }
 
   const handleJoin = () => {
+    const challengeId = search.get("challenge");
+    if (challengeId && /^[0-9a-f-]{36}$/i.test(challengeId)) {
+      sessionStorage.setItem("shootingInvite", JSON.stringify({ challengeId, teamId: preview.team_id }));
+    }
     if (!isAuthenticated) {
       // Store token in sessionStorage to continue after auth
       sessionStorage.setItem("pendingJoinToken", token!);

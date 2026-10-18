@@ -73,8 +73,8 @@ expect("src/pages/JoinTeamPlayer.tsx", /collect_player_profile[\s\S]*team-onboar
 expect("src/pages/PlayerTeamOnboarding.tsx", /Position[\s\S]*Favourite player[\s\S]*Favourite thing about hockey[\s\S]*Hockey dream[\s\S]*Add a player photo/, "player onboarding collects the requested profile details");
 expect("src/pages/Auth.tsx", /new URLSearchParams\(current\)[\s\S]*next\.set\("mode", nextMode\)/, "switching from sign in to sign up preserves the invite return path");
 expect("src/pages/CoachOnboarding.tsx", /void queryClient\.invalidateQueries\(\{ queryKey: \["user-coach-roles"\]/, "coach onboarding does not wait on background refreshes before showing the invite step");
-expect("src/pages/CoachOnboarding.tsx", /preset=wrist_shots/, "coach onboarding leads with a ready shooting assignment");
-expect("src/pages/CoachOnboarding.tsx", /returnTo=\$\{returnTo\}/, "first assignment returns the coach to the completed team dashboard");
+expect("src/pages/CoachOnboarding.tsx", /shooting\/new/, "coach onboarding leads with a dated shooting challenge");
+expect("src/pages/ShootingChallengeNew.tsx", /navigate\(`\/shooting\/\$\{data\}`\)/, "challenge publication opens its live results page");
 expect("src/pages/QuickAssign.tsx", /navigate\(returnTo, \{ replace: true \}\)/, "quick assignment honors a safe in-app completion destination");
 reject("src/components/planning/DatePickerSheet.tsx", /QuickGoalPrompt/, "choosing an assignment date does not interrupt coaches with a goal prompt");
 reject("src/pages/CoachDashboard.tsx", /<AddPlayerChoice/, "new coach dashboard does not repeat roster choices");

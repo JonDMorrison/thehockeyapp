@@ -29,6 +29,9 @@ jobs:
         # stay in devDependencies and are not deployed by Vercel.
         run: npm audit --omit=dev --audit-level=high
 
+      - name: Verify shooting challenge database release gates
+        run: npm run test:shooting-db
+
       - name: Typecheck, lint, build, and verify crawlable pages
         run: npm run check
 

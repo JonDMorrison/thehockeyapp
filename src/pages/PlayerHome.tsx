@@ -1,3 +1,4 @@
+import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -448,6 +449,7 @@ const PlayerHome: React.FC = () => {
       }
     >
       <PageContainer className="pb-6">
+        <ChallengeLinks playerId={id} />
         {/* Desktop Layout */}
         <div className="hidden md:block">
           {/* Hero Header with Player Info and Stats */}
