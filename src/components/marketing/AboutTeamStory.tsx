@@ -12,7 +12,7 @@ export function AboutTeamStory() {
   ];
 
   return (
-    <section aria-labelledby="why-teams-heading" className="relative overflow-hidden border-y border-white/10 bg-[#0b0d11] py-12 sm:py-16 lg:py-20">
+    <section id="why-teams" aria-labelledby="why-teams-heading" className="scroll-mt-16 relative overflow-hidden border-y border-white/10 bg-[#0b0d11] py-12 sm:py-16 lg:py-20">
       <div aria-hidden="true" className="pointer-events-none absolute -left-48 top-0 h-[480px] w-[480px] rounded-full bg-primary/10 blur-[100px]" />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-8 lg:grid-cols-[1fr_1.05fr] lg:gap-16">

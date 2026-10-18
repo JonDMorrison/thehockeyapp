@@ -101,7 +101,7 @@ const PageLoader = () => (
 );
 
 // Mount with the resolved route so lazy pages have committed their anchor targets.
-const RouteScroll = () => {
+const RouteScroll = (): null => {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     let anchor: HTMLElement | null = null;
