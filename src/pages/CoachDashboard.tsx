@@ -40,6 +40,7 @@ const CoachDashboard: React.FC = () => {
   const { setActiveView, setActiveTeamId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [programReadyForTeam, setProgramReadyForTeam] = useState<string | null>(null);
   const [inviteModalTab, setInviteModalTab] = useState<"invite" | "add-child">("invite");
   const [showGameDayModal, setShowGameDayModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -51,11 +52,12 @@ const CoachDashboard: React.FC = () => {
 
   useEffect(() => {
     if (dashboard?.success && search.get("inviteFamilies") === "1") {
+      setProgramReadyForTeam(search.get("programReady") === "1" ? id! : null);
       setInviteModalTab("invite");
       setShowInviteModal(true);
-      setSearch((current) => { const next = new URLSearchParams(current); next.delete("inviteFamilies"); return next; }, { replace: true });
+      setSearch((current) => { const next = new URLSearchParams(current); next.delete("inviteFamilies"); next.delete("programReady"); return next; }, { replace: true });
     }
-  }, [dashboard, search, setSearch]);
+  }, [dashboard, search, setSearch, id]);
 
   // Fetch schedule source for sync functionality
   const { data: scheduleSource } = useQuery({
@@ -405,6 +407,7 @@ const CoachDashboard: React.FC = () => {
         teamId={id!}
         teamName={dashboard.team.name}
         initialTab={inviteModalTab}
+        programReady={programReadyForTeam === id}
       />
 
       <GameDayModal

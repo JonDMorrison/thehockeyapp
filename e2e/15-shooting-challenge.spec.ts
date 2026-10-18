@@ -95,7 +95,7 @@ test.describe
       .getByLabel(/team name/i)
       .fill(`Disposable Shooting Release ${Date.now()}`);
     await page.getByRole("button", { name: "Create team & continue" }).click();
-    await page.getByRole("button", { name: "Choose challenge dates" }).click();
+    await page.getByRole("button", { name: "Start a shooting challenge", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Start a shooting challenge" }),
     ).toBeVisible();

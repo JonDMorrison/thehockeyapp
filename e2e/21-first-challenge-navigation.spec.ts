@@ -151,17 +151,35 @@ for (const width of [390, 1280]) {
     await page.getByLabel(/team name/i).fill("Program Wolves");
     await page.getByRole("button", { name: "Create team & continue" }).click();
     await expect(
-      page.getByText("What would you like to set up?", { exact: true }),
+      page.getByText("What would help your team this week?", { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Create family invite", exact: true }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: /Build a program/ }),
+      page.getByRole("button", { name: "Start a program", exact: true }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "Start a shooting challenge",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /template/i })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByText("Let’s get Program Wolves started", { exact: true }),
+    ).toBeVisible();
+    if (process.env.AUDIT_SCREENSHOT_DIR)
+      await page.screenshot({
+        path: `${process.env.AUDIT_SCREENSHOT_DIR}/training-choice-${width}.png`,
+        fullPage: true,
+        style: "* { animation: none !important; transition: none !important; }",
+      });
     await page
       .getByRole("button", {
-        name: "I’ll set up my activity later",
+        name: "I’ll set up training later",
         exact: true,
       })
       .click();
@@ -170,11 +188,16 @@ for (const width of [390, 1280]) {
     ).toBeVisible();
     await expect(
       page.getByRole("button", {
-        name: /shooting challenge|challenge dates|Build a program/i,
+        name: /shooting challenge|challenge dates|Start a program/i,
       }),
     ).toHaveCount(0);
     await page.getByRole("button", { name: "Back", exact: true }).click();
-    await page.getByRole("button", { name: /Build a program/ }).click();
+    const programCard = page.getByRole("button", {
+      name: "Start a program",
+      exact: true,
+    });
+    await programCard.focus();
+    await page.keyboard.press("Enter");
     await expect(page).toHaveURL(
       new RegExp(`/teams/${team}/builder/new\\?inviteAfter=1$`),
     );

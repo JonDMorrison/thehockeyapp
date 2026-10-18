@@ -21,12 +21,12 @@ test("general mobile coach publishes a program before the family invitation open
     .getByRole("button", { name: "Create team & continue", exact: true })
     .click();
   await expect(
-    page.getByText("What would you like to set up?", { exact: true }),
+    page.getByText("What would help your team this week?", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Create family invite", exact: true }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: /Build a program/ }).click();
+  await page.getByRole("button", { name: /Start a program/ }).click();
   await expect(page).toHaveURL(/\/teams\/[^/]+\/builder\/new\?inviteAfter=1/);
   const teamId = new URL(page.url()).pathname.split("/")[2];
   fs.writeFileSync(
@@ -68,6 +68,7 @@ test("general mobile coach publishes a program before the family invitation open
     .click();
   const invitation = page.getByRole("dialog");
   await expect(invitation).toBeVisible({ timeout: 20000 });
+  await expect(invitation.getByRole("heading", { name: "Your team’s first week is ready", exact: true })).toBeVisible();
   const bounds = await invitation.boundingBox();
   expect(bounds!.y).toBeGreaterThanOrEqual(0);
   expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(844);

@@ -129,7 +129,8 @@ test.describe('persisted parent and coach journey', () => {
     await page.goto('/onboarding/coach');
     await page.getByLabel(/team name/i).fill('Disposable Template Failure Audit');
     await page.getByRole('button', { name: 'Create team & continue' }).click();
-    await page.getByRole('button', { name: /start from a template/i }).click();
+    await page.getByRole('button', { name: 'Start a program', exact: true }).click();
+    await page.getByRole('button', { name: 'Browse more templates', exact: true }).click();
     await page.getByRole('button', { name: 'Use this template', exact: true }).click();
     await expect(page.getByText("Couldn't add the template. Please try again.", { exact: true })).toBeVisible();
     expect(incompleteDraftRemoved).toBe(true);
