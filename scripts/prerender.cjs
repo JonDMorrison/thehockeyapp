@@ -16,8 +16,7 @@ const PORT = 4777;
 const BASE_URL = `http://localhost:${PORT}`;
 const WAIT_MS = 3000;
 
-// NOTE: /pricing is excluded because BETA_MODE=true redirects it to /
-// Add it back when BETA_MODE is set to false
+// /pricing permanently redirects home because The Hockey App is free.
 const routes = ['/', '/features', '/about', '/privacy', '/terms', '/contact', '/demo'];
 
 const routeMetadata = {
@@ -31,7 +30,7 @@ const routeMetadata = {
   },
   '/about': {
     title: 'About — The Hockey App',
-    description: 'Why The Hockey App was built to connect association standards, coaching plans, player work, and family support.',
+    description: 'Meet founder Jon Morrison, an Abbotsford Hawks and spring hockey coach whose work at Get Clear Consulting helped shape The Hockey App.',
   },
   '/privacy': {
     title: 'Privacy Policy — The Hockey App',
@@ -43,7 +42,7 @@ const routeMetadata = {
   },
   '/contact': {
     title: 'Contact — The Hockey App',
-    description: 'Contact The Hockey App about association pilots, product support, or privacy requests.',
+    description: 'Contact The Hockey App for product questions, association help, support, or privacy requests.',
   },
   '/demo': {
     title: 'Product Tour — The Hockey App',

@@ -38,7 +38,7 @@ const publicRoutes: Record<string, RouteMeta> = {
   },
   "/about": {
     title: "About — The Hockey App",
-    description: "Why The Hockey App was built to connect association standards, coaching plans, player work, and family support.",
+    description: "Meet founder Jon Morrison, an Abbotsford Hawks and spring hockey coach whose work at Get Clear Consulting helped shape The Hockey App.",
     canonical: "/about",
     indexable: true,
   },
@@ -56,7 +56,7 @@ const publicRoutes: Record<string, RouteMeta> = {
   },
   "/contact": {
     title: "Contact — The Hockey App",
-    description: "Contact The Hockey App about association pilots, product support, or privacy requests.",
+    description: "Contact The Hockey App for product questions, association help, support, or privacy requests.",
     canonical: "/contact",
     indexable: true,
   },

@@ -11,14 +11,12 @@ import { initOfflineDB } from "@/lib/offlineStorage";
 import { ActiveViewProvider } from "@/contexts/ActiveViewContext";
 import { SwipeBackGesture } from "@/components/app/SwipeBackGesture";
 import { RouteMetadata } from "@/components/app/RouteMetadata";
-import { BETA_MODE } from "@/core/constants";
 
 // Marketing pages - loaded eagerly for fast landing page
 import Home from "./pages/marketing/Home";
 
 // Lazy load all other pages for faster initial load
 const Features = lazy(() => import("./pages/marketing/Features"));
-const Pricing = lazy(() => import("./pages/marketing/Pricing"));
 const Demo = lazy(() => import("./pages/marketing/Demo"));
 const About = lazy(() => import("./pages/About"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -129,7 +127,7 @@ const AnimatedRoutes = () => {
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={BETA_MODE ? <Navigate to="/" replace /> : <Pricing />} />
+            <Route path="/pricing" element={<Navigate to="/" replace />} />
             <Route path="/demo" element={<Demo />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { BETA_MODE } from "@/core/constants";
 import { Link } from "react-router-dom";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { GetStartedModal } from "@/components/marketing/GetStartedModal";
@@ -264,7 +263,7 @@ const Demo: React.FC = () => {
               {t('marketing.features_cta_heading')}
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-              {BETA_MODE ? t('marketing.home_hero_beta_free') : t('marketing.pricing_cta_subtext')}
+              {t('marketing.home_hero_free')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -276,18 +275,6 @@ const Demo: React.FC = () => {
                 {t('marketing.home_cta_get_started')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-              {!BETA_MODE && (
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-base px-8 border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl"
-                  asChild
-                >
-                  <Link to="/pricing">
-                    {t('marketing.demo_view_pricing')}
-                  </Link>
-                </Button>
-              )}
             </div>
           </div>
         </div>

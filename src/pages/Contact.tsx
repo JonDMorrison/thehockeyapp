@@ -66,7 +66,7 @@ const Contact: React.FC = () => {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">Support</p>
           <h1 className="text-4xl font-bold mb-4">Talk to a real person.</h1>
           <p className="text-muted-foreground mb-8">
-            Ask a product question, report a problem, request an association pilot, or submit a privacy request.
+            Ask a product question, report a problem, get help with your association, or submit a privacy request.
           </p>
 
           {submitted ? (

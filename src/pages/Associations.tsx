@@ -129,7 +129,7 @@ export default function Associations() {
             </div>
             <h3 className="mt-4 text-lg font-black uppercase">Create your association workspace</h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Start with one pilot team, then connect the rest as coaches come onboard.
+              Start with one team, then connect the rest as coaches come onboard.
             </p>
             <Button className="mt-5" variant="team" onClick={() => navigate("/associations/new")}>
               <Plus className="h-4 w-4" />

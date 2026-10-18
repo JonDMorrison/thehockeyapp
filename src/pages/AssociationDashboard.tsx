@@ -458,7 +458,7 @@ export default function AssociationDashboard() {
             ) : (
               <div className="p-8 text-center">
                 {dashboard.teams.length === 0 ? <Link2 className="mx-auto h-8 w-8 text-primary" /> : <CheckCircle2 className="mx-auto h-8 w-8 text-success" />}
-                <h3 className="mt-3 font-black uppercase">{dashboard.teams.length === 0 ? "Connect the pilot team" : "No teams in this filter"}</h3>
+                <h3 className="mt-3 font-black uppercase">{dashboard.teams.length === 0 ? "Connect your first team" : "No teams in this filter"}</h3>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
                   {dashboard.teams.length === 0
                     ? "Connect an existing coach workspace without changing who can see player data."

@@ -57,7 +57,7 @@ export default function AssociationNew() {
       await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
       setActiveView("association");
       setActiveAssociationId(result.association_id);
-      toast.success("Association workspace created", "Connect the pilot team next.");
+      toast.success("Association workspace created", "Connect your first team next.");
       navigate(`/associations/${result.association_id}`, { replace: true });
     } catch (error) {
       toast.error("Could not create association", error instanceof Error ? error.message : "Please try again.");

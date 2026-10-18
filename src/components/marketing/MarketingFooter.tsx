@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Heart, Shield, Lock } from "lucide-react";
 import { HockeyAppLogo } from "./HockeyAppLogo";
-import { BETA_MODE } from "@/core/constants";
 import { useTranslation } from 'react-i18next';
 
 export const MarketingFooter: React.FC = () => {
@@ -40,9 +39,6 @@ export const MarketingFooter: React.FC = () => {
             <ul className="space-y-2 text-white/70">
               <li><Link to="/features" className="hover:text-white transition-colors">{t('marketing.footer_features')}</Link></li>
               <li><Link to="/demo" className="hover:text-white transition-colors">{t('marketing.footer_how_it_works')}</Link></li>
-              {!BETA_MODE && (
-                <li><Link to="/pricing" className="hover:text-white transition-colors">{t('marketing.footer_pricing')}</Link></li>
-              )}
             </ul>
           </div>
 
