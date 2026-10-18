@@ -68,6 +68,9 @@ test("general mobile coach publishes a program before the family invitation open
     .click();
   const invitation = page.getByRole("dialog");
   await expect(invitation).toBeVisible({ timeout: 20000 });
+  const bounds = await invitation.boundingBox();
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(844);
   const generate = invitation.getByRole("button", {
     name: "Generate Link",
     exact: true,
