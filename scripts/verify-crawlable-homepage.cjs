@@ -30,6 +30,7 @@ if (missing.length > 0) {
 }
 
 const privatePages = {
+  'shooting.html': 'Shooting challenge — The Hockey App',
   'auth.html': 'Sign in or create an account — The Hockey App',
   'join.html': 'Join a team — The Hockey App',
   'guardianInvite.html': 'Accept guardian access — The Hockey App',
