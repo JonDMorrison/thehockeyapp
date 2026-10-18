@@ -47,7 +47,7 @@ Evidence shorthand:
 | 08 | Tour answers whether a child needs an email or a separate device. | Tour FAQ review | Done |
 | 09 | Tour explains private teams and authorized adult access. | FAQ review; Persisted access test | Done |
 | 10 | Founder story remains available; the team motivation section becomes a visual, scannable story. | About browser checks; desktop/mobile image review | Done |
-| 11 | Product tour puts a working experience before more marketing content. | Public; visual review | Done |
+| 11 | Product tour puts a working experience first; links land at the intended section. | Public; Recovery scroll check; visual review | Done |
 | 12 | Sample uses three understandable drills with targets and an equipment/time estimate. | Public; Review | Done |
 | 13 | Sample cannot finish until required exercises are checked. | Public | Done |
 | 14 | Sample check-offs can be undone before finishing. | Public | Done |
@@ -105,6 +105,7 @@ Evidence shorthand:
 | Minor | Malformed percent escapes in pasted invites could throw during typing. | Use a safe normalizer, preserve link tokens, and disable malformed submissions. |
 | Minor | Validated normalized auth values were not the values actually submitted. | Submit trimmed email and display name; preserve passwords unchanged. |
 | Minor | Profile cancel paths dropped position state. | Reset all profile fields consistently. |
+| Major | Links from deep pages retained the old scroll position, hiding the destination. | Restore route-top scrolling and resolve section anchors after lazy pages mount; check both section and page destinations. |
 | Minor | Role tabs lacked keyboard navigation and panel ownership. | Add roving focus, arrow/Home/End behavior, and panel labeling. |
 | Minor | Older database browser checks required an unsupplied token and team ID. | Reuse global setup's dedicated session and configured test-team fixture; remove a hardcoded unused user ID. |
 
@@ -132,7 +133,7 @@ The performance advisor currently reports 36 informational unused-index notices 
 Local final verification:
 
 - Required repository check passed, including the actual application/tooling typechecks, 60 source-level journey guards, date/ranking checks, lint (0 errors; 27 inherited warnings), build, and crawler metadata validation.
-- Public first visits and recovery: **38 passed**, including the revised About section at phone and desktop widths.
+- Public first visits and recovery: **39 passed**, including the revised About section at phone and desktop widths.
 - Real persisted/failure-injection journey suite: **6 passed**, including offline reconnection and failed template cleanup.
 - Mobile shared account and player profile wizard: **2 passed**.
 - Legacy coach/player/parent/database rechecks: **31 passed, 3 skipped**. Skipped cases lack an unfinished task/shooting task or a complete-session action in the selected fixture; they are not counted as passing coverage. The new dedicated persisted suite independently verifies required task and session completion.

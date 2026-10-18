@@ -100,6 +100,22 @@ const PageLoader = () => (
   </motion.div>
 );
 
+// Mount with the resolved route so lazy pages have committed their anchor targets.
+const RouteScroll = () => {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    let anchor: HTMLElement | null = null;
+    try {
+      anchor = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+    } catch {
+      // An invalid fragment should never prevent the route from opening.
+    }
+    if (anchor) anchor.scrollIntoView({ block: "start" });
+    else window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
+};
+
 // Animated routes wrapper
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -123,6 +139,7 @@ const AnimatedRoutes = () => {
           }}
           className="flex-1 flex flex-col min-h-screen"
         >
+          <RouteScroll />
           <Routes location={location}>
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />

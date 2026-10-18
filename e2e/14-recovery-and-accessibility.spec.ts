@@ -66,3 +66,16 @@ for (const height of [568, 844]) {
     await expect(page).toHaveURL(/auth\?mode=signup/);
   });
 }
+
+
+test('deep-page links open the intended section rather than retaining the old scroll position', async ({ page }) => {
+  await page.goto('/about');
+  const sampleLink = page.getByRole('link', { name: 'Try the daily routine', exact: true });
+  await sampleLink.scrollIntoViewIfNeeded();
+  await sampleLink.click();
+  await expect(page.locator('#sample-workout-heading')).toBeInViewport();
+  const contactLink = page.getByRole('link', { name: 'Contact', exact: true });
+  await contactLink.scrollIntoViewIfNeeded();
+  await contactLink.click();
+  await expect(page.getByRole('heading', { name: /talk to a real person/i })).toBeInViewport();
+});
