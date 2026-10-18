@@ -18,6 +18,12 @@ function reject(file, pattern, message) {
 }
 
 expect("src/pages/Auth.tsx", /role === "coach"[\s\S]{0,120}return "\/onboarding\/coach"/, "coach signup enters guided onboarding");
+expect("src/pages/marketing/Home.tsx", /setSelectedRole\("coach"\)[\s\S]{0,120}navigate\("\/auth\?mode=signup"\)/, "team pilot opens coach signup directly");
+expect("src/pages/Auth.tsx", /signupRole === "coach" \? "auth\.coachSignupHeadline"/, "coach signup explains the coach-specific path");
+reject("src/pages/Auth.tsx", /logoImage/, "auth page does not repeat the brand already shown in navigation");
+reject("src/pages/Auth.tsx", /t\("common\.or"\)/, "auth mode switch is not separated by a misleading OR divider");
+expect("src/components/marketing/MarketingNav.tsx", /!isAuthPage[\s\S]*nav_sign_in[\s\S]*nav_get_started/, "auth navigation hides duplicate sign-in and signup actions");
+expect("src/components/marketing/MarketingNav.tsx", /HockeyAppLogo size=\{32\} alt=""/, "navigation does not announce the brand twice to screen readers");
 expect("src/pages/Auth.tsx", /role === "association"[\s\S]{0,120}return "\/associations\/new"/, "association signup enters association setup");
 expect("src/pages/Welcome.tsx", /storedRole === "coach"[\s\S]{0,120}navigate\("\/onboarding\/coach"/, "coach welcome resumes guided onboarding");
 expect("src/pages/Welcome.tsx", /storedRole === "association"[\s\S]{0,120}navigate\("\/associations\/new"/, "association welcome resumes association setup");
@@ -42,6 +48,8 @@ expect("src/components/player/ParentProgramBuilderModal.tsx", /rpc\("replace_per
 reject("src/components/player/ParentProgramBuilderModal.tsx", /\.from\("practice_cards"\)/, "family plan never writes shared team cards");
 expect("src/pages/SoloProgramBuilder.tsx", /rpc\("replace_personal_training_program"/, "solo program uses atomic storage");
 expect("src/pages/QuickAssign.tsx", /rpc\("replace_team_practice_card"/, "quick assign uses an atomic write");
+expect("src/pages/QuickAssign.tsx", /getInitialAssignmentDate\(searchParams\.get\("date"\)\)/, "quick assign honors the selected date");
+expect("src/pages/QuickAssign.tsx", /getInitialExerciseSelection\(searchParams\.get\("preset"\)\)/, "quick assign can open with a simple exercise preselected");
 reject("src/pages/QuickAssign.tsx", /from\("practice_tasks"\)\.delete/, "quick assign never deletes tasks before a replacement succeeds");
 expect("src/components/planning/ProgramBuilderWizard.tsx", /rpc\("create_team_training_program"/, "multi-week program uses an atomic write");
 expect("src/components/planning/ProgramBuilderWizard.tsx", /navigate\(`\/teams\/\$\{teamId\}\/builder\/\$\{result\.first_plan_id\}`\)/, "coach is taken to review and publish Week 1");
@@ -61,5 +69,11 @@ expect("src/pages/JoinTeamPlayer.tsx", /collect_player_profile[\s\S]*team-onboar
 expect("src/pages/PlayerTeamOnboarding.tsx", /Position[\s\S]*Favourite player[\s\S]*Favourite thing about hockey[\s\S]*Hockey dream[\s\S]*Add a player photo/, "player onboarding collects the requested profile details");
 expect("src/pages/Auth.tsx", /new URLSearchParams\(current\)[\s\S]*next\.set\("mode", nextMode\)/, "switching from sign in to sign up preserves the invite return path");
 expect("src/pages/CoachOnboarding.tsx", /void queryClient\.invalidateQueries\(\{ queryKey: \["user-coach-roles"\]/, "coach onboarding does not wait on background refreshes before showing the invite step");
+expect("src/pages/CoachOnboarding.tsx", /preset=wrist_shots/, "coach onboarding leads with a ready shooting assignment");
+expect("src/pages/CoachOnboarding.tsx", /returnTo=\$\{returnTo\}/, "first assignment returns the coach to the completed team dashboard");
+expect("src/pages/QuickAssign.tsx", /navigate\(returnTo, \{ replace: true \}\)/, "quick assignment honors a safe in-app completion destination");
+reject("src/components/planning/DatePickerSheet.tsx", /QuickGoalPrompt/, "choosing an assignment date does not interrupt coaches with a goal prompt");
+reject("src/pages/CoachDashboard.tsx", /<AddPlayerChoice/, "new coach dashboard does not repeat roster choices");
+reject("src/pages/CoachDashboard.tsx", /<PlanningWalkthrough/, "new coach dashboard does not launch an automatic multi-step tour");
 
 console.log(`Launch journey checks passed (${checks.length}).`);

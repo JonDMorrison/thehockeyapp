@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BarChart3,
@@ -21,7 +21,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
-import { GetStartedModal } from "@/components/marketing/GetStartedModal";
+import { setSelectedRole } from "@/components/marketing/GetStartedModal";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
 import founderCoaching from "@/assets/brand/founder-jon-coaching.jpg";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
@@ -247,9 +247,13 @@ function RolePreview({ role }: { role: RoleKey }) {
 }
 
 export default function Home() {
-  const [showGetStarted, setShowGetStarted] = useState(false);
+  const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState<RoleKey>("association");
   const role = roleOptions.find((option) => option.key === activeRole) ?? roleOptions[0];
+  const startCoachPilot = () => {
+    setSelectedRole("coach");
+    navigate("/auth?mode=signup");
+  };
 
   return (
     <div className="marketing-performance min-h-screen bg-background">
@@ -279,7 +283,7 @@ export default function Home() {
                 Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={() => setShowGetStarted(true)}>
+                <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={startCoachPilot}>
                   Start a free team pilot
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -523,7 +527,7 @@ export default function Home() {
               Pilot the full system with one team, then scale what works across your association.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={() => setShowGetStarted(true)}>
+              <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={startCoachPilot}>
                 Start a free team pilot <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-9" asChild>
@@ -535,7 +539,6 @@ export default function Home() {
       </main>
 
       <MarketingFooter />
-      <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
 }

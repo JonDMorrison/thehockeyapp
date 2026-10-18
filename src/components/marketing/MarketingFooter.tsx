@@ -15,7 +15,7 @@ export const MarketingFooter: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 flex items-center justify-center overflow-hidden">
-                <HockeyAppLogo size={28} />
+                <HockeyAppLogo size={28} alt="" />
               </div>
               <span className="font-bold text-lg">{t('marketing.footer_brand_name')}</span>
             </div>

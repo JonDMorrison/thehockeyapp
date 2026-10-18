@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState } from "react";
 import { format, addDays, startOfToday, isSameDay } from "date-fns";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   Sheet,
   SheetContent,
@@ -11,16 +10,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarPlus, ArrowRight, ArrowLeft, Trophy } from "lucide-react";
-import { QuickGoalPrompt } from "@/components/goals";
+import { CalendarPlus, ArrowRight } from "lucide-react";
 
 interface DatePickerSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectDate: (date: Date) => void;
   existingDates?: string[]; // ISO date strings of days with existing workouts
-  showGoalPrompt?: boolean;
-  onOpenGoalCreator?: () => void;
 }
 
 export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
@@ -28,40 +24,15 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
   onOpenChange,
   onSelectDate,
   existingDates = [],
-  showGoalPrompt = true,
-  onOpenGoalCreator,
 }) => {
   const { t } = useTranslation();
   const today = startOfToday();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(today);
-  const [showGoal, setShowGoal] = useState(false);
 
   const handleConfirm = () => {
     if (selectedDate) {
-      if (showGoalPrompt && !showGoal) {
-        setShowGoal(true);
-      } else {
-        onSelectDate(selectedDate);
-        onOpenChange(false);
-        setShowGoal(false);
-      }
-    }
-  };
-
-  const handleSkipGoal = () => {
-    if (selectedDate) {
       onSelectDate(selectedDate);
       onOpenChange(false);
-      setShowGoal(false);
-    }
-  };
-
-  const handleSetGoal = () => {
-    if (selectedDate) {
-      onSelectDate(selectedDate);
-      onOpenChange(false);
-      setShowGoal(false);
-      onOpenGoalCreator?.();
     }
   };
 
@@ -79,123 +50,76 @@ export const DatePickerSheet: React.FC<DatePickerSheetProps> = ({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(isOpen) => {
-      onOpenChange(isOpen);
-      if (!isOpen) setShowGoal(false);
-    }}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-auto max-h-[85vh]">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            {showGoal ? (
-              <>
-                <Trophy className="w-5 h-5 text-primary" />
-                {t('practice.addATeamGoal')}
-              </>
-            ) : (
-              <>
-                <CalendarPlus className="w-5 h-5 text-primary" />
-                {t('practice.pickADate')}
-              </>
-            )}
+            <CalendarPlus className="w-5 h-5 text-primary" />
+            {t('practice.pickADate')}
           </SheetTitle>
           <SheetDescription>
-            {showGoal
-              ? t('practice.motivatePlayersWithReward')
-              : t('practice.selectDateToAddOrEdit')
-            }
+            {t('practice.selectDateToAddOrEdit')}
           </SheetDescription>
         </SheetHeader>
 
         <div className="py-6 space-y-6">
-          <AnimatePresence mode="wait">
-            {!showGoal ? (
-              <motion.div
-                key="calendar"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                {/* Quick Picks */}
-                <div className="flex gap-2">
-                  {quickDates.map(({ label, date }) => (
-                    <Button
-                      key={label}
-                      variant={selectedDate && isSameDay(selectedDate, date) ? "default" : "outline"}
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setSelectedDate(date)}
-                    >
-                      {label}
-                      {hasWorkout(date) && (
-                        <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                      )}
-                    </Button>
-                  ))}
-                </div>
-
-                {/* Calendar */}
-                <div className="flex justify-center">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < today}
-                    modifiers={{
-                      hasWorkout: (date) => hasWorkout(date),
-                    }}
-                    modifiersClassNames={{
-                      hasWorkout: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary",
-                    }}
-                    className="rounded-lg border"
-                  />
-                </div>
-
-                {/* Selected date indicator */}
-                {selectedDate && (
-                  <div className="text-center text-sm text-muted-foreground">
-                    {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                    {hasWorkout(selectedDate) && (
-                      <span className="text-primary ml-2">{t('practice.hasWorkout')}</span>
-                    )}
-                  </div>
-                )}
-
-                {/* Confirm Button */}
+          <div className="space-y-6">
+            {/* Quick Picks */}
+            <div className="flex gap-2">
+              {quickDates.map(({ label, date }) => (
                 <Button
-                  size="lg"
-                  className="w-full rounded-xl"
-                  onClick={handleConfirm}
-                  disabled={!selectedDate}
-                >
-                  {t('common.continue')}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="goal"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-              >
-                <QuickGoalPrompt
-                  onSetGoal={handleSetGoal}
-                  onDismiss={handleSkipGoal}
-                />
-
-                <Button
-                  variant="ghost"
+                  key={label}
+                  variant={selectedDate && isSameDay(selectedDate, date) ? "default" : "outline"}
                   size="sm"
-                  className="w-full mt-4"
-                  onClick={() => setShowGoal(false)}
+                  className="flex-1"
+                  onClick={() => setSelectedDate(date)}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  {t('practice.backToCalendar')}
+                  {label}
+                  {hasWorkout(date) && (
+                    <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                  )}
                 </Button>
-              </motion.div>
+              ))}
+            </div>
+
+            {/* Calendar */}
+            <div className="flex justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={(date) => date < today}
+                modifiers={{
+                  hasWorkout: (date) => hasWorkout(date),
+                }}
+                modifiersClassNames={{
+                  hasWorkout: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary",
+                }}
+                className="rounded-lg border"
+              />
+            </div>
+
+            {/* Selected date indicator */}
+            {selectedDate && (
+              <div className="text-center text-sm text-muted-foreground">
+                {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                {hasWorkout(selectedDate) && (
+                  <span className="text-primary ml-2">{t('practice.hasWorkout')}</span>
+                )}
+              </div>
             )}
-          </AnimatePresence>
+
+            {/* Confirm Button */}
+            <Button
+              size="lg"
+              className="w-full rounded-xl"
+              onClick={handleConfirm}
+              disabled={!selectedDate}
+            >
+              {t('common.continue')}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

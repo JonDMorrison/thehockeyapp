@@ -10,6 +10,7 @@ interface PlanningHubCardsProps {
   onCreateProgram: () => void;
   onStartChallenge: () => void;
   weekPlanCount?: number;
+  showQuickWorkout?: boolean;
 }
 
 interface PlanningCardProps {
@@ -54,40 +55,51 @@ export function PlanningHubCards({
   onCreateProgram,
   onStartChallenge,
   weekPlanCount = 0,
+  showQuickWorkout = true,
 }: PlanningHubCardsProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      <PlanningCard
-        title={t("practice.addWorkout")}
-        subtitle={t("practice.oneWorkoutForOneDay")}
-        icon={<CalendarPlus className="h-5 w-5" />}
-        badge={weekPlanCount > 0 ? t("practice.nThisWeek", { n: weekPlanCount }) : "Fastest option"}
-        primary
-        onClick={onAddWorkout}
-      />
-      <PlanningCard
-        title={t("practice.planTheWeek")}
-        subtitle={t("practice.setUpMonSunReuseIt")}
-        icon={<CalendarRange className="h-5 w-5" />}
-        badge="Full week"
-        onClick={onPlanWeek}
-      />
-      <PlanningCard
-        title={t("practice.thirtyDayChallenge")}
-        subtitle={t("practice.dailyExercisesFor30Days")}
-        icon={<Flame className="h-5 w-5" />}
-        badge="Build a habit"
-        onClick={onStartChallenge}
-      />
-      <PlanningCard
-        title={t("practice.createAProgram")}
-        subtitle={t("practice.aiBuilds4To8Weeks")}
-        icon={<Sparkles className="h-5 w-5" />}
-        badge="Guided setup"
-        onClick={onCreateProgram}
-      />
+    <div className="space-y-3">
+      {showQuickWorkout && (
+        <PlanningCard
+          title={t("practice.addWorkout")}
+          subtitle={t("practice.oneWorkoutForOneDay")}
+          icon={<CalendarPlus className="h-5 w-5" />}
+          badge={weekPlanCount > 0 ? t("practice.nThisWeek", { n: weekPlanCount }) : "Fastest option"}
+          primary
+          onClick={onAddWorkout}
+        />
+      )}
+      <details className="group overflow-hidden rounded-lg border border-border bg-card">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+          <span className="flex-1">More planning options</span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+        </summary>
+        <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
+          <PlanningCard
+            title={t("practice.planTheWeek")}
+            subtitle={t("practice.setUpMonSunReuseIt")}
+            icon={<CalendarRange className="h-5 w-5" />}
+            badge="Full week"
+            onClick={onPlanWeek}
+          />
+          <PlanningCard
+            title={t("practice.thirtyDayChallenge")}
+            subtitle={t("practice.dailyExercisesFor30Days")}
+            icon={<Flame className="h-5 w-5" />}
+            badge="Build a habit"
+            onClick={onStartChallenge}
+          />
+          <PlanningCard
+            title={t("practice.createAProgram")}
+            subtitle={t("practice.aiBuilds4To8Weeks")}
+            icon={<Sparkles className="h-5 w-5" />}
+            badge="Guided setup"
+            onClick={onCreateProgram}
+          />
+        </div>
+      </details>
     </div>
   );
 }

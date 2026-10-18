@@ -25,7 +25,9 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        # Runtime packages are the application attack surface. Build-only tools
+        # stay in devDependencies and are not deployed by Vercel.
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Typecheck, lint, build, and verify crawlable pages
         run: npm run check

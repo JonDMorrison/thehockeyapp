@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -24,12 +23,10 @@ import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { ActiveProgramsSection } from "@/components/dashboard/ActiveProgramsSection";
 import { AssignedWorkoutsSection } from "@/components/dashboard/AssignedWorkoutsSection";
 import { CoachCheersSection } from "@/components/dashboard/CoachCheersSection";
-import { AddPlayerChoice } from "@/components/dashboard/AddPlayerChoice";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
-import { TeamGoalCard, GoalCreatorSheet } from "@/components/goals";
+import { TeamGoalCard } from "@/components/goals";
 import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
-import { PlanningWalkthrough, usePlanningWalkthrough } from "@/components/onboarding/PlanningWalkthrough";
 import { Helmet } from "react-helmet-async";
 
 const CoachDashboard: React.FC = () => {
@@ -46,7 +43,6 @@ const CoachDashboard: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showProgramWizard, setShowProgramWizard] = useState(false);
   const [showChallengeWizard, setShowChallengeWizard] = useState(false);
-  const [showGoalCreator, setShowGoalCreator] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
@@ -108,12 +104,6 @@ const CoachDashboard: React.FC = () => {
     },
   });
   
-  const {
-    showWalkthrough,
-    completeWalkthrough,
-    skipWalkthrough,
-  } = usePlanningWalkthrough(id || "");
-
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth", { replace: true });
@@ -218,11 +208,14 @@ const CoachDashboard: React.FC = () => {
       }
     : needsPlan
       ? {
-          title: "Today needs a plan",
-          description: "Publish the next workout so every player knows what to do.",
-          action: "Assign workout",
+          title: "Start with 50 wrist shots",
+          description: "A simple shooting workout is ready. Review it, then publish it to your team.",
+          action: "Review and assign",
           complete: false,
-          onClick: () => setShowDatePicker(true),
+          onClick: () => {
+            const date = format(new Date(), "yyyy-MM-dd");
+            navigate(`/teams/${id}/assign?date=${date}&preset=wrist_shots`);
+          },
         }
       : {
           title: "Today is moving",
@@ -244,10 +237,7 @@ const CoachDashboard: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Coach home</p>
-              <p className="truncate font-display text-base font-black uppercase">{dashboard.team.name}</p>
-            </div>
+            <p className="font-display text-base font-black uppercase">Coach home</p>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -320,69 +310,27 @@ const CoachDashboard: React.FC = () => {
           </div>
         </section>
 
-        {!onboardingComplete && checklist.length > 0 && (
-          <OnboardingProgress
-            checklist={checklist}
-            playersCount={dashboard.pulse?.players_count ?? 0}
-            hasWorkouts={dashboard.today?.practice_card?.exists ?? false}
-            onAction={handleOnboardingAction}
-          />
-        )}
-
-        {!hasPlayers && !onboardingComplete && (
-          <AddPlayerChoice
-            onAddMyChild={() => {
-              setInviteModalTab("add-child");
-              setShowInviteModal(true);
-            }}
-            onInviteFamilies={() => {
-              setInviteModalTab("invite");
-              setShowInviteModal(true);
-            }}
-          />
-        )}
-
-        <section>
+        {hasPlayers && <section>
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Planning</p>
               <h2 className="mt-1 font-display text-2xl font-black uppercase">Plan the week</h2>
             </div>
-            <Button variant="ghost" className="min-h-11 text-primary hover:text-primary" onClick={() => setShowGameDayModal(true)}>
-              <Swords className="h-4 w-4" /> Game day
-            </Button>
           </div>
-          {!hasPlayers || needsPlan ? (
-            <details className="group overflow-hidden rounded-lg border border-border bg-card">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
-                <span className="flex-1">More planning options</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-              </summary>
-              <div className="border-t border-border p-4">
-                <PlanningHubCards
-                  teamId={id!}
-                  onAddWorkout={() => setShowDatePicker(true)}
-                  onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
-                  onCreateProgram={() => setShowProgramWizard(true)}
-                  onStartChallenge={() => setShowChallengeWizard(true)}
-                />
-              </div>
-            </details>
-          ) : (
-            <PlanningHubCards
-              teamId={id!}
-              onAddWorkout={() => setShowDatePicker(true)}
-              onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
-              onCreateProgram={() => setShowProgramWizard(true)}
-              onStartChallenge={() => setShowChallengeWizard(true)}
-            />
-          )}
-        </section>
+          <PlanningHubCards
+            teamId={id!}
+            showQuickWorkout={!needsPlan}
+            onAddWorkout={() => setShowDatePicker(true)}
+            onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+            onCreateProgram={() => setShowProgramWizard(true)}
+            onStartChallenge={() => setShowChallengeWizard(true)}
+          />
+        </section>}
 
-        <section className="grid items-start gap-5 xl:grid-cols-2">
+        {hasPlayers && <section className="grid items-start gap-5 xl:grid-cols-2">
           <ActiveProgramsSection teamId={id!} />
           <AssignedWorkoutsSection teamId={id!} />
-        </section>
+        </section>}
 
         {scheduleConnected && dashboard.upcoming && dashboard.upcoming.length > 0 && (
           <UpcomingEvents
@@ -400,7 +348,27 @@ const CoachDashboard: React.FC = () => {
             <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
           </summary>
           <div className="space-y-4 border-t border-border p-4">
+            {!onboardingComplete && checklist.length > 0 && (
+              <OnboardingProgress
+                checklist={checklist}
+                playersCount={dashboard.pulse?.players_count ?? 0}
+                hasWorkouts={dashboard.today?.practice_card?.exists ?? false}
+                onAction={handleOnboardingAction}
+              />
+            )}
             <TeamGoalCard teamId={id!} rosterCount={dashboard.pulse.players_count} />
+            <button
+              type="button"
+              className="flex min-h-14 w-full items-center gap-3 rounded-lg border border-border px-4 text-left transition-colors hover:border-primary/35 hover:bg-primary/[0.04]"
+              onClick={() => setShowGameDayModal(true)}
+            >
+              <Swords className="h-5 w-5 text-primary" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">Game day</span>
+                <span className="block truncate text-xs text-muted-foreground">Adjust the team plan for an upcoming game.</span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
             <button
               type="button"
               className="flex min-h-14 w-full items-center gap-3 rounded-lg border border-border px-4 text-left transition-colors hover:border-primary/35 hover:bg-primary/[0.04]"
@@ -441,14 +409,6 @@ const CoachDashboard: React.FC = () => {
           const dateStr = format(date, "yyyy-MM-dd");
           navigate(`/teams/${id}/assign?date=${dateStr}`);
         }}
-        onOpenGoalCreator={() => setShowGoalCreator(true)}
-      />
-
-      <GoalCreatorSheet
-        open={showGoalCreator}
-        onOpenChange={setShowGoalCreator}
-        teamId={id!}
-        rosterCount={dashboard.pulse.players_count}
       />
 
       <ProgramBuilderWizard
@@ -463,15 +423,6 @@ const CoachDashboard: React.FC = () => {
         teamId={id!}
       />
 
-      {/* First-time user walkthrough */}
-      <AnimatePresence>
-        {showWalkthrough && (
-          <PlanningWalkthrough
-            onComplete={completeWalkthrough}
-            onSkip={skipWalkthrough}
-          />
-        )}
-      </AnimatePresence>
     </AppShell>
   );
 };

@@ -25,6 +25,7 @@ export const MarketingNav: React.FC = () => {
     : allNavLinks;
 
   const isActive = (href: string) => location.pathname === href;
+  const isAuthPage = location.pathname === "/auth";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/80 shadow-[0_8px_30px_rgba(0,0,0,0.22)]">
@@ -33,7 +34,7 @@ export const MarketingNav: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 flex items-center justify-center overflow-hidden">
-              <HockeyAppLogo size={32} />
+              <HockeyAppLogo size={32} alt="" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-lg sm:text-xl text-foreground leading-tight">
@@ -60,15 +61,19 @@ export const MarketingNav: React.FC = () => {
                 {link.label}
               </Link>
             ))}
-            <Button variant="ghost" className="text-sm" asChild>
-              <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
-            </Button>
-            <Button
-              className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft"
-              asChild
-            >
-              <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
-            </Button>
+            {!isAuthPage && (
+              <>
+                <Button variant="ghost" className="text-sm" asChild>
+                  <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
+                </Button>
+                <Button
+                  className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft"
+                  asChild
+                >
+                  <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -107,17 +112,19 @@ export const MarketingNav: React.FC = () => {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-4 flex flex-col gap-2">
-              <Button variant="outline" asChild className="w-full">
-                <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
-              </Button>
-              <Button
-                className="w-full bg-primary hover:bg-primary/90"
-                asChild
-              >
-                <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
-              </Button>
-            </div>
+            {!isAuthPage && (
+              <div className="pt-4 flex flex-col gap-2">
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
+                </Button>
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90"
+                  asChild
+                >
+                  <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
