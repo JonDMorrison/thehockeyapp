@@ -1,6 +1,8 @@
 project_id = "xonpnkzkvqxarbxpinhm"
 
 [auth]
+# Hosted Auth: password_hibp_enabled=false (Management API; not represented by CLI config).
+# Allow simple passwords consistently with the six-character UI requirement.
 minimum_password_length = 6
 password_requirements = ""
 site_url = "https://www.hockeyapp.ca"

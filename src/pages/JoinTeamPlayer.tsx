@@ -171,13 +171,15 @@ const JoinTeamPlayer: React.FC = () => {
       // Clear pending token
       sessionStorage.removeItem("pendingJoinToken");
 
+      // A challenge invitation has a specific next action; optional profile details can wait.
+      const shootingReturn = result.team_id && selectedPlayerId ? challengeReturn(result.team_id, selectedPlayerId) : null;
+      if (shootingReturn) { navigate(shootingReturn, { replace: true }); return; }
+
       if (preview?.collect_player_profile && selectedPlayerId && result.team_id) {
         navigate(`/players/${selectedPlayerId}/team-onboarding/${result.team_id}`, { replace: true });
         return;
       }
 
-      const shootingReturn = result.team_id && selectedPlayerId ? challengeReturn(result.team_id, selectedPlayerId) : null;
-      if (shootingReturn) { navigate(shootingReturn, { replace: true }); return; }
       setJoinSuccess(true);
     },
     onError: (error: Error) => {
