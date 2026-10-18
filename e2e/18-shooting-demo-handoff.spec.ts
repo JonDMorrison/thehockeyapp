@@ -37,10 +37,10 @@ test("sample choice survives coach sign-in, team setup, and real publication wit
   await page
     .getByLabel(/team name/i)
     .fill(`Disposable Public Shooting Demo ${Date.now()}`);
-  await page.getByRole("button", { name: "Create team & continue" }).click();
-  await page.getByRole("button", { name: "Skip for now", exact: true }).click();
-  await page.getByRole("button", { name: "Choose challenge dates" }).click();
-  await expect(page).toHaveURL(/\/teams\/[^/]+\/shooting\/new\?days=14$/);
+  await page.getByRole("button", { name: "Pick challenge dates" }).click();
+  await expect(page).toHaveURL(
+    /\/teams\/[^/]+\/shooting\/new\?days=14&first=1$/,
+  );
   await expect(
     page.getByRole("button", { name: "14 days", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -49,10 +49,14 @@ test("sample choice survives coach sign-in, team setup, and real publication wit
     process.env.PUBLIC_SHOOTING_FIXTURE || "/tmp/public-shooting-fixture.json",
     JSON.stringify({ teamId }),
   );
-  await page.getByRole("button", { name: "Publish challenge" }).click();
-  await expect(page).toHaveURL(/\/shooting\/[0-9a-f-]+$/);
+  await page
+    .getByRole("button", { name: "Create challenge & invite families" })
+    .click();
+  await expect(page).toHaveURL(/\/shooting\/[0-9a-f-]+\?invite=1$/);
   await expect(page.getByTestId("challenge-total")).toHaveText("0");
-  await expect(page.getByText(/Your challenge is ready/)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Your challenge is ready/ }),
+  ).toBeVisible();
   const client = createClient(
     process.env.VITE_SUPABASE_URL!,
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,

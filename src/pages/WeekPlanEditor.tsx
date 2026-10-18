@@ -321,7 +321,7 @@ const WeekPlanEditor: React.FC = () => {
 
   // Save mutation
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (publishing: boolean = false) => {
       let weekPlanId = planId;
 
       if (isEditing) {
@@ -402,15 +402,15 @@ const WeekPlanEditor: React.FC = () => {
         }
       }
 
-      return { weekPlanId };
+      return { weekPlanId, publishing };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-week-plan", result.weekPlanId] });
-      toast.success(t('common.saved'), t('practice.weekPlanSavedAsDraft'));
+      if (!result.publishing) toast.success(t('common.saved'), t('practice.weekPlanSavedAsDraft'));
       setIsDirty(false);
       // Navigate back to dashboard after saving
-      navigate(`/teams/${teamId}`);
+      if (!result.publishing) navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
       toast.error(t('practice.failedToSave'), error.message);
@@ -457,14 +457,14 @@ const WeekPlanEditor: React.FC = () => {
   const publishMutation = useMutation({
     mutationFn: async () => {
       // First save the plan
-      await saveMutation.mutateAsync();
+      await saveMutation.mutateAsync(true);
 
       // Then publish each day as a practice card
       for (const day of days) {
         if (day.tasks.length === 0) continue;
 
         // Check if card exists
-        const { data: existingCard } = await supabase
+        const { data: existingCard, error: existingError } = await supabase
           .from("practice_cards")
           .select("id")
           .eq("team_id", teamId)
@@ -472,6 +472,7 @@ const WeekPlanEditor: React.FC = () => {
           .eq("mode", "normal")
           .maybeSingle();
 
+        if (existingError) throw existingError;
         let practiceCardId = existingCard?.id;
 
         if (existingCard) {
@@ -490,10 +491,11 @@ const WeekPlanEditor: React.FC = () => {
           if (updateError) throw updateError;
 
           // Delete old tasks
-          await supabase
+          const { error: deleteError } = await supabase
             .from("practice_tasks")
             .delete()
             .eq("practice_card_id", existingCard.id);
+          if (deleteError) throw deleteError;
         } else {
           // Create new card
           const { data: newCard, error: createError } = await supabase
@@ -547,10 +549,11 @@ const WeekPlanEditor: React.FC = () => {
       // Update plan status
       const currentPlanId = isEditing ? planId : undefined;
       if (currentPlanId) {
-        await supabase
+        const { error: statusError } = await supabase
           .from("team_week_plans")
           .update({ status: "published", updated_at: new Date().toISOString() })
           .eq("id", currentPlanId);
+        if (statusError) throw statusError;
       }
     },
     onSuccess: () => {
@@ -559,8 +562,8 @@ const WeekPlanEditor: React.FC = () => {
       toast.success(t('practice.published'), t('practice.practiceCardsCreated'));
       setShowPublishDialog(false);
       setStatus("published");
-      // Navigate back to dashboard after publishing
-      navigate(`/teams/${teamId}`);
+      // Onboarding invites come after a successfully published program.
+      navigate(`/teams/${teamId}${searchParams.get("inviteAfter") === "1" ? "?inviteFamilies=1" : ""}`);
     },
     onError: (error: Error) => {
       toast.error(t('practice.failedToPublish'), error.message);
@@ -608,6 +611,7 @@ const WeekPlanEditor: React.FC = () => {
 
   return (
     <AppShell
+      hideUserMenu={searchParams.get("inviteAfter") === "1"}
       hideNav
       header={
         <div className="flex items-center justify-between">
@@ -630,7 +634,7 @@ const WeekPlanEditor: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => saveMutation.mutate()}
+              onClick={() => saveMutation.mutate(false)}
               disabled={saveMutation.isPending || !name}
             >
               <Save className="w-4 h-4 mr-1" />

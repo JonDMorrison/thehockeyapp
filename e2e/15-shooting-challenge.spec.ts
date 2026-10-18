@@ -95,25 +95,23 @@ test.describe
       .getByLabel(/team name/i)
       .fill(`Disposable Shooting Release ${Date.now()}`);
     await page.getByRole("button", { name: "Create team & continue" }).click();
-    await page
-      .getByRole("button", { name: "Skip for now", exact: true })
-      .click();
     await page.getByRole("button", { name: "Choose challenge dates" }).click();
     await expect(
       page.getByRole("heading", { name: "Start a shooting challenge" }),
     ).toBeVisible();
     teamId = page.url().match(/teams\/([^/]+)/)![1];
+    await page.getByText("Challenge name & time zone", { exact: true }).click();
     await page.getByLabel("Challenge name").fill("Release Shooting Challenge");
     await page.getByLabel("Time zone").selectOption("UTC");
     await page.getByLabel("Starts", { exact: true }).fill(today);
     await page.getByRole("button", { name: "Custom dates" }).click();
     await page.getByLabel("Ends", { exact: true }).fill(today);
     await capture(page, "shooting-coach-publish.png");
-    await page.getByRole("button", { name: "Publish challenge" }).click();
-    await expect(page).toHaveURL(/\/shooting\/[0-9a-f-]+$/);
-    challengeId = page.url().split("/shooting/")[1];
-    await expect(page.getByText(/your challenge is ready/i)).toBeVisible();
-    await page.getByRole("button", { name: "Invite families" }).click();
+    await page.getByRole("button", { name: "Create challenge & invite families" }).click();
+    await expect(page).toHaveURL(/\/shooting\/[0-9a-f-]+\?invite=1$/);
+    challengeId = new URL(page.url()).pathname.split("/shooting/")[1];
+    await expect(page.getByRole("heading", { name: /your challenge is ready/i })).toBeVisible();
+    await expect(page.getByLabel("Shareable link")).toHaveValue(/\/join\//);
     const invite = await page.getByLabel("Shareable link").inputValue();
     expect(invite).toContain(`?challenge=${challengeId}`);
     inviteToken = new URL(invite).pathname.split("/").at(-1)!;

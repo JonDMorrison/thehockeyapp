@@ -1,3 +1,4 @@
+import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -25,8 +26,8 @@ export default function ShootingChallenge() {
   const [selected, setSelected] = useState(search.get("player") || "");
   const [date, setDate] = useState("");
   const [inviteLink, setInviteLink] = useState("");
-  const [inviteError, setInviteError] = useState("");
-  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteRequested, setInviteRequested] = useState(false);
+  const firstChallenge = search.get("invite") === "1";
   const [copyStatus, setCopyStatus] = useState("");
   const query = useQuery({
     queryKey: ["shooting-snapshot", challengeId, user?.id],
@@ -53,11 +54,20 @@ export default function ShootingChallenge() {
     (data && data.today > data.challenge.end_date
       ? data.challenge.end_date
       : data?.today || "");
-  const invite = async () => {
-    if (!data || inviteBusy) return;
-    setInviteBusy(true);
-    setInviteError("");
-    try {
+  const invitation = useQuery({
+    queryKey: [
+      "shooting-invitation",
+      challengeId,
+      data?.challenge.team_id,
+      user?.id,
+    ],
+    enabled: !!data?.is_staff && (firstChallenge || inviteRequested),
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 60_000,
+    queryFn: async () => {
+      if (!data?.is_staff)
+        throw new Error("Only team staff can invite families.");
       const current = await supabase
         .from("team_invites")
         .select("token")
@@ -83,17 +93,18 @@ export default function ShootingChallenge() {
           throw new Error(result.error || "Invite could not be created.");
         token = result.token;
       }
-      setInviteLink(
-        `${window.location.origin}/join/${token}?challenge=${challengeId}`,
-      );
-    } catch (err) {
-      setInviteError(
-        (err as { message?: string }).message ||
-          "Could not create an invitation. Retry.",
-      );
-    } finally {
-      setInviteBusy(false);
-    }
+      return `${window.location.origin}/join/${token}?challenge=${challengeId}`;
+    },
+  });
+  const familyLink = inviteLink || invitation.data;
+  const inviteError = invitation.error
+    ? (invitation.error as Error).message ||
+      "Could not create an invitation. Retry."
+    : "";
+  const inviteBusy = invitation.isFetching;
+  const invite = () => {
+    if (inviteRequested || firstChallenge) void invitation.refetch();
+    else setInviteRequested(true);
   };
   const copy = async (link: string) => {
     try {
@@ -156,6 +167,7 @@ export default function ShootingChallenge() {
             {data.is_staff ? "Team home" : "Player home"}
           </Link>
         </Button>
+        {firstChallenge && data.is_staff && <FirstChallengeSteps step={3} />}
         <section className="rounded-xl border border-primary/25 bg-primary/[0.06] p-6">
           <Target aria-hidden="true" className="mb-3 h-8 w-8 text-primary" />
           <p className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -183,36 +195,57 @@ export default function ShootingChallenge() {
         </section>
         {data.is_staff && (
           <AppCard className="space-y-3">
+            {firstChallenge && (
+              <div>
+                <h2 className="font-display text-2xl font-bold">
+                  Your challenge is ready. Bring the team!
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Send this invitation in your team chat. Families join, add
+                  their player, and start logging shots.
+                </p>
+              </div>
+            )}
             <div className="flex flex-wrap gap-2">
-              <Button disabled={inviteBusy} onClick={invite}>
-                {inviteBusy ? "Preparing invite…" : "Invite families"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  copy(`${window.location.origin}/shooting/${challengeId}`)
-                }
-              >
-                Copy challenge link
-              </Button>
+              {(!firstChallenge || !familyLink) && (
+                <Button disabled={inviteBusy} onClick={invite}>
+                  {inviteBusy
+                    ? "Preparing invite…"
+                    : inviteError
+                      ? "Retry invitation"
+                      : "Invite families"}
+                </Button>
+              )}
+              {!firstChallenge && (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    copy(`${window.location.origin}/shooting/${challengeId}`)
+                  }
+                >
+                  Copy challenge link
+                </Button>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Invite families to join this team and return straight to the
-              challenge. The challenge link is for existing team members.
-            </p>
-            {inviteLink && (
+            {!firstChallenge && (
+              <p className="text-xs text-muted-foreground">
+                Invite families to join this team and return straight to the
+                challenge. The challenge link is for existing team members.
+              </p>
+            )}
+            {familyLink && (
               <div>
                 <Label htmlFor="challenge-invite">Shareable link</Label>
                 <Input
                   id="challenge-invite"
-                  value={inviteLink}
+                  value={familyLink}
                   readOnly
                   onFocus={(e) => e.target.select()}
                 />
                 <Button
-                  className="mt-2"
-                  variant="outline"
-                  onClick={() => copy(inviteLink)}
+                  className={firstChallenge ? "mt-3 min-h-12 w-full" : "mt-2"}
+                  variant={firstChallenge ? "default" : "outline"}
+                  onClick={() => copy(familyLink)}
                 >
                   Copy invitation
                 </Button>

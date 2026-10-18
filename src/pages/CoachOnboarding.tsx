@@ -1,5 +1,6 @@
+import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { clearSelectedRole } from "@/components/marketing/GetStartedModal";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -43,7 +44,6 @@ import {
   ClipboardList,
   ShieldCheck,
   Target,
-  ChevronRight,
 } from "lucide-react";
 
 const AGE_DIVISIONS = [
@@ -89,13 +89,18 @@ const CoachOnboarding: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [search] = useSearchParams();
-  const shootingDays = ["7", "14", "30"].includes(search.get("shootingDays") || "") ? search.get("shootingDays") : null;
+  const shootingDays = ["7", "14", "30"].includes(
+    search.get("shootingDays") || "",
+  )
+    ? search.get("shootingDays")
+    : null;
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setActiveView, setActiveTeamId } = useActiveView();
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const creatingTeam = useRef(false);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   // Step 1 — team
@@ -114,21 +119,29 @@ const CoachOnboarding: React.FC = () => {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      navigate(shootingDays ? `/auth?redirect=${encodeURIComponent(`/onboarding/coach?shootingDays=${shootingDays}`)}` : "/auth", { replace: true });
+      navigate(
+        shootingDays
+          ? `/auth?redirect=${encodeURIComponent(`/onboarding/coach?shootingDays=${shootingDays}`)}`
+          : "/auth",
+        { replace: true },
+      );
     }
   }, [authLoading, isAuthenticated, navigate, shootingDays]);
 
-  useEffect(() => { if (shootingDays && isAuthenticated) clearSelectedRole(); }, [shootingDays, isAuthenticated]);
+  useEffect(() => {
+    if (shootingDays && isAuthenticated) clearSelectedRole();
+  }, [shootingDays, isAuthenticated]);
 
   const selectedPalette =
     teamPalettes.find((p) => p.id === paletteId) ?? teamPalettes[0];
   const progressSteps = [
     t("coachOnboarding.progress.team"),
+    "Set up activity",
     t("coachOnboarding.progress.families"),
-    t("coachOnboarding.progress.firstWeek"),
   ];
 
   const handleCreateTeam = async () => {
+    if (creatingTeam.current) return;
     const trimmed = teamName.trim();
     if (!trimmed) {
       setNameError(t("coachOnboarding.teamNameRequired"));
@@ -136,6 +149,7 @@ const CoachOnboarding: React.FC = () => {
       return;
     }
     setNameError(null);
+    creatingTeam.current = true;
     setSubmitting(true);
     try {
       const { data, error } = await supabase.rpc("create_team_with_owner", {
@@ -154,10 +168,18 @@ const CoachOnboarding: React.FC = () => {
       setActiveView("coach");
       setActiveTeamId(team.team_id);
       setTeamId(team.team_id);
-      setStep(2);
+      if (shootingDays) {
+        navigate(
+          `/teams/${team.team_id}/shooting/new?days=${shootingDays}&first=1`,
+          { replace: true },
+        );
+      } else {
+        setStep(2);
+      }
     } catch {
       toast.error(t("coachOnboarding.createTeamError"));
     } finally {
+      creatingTeam.current = false;
       setSubmitting(false);
     }
   };
@@ -209,7 +231,10 @@ const CoachOnboarding: React.FC = () => {
 
     if (error) {
       setCollectPlayerProfile(previous);
-      toast.error("Could not update invite", "Please try the profile toggle again.");
+      toast.error(
+        "Could not update invite",
+        "Please try the profile toggle again.",
+      );
     }
   };
 
@@ -273,16 +298,17 @@ const CoachOnboarding: React.FC = () => {
   const goToShooting = () => {
     sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
-      navigate(`/teams/${teamId}/shooting/new${shootingDays ? `?days=${shootingDays}` : ""}`);
+      navigate(
+        `/teams/${teamId}/shooting/new?days=${shootingDays || "7"}&first=1`,
+      );
     } else {
       finish();
     }
   };
 
-  const goToAi = () => {
-    // Open the existing program builder / AI flow on the coach dashboard.
+  const goToProgram = () => {
     if (teamId) {
-      navigate(`/teams/${teamId}`);
+      navigate(`/teams/${teamId}/builder/new?inviteAfter=1`);
     } else {
       finish();
     }
@@ -304,6 +330,86 @@ const CoachOnboarding: React.FC = () => {
     return null;
   }
 
+  if (shootingDays) {
+    return (
+      <AppShell hideNav hideUserMenu>
+        <PageContainer className="max-w-xl space-y-6 py-7">
+          <FirstChallengeSteps step={1} />
+          <div>
+            <Target aria-hidden="true" className="mb-3 h-8 w-8 text-primary" />
+            <h1 className="font-display text-3xl font-black">
+              What’s your team called?
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Just a name to get started. Your {shootingDays}-day shooting
+              challenge is up next.
+            </p>
+          </div>
+          <AppCard>
+            <form
+              className="space-y-5"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleCreateTeam();
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="teamName">Team name</Label>
+                <Input
+                  id="teamName"
+                  value={teamName}
+                  maxLength={100}
+                  autoComplete="organization"
+                  placeholder="e.g. U11 Ice Wolves"
+                  disabled={submitting}
+                  onChange={(event) => {
+                    setTeamName(event.target.value);
+                    setNameError(null);
+                  }}
+                  aria-invalid={!!nameError}
+                  aria-describedby={nameError ? "team-name-error" : undefined}
+                  className="h-14 text-base"
+                />
+                {nameError && (
+                  <p
+                    id="team-name-error"
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
+                    {nameError}
+                  </p>
+                )}
+              </div>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="min-h-12 w-full"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2
+                      aria-hidden="true"
+                      className="h-4 w-4 animate-spin"
+                    />{" "}
+                    Creating team…
+                  </>
+                ) : (
+                  <>
+                    Pick challenge dates{" "}
+                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </AppCard>
+          <p className="text-center text-xs text-muted-foreground">
+            Add team colours and other details anytime from team settings.
+          </p>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       hideNav
@@ -316,7 +422,9 @@ const CoachOnboarding: React.FC = () => {
               size="icon-sm"
               aria-label={t("coachOnboarding.back")}
               onClick={() =>
-                step > 1 && !teamId ? setStep(step - 1) : navigate("/welcome")
+                step === 3
+                  ? setStep(2)
+                  : navigate(teamId ? `/teams/${teamId}` : "/welcome")
               }
             >
               <ChevronLeft className="h-5 w-5" />
@@ -687,8 +795,8 @@ const CoachOnboarding: React.FC = () => {
             </section>
           )}
 
-          {/* STEP 2 — INVITE FAMILIES */}
-          {step === 2 && (
+          {/* STEP 3 — INVITE FAMILIES */}
+          {step === 3 && (
             <div className="mx-auto max-w-3xl space-y-6 animate-fade-up">
               <div>
                 <AppCardTitle className="text-xl flex items-center gap-2">
@@ -721,11 +829,16 @@ const CoachOnboarding: React.FC = () => {
                     <ClipboardList className="h-4 w-4 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <Label htmlFor="coach-collect-player-profile" className="font-semibold">
+                    <Label
+                      htmlFor="coach-collect-player-profile"
+                      className="font-semibold"
+                    >
                       Collect player profiles
                     </Label>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      Families will be asked for position, favourite player, hockey dream, what they love about hockey, and an optional photo after joining.
+                      Families will be asked for position, favourite player,
+                      hockey dream, what they love about hockey, and an optional
+                      photo after joining.
                     </p>
                   </div>
                   <Switch
@@ -774,37 +887,28 @@ const CoachOnboarding: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="team"
-                  size="xl"
-                  className="w-full"
-                  onClick={() => setStep(3)}
-                  disabled={submitting}
-                >
-                  {t("coachOnboarding.continueToShooting")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => setStep(3)}
-                  disabled={submitting}
-                >
-                  {t("coachOnboarding.skipForNow")}
-                </Button>
-              </div>
+              <Button
+                variant="team"
+                size="xl"
+                className="w-full"
+                onClick={finish}
+                disabled={submitting}
+              >
+                Go to my team
+              </Button>
             </div>
           )}
 
-          {/* STEP 3 — FIRST WEEK */}
-          {step === 3 && (
+          {/* STEP 2 — SET UP AN ACTIVITY */}
+          {step === 2 && (
             <div className="mx-auto max-w-3xl space-y-6 animate-fade-up">
               <div>
                 <AppCardTitle className="text-xl">
-                  {t("coachOnboarding.step3Title")}
+                  What would you like to set up?
                 </AppCardTitle>
                 <AppCardDescription className="mt-1">
-                  {t("coachOnboarding.step3Subtitle")}
+                  Build a program, choose a template, or start a shooting
+                  challenge. Invite families after your activity is set up.
                 </AppCardDescription>
               </div>
 
@@ -814,7 +918,9 @@ const CoachOnboarding: React.FC = () => {
                     <Target className="h-6 w-6" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <AppCardTitle>{t("coachOnboarding.shootingTitle")}</AppCardTitle>
+                    <AppCardTitle>
+                      {t("coachOnboarding.shootingTitle")}
+                    </AppCardTitle>
                     <AppCardDescription className="mt-1 leading-5">
                       {t("coachOnboarding.shootingDescription")}
                     </AppCardDescription>
@@ -832,11 +938,7 @@ const CoachOnboarding: React.FC = () => {
                 </Button>
               </AppCard>
 
-              <details className="group overflow-hidden rounded-xl border border-border bg-card">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
-                  <span className="flex-1">{t("coachOnboarding.morePlanningOptions")}</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-                </summary>
+              <section aria-label="Program options">
                 <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
                   <button
                     type="button"
@@ -847,33 +949,42 @@ const CoachOnboarding: React.FC = () => {
                       <LayoutTemplate className="h-5 w-5 text-primary" />
                     </span>
                     <span>
-                      <span className="block font-semibold">{t("coachOnboarding.templateTitle")}</span>
-                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{t("coachOnboarding.templateDescription")}</span>
+                      <span className="block font-semibold">
+                        {t("coachOnboarding.templateTitle")}
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                        {t("coachOnboarding.templateDescription")}
+                      </span>
                     </span>
                   </button>
                   <button
                     type="button"
                     className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
-                    onClick={goToAi}
+                    onClick={goToProgram}
                   >
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                       <Sparkles className="h-5 w-5 text-primary" />
                     </span>
                     <span>
-                      <span className="block font-semibold">{t("coachOnboarding.aiTitle")}</span>
-                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{t("coachOnboarding.aiDescription")}</span>
+                      <span className="block font-semibold">
+                        Build a program
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                        Choose a weekly plan, customize the activities, and
+                        publish it before inviting families.
+                      </span>
                     </span>
                   </button>
                 </div>
-              </details>
+              </section>
 
               <div className="flex flex-col gap-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   className="w-full"
-                  onClick={finish}
+                  onClick={() => setStep(3)}
                 >
-                  {t("coachOnboarding.finish")}
+                  I’ll set up my activity later
                 </Button>
               </div>
             </div>
@@ -889,7 +1000,7 @@ const CoachOnboarding: React.FC = () => {
           level={level || null}
           open={templatePickerOpen}
           onOpenChange={setTemplatePickerOpen}
-          onDone={finish}
+          onDone={() => setStep(3)}
         />
       )}
     </AppShell>

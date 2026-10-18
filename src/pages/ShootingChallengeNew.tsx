@@ -1,3 +1,4 @@
+import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -35,21 +36,87 @@ export default function ShootingChallengeNew() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [search] = useSearchParams();
-  const [name, setName] = useState("Team Shooting Challenge");
-  const [zone, setZone] = useState(zones[0]);
-  const [start, setStart] = useState(() => dateInZone(zones[0]));
-  const [duration, setDuration] = useState(() =>
-    ["7", "14", "30"].includes(search.get("days") || "")
-      ? search.get("days")!
-      : "7",
+  const firstChallenge = search.get("first") === "1";
+  const draftKey = `shooting-setup:v1:${teamId}`;
+  const [draft] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(draftKey) || "null");
+      return saved &&
+        typeof saved.name === "string" &&
+        zones.includes(saved.zone) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(saved.start) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(saved.customEnd) &&
+        ["7", "14", "30", "custom"].includes(saved.duration) &&
+        /^[0-9a-f-]{36}$/i.test(saved.publication?.id) &&
+        typeof saved.publication?.payload === "string"
+        ? (saved as {
+            name: string;
+            zone: string;
+            start: string;
+            customEnd: string;
+            duration: string;
+            publication: { id: string; payload: string };
+          })
+        : null;
+    } catch {
+      return null;
+    }
+  });
+  const [name, setName] = useState(draft?.name ?? "Team Shooting Challenge");
+  const [zone, setZone] = useState(draft?.zone ?? zones[0]);
+  const [start, setStart] = useState(
+    () => draft?.start ?? dateInZone(zones[0]),
   );
-  const [customEnd, setCustomEnd] = useState(() =>
-    addCalendarDays(dateInZone(zones[0]), 6),
+  const [duration, setDuration] = useState(
+    () =>
+      draft?.duration ??
+      (["7", "14", "30"].includes(search.get("days") || "")
+        ? search.get("days")!
+        : "7"),
+  );
+  const [customEnd, setCustomEnd] = useState(
+    () => draft?.customEnd ?? addCalendarDays(dateInZone(zones[0]), 6),
   );
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
-  const publication = useRef({ id: crypto.randomUUID(), payload: "" });
+  const publication = useRef(
+    draft?.publication ?? { id: crypto.randomUUID(), payload: "" },
+  );
+  const rememberDraft = () => {
+    try {
+      sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          name,
+          zone,
+          start,
+          duration,
+          customEnd,
+          publication: publication.current,
+        }),
+      );
+    } catch {
+      /* In-memory retries still work if storage is unavailable. */
+    }
+  };
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          name,
+          zone,
+          start,
+          duration,
+          customEnd,
+          publication: publication.current,
+        }),
+      );
+    } catch {
+      /* Optional session draft. */
+    }
+  }, [draftKey, name, zone, start, duration, customEnd]);
   const end =
     duration === "custom"
       ? customEnd
@@ -90,6 +157,7 @@ export default function ShootingChallengeNew() {
       )
         publication.current.id = crypto.randomUUID();
       publication.current.payload = payload;
+      rememberDraft();
       const { data, error } = await supabase.rpc("create_shooting_challenge", {
         p_id: publication.current.id,
         p_team: teamId,
@@ -99,7 +167,14 @@ export default function ShootingChallengeNew() {
         p_timezone: zone,
       });
       if (error) throw error;
-      navigate(`/shooting/${data}`);
+      try {
+        sessionStorage.removeItem(draftKey);
+      } catch {
+        /* Optional session draft. */
+      }
+      if (firstChallenge)
+        navigate(`/shooting/${data}?invite=1`, { replace: true });
+      else navigate(`/shooting/${data}`);
     } catch (err) {
       setError(
         `Challenge not published. ${(err as { message?: string }).message || "Please retry."}`,
@@ -110,12 +185,15 @@ export default function ShootingChallengeNew() {
     }
   };
   return (
-    <AppShell hideNav>
+    <AppShell hideNav hideUserMenu={firstChallenge}>
       <PageContainer className="max-w-xl space-y-5">
-        <Button variant="ghost" onClick={() => navigate(`/teams/${teamId}`)}>
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Team home
-        </Button>
+        {firstChallenge && <FirstChallengeSteps step={2} />}
+        {!firstChallenge && (
+          <Button variant="ghost" onClick={() => navigate(`/teams/${teamId}`)}>
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            Team home
+          </Button>
+        )}
         <div>
           <Target aria-hidden="true" className="mb-3 h-8 w-8 text-primary" />
           <h1 className="font-display text-3xl font-black uppercase">
@@ -137,37 +215,44 @@ export default function ShootingChallengeNew() {
         ) : (
           <AppCard>
             <form className="space-y-5" onSubmit={publish}>
-              <div>
-                <Label htmlFor="challenge-name">Challenge name</Label>
-                <Input
-                  id="challenge-name"
-                  value={name}
-                  maxLength={100}
-                  required
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={busy}
-                />
-              </div>
-              <div>
-                <Label htmlFor="challenge-zone">Time zone</Label>
-                <select
-                  id="challenge-zone"
-                  className="mt-2 min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={zone}
-                  onChange={(e) => {
-                    setZone(e.target.value);
-                    if (start === dateInZone(zone))
-                      setStart(dateInZone(e.target.value));
-                  }}
-                  disabled={busy}
-                >
-                  {zones.map((z) => (
-                    <option key={z} value={z}>
-                      {z.replace(/_/g, " ")}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <details open={firstChallenge ? undefined : true}>
+                <summary className="cursor-pointer py-2 text-sm font-medium">
+                  Challenge name & time zone
+                </summary>
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <Label htmlFor="challenge-name">Challenge name</Label>
+                    <Input
+                      id="challenge-name"
+                      value={name}
+                      maxLength={100}
+                      required
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={busy}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="challenge-zone">Time zone</Label>
+                    <select
+                      id="challenge-zone"
+                      className="mt-2 min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      value={zone}
+                      onChange={(e) => {
+                        setZone(e.target.value);
+                        if (start === dateInZone(zone))
+                          setStart(dateInZone(e.target.value));
+                      }}
+                      disabled={busy}
+                    >
+                      {zones.map((z) => (
+                        <option key={z} value={z}>
+                          {z.replace(/_/g, " ")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </details>
               <div>
                 <Label htmlFor="challenge-start">Starts</Label>
                 <Input
@@ -240,7 +325,11 @@ export default function ShootingChallengeNew() {
                     className="h-4 w-4 animate-spin"
                   />
                 )}
-                {busy ? "Publishing…" : "Publish challenge"}
+                {busy
+                  ? "Publishing…"
+                  : firstChallenge
+                    ? "Create challenge & invite families"
+                    : "Publish challenge"}
               </Button>
             </form>
           </AppCard>

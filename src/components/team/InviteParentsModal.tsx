@@ -404,7 +404,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
               {activeTab === "add-child"
@@ -657,11 +657,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       {t("teams.inviteParents.expires", { date: new Date(invite.expires_at).toLocaleDateString() })}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Input value={inviteLink || ""} readOnly className="text-xs" />
+                      <Input value={inviteLink || ""} readOnly aria-label="Family invitation link" className="text-xs" />
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
+                        aria-label="Copy invitation link"
                         onClick={handleCopy}
                       >
                         {copied ? (
