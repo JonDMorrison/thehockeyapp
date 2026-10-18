@@ -42,6 +42,8 @@ test.describe("mobile shared-account journeys", () => {
     await page.goto(`/players/${playerId}/team-onboarding/${teamId}`);
     await expect(page.getByRole("heading", { name: new RegExp(`tell the coaches about ${playerName}`, "i") })).toBeVisible();
 
+    await page.getByLabel(/^position/i).click();
+    await page.getByRole("option", { name: "Not sure yet", exact: true }).click();
     await page.getByRole("button", { name: /continue/i }).click();
     await expect(page.getByRole("heading", { name: /their hockey story/i })).toBeVisible();
     await expect(page.getByLabel(/favourite player/i)).toBeVisible();

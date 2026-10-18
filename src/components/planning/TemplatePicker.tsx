@@ -81,7 +81,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
     setApplyingId(template.id);
     try {
       const comingMonday = getNextProgramWeekStart();
-      const { cardsCreated } = await materializeTemplate(
+      const { cardsCreated, cardsFailed } = await materializeTemplate(
         template,
         teamId,
         userId,
@@ -89,7 +89,12 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
         level
       );
       queryClient.invalidateQueries({ queryKey: ["practice-cards", teamId] });
-      toast.success(t("templates.addedToast", { count: cardsCreated }));
+      if (cardsCreated === 0) throw new Error("No workouts were imported");
+      if (cardsFailed > 0) {
+        toast.error("Some workouts couldn’t be added", `${cardsCreated} drafts added; ${cardsFailed} days failed. Review your plan before trying again.`);
+      } else {
+        toast.success(t("templates.addedToast", { count: cardsCreated }));
+      }
       onOpenChange(false);
       onDone();
     } catch {

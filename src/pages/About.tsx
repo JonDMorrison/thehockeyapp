@@ -1,4 +1,5 @@
 import React from "react";
+import { AboutTeamStory } from "@/components/marketing/AboutTeamStory";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -55,17 +56,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* Why we built it for teams */}
-      <section className="py-16 lg:py-20 bg-surface-muted">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-foreground">
-            {t('marketing.about_why_teams_h2')}
-          </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {t('marketing.about_why_teams_p1')}
-          </p>
-        </div>
-      </section>
+      <AboutTeamStory />
 
       {/* Main Story */}
       <section className="py-20 lg:py-28 bg-background">

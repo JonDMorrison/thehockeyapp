@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import { logger, ErrorBoundary } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
@@ -100,6 +100,22 @@ const PageLoader = () => (
   </motion.div>
 );
 
+// Mount with the resolved route so lazy pages have committed their anchor targets.
+const RouteScroll = (): null => {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    let anchor: HTMLElement | null = null;
+    try {
+      anchor = hash ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+    } catch {
+      // An invalid fragment should never prevent the route from opening.
+    }
+    if (anchor) anchor.scrollIntoView({ block: "start" });
+    else window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
+};
+
 // Animated routes wrapper
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -123,6 +139,7 @@ const AnimatedRoutes = () => {
           }}
           className="flex-1 flex flex-col min-h-screen"
         >
+          <RouteScroll />
           <Routes location={location}>
             {/* Marketing pages */}
             <Route path="/" element={<Home />} />
@@ -235,12 +252,14 @@ const App = () => {
                 className: "bg-card text-foreground border border-border shadow-medium",
               }}
             />
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <RouteMetadata />
-              <Suspense fallback={<PageLoader />}>
-                <AnimatedRoutes />
-              </Suspense>
-            </BrowserRouter>
+            <MotionConfig reducedMotion="user">
+              <BrowserRouter>
+                <RouteMetadata />
+                <Suspense fallback={<PageLoader />}>
+                  <AnimatedRoutes />
+                </Suspense>
+              </BrowserRouter>
+            </MotionConfig>
           </TooltipProvider>
         </ActiveViewProvider>
       </QueryClientProvider>

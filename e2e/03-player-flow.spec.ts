@@ -12,7 +12,7 @@ test.describe('Player Flow', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     const hasPlayers = await page.locator('a[href*="/players/"]').first().isVisible();
-    const hasEmpty = await page.getByText(/no players|add player|create/i).isVisible();
+    const hasEmpty = await page.getByText(/no players|add player|create/i).first().isVisible();
     expect(hasPlayers || hasEmpty).toBeTruthy();
   });
 

@@ -122,4 +122,3 @@ export const ChallengeDayBuilder: React.FC<ChallengeDayBuilderProps> = ({
 
 // Export exercises as a hook-friendly getter for ThirtyDayChallengeWizard
 export { exerciseData };
-export type { Exercise };

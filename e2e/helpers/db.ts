@@ -1,9 +1,23 @@
+import fs from 'node:fs';
+
 // Direct Supabase REST API calls to verify database state
 // Uses anon key since we're reading data that belongs to the authenticated user
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
-const AUTH_TOKEN = process.env.TEST_AUTH_TOKEN!; // JWT from user.json
+function getAuthToken(): string {
+  if (process.env.TEST_AUTH_TOKEN) return process.env.TEST_AUTH_TOKEN;
+  // Global setup already captures the dedicated test user's real session.
+  const state = JSON.parse(fs.readFileSync('e2e/.auth/user.json', 'utf8'));
+  for (const origin of state.origins ?? []) {
+    const entry = origin.localStorage?.find((item: { name: string }) => /^sb-.*-auth-token$/.test(item.name));
+    if (entry) {
+      const token = JSON.parse(entry.value).access_token;
+      if (token) return token;
+    }
+  }
+  throw new Error('Database checks require the authenticated test session captured by global setup.');
+}
 
 export async function queryDB(table: string, filters: Record<string, string>) {
   const params = new URLSearchParams();
@@ -16,7 +30,7 @@ export async function queryDB(table: string, filters: Record<string, string>) {
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${AUTH_TOKEN}`,
+        'Authorization': `Bearer ${getAuthToken()}`,
         'Content-Type': 'application/json',
       }
     }
@@ -36,7 +50,7 @@ export async function getTaskCompletions(playerId: string, taskIds: string[]) {
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${AUTH_TOKEN}`,
+        'Authorization': `Bearer ${getAuthToken()}`,
       }
     }
   );
@@ -55,7 +69,7 @@ export async function getSessionCompletion(playerId: string, cardId: string) {
     {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${AUTH_TOKEN}`,
+        'Authorization': `Bearer ${getAuthToken()}`,
       }
     }
   );

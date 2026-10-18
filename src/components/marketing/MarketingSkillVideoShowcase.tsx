@@ -28,13 +28,13 @@ export function MarketingSkillVideoShowcase() {
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16 lg:px-8">
         <div>
           <p className="mb-4 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
-            Built into every workout
+            Sample workout preview
           </p>
           <h2 className="max-w-xl font-display text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl">
             See it. Try it. <span className="text-primary">Check it off.</span>
           </h2>
           <p className="mt-6 max-w-md text-lg leading-7 text-white/60">
-            Each short tip sits directly beneath the exercise it teaches—inside the workout players are already completing.
+            Skill tips sit beneath the exercises they teach. This is a preview; try the working checklist in the product tour.
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
             {["Inside the drill", "Never autoplays", "Easy to hide"].map((label) => (
@@ -124,6 +124,7 @@ export function MarketingSkillVideoShowcase() {
                           width="1280"
                           height="720"
                           decoding="async"
+                          loading="lazy"
                         />
                         <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15" />
                         <span

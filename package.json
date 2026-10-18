@@ -12,7 +12,7 @@
     "build": "vite build && node scripts/prerender.cjs && node scripts/verify-crawlable-homepage.cjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "brand:check": "node scripts/verify-brand-colors.cjs",
     "test:journeys": "node scripts/verify-launch-journeys.cjs",
     "test:template-start": "node --experimental-strip-types scripts/verify-template-start-date.ts",

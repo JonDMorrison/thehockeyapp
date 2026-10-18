@@ -40,19 +40,6 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
     const options = [
       {
-        id: "association",
-        role: "association" as SelectedRole,
-        title: t('marketing.get_started_association_title'),
-        description: t('marketing.get_started_association_desc'),
-        icon: Building2,
-        buttonLabel: t('marketing.get_started_association_button'),
-        buttonVariant: "default" as const,
-        smallText: t('marketing.get_started_one_account') as string | null,
-        directHref: null as string | null,
-        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
-        hoverClass: "hover:border-primary/50",
-      },
-      {
         id: "coach",
         role: "coach" as SelectedRole,
         title: t('marketing.get_started_coach_title'),
@@ -91,6 +78,19 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
         hoverClass: "hover:border-primary/50",
       },
+      {
+        id: "association",
+        role: "association" as SelectedRole,
+        title: t('marketing.get_started_association_title'),
+        description: t('marketing.get_started_association_desc'),
+        icon: Building2,
+        buttonLabel: t('marketing.get_started_association_button'),
+        buttonVariant: "default" as const,
+        smallText: t('marketing.get_started_one_account') as string | null,
+        directHref: null as string | null,
+        iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
+        hoverClass: "hover:border-primary/50",
+      },
     ];
 
     const handleSelect = (option: (typeof options)[0]) => {
@@ -107,7 +107,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
+        <DialogContent ref={ref} className="sm:max-w-md max-h-[90dvh] overflow-y-auto p-0 gap-0">
           <DialogHeader className="p-6 pb-2 text-center">
             <DialogTitle className="text-xl">
               {t('marketing.get_started_heading')}

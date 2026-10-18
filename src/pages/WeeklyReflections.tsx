@@ -181,7 +181,7 @@ const WeeklyReflections: React.FC = () => {
                     className="gap-1 text-xs font-medium"
                   >
                     <Target className="w-3 h-3" />
-                    {t("players.reflections.shots", { count: (s.total_shots ?? 0).toLocaleString() })}
+                    {t("players.reflections.shots", { count: s.total_shots ?? 0 })}
                   </Badge>
                   <Badge
                     variant="secondary"

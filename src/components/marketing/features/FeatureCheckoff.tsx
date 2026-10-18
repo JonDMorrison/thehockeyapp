@@ -66,7 +66,7 @@ export const FeatureCheckoff: React.FC = () => {
 
             {task.active && (
               <span className="text-[9px] font-bold text-success bg-success/20 px-2 py-1 rounded-full animate-pulse">
-                TAP ✓
+                UP NEXT
               </span>
             )}
           </div>
@@ -75,7 +75,7 @@ export const FeatureCheckoff: React.FC = () => {
         {/* Hint */}
         <div className="text-center pt-4">
           <p className="text-xs text-muted-foreground">
-            {t('marketing.checkoff_tap_hint')}
+            Illustration — try the interactive sample above
           </p>
         </div>
       </div>

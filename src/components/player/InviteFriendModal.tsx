@@ -44,7 +44,7 @@ export function InviteFriendModal({
     
     try {
       // Generate a unique token
-      const token = crypto.randomUUID().slice(0, 12);
+      const token = crypto.randomUUID();
       
       // Calculate expiry (7 days from now for the invite itself)
       const expiresAt = new Date();

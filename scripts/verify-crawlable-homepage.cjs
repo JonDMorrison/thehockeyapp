@@ -6,7 +6,7 @@ const requiredSnippets = [
   'Off-ice training',
   'delivers on-ice results.',
   'Give every coach a simple weekly plan',
-  'your association one view of participation and progress',
+  'Parents can join a team or start a training routine for their child.',
   'One weekly plan across every team.',
   'Set the standard once',
   'Set up your team free',

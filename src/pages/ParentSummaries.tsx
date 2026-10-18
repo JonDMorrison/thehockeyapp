@@ -112,7 +112,7 @@ const ParentSummaries: React.FC = () => {
                     className="gap-1 text-xs font-medium"
                   >
                     <Target className="w-3 h-3" />
-                    {t("players.summaries.shots", { count: (stats?.total_shots_logged ?? 0).toLocaleString() })}
+                    {t("players.summaries.shots", { count: stats?.total_shots_logged ?? 0 })}
                   </Badge>
                   <Badge
                     variant="secondary"

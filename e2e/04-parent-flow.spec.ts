@@ -15,7 +15,7 @@ test.describe('Parent Flow', () => {
     await page.waitForTimeout(3000);
     await expect(page).not.toHaveURL('/auth');
     const hasContent = await page.locator('[class*="card"], [class*="summary"]').first().isVisible();
-    const hasEmpty = await page.getByText(/no summary|no data|not yet/i).isVisible();
+    const hasEmpty = await page.getByText(/no summary|no data|not yet/i).first().isVisible();
     console.log('Parent summaries - has content:', hasContent, 'has empty:', hasEmpty);
   });
 

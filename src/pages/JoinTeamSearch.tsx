@@ -1,3 +1,5 @@
+import { setSelectedRole } from "@/components/marketing/GetStartedModal";
+import { normalizeTeamInviteCode } from "@/lib/teamInviteCode";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,7 +14,7 @@ const JoinTeamSearch: React.FC = () => {
   const navigate = useNavigate();
   const [inviteCode, setInviteCode] = useState("");
 
-  const normalizedCode = inviteCode.trim();
+  const normalizedCode = normalizeTeamInviteCode(inviteCode);
 
   const handleJoin = () => {
     if (normalizedCode) navigate(`/join/${encodeURIComponent(normalizedCode)}`);
@@ -49,12 +51,14 @@ const JoinTeamSearch: React.FC = () => {
                   value={inviteCode}
                   onChange={(event) => {
                     const value = event.target.value;
-                    const match = value.match(/\/join\/([^/?#]+)/);
-                    setInviteCode(match ? decodeURIComponent(match[1]) : value.toUpperCase());
+                    setInviteCode(value);
                   }}
                   onKeyDown={(event) => event.key === "Enter" && handleJoin()}
                   className="h-14 border-border/80 bg-background/80 px-4 font-mono text-base uppercase tracking-wider"
-                  autoFocus
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  aria-describedby="team-code-help"
                 />
                 <Button size="lg" className="h-14 w-full" onClick={handleJoin} disabled={!normalizedCode}>
                   <Users className="h-4 w-4" />
@@ -62,7 +66,7 @@ const JoinTeamSearch: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="mt-5 flex items-start gap-3 rounded-xl border border-border/70 bg-background/45 p-4">
+              <div id="team-code-help" className="mt-5 flex items-start gap-3 rounded-xl border border-border/70 bg-background/45 p-4">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success" />
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   Codes expire and can be replaced by team staff. Ask your coach or manager if yours no longer works.
@@ -82,7 +86,7 @@ const JoinTeamSearch: React.FC = () => {
                   {t("auth.joinTeamSearch.notOnTeamDescription")}
                 </AppCardDescription>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/solo/setup">
+                  <Link to="/auth?mode=signup" onClick={() => { setSelectedRole("solo"); }}>
                     {t("auth.joinTeamSearch.trainOnMyOwnButton")}
                     <ChevronRight className="h-4 w-4" />
                   </Link>

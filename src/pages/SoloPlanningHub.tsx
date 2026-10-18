@@ -140,7 +140,7 @@ export default function SoloPlanningHub() {
         .from('personal_practice_cards')
         .select('*', { count: 'exact', head: true })
         .eq('player_id', playerId!)
-        .eq('scheduled_date', today);
+        .eq('date', today);
       if (error) throw error;
       return count || 0;
     },

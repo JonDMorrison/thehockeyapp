@@ -322,7 +322,7 @@ const PracticeCardEditor: React.FC = () => {
         shots_expected: null,
         is_required: true,
         coach_notes: "",
-        video_url: null,
+        video_url: null as string | null,
       },
     ]);
   };
@@ -370,7 +370,7 @@ const PracticeCardEditor: React.FC = () => {
           shots_expected: t.shots_expected,
           is_required: t.is_required !== false,
           coach_notes: t.coach_notes || "",
-          video_url: null,
+          video_url: null as string | null,
         }))
       );
     }
