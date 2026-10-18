@@ -1,3 +1,4 @@
+import { setSelectedRole } from "@/components/marketing/GetStartedModal";
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -217,7 +218,7 @@ export default function SoloTryWorkout() {
             {/* What You Get */}
             <div className="border-t border-border pt-4 mt-4">
               <p className="text-sm font-medium text-foreground mb-3">
-                {t('solo.whatYoullGet')}
+                Start your own training routine
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">
@@ -236,19 +237,23 @@ export default function SoloTryWorkout() {
             </div>
           </div>
 
+          <p className="mt-4 text-sm text-muted-foreground">This is a shared preview. Your account starts with its own training routine; it does not copy this workout or program.</p>
           {/* CTA Button */}
           <div className="mt-6 space-y-3">
             <Button
-              onClick={() => navigate('/auth', { state: { returnTo: `/solo/try/${token}/claim` } })}
+              onClick={() => {
+                setSelectedRole("solo");
+                navigate('/auth?mode=signup&redirect=%2Fsolo%2Fsetup');
+              }}
               size="lg"
               className="w-full"
             >
-              {t('solo.getStartedFree')}
+              Create my own routine free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <p className="text-xs text-muted-foreground text-center">
               {t('solo.alreadyHaveAccount')}{" "}
-              <Link to="/auth" className="text-primary font-medium">
+              <Link to="/auth?mode=signin&redirect=%2Fsolo%2Fsetup" className="text-primary font-medium">
                 {t('solo.signIn')}
               </Link>
             </p>

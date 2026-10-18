@@ -55,7 +55,7 @@ export function levelToTier(level?: string | null): "rec" | "rep" | "elite" {
  * Cards are created as DRAFTS (published_at = null) on purpose: the coach
  * reviews and publishes them rather than pushing un-reviewed work to players.
  * Per-card errors are tolerated (logged) so a partial failure doesn't abort the
- * whole import.
+ * whole import. Failed days are reported separately and never count as completed imports.
  */
 export async function materializeTemplate(
   template: ProgramTemplate,
@@ -63,7 +63,7 @@ export async function materializeTemplate(
   userId: string,
   startMonday: Date,
   level?: string | null
-): Promise<{ cardsCreated: number }> {
+): Promise<{ cardsCreated: number; cardsFailed: number }> {
   const tier = levelToTier(level);
 
   // Group template tasks by their absolute day index.
@@ -75,6 +75,7 @@ export async function materializeTemplate(
   }
 
   let cardsCreated = 0;
+  let cardsFailed = 0;
 
   for (const [day, tasks] of [...byDay.entries()].sort((a, b) => a[0] - b[0])) {
     if (tasks.length === 0) continue;
@@ -103,6 +104,7 @@ export async function materializeTemplate(
           day,
           error: cardError,
         });
+        cardsFailed += 1;
         continue;
       }
 
@@ -116,7 +118,7 @@ export async function materializeTemplate(
         shot_type: task.shot_type,
         shots_expected: task.shots_expected,
         is_required: true,
-        coach_notes: null,
+        coach_notes: null as string | null,
         video_url: getRecommendedCoachingVideoUrl({
           label: task.label,
           taskType: task.task_type,
@@ -134,15 +136,20 @@ export async function materializeTemplate(
             day,
             error: tasksError,
           });
-          // Card already created; count it and continue.
+          // Never report an empty card as a successfully imported workout.
+          const { error: cleanupError } = await supabase.from("practice_cards").delete().eq("id", card.id);
+          if (cleanupError) logger.error("materializeTemplate: failed to remove incomplete draft", { cardId: card.id, error: cleanupError });
+          cardsFailed += 1;
+          continue;
         }
       }
 
       cardsCreated += 1;
     } catch (error) {
+      cardsFailed += 1;
       logger.error("materializeTemplate: unexpected error for day", { day, error });
     }
   }
 
-  return { cardsCreated };
+  return { cardsCreated, cardsFailed };
 }

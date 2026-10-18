@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { WelcomeRoleSelect } from "@/components/onboarding/WelcomeRoleSelect";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { getSelectedRole, clearSelectedRole } from "@/components/marketing/GetStartedModal";
 
@@ -23,34 +24,18 @@ const Welcome: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Check if user already has teams or players
-  const { data: existingData, isLoading: checkingData } = useQuery({
+  const { data: existingData, isLoading: checkingData, error: checkingError, refetch } = useQuery({
     queryKey: ["welcome-check", user?.id],
     queryFn: async () => {
-      // Check for teams where user is a coach
-      const { data: teams } = await supabase
-        .from("team_roles")
-        .select("id, team_id")
-        .eq("user_id", user!.id)
-        .limit(10);
-
-      const { data: associations } = await supabase
-        .from("association_roles")
-        .select("association_id")
-        .eq("user_id", user!.id)
-        .limit(10);
-
-      // Check for players (owned or guarded)
-      const { data: ownedPlayers } = await supabase
-        .from("players")
-        .select("id")
-        .eq("owner_user_id", user!.id)
-        .limit(10);
-
-      const { data: guardedPlayers } = await supabase
-        .from("player_guardians")
-        .select("player_id")
-        .eq("user_id", user!.id)
-        .limit(10);
+      // These independent lookups must all succeed before deciding a user is new.
+      const results = await Promise.all([
+        supabase.from("team_roles").select("id, team_id").eq("user_id", user!.id).limit(10),
+        supabase.from("association_roles").select("association_id").eq("user_id", user!.id).limit(10),
+        supabase.from("players").select("id").eq("owner_user_id", user!.id).limit(10),
+        supabase.from("player_guardians").select("player_id").eq("user_id", user!.id).limit(10),
+      ]);
+      for (const result of results) if (result.error) throw result.error;
+      const [{ data: teams }, { data: associations }, { data: ownedPlayers }, { data: guardedPlayers }] = results;
 
       // Validate persisted IDs still exist
       const teamIds = teams?.map(t => t.team_id) || [];
@@ -185,6 +170,16 @@ const Welcome: React.FC = () => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       </div>
+    );
+  }
+
+  if (checkingError) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6 text-center">
+        <h1 className="text-xl font-bold">We couldn’t load your workspace</h1>
+        <p className="max-w-sm text-muted-foreground">Your teams and players haven’t changed. Check your connection and try again.</p>
+        <Button onClick={() => void refetch()}>Try again</Button>
+      </main>
     );
   }
 

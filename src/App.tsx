@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, lazy, Suspense } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { applyTeamTheme, getStoredTeamTheme } from "@/lib/themes";
 import { logger, ErrorBoundary } from "@/core";
 import { initOfflineDB } from "@/lib/offlineStorage";
@@ -235,12 +235,14 @@ const App = () => {
                 className: "bg-card text-foreground border border-border shadow-medium",
               }}
             />
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <RouteMetadata />
-              <Suspense fallback={<PageLoader />}>
-                <AnimatedRoutes />
-              </Suspense>
-            </BrowserRouter>
+            <MotionConfig reducedMotion="user">
+              <BrowserRouter>
+                <RouteMetadata />
+                <Suspense fallback={<PageLoader />}>
+                  <AnimatedRoutes />
+                </Suspense>
+              </BrowserRouter>
+            </MotionConfig>
           </TooltipProvider>
         </ActiveViewProvider>
       </QueryClientProvider>

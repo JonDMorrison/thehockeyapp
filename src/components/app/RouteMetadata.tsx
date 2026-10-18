@@ -13,8 +13,8 @@ interface RouteMeta {
 
 const publicRoutes: Record<string, RouteMeta> = {
   "/": {
-    title: "The Hockey App — Off-Ice Development for Hockey Associations",
-    description: "Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.",
+    title: "The Hockey App — Off-Ice Training for Teams & Families",
+    description: "Give every coach a simple weekly plan and every player clear work at home. Parents can join a team or start a training routine for their child.",
     canonical: "/",
     indexable: true,
   },

@@ -247,7 +247,7 @@ function RolePreview({ role }: { role: RoleKey }) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const [activeRole, setActiveRole] = useState<RoleKey>("association");
+  const [activeRole, setActiveRole] = useState<RoleKey>("coach");
   const role = roleOptions.find((option) => option.key === activeRole) ?? roleOptions[0];
   const startCoachSetup = () => {
     setSelectedRole("coach");
@@ -279,7 +279,7 @@ export default function Home() {
                 Off-ice training <span className="text-primary">delivers on-ice results.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-7 text-white/68 sm:text-xl">
-                Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
+                Give every coach a simple weekly plan and every player clear work at home. Parents can join a team or start a training routine for their child.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={startCoachSetup}>
@@ -287,10 +287,14 @@ export default function Home() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-8 hover:bg-white/[0.07]" asChild>
-                  <Link to="/demo">See the product</Link>
+                  <Link to="/demo#sample-workout">Try a sample workout</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-white/42">
+              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                <Link to="/join" className="inline-flex min-h-11 items-center text-white underline underline-offset-4">Have a team code? Join your team</Link>
+                <button type="button" className="min-h-11 text-white underline underline-offset-4" onClick={() => { setSelectedRole("solo"); navigate("/auth?mode=signup"); }}>Start for my child</button>
+              </div>
+              <p className="mt-4 text-xs text-white/70">
                 Free for the hockey community · No credit card
               </p>
               <div className="mt-10 grid max-w-xl grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-4">
@@ -391,6 +395,17 @@ export default function Home() {
                   key={option.key}
                   type="button"
                   role="tab"
+                  id={`role-tab-${option.key}`}
+                  tabIndex={activeRole === option.key ? 0 : -1}
+                  onKeyDown={(event) => {
+                    const index = roleOptions.findIndex((item) => item.key === activeRole);
+                    const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? roleOptions.length - 1 : event.key === "ArrowRight" ? (index + 1) % roleOptions.length : event.key === "ArrowLeft" ? (index + roleOptions.length - 1) % roleOptions.length : null;
+                    if (nextIndex === null) return;
+                    event.preventDefault();
+                    const nextRole = roleOptions[nextIndex].key;
+                    setActiveRole(nextRole);
+                    document.getElementById(`role-tab-${nextRole}`)?.focus();
+                  }}
                   aria-selected={activeRole === option.key}
                   aria-controls="role-preview"
                   onClick={() => setActiveRole(option.key)}
@@ -403,7 +418,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div id="role-preview" role="tabpanel" className="mt-10 grid min-h-[430px] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div id="role-preview" role="tabpanel" aria-labelledby={`role-tab-${activeRole}`} className="mt-10 grid min-h-[430px] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <div>
                 <SectionEyebrow>{role.eyebrow}</SectionEyebrow>
                 <h3 className="font-display text-4xl font-black uppercase leading-[0.96] tracking-[-0.03em] text-white sm:text-5xl">{role.title}</h3>

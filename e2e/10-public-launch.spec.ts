@@ -3,12 +3,13 @@ import { expect, test } from '@playwright/test';
 test.describe('Public launch experience', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('association offer is prominent and contactable', async ({ page }) => {
+  test('coach and family offer is prominent and association support remains reachable', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.getByRole('heading', { name: /off-ice training delivers on-ice results/i })).toBeVisible();
     await expect(page.getByText(/give every coach a simple weekly plan/i)).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Association' })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tab', { name: 'Coach' })).toHaveAttribute('aria-selected', 'true');
+    await page.getByRole('tab', { name: 'Association' }).click();
     await expect(page.getByRole('heading', { name: /see which teams need support/i })).toBeVisible();
 
     await page.getByRole('link', { name: /plan an association rollout/i }).click();

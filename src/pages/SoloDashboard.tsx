@@ -404,7 +404,7 @@ export default function SoloDashboard() {
             <div className="flex gap-2">
               {weekDays.map((day, idx) => (
                 <div
-                  key={day.date}
+                  key={format(day.date, "yyyy-MM-dd")}
                   className={cn(
                     "flex-1 aspect-square rounded-xl flex flex-col items-center justify-center transition-all",
                     day.completed

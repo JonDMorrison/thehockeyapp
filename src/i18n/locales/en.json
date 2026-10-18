@@ -174,7 +174,8 @@
     "welcomeBackTitle": "Welcome back!",
     "welcomeTitle": "Welcome!",
     "yourNameLabel": "Your Name",
-    "yourNamePlaceholder": "First and last name"
+    "yourNamePlaceholder": "First and last name",
+    "parentSignupHeadline": "Create your family account"
   },
   "common": {
     "actions": "Actions",
@@ -882,7 +883,20 @@
     "home_challenge_progress": "12 of 30 days complete",
     "home_families_heading": "Not on a team? Families train free too.",
     "home_families_body": "Individual players and families can use the same daily program on their own. No team required. Same structure, same momentum, completely free.",
-    "home_families_button": "Start training free"
+    "home_families_button": "Start training free",
+    "about_teams_heading_first": "Practice ends.",
+    "about_teams_heading_accent": "Progress shouldn’t.",
+    "about_teams_intro": "A good practice gets players started. A clear plan keeps them moving—in the driveway, at home, and between ice times.",
+    "about_teams_action": "Try the daily routine",
+    "about_teams_photo_alt": "Young hockey players and their coach coming together in a team huddle",
+    "about_teams_caption_label": "One team. A shared direction.",
+    "about_teams_caption": "The work between practices brings it all together.",
+    "about_teams_coach_title": "A plan from the coach.",
+    "about_teams_coach_description": "Turn “keep working at home” into a few clear exercises everyone can follow.",
+    "about_teams_player_title": "Ownership for the player.",
+    "about_teams_player_description": "Know what to do, check it off, and build a little more confidence each day.",
+    "about_teams_family_title": "Progress families can see.",
+    "about_teams_family_description": "See the effort, celebrate the small wins, and support the routine together."
   },
   "nav": {
     "addAnotherRole": "Add another role",
@@ -1686,7 +1700,7 @@
     "customizeWeek": "Customize Week",
     "earnBadgesAsYouTrain": "Earn badges as you train",
     "failedToSavePlan": "Failed to save plan",
-    "fullAccessForSevenDays": "Every feature included",
+    "fullAccessForSevenDays": "Free access, with no credit card",
     "getStartedFree": "Get Started Free",
     "goToHomepage": "Go to Homepage",
     "greatWorkToday": "Great work today!",
@@ -1725,7 +1739,7 @@
     "trackYourWorkouts": "Track your workouts",
     "trainingProgram": "training program",
     "trainingWorkout": "training workout",
-    "tryFreeForSevenDays": "Open this {{type}} and keep training free",
+    "tryFreeForSevenDays": "Preview this {{type}} and start your own free training routine.",
     "weeklyRoutine": "Weekly Routine",
     "whatDoYouWantToFocusOn": "What do you want to focus on?",
     "whatDoYouWantToWorkOn": "What do you want to work on?",

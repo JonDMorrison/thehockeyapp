@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.test' });
+dotenv.config({ path: '.env.local', quiet: true });
+dotenv.config({ path: '.env.test', quiet: true });
 
 const baseURL = process.env.TEST_BASE_URL || 'http://localhost:8080';
 

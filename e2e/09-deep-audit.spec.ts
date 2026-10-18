@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 import { getFirstPlayerId, getFirstTeamId } from './helpers/auth';
 import { queryDB, getTaskCompletions, getSessionCompletion } from './helpers/db';
 
-const TEAM_ID = process.env.TEST_TEAM_ID!;
-const USER_ID = 'f278d8f1-9de1-413c-b1ff-1abb9e5c2619';
+const TEAM_ID = process.env.TEST_TEAM_ID || process.env.MOBILE_TEST_TEAM_ID;
 
 test.describe('Deep Audit — Data Persistence', () => {
 

@@ -31,3 +31,14 @@ jobs:
 
       - name: Typecheck, lint, build, and verify crawlable pages
         run: npm run check
+
+      - name: Install browser for public journey checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify first visits on desktop and phone
+        env:
+          # Public UX checks need a syntactically valid client, never real accounts.
+          # Network-dependent failure scenarios are intercepted in the tests.
+          VITE_SUPABASE_URL: https://public-journey-test.invalid
+          VITE_SUPABASE_PUBLISHABLE_KEY: public-journey-test-key
+        run: npx playwright test e2e/10-public-launch.spec.ts e2e/12-first-visit.spec.ts e2e/14-recovery-and-accessibility.spec.ts --reporter=line

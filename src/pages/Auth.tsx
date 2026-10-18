@@ -75,6 +75,8 @@ const Auth: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [recoveryError, setRecoveryError] = useState("");
+  const [recovering, setRecovering] = useState(() => mode === "reset" && searchParams.has("code"));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, signUp, isAuthenticated, loading: authLoading } = useAuth();
@@ -87,12 +89,34 @@ const Auth: React.FC = () => {
     [requestedRedirect],
   );
 
+  // This client disables automatic URL detection, so reset links must exchange
+  // their PKCE code before updateUser can change a password.
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (mode !== "reset" || !code) return;
+    let active = true;
+    void supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      if (!active) return;
+      setRecovering(false);
+      if (error) {
+        setRecoveryError("This reset link has expired or could not be opened. Request a new link in the same browser you used to request it.");
+      } else {
+        setSearchParams((current) => {
+          const next = new URLSearchParams(current);
+          next.delete("code");
+          return next;
+        }, { replace: true });
+      }
+    });
+    return () => { active = false; };
+  }, [mode, searchParams, setSearchParams]);
+
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !authLoading && mode !== "reset") {
+    if (isAuthenticated && !authLoading && !loading && mode !== "reset") {
       navigate(getPostAuthPath(), { replace: true });
     }
-  }, [isAuthenticated, authLoading, mode, navigate, getPostAuthPath]);
+  }, [isAuthenticated, authLoading, loading, mode, navigate, getPostAuthPath]);
 
   const validate = () => {
     const values = mode === "reset"
@@ -127,7 +151,7 @@ const Auth: React.FC = () => {
     }
     setForgotLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: window.location.origin + "/auth?mode=reset",
       });
       if (error) {
@@ -145,6 +169,7 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (mode === "reset" && (recovering || recoveryError)) return;
     if (!validate()) return;
 
     setLoading(true);
@@ -161,7 +186,7 @@ const Auth: React.FC = () => {
           navigate("/welcome", { replace: true });
         }
       } else if (mode === "signup") {
-        const { data, error } = await signUp(email, password, displayName || undefined);
+        const { data, error } = await signUp(email.trim(), password, displayName.trim() || undefined);
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error(t("auth.accountExistsTitle"), t("auth.accountExistsMessage"));
@@ -174,7 +199,7 @@ const Auth: React.FC = () => {
         } else {
           // Email confirmation is disabled in production, so a successful signup
           // should include a session. Retry once to cover a delayed session response.
-          const { error: signInError } = await signIn(email, password);
+          const { error: signInError } = await signIn(email.trim(), password);
           if (!signInError) {
             toast.success(t("auth.welcomeTitle"), t("auth.accountCreatedMessage"));
             navigate(getPostAuthPath(), { replace: true });
@@ -193,7 +218,7 @@ const Auth: React.FC = () => {
           }
         }
       } else {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(email.trim(), password);
         if (error) {
           if (error.message.includes("Invalid login")) {
             toast.error(t("auth.invalidCredentialsTitle"), t("auth.invalidCredentialsMessage"));
@@ -238,7 +263,7 @@ const Auth: React.FC = () => {
               {mode === "signin"
                 ? t("auth.signinHeadline")
                 : mode === "signup"
-                ? t(signupRole === "coach" ? "auth.coachSignupHeadline" : "auth.signupHeadline")
+                ? t(signupRole === "coach" ? "auth.coachSignupHeadline" : signupRole === "solo" ? "auth.parentSignupHeadline" : "auth.signupHeadline")
                 : "Choose a new password"}
             </h1>
             <p className="text-muted-foreground">
@@ -406,8 +431,8 @@ const Auth: React.FC = () => {
                 variant="primary"
                 size="xl"
                 className="w-full mt-6"
-                disabled={loading}
-                loading={loading}
+                disabled={loading || recovering || (mode === "reset" && Boolean(recoveryError))}
+                loading={loading || recovering}
               >
                 {mode === "signin"
                   ? t("auth.signInButton")
@@ -417,6 +442,10 @@ const Auth: React.FC = () => {
               </AppleButton>
             </form>
 
+            {recoveryError && <div role="alert" className="mt-4 space-y-3 text-sm">
+              <p className="text-destructive">{recoveryError}</p>
+              <Link to="/auth?mode=signin" className="inline-flex min-h-11 items-center text-primary underline" onClick={() => { setMode("signin"); setRecoveryError(""); }}>Back to sign in to request a new link</Link>
+            </div>}
             {mode !== "reset" && <>
             {/* Toggle mode */}
             <button

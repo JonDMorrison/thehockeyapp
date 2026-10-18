@@ -38,7 +38,7 @@ test.describe('Coach Flow', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     const hasPlayers = await page.locator('[class*="card"], [class*="player"], [class*="roster"]').first().isVisible();
-    const hasEmpty = await page.getByText(/no players|empty|invite/i).isVisible();
+    const hasEmpty = await page.getByText(/no players|empty|invite/i).first().isVisible();
     expect(hasPlayers || hasEmpty).toBeTruthy();
   });
 
@@ -49,7 +49,7 @@ test.describe('Coach Flow', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     const hasCards = await page.locator('[class*="card"]').first().isVisible();
-    const hasEmpty = await page.getByText(/no practice|create|new card/i).isVisible();
+    const hasEmpty = await page.getByText(/no practice|create|new card/i).first().isVisible();
     expect(hasCards || hasEmpty).toBeTruthy();
   });
 

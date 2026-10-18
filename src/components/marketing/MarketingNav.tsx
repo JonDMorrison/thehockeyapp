@@ -1,3 +1,4 @@
+import { setSelectedRole } from "./GetStartedModal";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export const MarketingNav: React.FC = () => {
     { href: "/", label: t('marketing.nav_home') },
     { href: "/features", label: t('marketing.nav_features') },
     { href: "/demo", label: t('marketing.nav_how_it_works') },
+    { href: "/join", label: "Join a team" },
     { href: "/about", label: t('marketing.nav_about') },
   ];
 
@@ -44,6 +46,7 @@ export const MarketingNav: React.FC = () => {
               <Link
                 key={link.href}
                 to={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
                 className={cn(
                   "text-sm font-medium transition-colors relative",
                   isActive(link.href)
@@ -58,13 +61,13 @@ export const MarketingNav: React.FC = () => {
             {!isAuthPage && (
               <>
                 <Button variant="ghost" className="text-sm" asChild>
-                  <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
+                  <Link to="/auth?mode=signin" onClick={() => setMobileMenuOpen(false)}>{t('marketing.nav_sign_in')}</Link>
                 </Button>
                 <Button
                   className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft"
                   asChild
                 >
-                  <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
+                  <Link to="/auth?mode=signup" onClick={() => { setSelectedRole("coach"); setMobileMenuOpen(false); }}>{t('marketing.nav_get_started')}</Link>
                 </Button>
               </>
             )}
@@ -109,13 +112,13 @@ export const MarketingNav: React.FC = () => {
             {!isAuthPage && (
               <div className="pt-4 flex flex-col gap-2">
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/auth?mode=signin">{t('marketing.nav_sign_in')}</Link>
+                  <Link to="/auth?mode=signin" onClick={() => setMobileMenuOpen(false)}>{t('marketing.nav_sign_in')}</Link>
                 </Button>
                 <Button
                   className="w-full bg-primary hover:bg-primary/90"
                   asChild
                 >
-                  <Link to="/auth?mode=signup">{t('marketing.nav_get_started')}</Link>
+                  <Link to="/auth?mode=signup" onClick={() => { setSelectedRole("coach"); setMobileMenuOpen(false); }}>{t('marketing.nav_get_started')}</Link>
                 </Button>
               </div>
             )}
