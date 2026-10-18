@@ -45,12 +45,12 @@ const signInSchema = z.object({
 
 const signUpSchema = z.object({
   email: emailSchema,
-  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128),
   displayName: z.string().trim().max(100).optional(),
 });
 
 const resetSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters").max(128),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128),
   confirmPassword: z.string(),
 }).refine((values) => values.password === values.confirmPassword, {
   message: "Passwords do not match",
@@ -70,6 +70,7 @@ const Auth: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -271,7 +272,7 @@ const Auth: React.FC = () => {
                 ? t("auth.signinSubheadline")
                 : mode === "signup"
                 ? t(signupRole === "coach" ? "auth.coachSignupSubheadline" : "auth.signupSubheadline")
-                : "Use at least 8 characters for your new password."}
+                : "Use at least 6 characters for your new password."}
             </p>
             {mode === "signup" && (
               <p className="text-xs text-muted-foreground/70 mt-1">
@@ -343,7 +344,7 @@ const Auth: React.FC = () => {
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder={t("auth.passwordPlaceholder")}
                     value={password}
                     onChange={(e) => {
@@ -383,7 +384,7 @@ const Auth: React.FC = () => {
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Repeat your new password"
                     value={confirmPassword}
                     onChange={(e) => {
@@ -401,6 +402,19 @@ const Auth: React.FC = () => {
                   <p id="confirm-password-error" role="alert" className="text-xs text-destructive pl-1">{errors.confirmPassword}</p>
                 )}
               </div>
+            )}
+
+            <div className="flex items-center gap-3 min-h-11">
+              <Checkbox
+                id="show-password"
+                checked={showPassword}
+                onCheckedChange={(checked) => setShowPassword(checked === true)}
+                aria-controls={mode === "reset" ? "password confirmPassword" : "password"}
+              />
+              <Label htmlFor="show-password" className="cursor-pointer py-3">Show password</Label>
+            </div>
+            {mode === "signup" && (
+              <p className="text-xs text-muted-foreground">At least 6 characters. No special characters required.</p>
             )}
 
             {mode === "signup" && (

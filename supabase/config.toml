@@ -1,6 +1,8 @@
 project_id = "xonpnkzkvqxarbxpinhm"
 
 [auth]
+minimum_password_length = 6
+password_requirements = ""
 site_url = "https://www.hockeyapp.ca"
 additional_redirect_urls = []
 

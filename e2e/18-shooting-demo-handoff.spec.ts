@@ -31,7 +31,7 @@ test("sample choice survives coach sign-in, team setup, and real publication wit
     .click();
   await page.getByRole("button", { name: /already have an account/i }).click();
   await page.getByLabel(/email/i).fill(process.env.TEST_USER_EMAIL!);
-  await page.getByLabel(/password/i).fill(process.env.TEST_USER_PASSWORD!);
+  await page.getByLabel(/^password/i).fill(process.env.TEST_USER_PASSWORD!);
   await page.getByRole("button", { name: "Sign In", exact: true }).click();
   await expect(page).toHaveURL(/\/onboarding\/coach\?shootingDays=14/);
   await page
