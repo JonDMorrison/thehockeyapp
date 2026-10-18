@@ -78,7 +78,7 @@ export function InviteFriendModal({
 
   const getShareMessage = () => {
     const typeLabel = selectedType === 'workout' ? "workout" : "training program";
-    return `Hey! Try this hockey ${typeLabel} with me 🏒\n${inviteLink}\nYou get 7 days free to check it out!`;
+    return `Hey! Try this hockey ${typeLabel} with me 🏒\n${inviteLink}\nThe Hockey App is free for the hockey community.`;
   };
 
   const handleCopyLink = async () => {
@@ -149,7 +149,7 @@ export function InviteFriendModal({
               className="space-y-4 py-4"
             >
               <p className="text-sm text-muted-foreground">
-                Share a workout with a friend and give them 7 days free to try it out!
+                Share a workout or training program with a friend. The app is completely free.
               </p>
 
               <div className="space-y-3">
@@ -241,7 +241,7 @@ export function InviteFriendModal({
                 </div>
                 <p className="font-medium text-foreground">Invite link ready!</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Your friend will get 7 days free
+                  Your friend can use it free
                 </p>
               </div>
 

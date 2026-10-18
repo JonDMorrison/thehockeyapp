@@ -18,7 +18,11 @@ function reject(file, pattern, message) {
 }
 
 expect("src/pages/Auth.tsx", /role === "coach"[\s\S]{0,120}return "\/onboarding\/coach"/, "coach signup enters guided onboarding");
-expect("src/pages/marketing/Home.tsx", /setSelectedRole\("coach"\)[\s\S]{0,120}navigate\("\/auth\?mode=signup"\)/, "team pilot opens coach signup directly");
+expect("src/pages/marketing/Home.tsx", /setSelectedRole\("coach"\)[\s\S]{0,120}navigate\("\/auth\?mode=signup"\)/, "free team setup opens coach signup directly");
+reject("src/pages/marketing/Home.tsx", /pilot|beta|trial/i, "homepage does not imply temporary or paid access");
+reject("src/pages/marketing/Features.tsx", /pilot|beta|trial/i, "features page does not imply temporary or paid access");
+expect("src/i18n/locales/en.json", /Free for the hockey community/, "public copy presents the app as a community gift");
+expect("src/i18n/locales/en.json", /Abbotsford Hawks organization[\s\S]*spring hockey[\s\S]*Get Clear Consulting/, "founder story names Jon's current coaching and consulting work");
 expect("src/pages/Auth.tsx", /signupRole === "coach" \? "auth\.coachSignupHeadline"/, "coach signup explains the coach-specific path");
 reject("src/pages/Auth.tsx", /logoImage/, "auth page does not repeat the brand already shown in navigation");
 reject("src/pages/Auth.tsx", /t\("common\.or"\)/, "auth mode switch is not separated by a misleading OR divider");

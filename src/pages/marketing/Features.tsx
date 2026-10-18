@@ -22,7 +22,6 @@ import {
   WifiOff,
   Zap,
 } from "lucide-react";
-import { BETA_MODE } from "@/core/constants";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -293,14 +292,14 @@ export default function Features() {
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={() => setShowGetStarted(true)}>
-                  Start a free team pilot <ArrowRight className="ml-2 h-4 w-4" />
+                  Set up your team free <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-8 hover:bg-white/[0.07]" asChild>
                   <Link to="/demo">See how it works</Link>
                 </Button>
               </div>
               <p className="mt-4 text-xs text-white/40">
-                {BETA_MODE ? "Free during beta · No credit card" : "Start with a 7-day free trial"}
+                Free for the hockey community · No credit card
               </p>
               <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-white/52">
                 {["Private team spaces", "Built for every age", "Ready in minutes"].map((item) => (
@@ -520,11 +519,11 @@ export default function Features() {
                 Build a program families can see—and players can feel.
               </h2>
               <p className="mt-6 max-w-xl text-lg leading-7 text-white/58">
-                Pilot the full system with one team, then scale what works across your association.
+                Start with one team, then bring in the rest of your association when you're ready.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={() => setShowGetStarted(true)}>
-                  Start a free team pilot <ArrowRight className="ml-2 h-4 w-4" />
+                  Set up your team free <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-9" asChild>
                   <Link to="/contact">Plan an association rollout</Link>

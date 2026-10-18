@@ -1,7 +1,7 @@
 import { Lock, Trophy, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FEATURE_LABELS, type EntitlementKey } from "@/core/entitlements";
-import { BETA_MODE } from "@/core/constants";
+import { COMMUNITY_FREE_MODE } from "@/core/constants";
 import { useTranslation } from "react-i18next";
 
 type UpgradeContext =
@@ -37,8 +37,8 @@ export function UpgradePrompt({
   const { t } = useTranslation();
   const label = FEATURE_LABELS[feature];
 
-  // During beta, all features are unlocked — don't show upgrade prompts
-  if (BETA_MODE) return null;
+  // The community edition includes every feature, so there is nothing to upsell.
+  if (COMMUNITY_FREE_MODE) return null;
 
   if (compact) {
     return (

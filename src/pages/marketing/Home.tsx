@@ -15,7 +15,6 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import { BETA_MODE } from "@/core/constants";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
@@ -250,7 +249,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState<RoleKey>("association");
   const role = roleOptions.find((option) => option.key === activeRole) ?? roleOptions[0];
-  const startCoachPilot = () => {
+  const startCoachSetup = () => {
     setSelectedRole("coach");
     navigate("/auth?mode=signup");
   };
@@ -283,8 +282,8 @@ export default function Home() {
                 Give every coach a simple weekly plan, every player clear work at home, and your association one view of participation and progress.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={startCoachPilot}>
-                  Start a free team pilot
+                <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={startCoachSetup}>
+                  Set up your team free
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-8 hover:bg-white/[0.07]" asChild>
@@ -292,7 +291,7 @@ export default function Home() {
                 </Button>
               </div>
               <p className="mt-4 text-xs text-white/42">
-                {BETA_MODE ? "Free during beta · No credit card" : "Start with a 7-day free trial"}
+                Free for the hockey community · No credit card
               </p>
               <div className="mt-10 grid max-w-xl grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-4">
                 {[["One standard", "Every team"], ["Minutes", "To publish a week"], ["Private", "Role-based access"]].map(([value, label]) => (
@@ -524,11 +523,11 @@ export default function Home() {
               Build the program players want to be part of.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-7 text-white/60">
-              Pilot the full system with one team, then scale what works across your association.
+              Start with one team, then bring in the rest of your association when you're ready.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={startCoachPilot}>
-                Start a free team pilot <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={startCoachSetup}>
+                Set up your team free <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-9" asChild>
                 <Link to="/contact">Plan an association rollout</Link>

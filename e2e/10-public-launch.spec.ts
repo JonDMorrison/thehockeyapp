@@ -34,10 +34,10 @@ test.describe('Public launch experience', () => {
     await expect(page.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy');
   });
 
-  test('team pilot takes a coach directly to coach account creation', async ({ page }) => {
+  test('free team setup takes a coach directly to coach account creation', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /start a free team pilot/i }).first().click();
+    await page.getByRole('button', { name: /set up your team free/i }).first().click();
 
     await expect(page).toHaveURL(/\/auth\?mode=signup$/);
     await expect(page.getByRole('heading', { name: 'Create your coach account' })).toBeVisible();

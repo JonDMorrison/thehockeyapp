@@ -50,13 +50,16 @@ test.describe('Settings and Misc', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
     await expect(page).toHaveTitle(/.+/);
+    await expect(page.getByText(/Abbotsford Hawks organization/i).first()).toBeVisible();
+    await expect(page.getByText(/spring hockey/i).first()).toBeVisible();
+    await expect(page.getByText(/Get Clear Consulting/i)).toBeVisible();
   });
 
   test('pricing page loads or redirects', async ({ page }) => {
     await page.goto('/pricing');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    // In BETA_MODE this redirects to home — either is fine
+    // The app is free, so the old pricing route redirects home.
     await expect(page).toHaveTitle(/.+/);
     console.log('Pricing URL:', page.url());
   });

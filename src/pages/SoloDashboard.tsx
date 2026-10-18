@@ -22,7 +22,6 @@ import { SoloJoinTeamSection } from "@/components/player/SoloJoinTeamSection";
 import { UserMenu } from "@/components/app/UserMenu";
 import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import logoImage from "@/assets/hockey-app-logo.png";
-import { BETA_MODE } from "@/core/constants";
 import soloGarageTraining from "@/assets/brand/solo-garage-training-v2.jpg";
 
 // Map database icon names to Lucide components
@@ -391,7 +390,7 @@ export default function SoloDashboard() {
               {/* Content */}
               <div className="relative z-10">
                 <h3 className="font-bold text-white text-sm leading-tight">{t('solo.inviteFriend')}</h3>
-                <p className="text-white/70 text-xs mt-0.5">{BETA_MODE ? t('solo.trainTogether') : t('solo.give7DaysFree')}</p>
+                <p className="text-white/70 text-xs mt-0.5">{t('solo.trainTogether')}</p>
               </div>
             </motion.button>
           </div>

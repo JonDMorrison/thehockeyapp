@@ -1,5 +1,4 @@
 import React, { forwardRef } from "react";
-import { BETA_MODE } from "@/core/constants";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -57,9 +56,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         id: "coach",
         role: "coach" as SelectedRole,
         title: t('marketing.get_started_coach_title'),
-        description: BETA_MODE
-          ? t('marketing.get_started_coach_desc_beta')
-          : t('marketing.get_started_coach_desc_normal'),
+        description: t('marketing.get_started_coach_desc'),
         icon: Users,
         buttonLabel: t('marketing.get_started_coach_button'),
         buttonVariant: "default" as const,
@@ -72,13 +69,11 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         id: "parent",
         role: "solo" as SelectedRole,
         title: t('marketing.get_started_parent_title'),
-        description: BETA_MODE
-          ? t('marketing.get_started_parent_desc_beta')
-          : t('marketing.get_started_parent_desc_normal'),
+        description: t('marketing.get_started_parent_desc'),
         icon: Dumbbell,
-        buttonLabel: BETA_MODE ? t('marketing.get_started_parent_button_beta') : t('marketing.get_started_parent_button_normal'),
+        buttonLabel: t('marketing.get_started_parent_button'),
         buttonVariant: "default" as const,
-        smallText: (BETA_MODE ? t('marketing.get_started_parent_small_beta') : t('marketing.get_started_parent_small_normal')) as string | null,
+        smallText: t('marketing.get_started_parent_small') as string | null,
         directHref: null,
         iconBgClass: "bg-gradient-to-br from-primary to-brand-strong",
         hoverClass: "hover:border-primary/50",
@@ -115,12 +110,10 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
         <DialogContent ref={ref} className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 pb-2 text-center">
             <DialogTitle className="text-xl">
-              {BETA_MODE ? t('marketing.get_started_heading_beta') : t('marketing.get_started_heading_normal')}
+              {t('marketing.get_started_heading')}
             </DialogTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {BETA_MODE
-                ? t('marketing.get_started_all_features_unlocked_beta')
-                : t('marketing.get_started_coaches_subtitle')}
+              {t('marketing.get_started_all_features_unlocked')}
             </p>
             <p className="mt-2 text-xs font-medium text-primary">
               {t('marketing.get_started_one_account')}
@@ -168,7 +161,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
 
             {/* Disclaimer shown once, below all option cards */}
             <p className="text-[11px] text-muted-foreground/70 text-center pt-2 pb-2">
-              {BETA_MODE ? t('marketing.get_started_all_features_beta') : t('marketing.get_started_coaches_free')}
+              {t('marketing.get_started_all_features_free')}
             </p>
           </div>
         </DialogContent>

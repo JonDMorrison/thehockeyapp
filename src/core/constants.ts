@@ -2,9 +2,10 @@
  * App-wide constants and magic values.
  */
 
-// ── Beta mode ─────────────────────────────────────
-// Flip to `false` to re-enable pricing & paywalls
-export const BETA_MODE = true;
+// ── Community-free mode ─────────────────────────────────────
+// The Hockey App is Jon's free gift to the hockey community. Keep every
+// feature unlocked and every pricing or upgrade surface hidden.
+export const COMMUNITY_FREE_MODE = true;
 
 // ── Storage keys ──────────────────────────────────
 export const STORAGE_KEYS = {

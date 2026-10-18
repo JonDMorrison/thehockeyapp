@@ -106,6 +106,9 @@ const About: React.FC = () => {
               <p>{t('marketing.about_story_p_built1')}</p>
               <p>{t('marketing.about_story_p_built2')}</p>
 
+              <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_work')}</h2>
+              <p>{t('marketing.about_story_p_get_clear')}</p>
+
               <h2 className="text-2xl font-bold text-foreground pt-4">{t('marketing.about_story_h2_what_it_does')}</h2>
               <p>{t('marketing.about_story_p_what1')}</p>
               <p>{t('marketing.about_story_p_what2')}</p>

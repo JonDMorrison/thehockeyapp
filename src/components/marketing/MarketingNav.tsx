@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HockeyAppLogo } from "./HockeyAppLogo";
-import { BETA_MODE } from "@/core/constants";
 import { useTranslation } from 'react-i18next';
 
 export const MarketingNav: React.FC = () => {
@@ -12,17 +11,12 @@ export const MarketingNav: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  const allNavLinks = [
+  const navLinks = [
     { href: "/", label: t('marketing.nav_home') },
     { href: "/features", label: t('marketing.nav_features') },
-    { href: "/pricing", label: t('marketing.nav_pricing'), hideInBeta: true },
     { href: "/demo", label: t('marketing.nav_how_it_works') },
     { href: "/about", label: t('marketing.nav_about') },
   ];
-
-  const navLinks = BETA_MODE
-    ? allNavLinks.filter((l) => !l.hideInBeta)
-    : allNavLinks;
 
   const isActive = (href: string) => location.pathname === href;
   const isAuthPage = location.pathname === "/auth";

@@ -9,7 +9,8 @@ const requiredSnippets = [
   'your association one view of participation and progress',
   'One weekly plan across every team.',
   'Set the standard once',
-  'Start a free team pilot',
+  'Set up your team free',
+  'Free for the hockey community',
 ];
 
 if (!fs.existsSync(htmlPath)) {

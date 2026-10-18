@@ -8,7 +8,7 @@ import {
   hasEntitlement as checkEntitlement,
 } from "@/core/entitlements";
 import { useAuth } from "./useAuth";
-import { BETA_MODE } from "@/core/constants";
+import { COMMUNITY_FREE_MODE } from "@/core/constants";
 
 interface TeamCoverage {
   team_id: string;
@@ -69,14 +69,14 @@ export function useEntitlements() {
   });
 
   const can = (key: EntitlementKey): boolean => {
-    // Beta mode: grant all features
-    if (BETA_MODE) return true;
+    // Community-free mode: grant all features.
+    if (COMMUNITY_FREE_MODE) return true;
     // If server says full access, always true
     if (access?.has_full_access) return true;
     return checkEntitlement(entitlements, key);
   };
 
-  const isPro = BETA_MODE ? true : (access?.has_full_access ?? false);
+  const isPro = COMMUNITY_FREE_MODE ? true : (access?.has_full_access ?? false);
   const isComped = access?.access_source === "comp";
   const isTeamCovered = access?.access_source === "team" || (!!access?.team_coverage && access?.access_source !== "paid");
   const isTeamPurchaser = access?.is_team_purchaser ?? false;

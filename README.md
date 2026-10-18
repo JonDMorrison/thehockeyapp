@@ -25,7 +25,7 @@ This repository reflects a product-led, AI-assisted development workflow. It sho
 
 ## Current status
 
-Active product development and youth-team pilot preparation.
+Active product development for a free hockey-community training platform.
 
 ## Technology
 
