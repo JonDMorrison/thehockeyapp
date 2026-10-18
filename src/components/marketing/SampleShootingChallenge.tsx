@@ -290,7 +290,7 @@ export function SampleShootingChallenge() {
                       </Label>
                       <Input
                         id="sample-shot-total"
-                        className="mt-2 h-16 text-3xl font-bold tabular-nums"
+                        className="mt-2 h-16 text-3xl font-bold tabular-nums md:text-3xl"
                         type="number"
                         inputMode="numeric"
                         min={0}
