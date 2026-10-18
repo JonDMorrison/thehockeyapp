@@ -657,11 +657,12 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       {t("teams.inviteParents.expires", { date: new Date(invite.expires_at).toLocaleDateString() })}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Input value={inviteLink || ""} readOnly className="text-xs" />
+                      <Input value={inviteLink || ""} readOnly aria-label="Family invitation link" className="text-xs" />
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
+                        aria-label="Copy invitation link"
                         onClick={handleCopy}
                       >
                         {copied ? (

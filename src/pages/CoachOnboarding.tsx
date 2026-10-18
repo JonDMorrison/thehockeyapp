@@ -44,7 +44,6 @@ import {
   ClipboardList,
   ShieldCheck,
   Target,
-  ChevronRight,
 } from "lucide-react";
 
 const AGE_DIVISIONS = [
@@ -137,8 +136,8 @@ const CoachOnboarding: React.FC = () => {
     teamPalettes.find((p) => p.id === paletteId) ?? teamPalettes[0];
   const progressSteps = [
     t("coachOnboarding.progress.team"),
+    "Set up activity",
     t("coachOnboarding.progress.families"),
-    t("coachOnboarding.progress.firstWeek"),
   ];
 
   const handleCreateTeam = async () => {
@@ -300,17 +299,16 @@ const CoachOnboarding: React.FC = () => {
     sendCoachWelcomeEmail().catch(() => {});
     if (teamId) {
       navigate(
-        `/teams/${teamId}/shooting/new${shootingDays ? `?days=${shootingDays}` : ""}`,
+        `/teams/${teamId}/shooting/new?days=${shootingDays || "7"}&first=1`,
       );
     } else {
       finish();
     }
   };
 
-  const goToAi = () => {
-    // Open the existing program builder / AI flow on the coach dashboard.
+  const goToProgram = () => {
     if (teamId) {
-      navigate(`/teams/${teamId}`);
+      navigate(`/teams/${teamId}/builder/new?inviteAfter=1`);
     } else {
       finish();
     }
@@ -424,7 +422,9 @@ const CoachOnboarding: React.FC = () => {
               size="icon-sm"
               aria-label={t("coachOnboarding.back")}
               onClick={() =>
-                step > 1 && !teamId ? setStep(step - 1) : navigate("/welcome")
+                step === 3
+                  ? setStep(2)
+                  : navigate(teamId ? `/teams/${teamId}` : "/welcome")
               }
             >
               <ChevronLeft className="h-5 w-5" />
@@ -795,8 +795,8 @@ const CoachOnboarding: React.FC = () => {
             </section>
           )}
 
-          {/* STEP 2 — INVITE FAMILIES */}
-          {step === 2 && (
+          {/* STEP 3 — INVITE FAMILIES */}
+          {step === 3 && (
             <div className="mx-auto max-w-3xl space-y-6 animate-fade-up">
               <div>
                 <AppCardTitle className="text-xl flex items-center gap-2">
@@ -887,37 +887,28 @@ const CoachOnboarding: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="team"
-                  size="xl"
-                  className="w-full"
-                  onClick={() => setStep(3)}
-                  disabled={submitting}
-                >
-                  {t("coachOnboarding.continueToShooting")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => setStep(3)}
-                  disabled={submitting}
-                >
-                  {t("coachOnboarding.skipForNow")}
-                </Button>
-              </div>
+              <Button
+                variant="team"
+                size="xl"
+                className="w-full"
+                onClick={finish}
+                disabled={submitting}
+              >
+                Go to my team
+              </Button>
             </div>
           )}
 
-          {/* STEP 3 — FIRST WEEK */}
-          {step === 3 && (
+          {/* STEP 2 — SET UP AN ACTIVITY */}
+          {step === 2 && (
             <div className="mx-auto max-w-3xl space-y-6 animate-fade-up">
               <div>
                 <AppCardTitle className="text-xl">
-                  {t("coachOnboarding.step3Title")}
+                  What would you like to set up?
                 </AppCardTitle>
                 <AppCardDescription className="mt-1">
-                  {t("coachOnboarding.step3Subtitle")}
+                  Build a program, choose a template, or start a shooting
+                  challenge. Invite families after your activity is set up.
                 </AppCardDescription>
               </div>
 
@@ -947,13 +938,7 @@ const CoachOnboarding: React.FC = () => {
                 </Button>
               </AppCard>
 
-              <details className="group overflow-hidden rounded-xl border border-border bg-card">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
-                  <span className="flex-1">
-                    {t("coachOnboarding.morePlanningOptions")}
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-                </summary>
+              <section aria-label="Program options">
                 <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
                   <button
                     type="button"
@@ -975,26 +960,31 @@ const CoachOnboarding: React.FC = () => {
                   <button
                     type="button"
                     className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
-                    onClick={goToAi}
+                    onClick={goToProgram}
                   >
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                       <Sparkles className="h-5 w-5 text-primary" />
                     </span>
                     <span>
                       <span className="block font-semibold">
-                        {t("coachOnboarding.aiTitle")}
+                        Build a program
                       </span>
                       <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-                        {t("coachOnboarding.aiDescription")}
+                        Choose a weekly plan, customize the activities, and
+                        publish it before inviting families.
                       </span>
                     </span>
                   </button>
                 </div>
-              </details>
+              </section>
 
               <div className="flex flex-col gap-3">
-                <Button variant="outline" className="w-full" onClick={finish}>
-                  {t("coachOnboarding.finish")}
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setStep(3)}
+                >
+                  I’ll set up my activity later
                 </Button>
               </div>
             </div>
@@ -1010,7 +1000,7 @@ const CoachOnboarding: React.FC = () => {
           level={level || null}
           open={templatePickerOpen}
           onOpenChange={setTemplatePickerOpen}
-          onDone={finish}
+          onDone={() => setStep(3)}
         />
       )}
     </AppShell>

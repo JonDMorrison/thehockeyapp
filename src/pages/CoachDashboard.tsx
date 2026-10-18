@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +34,7 @@ const CoachDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [search, setSearch] = useSearchParams();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setActiveView, setActiveTeamId } = useActiveView();
@@ -47,6 +48,14 @@ const CoachDashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
+
+  useEffect(() => {
+    if (dashboard?.success && search.get("inviteFamilies") === "1") {
+      setInviteModalTab("invite");
+      setShowInviteModal(true);
+      setSearch((current) => { const next = new URLSearchParams(current); next.delete("inviteFamilies"); return next; }, { replace: true });
+    }
+  }, [dashboard, search, setSearch]);
 
   // Fetch schedule source for sync functionality
   const { data: scheduleSource } = useQuery({

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useMemo } from "react";
 import { logger } from "@/core";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +41,8 @@ const WeekPlannerNew: React.FC = () => {
   const { t } = useTranslation();
   const { id: teamId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const inviteAfter = search.get("inviteAfter") === "1";
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
@@ -218,7 +220,7 @@ const WeekPlannerNew: React.FC = () => {
     onSuccess: (plan) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
       toast.success(t('practice.weekPlanCreated'));
-      navigate(`/teams/${teamId}/builder/${plan.id}`);
+      navigate(`/teams/${teamId}/builder/${plan.id}${inviteAfter ? "?inviteAfter=1" : ""}`);
     },
     onError: (error) => {
       logger.error("Save error", { error });
@@ -241,6 +243,7 @@ const WeekPlannerNew: React.FC = () => {
 
   return (
     <AppShell
+      hideUserMenu={inviteAfter}
       hideNav
       header={
         <div className="flex items-center gap-3">
@@ -378,7 +381,7 @@ const WeekPlannerNew: React.FC = () => {
           level={(team as { level?: string | null } | undefined)?.level ?? null}
           open={templatePickerOpen}
           onOpenChange={setTemplatePickerOpen}
-          onDone={() => navigate(`/teams/${teamId}/practice`)}
+          onDone={() => navigate(`/teams/${teamId}${inviteAfter ? "?inviteFamilies=1" : "/practice"}`)}
         />
       )}
     </AppShell>

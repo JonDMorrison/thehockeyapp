@@ -147,6 +147,37 @@ for (const width of [390, 1280]) {
       (Date.parse(publication!.p_end) - Date.parse(publication!.p_start)) /
         86400000,
     ).toBe(29);
+    await page.goto("/onboarding/coach");
+    await page.getByLabel(/team name/i).fill("Program Wolves");
+    await page.getByRole("button", { name: "Create team & continue" }).click();
+    await expect(
+      page.getByText("What would you like to set up?", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Create family invite", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /Build a program/ }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", {
+        name: "I’ll set up my activity later",
+        exact: true,
+      })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Create family invite", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: /shooting challenge|challenge dates|Build a program/i,
+      }),
+    ).toHaveCount(0);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("button", { name: /Build a program/ }).click();
+    await expect(page).toHaveURL(
+      new RegExp(`/teams/${team}/builder/new\\?inviteAfter=1$`),
+    );
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
