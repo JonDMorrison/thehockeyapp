@@ -41,11 +41,13 @@ for (const width of [390, 1280]) {
         sample.getByRole("heading", { name: /Pick the days. Take the shots./ }),
       ).toBeVisible();
       await expect
-        .poll(async () => sample.evaluate((e) => e.getBoundingClientRect().top))
-        .toBeLessThan(110);
-      expect(
-        await sample.evaluate((e) => e.getBoundingClientRect().top),
-      ).toBeGreaterThanOrEqual(60);
+        .poll(async () => {
+          const top = await sample.evaluate(
+            (e) => e.getBoundingClientRect().top,
+          );
+          return top >= 60 && top < 110;
+        })
+        .toBe(true);
       await sample
         .getByRole("button", { name: "14 days", exact: true })
         .click();
