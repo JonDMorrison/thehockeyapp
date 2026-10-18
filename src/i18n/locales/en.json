@@ -2666,7 +2666,6 @@
     "back": "Back",
     "continue": "Continue",
     "skipForNow": "Skip for now",
-    "stepLabel": "Step {{current}} of {{total}}",
     "headerTitle": "Coach setup",
     "estimatedTime": "About 2 minutes",
     "progressLabel": "Team setup progress",

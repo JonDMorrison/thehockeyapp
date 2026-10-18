@@ -20,6 +20,10 @@ function reject(file, pattern, message) {
 expect("src/pages/Auth.tsx", /role === "coach"[\s\S]{0,120}return "\/onboarding\/coach"/, "coach signup enters guided onboarding");
 expect("src/pages/marketing/Home.tsx", /setSelectedRole\("coach"\)[\s\S]{0,120}navigate\("\/auth\?mode=signup"\)/, "team pilot opens coach signup directly");
 expect("src/pages/Auth.tsx", /signupRole === "coach" \? "auth\.coachSignupHeadline"/, "coach signup explains the coach-specific path");
+reject("src/pages/Auth.tsx", /logoImage/, "auth page does not repeat the brand already shown in navigation");
+reject("src/pages/Auth.tsx", /t\("common\.or"\)/, "auth mode switch is not separated by a misleading OR divider");
+expect("src/components/marketing/MarketingNav.tsx", /!isAuthPage[\s\S]*nav_sign_in[\s\S]*nav_get_started/, "auth navigation hides duplicate sign-in and signup actions");
+expect("src/components/marketing/MarketingNav.tsx", /HockeyAppLogo size=\{32\} alt=""/, "navigation does not announce the brand twice to screen readers");
 expect("src/pages/Auth.tsx", /role === "association"[\s\S]{0,120}return "\/associations\/new"/, "association signup enters association setup");
 expect("src/pages/Welcome.tsx", /storedRole === "coach"[\s\S]{0,120}navigate\("\/onboarding\/coach"/, "coach welcome resumes guided onboarding");
 expect("src/pages/Welcome.tsx", /storedRole === "association"[\s\S]{0,120}navigate\("\/associations\/new"/, "association welcome resumes association setup");

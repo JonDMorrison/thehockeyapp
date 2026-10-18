@@ -139,7 +139,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       {!hideNav && (
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col border-r border-white/[0.07] bg-[#090b0f] lg:flex">
           <Link to="/welcome" className="flex h-20 items-center gap-3 border-b border-white/[0.07] px-5">
-            <HockeyAppLogo size={34} />
+            <HockeyAppLogo size={34} alt="" />
             <div>
               <p className="font-display text-base font-black uppercase tracking-tight text-white">The Hockey App</p>
               <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">{workspaceNavigation.eyebrow}</p>

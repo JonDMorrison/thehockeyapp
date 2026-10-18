@@ -77,7 +77,6 @@ const LEVEL_KEYS: Record<string, string> = {
   Other: "other",
 };
 
-const TOTAL_STEPS = 3;
 const FEATURED_PALETTE_IDS = ["brand", "chicago", "vancouver", "toronto"];
 const featuredPalettes = teamPalettes.filter((palette) =>
   FEATURED_PALETTE_IDS.includes(palette.id),
@@ -327,9 +326,6 @@ const CoachOnboarding: React.FC = () => {
               <p className="truncate font-display text-sm font-bold text-foreground sm:text-base">
                 {t("coachOnboarding.headerTitle")}
               </p>
-              <p className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-primary sm:block">
-                {t("welcome.roleSelect.coachTitle")}
-              </p>
             </div>
           </div>
           <div className="hidden items-center gap-2 rounded-full border border-border/80 bg-card/70 px-3 py-1.5 text-xs text-muted-foreground sm:flex">
@@ -401,12 +397,6 @@ const CoachOnboarding: React.FC = () => {
               className="animate-fade-up"
             >
               <div className="mb-6 max-w-2xl sm:mb-8">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-                  {t("coachOnboarding.stepLabel", {
-                    current: step,
-                    total: TOTAL_STEPS,
-                  })}
-                </p>
                 <h1
                   id="team-setup-title"
                   className="font-display text-3xl font-black tracking-[-0.035em] text-foreground sm:text-4xl"

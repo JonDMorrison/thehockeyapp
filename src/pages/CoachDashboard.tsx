@@ -237,10 +237,7 @@ const CoachDashboard: React.FC = () => {
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Coach home</p>
-              <p className="truncate font-display text-base font-black uppercase">{dashboard.team.name}</p>
-            </div>
+            <p className="font-display text-base font-black uppercase">Coach home</p>
           </div>
           <div className="flex items-center gap-1">
             <Button
