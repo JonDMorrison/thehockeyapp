@@ -119,7 +119,10 @@ for (const width of [390, 1280]) {
         await page.goto(route);
         await expect(page.locator('h1').first()).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), route).toBe(true);
-        if (process.env.AUDIT_SCREENSHOT_DIR && route === '/about') await page.getByRole('region', { name: /practice ends/i }).screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `about-team-story-${width}.png`), style: "nav { visibility: hidden; }" });
+        if (process.env.AUDIT_SCREENSHOT_DIR && route === '/about') {
+          await page.getByRole('region', { name: /practice ends/i }).screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `about-team-story-${width}.png`), style: "nav { visibility: hidden; }" });
+          await page.screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `about-full-${width}.png`), fullPage: true, style: "nav { visibility: hidden; }" });
+        }
       }
       expect(errors).toEqual([]);
     });
