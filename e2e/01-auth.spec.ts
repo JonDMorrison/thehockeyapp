@@ -16,7 +16,7 @@ test.describe('Authentication — unauthenticated', () => {
     await page.goto('/auth');
     await page.waitForLoadState('networkidle');
     await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.getByLabel(/^password/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
   });
 
@@ -32,7 +32,7 @@ test.describe('Authentication — unauthenticated', () => {
     await page.goto('/auth');
     await page.waitForLoadState('networkidle');
     await page.getByLabel(/email/i).fill('wrong@example.com');
-    await page.getByLabel(/password/i).fill('wrongpassword');
+    await page.getByLabel(/^password/i).fill('wrongpassword');
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForTimeout(3000);
     const currentUrl = page.url();

@@ -62,7 +62,7 @@ test("finished challenge locks family writes, permits audited correction, and pr
     `/auth?redirect=${encodeURIComponent(`/shooting/${fixture.endedId}?player=${fixture.playerId}`)}`,
   );
   await page.getByLabel(/email/i).fill(accounts.parent.email);
-  await page.getByLabel(/password/i).fill(accounts.parent.password);
+  await page.getByLabel(/^password/i).fill(accounts.parent.password);
   await page.getByRole("button", { name: "Sign In", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Final standings" }),

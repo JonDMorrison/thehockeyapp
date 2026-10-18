@@ -22,7 +22,7 @@ async function globalSetup(config: FullConfig) {
     const page = await browser.newPage();
     await page.goto(`${baseURL}/auth?mode=signin`);
     await page.getByLabel(/email/i).fill(email);
-    await page.getByLabel(/password/i).fill(password);
+    await page.getByLabel(/^password/i).fill(password);
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForURL((url) => !url.pathname.includes('/auth'), { timeout: 15_000 });
     await page.context().storageState({ path: 'e2e/.auth/user.json' });

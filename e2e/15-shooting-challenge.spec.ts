@@ -30,7 +30,7 @@ async function login(
 ) {
   await page.goto(`/auth?redirect=${encodeURIComponent(redirect)}`);
   await page.getByLabel(/email/i).fill(accounts[role].email);
-  await page.getByLabel(/password/i).fill(accounts[role].password);
+  await page.getByLabel(/^password/i).fill(accounts[role].password);
   await page.getByRole("button", { name: "Sign In", exact: true }).click();
   await expect(page).not.toHaveURL(/\/auth/);
 }
@@ -127,7 +127,7 @@ test.describe
     await family.goto(invite);
     await family.getByRole("button", { name: /join team/i }).click();
     await family.getByLabel(/email/i).fill(accounts.parent.email);
-    await family.getByLabel(/password/i).fill(accounts.parent.password);
+    await family.getByLabel(/^password/i).fill(accounts.parent.password);
     await family.getByRole("button", { name: "Sign In", exact: true }).click();
     await family
       .getByRole("button", { name: /^Add (?:New )?Player$/i })
