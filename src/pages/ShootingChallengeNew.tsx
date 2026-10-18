@@ -185,7 +185,7 @@ export default function ShootingChallengeNew() {
     }
   };
   return (
-    <AppShell hideNav>
+    <AppShell hideNav hideUserMenu={firstChallenge}>
       <PageContainer className="max-w-xl space-y-5">
         {firstChallenge && <FirstChallengeSteps step={2} />}
         {!firstChallenge && (

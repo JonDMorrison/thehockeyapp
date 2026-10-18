@@ -334,7 +334,7 @@ const CoachOnboarding: React.FC = () => {
 
   if (shootingDays) {
     return (
-      <AppShell hideNav>
+      <AppShell hideNav hideUserMenu>
         <PageContainer className="max-w-xl space-y-6 py-7">
           <FirstChallengeSteps step={1} />
           <div>
