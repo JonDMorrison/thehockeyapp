@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
@@ -40,6 +41,8 @@ import {
   Clipboard,
   ClipboardList,
   ShieldCheck,
+  Target,
+  ChevronRight,
 } from "lucide-react";
 
 const AGE_DIVISIONS = [
@@ -258,6 +261,17 @@ const CoachOnboarding: React.FC = () => {
   const goToTemplate = () => {
     if (teamId) {
       setTemplatePickerOpen(true);
+    } else {
+      finish();
+    }
+  };
+
+  const goToShooting = () => {
+    sendCoachWelcomeEmail().catch(() => {});
+    if (teamId) {
+      const date = format(new Date(), "yyyy-MM-dd");
+      const returnTo = encodeURIComponent(`/teams/${teamId}`);
+      navigate(`/teams/${teamId}/assign?date=${date}&preset=wrist_shots&returnTo=${returnTo}`);
     } else {
       finish();
     }
@@ -775,7 +789,7 @@ const CoachOnboarding: React.FC = () => {
                   onClick={() => setStep(3)}
                   disabled={submitting}
                 >
-                  {t("coachOnboarding.continue")}
+                  {t("coachOnboarding.continueToShooting")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -801,57 +815,72 @@ const CoachOnboarding: React.FC = () => {
                 </AppCardDescription>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <AppCard
-                  className="cursor-pointer hover:border-primary"
-                  onClick={goToTemplate}
-                >
-                  <div className="flex flex-col items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <LayoutTemplate className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <AppCardTitle className="text-base">
-                        {t("coachOnboarding.templateTitle")}
-                      </AppCardTitle>
-                      <AppCardDescription className="mt-1">
-                        {t("coachOnboarding.templateDescription")}
-                      </AppCardDescription>
-                    </div>
+              <AppCard className="border-primary/30 bg-primary/[0.06]">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+                    <Target className="h-6 w-6" />
                   </div>
-                </AppCard>
+                  <div className="min-w-0 flex-1">
+                    <AppCardTitle>{t("coachOnboarding.shootingTitle")}</AppCardTitle>
+                    <AppCardDescription className="mt-1 leading-5">
+                      {t("coachOnboarding.shootingDescription")}
+                    </AppCardDescription>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="team"
+                  size="xl"
+                  className="mt-5 w-full justify-between"
+                  onClick={goToShooting}
+                >
+                  {t("coachOnboarding.shootingAction")}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </AppCard>
 
-                <AppCard
-                  className="cursor-pointer hover:border-primary"
-                  onClick={goToAi}
-                >
-                  <div className="flex flex-col items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <AppCardTitle className="text-base">
-                        {t("coachOnboarding.aiTitle")}
-                      </AppCardTitle>
-                      <AppCardDescription className="mt-1">
-                        {t("coachOnboarding.aiDescription")}
-                      </AppCardDescription>
-                    </div>
-                  </div>
-                </AppCard>
-              </div>
+              <details className="group overflow-hidden rounded-xl border border-border bg-card">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+                  <span className="flex-1">{t("coachOnboarding.morePlanningOptions")}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+                    onClick={goToTemplate}
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <LayoutTemplate className="h-5 w-5 text-primary" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{t("coachOnboarding.templateTitle")}</span>
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{t("coachOnboarding.templateDescription")}</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="flex min-h-28 w-full items-start gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+                    onClick={goToAi}
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{t("coachOnboarding.aiTitle")}</span>
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{t("coachOnboarding.aiDescription")}</span>
+                    </span>
+                  </button>
+                </div>
+              </details>
 
               <div className="flex flex-col gap-3">
                 <Button
-                  variant="team"
-                  size="xl"
+                  variant="outline"
                   className="w-full"
                   onClick={finish}
                 >
                   {t("coachOnboarding.finish")}
-                </Button>
-                <Button variant="ghost" className="w-full" onClick={finish}>
-                  {t("coachOnboarding.skipForNow")}
                 </Button>
               </div>
             </div>

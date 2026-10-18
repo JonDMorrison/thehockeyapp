@@ -34,6 +34,17 @@ test.describe('Public launch experience', () => {
     await expect(page.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy');
   });
 
+  test('team pilot takes a coach directly to coach account creation', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: /start a free team pilot/i }).first().click();
+
+    await expect(page).toHaveURL(/\/auth\?mode=signup$/);
+    await expect(page.getByRole('heading', { name: 'Create your coach account' })).toBeVisible();
+    await expect(page.getByText(/assign your first shooting workout/i)).toBeVisible();
+    await expect(page.getByText(/one account can also manage your child or association/i)).toBeVisible();
+  });
+
   test('legal pages are reachable', async ({ page }) => {
     await page.goto('/privacy');
     await expect(page.getByRole('heading', { name: /privacy/i }).first()).toBeVisible();

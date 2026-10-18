@@ -67,6 +67,7 @@ const Auth: React.FC = () => {
     const m = searchParams.get("mode");
     return m === "signup" || m === "reset" ? m : "signin";
   });
+  const [signupRole] = useState(() => getSelectedRole());
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -242,19 +243,19 @@ const Auth: React.FC = () => {
               {mode === "signin"
                 ? t("auth.signinHeadline")
                 : mode === "signup"
-                ? t("auth.signupHeadline")
+                ? t(signupRole === "coach" ? "auth.coachSignupHeadline" : "auth.signupHeadline")
                 : "Choose a new password"}
             </h1>
             <p className="text-muted-foreground">
               {mode === "signin"
                 ? t("auth.signinSubheadline")
                 : mode === "signup"
-                ? t("auth.signupSubheadline")
+                ? t(signupRole === "coach" ? "auth.coachSignupSubheadline" : "auth.signupSubheadline")
                 : "Use at least 8 characters for your new password."}
             </p>
             {mode === "signup" && (
               <p className="text-xs text-muted-foreground/70 mt-1">
-                {t("auth.signupTagline")}
+                {t(signupRole === "coach" ? "auth.coachSignupTagline" : "auth.signupTagline")}
               </p>
             )}
           </div>

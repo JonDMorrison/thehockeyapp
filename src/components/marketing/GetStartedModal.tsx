@@ -107,7 +107,7 @@ export const GetStartedModal = forwardRef<HTMLDivElement, GetStartedModalProps>(
       }
 
       setSelectedRole(option.role);
-      navigate("/auth");
+      navigate("/auth?mode=signup");
     };
 
     return (

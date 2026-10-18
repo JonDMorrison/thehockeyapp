@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,7 +11,7 @@ import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
 import { getRecommendedCoachingVideo } from "@/lib/coachingVideos";
-import { format, addDays, isSameDay, isToday, isTomorrow, subDays } from "date-fns";
+import { format, addDays, isSameDay, isToday, isTomorrow, subDays, parseISO, isValid, startOfDay } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
@@ -61,19 +61,56 @@ function getPresetVideo(label: string, taskType: string, shotType: string): stri
   return getRecommendedCoachingVideo({ label, taskType, shotType })?.url ?? null;
 }
 
+const ASSIGNMENT_PRESET_IDS = new Set([
+  "wrist_shots",
+  "snap_shots",
+  "slap_shots",
+  "backhand",
+  "pushups",
+  "squats",
+  "planks",
+  "stretching",
+  "stickhandling",
+  "lunges",
+]);
+
+function getInitialAssignmentDate(value: string | null): Date {
+  const today = startOfDay(new Date());
+  if (!value) return today;
+
+  const parsed = startOfDay(parseISO(value));
+  const maxDate = addDays(today, 7);
+  return isValid(parsed) && parsed >= today && parsed <= maxDate ? parsed : today;
+}
+
+function getInitialExerciseSelection(value: string | null): Set<string> {
+  return value && ASSIGNMENT_PRESET_IDS.has(value) ? new Set([value]) : new Set();
+}
+
 const QuickAssign: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const requestedReturnTo = searchParams.get("returnTo");
+  const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+    ? requestedReturnTo
+    : null;
+  const [selectedDate, setSelectedDate] = useState<Date>(() =>
+    getInitialAssignmentDate(searchParams.get("date")),
+  );
   const { setTeamTheme } = useTeamTheme();
-  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
+  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(() =>
+    getInitialExerciseSelection(searchParams.get("preset")),
+  );
   const [copySheetOpen, setCopySheetOpen] = useState(false);
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
   const [pendingPublish, setPendingPublish] = useState<boolean | null>(null);
-  const [videoExercises, setVideoExercises] = useState<Set<string>>(new Set());
+  const [videoExercises, setVideoExercises] = useState<Set<string>>(() =>
+    getInitialExerciseSelection(searchParams.get("preset")),
+  );
 
   const EXERCISE_PRESETS: ExercisePreset[] = [
     {
@@ -189,6 +226,14 @@ const QuickAssign: React.FC = () => {
   ];
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
+  const leaveAssignment = () => {
+    if (returnTo) {
+      navigate(returnTo, { replace: true });
+    } else {
+      navigate(-1);
+    }
+  };
 
   const formatDateLabel = (date: Date) => {
     if (isToday(date)) return t('common.today');
@@ -403,7 +448,7 @@ const QuickAssign: React.FC = () => {
       const dateLabel = isToday(selectedDate) ? t('common.today').toLowerCase() : formatDateLabel(selectedDate);
       toast.success(t('practice.copied'), t('practice.nTasksCopiedTo', { count: result.taskCount, dateLabel }));
       setCopySheetOpen(false);
-      navigate(-1);
+      leaveAssignment();
     },
     onError: (error: Error) => {
       toast.error(t('common.failed'), error.message);
@@ -454,7 +499,7 @@ const QuickAssign: React.FC = () => {
         toast.success(t('common.saved'), t('practice.workoutSavedAsDraft'));
       }
 
-      navigate(-1);
+      leaveAssignment();
     },
     onError: (error: Error) => {
       toast.error(t('common.failed'), error.message);
