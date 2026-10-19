@@ -1,3 +1,4 @@
+import emailDesign from './email-module.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -8,7 +9,7 @@ function harness({configured=true,emailed=false,providerStatus=200,markError=fal
  const event={id:'event-id',severity:'urgent',event_type:'qa_event',metadata:{detail:'<script>bad</script>'},created_at:'2026-10-19T00:00:00Z',emailed_at:emailed?'2026-10-19T00:00:00Z':null};
  const query={select(){reads++;return query;},eq(){return query;},is(){return query;},single:async()=>({data:event,error:null}),update(){writes++;return query;},then(resolve,reject){return Promise.resolve({error:markError?{message:'database update unavailable'}:null}).then(resolve,reject);}};
  const js=ts.transpileModule(fs.readFileSync('supabase/functions/send-admin-activity-email/index.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- vm.runInNewContext(js,{exports:{},require:name=>name.includes('supabase-js')?{createClient:()=>({from:()=>query})}:{serve:fn=>{handler=fn;}},Response,Request,crypto:webcrypto,AbortSignal,console:{log(){}},Deno:{env:{get:key=>({SUPABASE_SERVICE_ROLE_KEY:'service-key',HOCKEY_ADMIN_ALERT_SECRET:'private-alert-key',SUPABASE_URL:'https://qa.invalid',RESEND_API_KEY:configured?'qa-email-key':undefined,ADMIN_EMAIL:configured?'qa@example.com':undefined})[key]}},fetch:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify({id:'message-id'}),{status:providerStatus});}});
+ vm.runInNewContext(js,{exports:{},require:name=>name.includes('emailDesign')?emailDesign:name.includes('supabase-js')?{createClient:()=>({from:()=>query})}:{serve:fn=>{handler=fn;}},Response,Request,crypto:webcrypto,AbortSignal,console:{log(){}},Deno:{env:{get:key=>({SUPABASE_SERVICE_ROLE_KEY:'service-key',HOCKEY_ADMIN_ALERT_SECRET:'private-alert-key',SUPABASE_URL:'https://qa.invalid',RESEND_API_KEY:configured?'qa-email-key':undefined,ADMIN_EMAIL:configured?'qa@example.com':undefined})[key]}},fetch:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify({id:'message-id'}),{status:providerStatus});}});
  return {calls,get reads(){return reads;},get writes(){return writes;},request:async(headers={},body={event_id:'event-id'})=>{const response=await handler(new Request('https://qa.invalid/alert',{method:'POST',headers,body:JSON.stringify(body)}));return {status:response.status,body:await response.json()};}};
 }
 let checks=0;

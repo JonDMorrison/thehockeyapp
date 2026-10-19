@@ -31,7 +31,8 @@
     "test:alert-dispatch": "node tests/functions/admin-alert-authorization.mjs",
     "test:starter-workout": "node tests/functions/starter-workout.mjs",
     "test:calendar-feed": "node tests/functions/calendar-feed.mjs",
-    "test:weekly-email": "node tests/functions/weekly-email.mjs"
+    "test:weekly-email": "node tests/functions/weekly-email.mjs",
+    "test:email-design": "node tests/functions/email-design.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

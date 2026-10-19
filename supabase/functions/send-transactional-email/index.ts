@@ -1,3 +1,4 @@
+import { emailFrame, emailButton, emailHeading, emailStats, emailPlainText } from "../_shared/emailDesign.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -21,7 +22,7 @@ function corsHeadersFor(origin: string | null): Record<string, string> {
 }
 
 const FROM_ADDRESS = "The Hockey App <hello@hockeyapp.ca>";
-const NAVY = "#0f2a4a";
+const NAVY = "#18232e";
 
 // Escape user-controlled values before interpolating into HTML to prevent
 // HTML/script injection in email bodies and subjects.
@@ -47,40 +48,11 @@ function jsonResp(
 
 // ── Reusable building blocks ──
 
-function button(label: string, href: string): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0;">
-    <tr>
-      <td align="left">
-        <a href="${escapeHtml(href)}" style="display:inline-block;padding:14px 28px;background-color:${NAVY};color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;border-radius:6px;">
-          ${label}
-        </a>
-      </td>
-    </tr>
-  </table>`;
-}
-
-function wrap(innerHtml: string, title: string): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-</head>
-<body style="margin:0;padding:0;background-color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;padding:32px 24px;background-color:#ffffff;">
-    <tr>
-      <td>
-        ${innerHtml}
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-function heading(text: string): string {
-  return `<h1 style="font-size:22px;font-weight:600;margin:0 0 20px 0;color:${NAVY};">${text}</h1>`;
+const button = emailButton;
+const heading = emailHeading;
+function wrap(innerHtml: string, title: string, photo: "rink" | "driveway" = "rink"): string {
+  // Subjects already contain escaped names because they also appear in HTML headings.
+  return emailFrame(innerHtml, title.replaceAll("&amp;", "&").replaceAll("&#39;", "'"), {photo});
 }
 
 function para(text: string): string {
@@ -90,8 +62,8 @@ function para(text: string): string {
 function unsubscribeFooter(data: Record<string, unknown>): string {
   const unsubscribeUrl = typeof data.unsubscribeUrl === "string" ? data.unsubscribeUrl : "";
   if (!unsubscribeUrl) return "";
-  return `<p style="font-size:12px;line-height:1.5;color:#888888;margin:28px 0 0 0;border-top:1px solid #eeeeee;padding-top:16px;">
-    You can <a href="${escapeHtml(unsubscribeUrl)}" style="color:#666666;">turn off this email</a> at any time.
+  return `<p style="font-size:12px;line-height:1.5;color:#596671;margin:28px 0 0 0;border-top:1px solid #eeeeee;padding-top:16px;">
+    You can <a href="${escapeHtml(unsubscribeUrl)}" style="color:#52606b;">turn off this email</a> at any time.
   </p>`;
 }
 
@@ -101,13 +73,7 @@ interface DigestPlayer {
   streak: number;
 }
 
-function plainText(html: string): string {
-  return html.replace(/<head>[\s\S]*?<\/head>/gi, "")
-    .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
-    .replace(/<\/(?:p|h1|li|tr)>/gi, "\n\n").replace(/<[^>]*>/g, "")
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .split("\n").map(line => line.trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
-}
+const plainText = emailPlainText;
 
 // ── Per-type email builders ──
 
@@ -125,15 +91,15 @@ function buildCoachWelcome(data: Record<string, unknown>): { subject: string; ht
     : `Invite parents, one tap from their phone connects their player.`;
 
   const inner = `
-    ${heading(subject)}
-    ${para(`Hi ${coachName}, your team ${teamName} is ready. Here's the path most coaches take in week one:`)}
-    <ol style="font-size:16px;line-height:1.65;color:#333333;margin:0 0 16px 0;padding-left:20px;">
+    ${heading("Your team. Your next chapter.")}
+    ${para(`Hi ${coachName}, ${teamName} has a new home for the work between practices. Three small steps to get moving:`)}
+    <ol style="font-size:16px;line-height:1.65;color:#333333;margin:20px 0;padding:20px 20px 20px 42px;background:#f0f4f5;border-radius:14px;">
       <li style="margin-bottom:8px;">Set up a program or shooting challenge, then publish it when you are ready.</li>
       <li style="margin-bottom:8px;">${inviteStep}</li>
-      <li style="margin-bottom:8px;">Check the dashboard Friday, you'll see exactly who trained without asking anyone.</li>
+      <li style="margin-bottom:8px;">See completed sessions and logged shots in your dashboard as families join in.</li>
     </ol>
 
-    ${para("Jon, The Hockey App")}
+    ${para("Keep the first week simple. One activity is a great place to start.")}
     ${button("Open your dashboard", "https://www.hockeyapp.ca/teams")}
   `;
 
@@ -150,13 +116,16 @@ function buildParentInvitation(data: Record<string, unknown>): { subject: string
   const subject = `${coachName} invited ${playerName} to ${teamName}'s training program`;
 
   const inner = `
-    ${heading(`Join ${teamName}`)}
-    ${para(`Hi, ${coachName} uses The Hockey App to give ${teamName} a structured off-ice training plan players follow at home. Join with team code <strong>${teamCode}</strong> and ${playerName} sees their daily checklist right away.`)}
-    ${para("Takes about a minute. Player details and training photos stay private, and you control the player account.")}
+    <p aria-hidden="true" style="font-size:26px;color:#ad444b;margin:0 0 12px;">&#9678;</p>
+    ${heading(`You’re on the team.`)}
+    <p style="font-size:18px;font-weight:bold;color:#18232e;margin:0 0 16px;">${teamName}</p>
+    ${para(`Hi, ${coachName} uses The Hockey App to give ${teamName} a place for workouts, shooting challenges, and the small wins between practices. Join the team so ${playerName} can see what the coach has planned.`)}
+    ${para("You create and manage your player’s profile. Private training photos stay under family control.")}
+    ${teamCode ? `<p style="padding:16px;background:#f0f4f5;border-radius:12px;font-size:14px;color:#52606b;">Your team code <strong style="font-size:20px;letter-spacing:2px;color:#18232e;">${teamCode}</strong></p>` : ""}
     ${button(`Join ${teamName}`, inviteLink)}
   `;
 
-  return { subject, html: wrap(inner, subject) };
+  return { subject, html: wrap(inner, subject, "driveway") };
 }
 
 function buildAssociationInvitation(data: Record<string, unknown>): { subject: string; html: string } {
@@ -203,12 +172,13 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
 
   const inner = `
     ${heading(`${teamName} last week`)}
-    ${para(`${completedCount} of ${rosterCount} players trained.`)}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;border-collapse:collapse;">
+    ${para("Your team’s work between practices, at a glance.")}
+    ${emailStats([{label:"Players trained",value:completedCount},{label:"On the roster",value:rosterCount}])}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;border-collapse:collapse;">
       <thead>
         <tr>
-          <th style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#888888;text-align:left;">Player</th>
-          <th style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#888888;text-align:center;">Sessions</th>
+          <th scope="col" style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#596671;text-align:left;">Player</th>
+          <th scope="col" style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#596671;text-align:center;">Sessions</th>
           
         </tr>
       </thead>
@@ -242,17 +212,19 @@ function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: st
     bodyText = `No completed sessions or logged shots were recorded last week. Open the app to see the next available workout, or check with your coach.`;
   } else {
     subject = `${firstName}'s week: ${sessionsCount} sessions, ${shotsCount} shots`;
-    bodyText = `${firstName} completed ${sessionsCount} training sessions and logged ${shotsCount} shots last week.${targetShots > 0 ? ` Completed home shooting drills had targets of ${targetShots} additional shots.` : ""} Small, steady efforts build the habit.`;
+    bodyText = `${firstName} completed ${sessionsCount} training sessions and logged ${shotsCount} shots last week.${targetShots > 0 ? ` Completed home shooting drills had targets of ${targetShots} additional shots.` : ""} Every little bit of practice is a chance to build the habit. Nice work showing up!`;
   }
 
   const inner = `
+    <p aria-hidden="true" style="font-size:26px;color:#ad444b;margin:0 0 12px;">&#9734;</p>
     ${heading(isZeroWeek ? `A fresh week for ${firstName}` : `${firstName}'s week`)}
     ${para(bodyText)}
+    ${emailStats([{label:"Sessions completed",value:sessionsCount},{label:"Shots logged",value:shotsCount}])}
     ${button("Open this week", weekUrl)}
     ${unsubscribeFooter(data)}
   `;
 
-  return { subject, html: wrap(inner, subject) };
+  return { subject, html: wrap(inner, subject, "driveway") };
 }
 
 // ── Main handler ──
