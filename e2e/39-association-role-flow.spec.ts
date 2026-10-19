@@ -22,10 +22,15 @@ test('association owner connects a team and invites a reporting viewer without g
   await page.goto('/auth?mode=signin&redirect=%2Fassociations%2Fnew');await page.getByLabel(/^email/i).fill(owner.email);await page.getByLabel(/^password/i).fill(owner.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();
   const name=`Disposable Association QA ${Date.now()}`;await page.getByLabel(/^Association name/).fill(name);await page.getByLabel('Season',{exact:true}).fill('2026–27');await page.getByRole('button',{name:/create association/i,exact:true}).click();await expect(page).toHaveURL(/\/associations\/[a-f0-9-]+$/);
   const associationId=page.url().split('/').pop()!;fs.appendFileSync('/tmp/hockey-qa-association-fixtures.jsonl',JSON.stringify({associationId,userId:owner.id})+'\n');
-  await page.getByRole('button',{name:new RegExp(teamName)}).click();await expect(page.getByText('Team connected',{exact:true})).toBeVisible();
+  const connect=page.getByRole('button',{name:new RegExp(teamName)});await expect(connect).toBeVisible();
+  let releaseRefresh!:()=>void;let refreshRequested=false;
+  const refreshGate=new Promise<void>(resolve=>{releaseRefresh=resolve;});
+  await page.route('**/rest/v1/rpc/get_association_dashboard',async route=>{refreshRequested=true;await refreshGate;await route.continue();});
+  await connect.click();await expect.poll(()=>refreshRequested).toBe(true);await expect(connect).toBeDisabled();await expect(page.getByText('Team connected',{exact:true})).toHaveCount(0);
+  releaseRefresh();await expect(page.getByText('Team connected',{exact:true})).toBeVisible();await page.unroute('**/rest/v1/rpc/get_association_dashboard');
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/functions/v1/send-transactional-email',route=>route.fulfill({status:503,json:{message:'Simulated email service outage'}}));
-  await page.getByLabel('Invite by email',{exact:true}).fill(viewer.email);await page.getByRole('button',{name:'Send secure invite',exact:true}).click();await expect(page.getByText('Invitation created',{exact:true})).toBeVisible();
+  await page.getByLabel('Invite by email',{exact:true}).fill(viewer.email);await page.getByRole('button',{name:'Send secure invite',exact:true}).click();await expect(page.getByText('Invitation created',{exact:true})).toBeVisible({timeout:15000});
   const invite=await owner.client.from('association_invites').select('id,token').eq('association_id',associationId).eq('invited_email',viewer.email).single();expect(invite.error).toBeNull();
   const token=invite.data!.token;
   const secureLink=page.getByLabel('Secure invitation link',{exact:true});await expect(secureLink).toHaveValue(new RegExp(`/association/join/${token}$`));

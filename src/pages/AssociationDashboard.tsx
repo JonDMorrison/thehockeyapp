@@ -205,9 +205,9 @@ export default function AssociationDashboard() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
-      toast.success("Team connected", "Its rollout totals are now included.");
-      refresh();
+    onSuccess: async () => {
+      await refresh();
+      toast.success("Team connected", "The team connection is saved.");
     },
     onError: (error: Error) => toast.error("Could not connect team", error.message),
   });
@@ -220,10 +220,10 @@ export default function AssociationDashboard() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await refresh();
       toast.success("Team disconnected", "The team workspace and its data were not deleted.");
       setTeamToDisconnect(null);
-      refresh();
     },
     onError: (error: Error) => toast.error("Could not disconnect team", error.message),
   });

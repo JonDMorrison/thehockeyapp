@@ -1,3 +1,6 @@
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
 import { test, expect } from '@playwright/test';
 import { getFirstPlayerId, getFirstTeamId } from './helpers/auth';
 import { queryDB, getTaskCompletions, getSessionCompletion } from './helpers/db';
@@ -157,51 +160,21 @@ test.describe('Deep Audit — Data Persistence', () => {
   // ============================================================
 
   test('completing a session saves to session_completions table', async ({ page }) => {
-    const playerId = await getFirstPlayerId(page);
-    if (!playerId) { test.skip(); return; }
-
-    // Get session completions before
-    const completionsBefore = await queryDB('session_completions', { player_id: playerId });
-    console.log('Session completions before:', completionsBefore.length);
-
-    await page.goto(`/players/${playerId}/today`);
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
-
-    // Check if already complete
-    const isAlreadyComplete = await page.getByText(/session complete|finished at|done/i).first().isVisible().catch(() => false);
-    if (isAlreadyComplete) {
-      console.log('Session already complete today — checking database record exists');
-      const completions = await queryDB('session_completions', { player_id: playerId });
-      const hasComplete = completions.some((c: any) => c.status === 'complete');
-      console.log('DB has complete session:', hasComplete);
-      expect(hasComplete).toBeTruthy();
-      return;
-    }
-
-    // Click Complete Session
-    const completeBtn = page.getByRole('button', { name: /complete session|done|finish/i }).first();
-    if (await completeBtn.isVisible()) {
-      await completeBtn.click();
-      await page.waitForTimeout(4000); // Wait for Supabase write + celebration
-    } else {
-      console.log('No complete session button found');
-      test.skip();
-      return;
-    }
-
-    // Verify in database
-    const completionsAfter = await queryDB('session_completions', { player_id: playerId });
-    const hasComplete = completionsAfter.some((c: any) => c.status === 'complete');
-
-    if (hasComplete) {
-      console.log('PASS: Session completion saved to database');
-    } else {
-      console.log('POTENTIAL BUG: Session shown as complete in UI but not in database');
-      console.log('DB records:', completionsAfter);
-    }
-
-    expect(completionsAfter.length).toBeGreaterThan(completionsBefore.length === completionsAfter.length ? -1 : completionsBefore.length - 1);
+    test.setTimeout(60000);
+    const client=createClient(process.env.VITE_SUPABASE_URL!,process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,{auth:{persistSession:false}});
+    expect((await client.auth.signInWithPassword({email:process.env.TEST_USER_EMAIL!,password:process.env.TEST_USER_PASSWORD!})).error).toBeNull();
+    try {
+      const team=await client.rpc('create_team_with_owner',{p_name:`Disposable Session Persistence ${Date.now()}`,p_age_division:'U13',p_level:'rep'});expect(team.error).toBeNull();
+      const player=await client.rpc('create_managed_player',{p_first_name:'SessionPersistenceKid',p_birth_year:2014});expect(player.error).toBeNull();
+      const teamId=team.data.team_id,playerId=player.data.player_id,cardId=randomUUID();
+      fs.appendFileSync('/tmp/hockey-qa-workout-fixtures.jsonl',JSON.stringify({teamId,playerId,cardId})+'\n');
+      expect((await client.rpc('add_my_player_to_team',{p_team_id:teamId,p_player_id:playerId})).error).toBeNull();
+      expect((await client.rpc('save_team_practice_card',{p_id:cardId,p_team_id:teamId,p_date:new Date().toISOString().slice(0,10),p_tier:'rep',p_title:'Session persistence workout',p_notes:'',p_publish:true,p_tasks:[{label:'Complete this mobility activity',task_type:'mobility',is_required:true}]})).error).toBeNull();
+      await page.goto(`/players/${playerId}/today`);const activity=page.getByRole('checkbox',{name:/Complete this mobility activity/});await expect(activity).not.toBeChecked();await activity.press('Space');await expect(activity).toBeChecked();
+      const complete=page.getByRole('button',{name:'Complete Session',exact:true});await expect(complete).toBeEnabled();await complete.click();
+      await expect.poll(async()=>(await client.from('session_completions').select('status').eq('player_id',playerId).eq('practice_card_id',cardId)).data).toEqual([{status:'complete'}]);
+      await page.reload();await expect(activity).toBeChecked();expect((await client.from('session_completions').select('status').eq('player_id',playerId).eq('practice_card_id',cardId)).data).toEqual([{status:'complete'}]);
+    } finally {await client.auth.signOut({scope:'local'});}
   });
 
   // ============================================================
