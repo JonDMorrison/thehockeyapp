@@ -1,6 +1,8 @@
+import { usePlayerPhotoConsent } from "@/hooks/usePlayerPhotoConsent";
+import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -42,6 +44,7 @@ const PlayerBadges: React.FC = () => {
   const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [showPlayerOptions, setShowPlayerOptions] = useState(false);
   const { user, loading: authLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -70,6 +73,9 @@ const PlayerBadges: React.FC = () => {
     },
     enabled: !!user && !!playerId,
   });
+
+  const guardianConsent = usePlayerPhotoConsent(playerId, isAuthenticated && !!player && player.owner_user_id !== user?.id);
+  const canManagePlayer = Boolean(user && player && (player.owner_user_id === user.id || (guardianConsent.data?.relationship_confirmed && !guardianConsent.data.withdrawn_at)));
 
   // Fetch all active challenges
   const { data: challenges, isLoading: challengesLoading, isError: challengesError, refetch: retryChallenges } = useQuery({
@@ -185,6 +191,11 @@ const PlayerBadges: React.FC = () => {
           </p>
         </AppCard>
 
+          {canManagePlayer && <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">Challenge participation is optional. Manage it in Player options.</p>
+            <Button variant="outline" className="min-h-11 shrink-0" onClick={() => setShowPlayerOptions(true)}>Player options</Button>
+          </div>}
+
         {/* Earned Badges */}
         <div>
           <AppCardTitle className="text-sm text-text-muted mb-3 flex items-center gap-2">
@@ -282,6 +293,7 @@ const PlayerBadges: React.FC = () => {
           </AppCard>
         )}
       </PageContainer>
+      {canManagePlayer && player && <PlayerSettingsSheet open={showPlayerOptions} onOpenChange={setShowPlayerOptions} playerId={playerId!} playerName={player.first_name} />}
     </AppShell>
   );
 };

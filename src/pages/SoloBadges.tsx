@@ -1,7 +1,9 @@
+import { usePlayerPhotoConsent } from "@/hooks/usePlayerPhotoConsent";
+import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTranslation } from 'react-i18next';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -39,7 +41,8 @@ export default function SoloBadges() {
   const { t } = useTranslation();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [showPlayerOptions, setShowPlayerOptions] = useState(false);
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -94,6 +97,9 @@ export default function SoloBadges() {
     },
     enabled: !!playerId,
   });
+
+  const guardianConsent = usePlayerPhotoConsent(playerId, isAuthenticated && !!player && player.owner_user_id !== user?.id);
+  const canManagePlayer = Boolean(user && player && (player.owner_user_id === user.id || (guardianConsent.data?.relationship_confirmed && !guardianConsent.data.withdrawn_at)));
 
   // Fetch all active challenges
   const { data: challenges, isLoading, isError: challengesError, refetch: retryChallenges } = useQuery({
@@ -215,6 +221,11 @@ export default function SoloBadges() {
             </div>
           </motion.div>
 
+          {canManagePlayer && <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">Challenge participation is optional. Manage it in Player options.</p>
+            <Button variant="outline" className="min-h-11 shrink-0" onClick={() => setShowPlayerOptions(true)}>Player options</Button>
+          </div>}
+
           {/* Empty state when no challenges exist across any category */}
           {challenges !== undefined && BADGE_CATEGORIES.every(cat =>
             (challenges?.filter(c => cat.metricTypes.includes(c.metric_type)) || []).length === 0
@@ -335,6 +346,7 @@ export default function SoloBadges() {
           })}
         </div>
       </div>
+      {canManagePlayer && player && <PlayerSettingsSheet open={showPlayerOptions} onOpenChange={setShowPlayerOptions} playerId={playerId!} playerName={player.first_name} />}
     </AppShell>
   );
 }
