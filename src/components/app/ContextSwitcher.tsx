@@ -155,11 +155,12 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size={compact ? "icon-sm" : "sm"}
-          className={cn("gap-1.5 max-w-[180px]", className)}
+          size="sm"
+          className={cn("min-h-11 gap-1.5 max-w-[180px]", compact && "px-2 text-xs", className)}
           aria-label={t("nav.switchWorkspace")}
         >
-          <CurrentIcon className="w-4 h-4 shrink-0" />
+          {!compact && <CurrentIcon className="w-4 h-4 shrink-0" />}
+          {compact && <><span>{t("nav.switch")}</span><ChevronDown className="h-3 w-3" aria-hidden="true" /></>}
           {!compact && (
             <>
               <span className="truncate">{contextLabel}</span>
@@ -168,7 +169,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-y-auto">
+      <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-24px)] max-h-[min(520px,75dvh)] overflow-y-auto">
 
         {/* Association Workspaces Section */}
         {isAssociation && associationWorkspaces.length > 0 && (
@@ -203,47 +204,6 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("nav.createNewAssociation")}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        {/* Coach Teams Section */}
-        {isCoach && coachTeams.length > 0 && (
-          <>
-            <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Shield className="w-3 h-3" />
-              {t("nav.myTeams")}
-            </DropdownMenuLabel>
-            {coachTeams.map((team) => {
-              const isActive = routeTeamId === team.teamId && activeView === "coach";
-
-              return (
-                <DropdownMenuItem
-                  key={team.teamId}
-                  onClick={() => handleTeamSelect(team.teamId)}
-                  className="cursor-pointer"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <Avatar
-                      fallback={team.teamName}
-                      size="sm"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{team.teamName}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{team.role.replace("_", " ")}</p>
-                    </div>
-                    {isActive && <Check className="w-4 h-4 text-primary shrink-0" />}
-                  </div>
-                </DropdownMenuItem>
-              );
-            })}
-            <DropdownMenuItem
-              onClick={() => navigate("/teams/new")}
-              className="cursor-pointer text-muted-foreground"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("nav.createNewTeam")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -285,6 +245,47 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("nav.addPlayer")}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* Coach Teams Section */}
+        {isCoach && coachTeams.length > 0 && (
+          <>
+            <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Shield className="w-3 h-3" />
+              {t("nav.myTeams")}
+            </DropdownMenuLabel>
+            {coachTeams.map((team) => {
+              const isActive = routeTeamId === team.teamId && activeView === "coach";
+
+              return (
+                <DropdownMenuItem
+                  key={team.teamId}
+                  onClick={() => handleTeamSelect(team.teamId)}
+                  className="cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <Avatar
+                      fallback={team.teamName}
+                      size="sm"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{team.teamName}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{team.role.replace("_", " ")}</p>
+                    </div>
+                    {isActive && <Check className="w-4 h-4 text-primary shrink-0" />}
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuItem
+              onClick={() => navigate("/teams/new")}
+              className="cursor-pointer text-muted-foreground"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t("nav.createNewTeam")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
