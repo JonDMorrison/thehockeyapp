@@ -1,3 +1,4 @@
+import { dispatchCalendarSources } from "../_shared/calendarDispatch.ts";
 import { parseICalDate } from "../_shared/calendarDate.ts";
 import { fetchICal, isValidICalUrl } from "../_shared/calendarFeed.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
@@ -184,9 +185,11 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization");
     const serviceRequest = authHeader === `Bearer ${supabaseServiceKey}`;
+    const cronSecret = Deno.env.get("HOCKEY_CALENDAR_SYNC_SECRET");
+    const cronRequest = !!cronSecret && req.headers.get("x-hockey-calendar-secret") === cronSecret;
     let userId: string | null = null;
 
-    if (!serviceRequest && authHeader?.startsWith("Bearer ")) {
+    if (!serviceRequest && !cronRequest && authHeader?.startsWith("Bearer ")) {
       const authClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       });
@@ -194,7 +197,7 @@ Deno.serve(async (req) => {
       userId = user?.id ?? null;
     }
 
-    if (!serviceRequest && !userId) {
+    if (!serviceRequest && !cronRequest && !userId) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -202,6 +205,8 @@ Deno.serve(async (req) => {
     }
 
     const { action, team_id, player_id, ical_url, timezone } = await req.json();
+
+    if (cronRequest && action !== "sync_all") return new Response(JSON.stringify({success:false,error:"Forbidden"}),{status:403,headers:{...corsHeaders,"Content-Type":"application/json"}});
 
     console.log(`[sync-schedule] Action: ${action}, Team: ${team_id}, Player: ${player_id}`);
 
@@ -245,7 +250,7 @@ Deno.serve(async (req) => {
       }
 
       const icalEvents = parseICalContent(icalContent, timezone);
-      const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
+      const events = [...new Map(icalEvents.map((event) => { const converted=convertToEvent(event,"teamsnap_ical");return [converted.external_event_id,converted] as const; })).values()];
 
       // Filter future events only
       const now = new Date();
@@ -321,7 +326,7 @@ Deno.serve(async (req) => {
       try {
         const icalContent = await fetchICal(source.ical_url);
         const icalEvents = parseICalContent(icalContent, source.timezone);
-        const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
+        const events = [...new Map(icalEvents.map((event) => { const converted=convertToEvent(event,"teamsnap_ical");return [converted.external_event_id,converted] as const; })).values()];
 
         console.log(`[sync-schedule] Parsed ${events.length} events`);
 
@@ -337,21 +342,11 @@ Deno.serve(async (req) => {
         const newIds = new Set(events.map((e) => e.external_event_id));
 
         // Upsert all events
-        for (const event of events) {
-          const { error: upsertError } = await supabase
-            .from("team_events")
-            .upsert({
-              team_id,
-              source_type: "teamsnap_ical",
-              ...event,
-              updated_at: new Date().toISOString(),
-            }, { 
-              onConflict: "team_id,source_type,external_event_id" 
-            });
-
-          if (upsertError) {
-            throw new Error("Could not save a calendar event. Your existing schedule was kept; try again.");
-          }
+        if (events.length) {
+          const {error:upsertError}=await supabase.from("team_events").upsert(events.map(event=>({
+            team_id: team_id, source_type:"teamsnap_ical", ...event, updated_at:new Date().toISOString(),
+          })),{onConflict:"team_id,source_type,external_event_id"});
+          if(upsertError)throw new Error("Could not save calendar events. Your existing schedule was kept; try again.");
         }
 
         // Mark events that no longer exist as cancelled
@@ -463,7 +458,7 @@ Deno.serve(async (req) => {
       try {
         const icalContent = await fetchICal(source.ical_url);
         const icalEvents = parseICalContent(icalContent, source.timezone);
-        const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
+        const events = [...new Map(icalEvents.map((event) => { const converted=convertToEvent(event,"teamsnap_ical");return [converted.external_event_id,converted] as const; })).values()];
 
         console.log(`[sync-schedule] Parsed ${events.length} events for solo player`);
 
@@ -479,21 +474,11 @@ Deno.serve(async (req) => {
         const newIds = new Set(events.map((e) => e.external_event_id));
 
         // Upsert all events
-        for (const event of events) {
-          const { error: upsertError } = await supabase
-            .from("solo_events")
-            .upsert({
-              player_id,
-              source_type: "teamsnap_ical",
-              ...event,
-              updated_at: new Date().toISOString(),
-            }, { 
-              onConflict: "player_id,source_type,external_event_id" 
-            });
-
-          if (upsertError) {
-            throw new Error("Could not save a calendar event. Your existing schedule was kept; try again.");
-          }
+        if (events.length) {
+          const {error:upsertError}=await supabase.from("solo_events").upsert(events.map(event=>({
+            player_id: player_id, source_type:"teamsnap_ical", ...event, updated_at:new Date().toISOString(),
+          })),{onConflict:"player_id,source_type,external_event_id"});
+          if(upsertError)throw new Error("Could not save calendar events. Your existing schedule was kept; try again.");
         }
 
         // Mark events that no longer exist as cancelled
@@ -552,56 +537,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === "sync_all") {
-      if (!serviceRequest) {
-        return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      // Sync all teams (for cron job)
-      const { data: sources, error: sourcesError } = await supabase
-        .from("team_schedule_sources")
-        .select("team_id")
-        .eq("source_type", "teamsnap_ical");
-
-      if (sourcesError || !sources) {
-        return new Response(
-          JSON.stringify({ success: false, error: "Failed to fetch sources" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
-        );
-      }
-
-      console.log(`[sync-schedule] Syncing ${sources.length} teams`);
-
-      let synced = 0;
-      let failed = 0;
-
-      for (const source of sources) {
-        try {
-          // Call this same function recursively with sync action
-          const syncResponse = await fetch(`${supabaseUrl}/functions/v1/sync-schedule`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${supabaseServiceKey}`,
-            },
-            body: JSON.stringify({ action: "sync", team_id: source.team_id }),
-          });
-
-          if (syncResponse.ok) {
-            synced++;
-          } else {
-            failed++;
-          }
-        } catch {
-          failed++;
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, synced, failed }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (!serviceRequest && !cronRequest) return new Response(JSON.stringify({success:false,error:"Forbidden"}),{status:403,headers:{...corsHeaders,"Content-Type":"application/json"}});
+      const result=await dispatchCalendarSources(supabase,supabaseUrl,supabaseServiceKey,fetch);
+      return new Response(JSON.stringify(result),{status:result.failed ? 207 : 200,headers:{...corsHeaders,"Content-Type":"application/json"}});
     }
 
     return new Response(
