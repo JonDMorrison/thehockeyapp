@@ -379,11 +379,13 @@ const PlayerToday: React.FC = () => {
     if (teamData?.palette_id) {
       setTeamTheme(teamData.palette_id);
     }
-    if (playerId) {
-      setActiveView("parent");
+    if (playerId && player) {
+      const isOwnTrainingProfile = player.owner_user_id === user?.id
+        && player.birth_year <= new Date().getFullYear() - 18;
+      setActiveView(isOwnTrainingProfile ? "player" : "parent");
       setActivePlayerId(playerId);
     }
-  }, [teamData?.palette_id, setTeamTheme, playerId, setActiveView, setActivePlayerId]);
+  }, [teamData?.palette_id, setTeamTheme, playerId, player, user?.id, setActiveView, setActivePlayerId]);
 
   const tasks = useMemo(() => {
     if (!practiceCard?.practice_tasks) return [];

@@ -319,8 +319,14 @@ const PlayerHome: React.FC = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["player-preferences", id] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["player-preferences", id],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["player-active-team", id],
+        refetchType: "all",
+      });
       toast.success(
         t("players.home.toastTeamUpdatedTitle"),
         t("players.home.toastTeamUpdatedDescription"),
@@ -803,10 +809,17 @@ const PlayerHome: React.FC = () => {
             {memberships?.map(
               (m) =>
                 m.teams && (
-                  <Link
+                  <button
+                    type="button"
                     key={m.id}
-                    to={`/teams/${m.team_id}/roster`}
-                    className="flex min-h-14 items-center gap-3 rounded-xl border border-border p-3"
+                    aria-label={`Open ${m.teams.name} plan`}
+                    disabled={updateActiveTeam.isPending}
+                    onClick={() =>
+                      updateActiveTeam.mutate(m.team_id, {
+                        onSuccess: () => navigate(`/players/${id}/week`),
+                      })
+                    }
+                    className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-border p-3 text-left"
                   >
                     <Avatar
                       src={m.teams.team_logo_url}
@@ -817,7 +830,7 @@ const PlayerHome: React.FC = () => {
                       {m.teams.name}
                     </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  </Link>
+                  </button>
                 ),
             )}
             <JoinTeamCard playerId={id!} />

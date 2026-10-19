@@ -5,16 +5,26 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
-import { logger } from "@/core";
+import { useTeamDashboard } from "@/hooks/useTeamDashboard";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
-import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
+import {
+  AppCard,
+  AppCardTitle,
+  AppCardDescription,
+} from "@/components/app/AppCard";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Avatar } from "@/components/app/Avatar";
 import { Tag } from "@/components/app/Tag";
 import { ProgressBar } from "@/components/app/ProgressBar";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WeeklyHeatmap } from "@/components/dashboard/WeeklyHeatmap";
 import {
@@ -33,7 +43,14 @@ import {
   Zap,
   BarChart3,
 } from "lucide-react";
-import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
+import {
+  format,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
 import { Helmet } from "react-helmet-async";
 
 interface PlayerStats {
@@ -78,7 +95,9 @@ const TeamProgress: React.FC = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setTeamTheme } = useTeamTheme();
-  const [selectedPlayer, setSelectedPlayer] = useState<PlayerStats | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerStats | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState("leaderboard");
 
   useEffect(() => {
@@ -87,22 +106,14 @@ const TeamProgress: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Fetch team
-  const { data: team, isLoading: teamLoading } = useQuery({
-    queryKey: ["team", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("teams")
-        .select("id, name, palette_id")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user && !!id,
-  });
-
+  // Use the same staff authorization as coach home.
+  const {
+    data: dashboard,
+    isLoading: teamLoading,
+    isError: teamError,
+    refetch: retryTeam,
+  } = useTeamDashboard(id);
+  const team = teamError ? undefined : dashboard?.team;
   // Apply theme
   useEffect(() => {
     if (team?.palette_id) {
@@ -111,12 +122,18 @@ const TeamProgress: React.FC = () => {
   }, [team?.palette_id, setTeamTheme]);
 
   // Fetch team memberships with player data
-  const { data: memberships } = useQuery({
-    queryKey: ["team-memberships-full", id],
+  const {
+    data: memberships,
+    isLoading: membersLoading,
+    isError: membersError,
+    refetch: retryMembers,
+  } = useQuery({
+    queryKey: ["team-memberships-full", id, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_memberships")
-        .select(`
+        .select(
+          `
           player_id,
           players (
             id,
@@ -125,21 +142,27 @@ const TeamProgress: React.FC = () => {
             jersey_number,
             profile_photo_url
           )
-        `)
+        `,
+        )
         .eq("team_id", id)
         .eq("status", "active");
 
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!id,
+    enabled: !!user && !!id && !!team,
   });
 
   const playerIds = memberships?.map((m) => m.player_id) || [];
 
   // Fetch all session completions for team
-  const { data: completions } = useQuery({
-    queryKey: ["team-completions", id],
+  const {
+    data: completions,
+    isLoading: completionsLoading,
+    isError: completionsError,
+    refetch: retryCompletions,
+  } = useQuery({
+    queryKey: ["team-completions", id, user?.id],
     queryFn: async () => {
       const { data: cards, error: cardsError } = await supabase
         .from("practice_cards")
@@ -147,7 +170,7 @@ const TeamProgress: React.FC = () => {
         .eq("team_id", id!)
         .eq("program_source", "team");
 
-      if (cardsError) logger.error("Failed to fetch practice cards", { cardsError });
+      if (cardsError) throw cardsError;
       if (!cards || cards.length === 0) return [];
 
       const cardIds = cards.map((c) => c.id);
@@ -162,31 +185,38 @@ const TeamProgress: React.FC = () => {
       if (error) throw error;
       return data as CompletionData[];
     },
-    enabled: !!user && !!id,
+    enabled: !!user && !!id && !!team,
   });
 
   // Fetch badges for all team players
-  const { data: allBadges } = useQuery({
-    queryKey: ["team-all-badges", id, playerIds],
+  const {
+    data: allBadges,
+    isLoading: badgesLoading,
+    isError: badgesError,
+    refetch: retryBadges,
+  } = useQuery({
+    queryKey: ["team-all-badges", id, playerIds, user?.id],
     queryFn: async () => {
       if (playerIds.length === 0) return [];
 
       const { data, error } = await supabase
         .from("player_badges")
-        .select(`
+        .select(
+          `
           player_id,
           awarded_at,
           challenges (
             name,
             badge_icon
           )
-        `)
+        `,
+        )
         .in("player_id", playerIds);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!id && playerIds.length > 0,
+    enabled: !!user && !!id && !!team && playerIds.length > 0,
   });
 
   // Calculate player stats
@@ -197,82 +227,124 @@ const TeamProgress: React.FC = () => {
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
-    return memberships.map((m) => {
-      const player = m.players as { id: string; first_name: string; last_initial: string | null; jersey_number: string | null; profile_photo_url: string | null } | null;
-      if (!player) return null;
+    return memberships
+      .map((m) => {
+        const player = m.players as {
+          id: string;
+          first_name: string;
+          last_initial: string | null;
+          jersey_number: string | null;
+          profile_photo_url: string | null;
+        } | null;
+        if (!player) return null;
 
-      const playerCompletions = completions.filter((c) => c.player_id === m.player_id);
-      const playerBadges = allBadges?.filter((b) => b.player_id === m.player_id) || [];
+        const playerCompletions = completions.filter(
+          (c) => c.player_id === m.player_id,
+        );
+        const playerBadges =
+          allBadges?.filter((b) => b.player_id === m.player_id) || [];
 
-      // This week sessions
-      const thisWeekSessions = playerCompletions.filter((c) => {
-        if (!c.completed_at) return false;
-        const date = parseISO(c.completed_at);
-        return isWithinInterval(date, { start: weekStart, end: weekEnd });
-      }).length;
+        // This week sessions
+        const thisWeekSessions = playerCompletions.filter((c) => {
+          if (!c.completed_at) return false;
+          const date = parseISO(c.completed_at);
+          return isWithinInterval(date, { start: weekStart, end: weekEnd });
+        }).length;
 
-      // Calculate streak (consecutive days with completions, looking back)
-      let streak = 0;
-      const sortedDates = [...new Set(
-        playerCompletions
-          .filter((c) => c.completed_at)
-          .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd"))
-      )].sort().reverse();
+        // Calculate streak (consecutive days with completions, looking back)
+        let streak = 0;
+        const sortedDates = [
+          ...new Set(
+            playerCompletions
+              .filter((c) => c.completed_at)
+              .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd")),
+          ),
+        ]
+          .sort()
+          .reverse();
 
-      if (sortedDates.length > 0) {
-        let checkDate = format(now, "yyyy-MM-dd");
-        // If no completion today, start from yesterday
-        if (!sortedDates.includes(checkDate)) {
-          checkDate = format(subDays(now, 1), "yyyy-MM-dd");
-        }
+        if (sortedDates.length > 0) {
+          let checkDate = format(now, "yyyy-MM-dd");
+          // If no completion today, start from yesterday
+          if (!sortedDates.includes(checkDate)) {
+            checkDate = format(subDays(now, 1), "yyyy-MM-dd");
+          }
 
-        for (let i = 0; i < 30; i++) {
-          const dateToCheck = format(subDays(now, i), "yyyy-MM-dd");
-          if (sortedDates.includes(dateToCheck)) {
-            streak++;
-          } else if (i > 0) {
-            break;
+          for (let i = 0; i < 30; i++) {
+            const dateToCheck = format(subDays(now, i), "yyyy-MM-dd");
+            if (sortedDates.includes(dateToCheck)) {
+              streak++;
+            } else if (i > 0) {
+              break;
+            }
           }
         }
-      }
 
-      // Last active
-      const lastActive = sortedDates[0] || null;
+        // Last active
+        const lastActive = sortedDates[0] || null;
 
-      return {
-        playerId: player.id,
-        firstName: player.first_name,
-        lastInitial: player.last_initial,
-        jerseyNumber: player.jersey_number,
-        profilePhotoUrl: player.profile_photo_url,
-        totalSessions: playerCompletions.length,
-        totalBadges: playerBadges.length,
-        thisWeekSessions,
-        streak,
-        lastActive,
-        badges: playerBadges.map((b: { challenges: { name: string; badge_icon: string } | null; awarded_at: string | null }) => ({
-          name: b.challenges?.name || "Badge",
-          icon: b.challenges?.badge_icon || "award",
-          awardedAt: b.awarded_at,
-        })),
-      } as PlayerStats;
-    }).filter(Boolean) as PlayerStats[];
+        return {
+          playerId: player.id,
+          firstName: player.first_name,
+          lastInitial: player.last_initial,
+          jerseyNumber: player.jersey_number,
+          profilePhotoUrl: player.profile_photo_url,
+          totalSessions: playerCompletions.length,
+          totalBadges: playerBadges.length,
+          thisWeekSessions,
+          streak,
+          lastActive,
+          badges: playerBadges.map(
+            (b: {
+              challenges: { name: string; badge_icon: string } | null;
+              awarded_at: string | null;
+            }) => ({
+              name: b.challenges?.name || "Badge",
+              icon: b.challenges?.badge_icon || "award",
+              awardedAt: b.awarded_at,
+            }),
+          ),
+        } as PlayerStats;
+      })
+      .filter(Boolean) as PlayerStats[];
   }, [memberships, completions, allBadges]);
 
   // Sort by different metrics
-  const leaderboardBySession = [...playerStats].sort((a, b) => b.totalSessions - a.totalSessions);
-  const leaderboardByBadges = [...playerStats].sort((a, b) => b.totalBadges - a.totalBadges);
-  const leaderboardByStreak = [...playerStats].sort((a, b) => b.streak - a.streak);
-  const leaderboardThisWeek = [...playerStats].sort((a, b) => b.thisWeekSessions - a.thisWeekSessions);
+  const leaderboardBySession = [...playerStats].sort(
+    (a, b) => b.totalSessions - a.totalSessions,
+  );
+  const leaderboardByBadges = [...playerStats].sort(
+    (a, b) => b.totalBadges - a.totalBadges,
+  );
+  const leaderboardByStreak = [...playerStats].sort(
+    (a, b) => b.streak - a.streak,
+  );
+  const leaderboardThisWeek = [...playerStats].sort(
+    (a, b) => b.thisWeekSessions - a.thisWeekSessions,
+  );
 
   // Aggregate stats
   const totalBadges = playerStats.reduce((sum, p) => sum + p.totalBadges, 0);
-  const totalSessions = playerStats.reduce((sum, p) => sum + p.totalSessions, 0);
-  const activeThisWeek = playerStats.filter((p) => p.thisWeekSessions > 0).length;
-  const avgSessionsPerPlayer = playerStats.length > 0 ? (totalSessions / playerStats.length).toFixed(1) : "0";
+  const totalSessions = playerStats.reduce(
+    (sum, p) => sum + p.totalSessions,
+    0,
+  );
+  const activeThisWeek = playerStats.filter(
+    (p) => p.thisWeekSessions > 0,
+  ).length;
+  const avgSessionsPerPlayer =
+    playerStats.length > 0
+      ? (totalSessions / playerStats.length).toFixed(1)
+      : "0";
 
   // Show loading state while auth or data is loading
-  if (teamLoading || authLoading) {
+  if (
+    teamLoading ||
+    authLoading ||
+    membersLoading ||
+    completionsLoading ||
+    (playerIds.length > 0 && badgesLoading)
+  ) {
     return (
       <AppShell hideNav>
         <PageContainer>
@@ -288,16 +360,55 @@ const TeamProgress: React.FC = () => {
     return null;
   }
 
-  const renderPlayerRow = (player: PlayerStats, rank: number, metric: "sessions" | "badges" | "streak" | "week") => {
-    const value = metric === "sessions" ? player.totalSessions
-      : metric === "badges" ? player.totalBadges
-      : metric === "streak" ? player.streak
-      : player.thisWeekSessions;
+  if (teamError || membersError || completionsError || badgesError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer>
+          <Button
+            variant="ghost"
+            className="mb-4 min-h-11"
+            onClick={() => navigate("/today")}
+          >
+            Back to my dashboard
+          </Button>
+          <DataLoadError
+            title="Team progress couldn’t load"
+            onRetry={() => {
+              void retryTeam();
+              if (team) {
+                void retryMembers();
+                void retryCompletions();
+                if (playerIds.length) void retryBadges();
+              }
+            }}
+          />
+        </PageContainer>
+      </AppShell>
+    );
+  }
 
-    const maxValue = metric === "sessions" ? Math.max(...playerStats.map(p => p.totalSessions), 1)
-      : metric === "badges" ? Math.max(...playerStats.map(p => p.totalBadges), 1)
-      : metric === "streak" ? Math.max(...playerStats.map(p => p.streak), 1)
-      : Math.max(...playerStats.map(p => p.thisWeekSessions), 1);
+  const renderPlayerRow = (
+    player: PlayerStats,
+    rank: number,
+    metric: "sessions" | "badges" | "streak" | "week",
+  ) => {
+    const value =
+      metric === "sessions"
+        ? player.totalSessions
+        : metric === "badges"
+          ? player.totalBadges
+          : metric === "streak"
+            ? player.streak
+            : player.thisWeekSessions;
+
+    const maxValue =
+      metric === "sessions"
+        ? Math.max(...playerStats.map((p) => p.totalSessions), 1)
+        : metric === "badges"
+          ? Math.max(...playerStats.map((p) => p.totalBadges), 1)
+          : metric === "streak"
+            ? Math.max(...playerStats.map((p) => p.streak), 1)
+            : Math.max(...playerStats.map((p) => p.thisWeekSessions), 1);
 
     return (
       <div
@@ -309,7 +420,13 @@ const TeamProgress: React.FC = () => {
           {rank <= 3 ? (
             <span
               className={`text-lg ${rank === 1 ? "text-primary" : rank === 2 ? "text-gray-400" : "text-primary"}`}
-              aria-label={rank === 1 ? t("teams.progress.rank1st") : rank === 2 ? t("teams.progress.rank2nd") : t("teams.progress.rank3rd")}
+              aria-label={
+                rank === 1
+                  ? t("teams.progress.rank1st")
+                  : rank === 2
+                    ? t("teams.progress.rank2nd")
+                    : t("teams.progress.rank3rd")
+              }
             >
               {rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🥉"}
             </span>
@@ -333,7 +450,13 @@ const TeamProgress: React.FC = () => {
         <div className="text-right">
           <p className="font-bold text-lg">{value}</p>
           <p className="text-xs text-text-muted">
-            {metric === "sessions" ? t("teams.progress.metricSessions") : metric === "badges" ? t("teams.progress.metricBadges") : metric === "streak" ? t("teams.progress.metricStreak") : t("teams.progress.metricThisWeek")}
+            {metric === "sessions"
+              ? t("teams.progress.metricSessions")
+              : metric === "badges"
+                ? t("teams.progress.metricBadges")
+                : metric === "streak"
+                  ? t("teams.progress.metricStreak")
+                  : t("teams.progress.metricThisWeek")}
           </p>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
@@ -347,7 +470,8 @@ const TeamProgress: React.FC = () => {
       header={
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Button aria-label="Go back"
+            <Button
+              aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/teams/${id}`)}
@@ -371,7 +495,9 @@ const TeamProgress: React.FC = () => {
         </div>
       }
     >
-      <Helmet><title>Progress | Hockey App</title></Helmet>
+      <Helmet>
+        <title>Progress | Hockey App</title>
+      </Helmet>
       <PageContainer>
         {/* Summary Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
@@ -380,7 +506,9 @@ const TeamProgress: React.FC = () => {
               <Trophy className="w-6 h-6 text-primary" />
             </div>
             <p className="text-2xl font-bold">{totalBadges}</p>
-            <p className="text-xs text-text-muted">{t("teams.progress.statTotalBadges")}</p>
+            <p className="text-xs text-text-muted">
+              {t("teams.progress.statTotalBadges")}
+            </p>
           </AppCard>
 
           <AppCard className="text-center">
@@ -388,7 +516,9 @@ const TeamProgress: React.FC = () => {
               <CheckCircle className="w-6 h-6 text-accent" />
             </div>
             <p className="text-2xl font-bold">{totalSessions}</p>
-            <p className="text-xs text-text-muted">{t("teams.progress.statSessionsDone")}</p>
+            <p className="text-xs text-text-muted">
+              {t("teams.progress.statSessionsDone")}
+            </p>
           </AppCard>
 
           <AppCard className="text-center">
@@ -396,7 +526,9 @@ const TeamProgress: React.FC = () => {
               <Flame className="w-6 h-6 text-foreground" />
             </div>
             <p className="text-2xl font-bold">{activeThisWeek}</p>
-            <p className="text-xs text-text-muted">{t("teams.progress.statActiveThisWeek")}</p>
+            <p className="text-xs text-text-muted">
+              {t("teams.progress.statActiveThisWeek")}
+            </p>
           </AppCard>
 
           <AppCard className="text-center">
@@ -404,7 +536,9 @@ const TeamProgress: React.FC = () => {
               <TrendingUp className="w-6 h-6 text-primary" />
             </div>
             <p className="text-2xl font-bold">{avgSessionsPerPlayer}</p>
-            <p className="text-xs text-text-muted">{t("teams.progress.statAvgPerPlayer")}</p>
+            <p className="text-xs text-text-muted">
+              {t("teams.progress.statAvgPerPlayer")}
+            </p>
           </AppCard>
         </div>
 
@@ -412,10 +546,10 @@ const TeamProgress: React.FC = () => {
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-1">
             <BarChart3 className="w-4 h-4 text-primary" />
-            {t("teams.progress.heatmapTitle")}
+            This week’s team activity
           </AppCardTitle>
           <AppCardDescription className="mb-4">
-            {t("teams.progress.heatmapDescription")}
+            Completed team workouts from Monday to Sunday.
           </AppCardDescription>
           <WeeklyHeatmap completions={completions || []} />
         </AppCard>
@@ -424,61 +558,96 @@ const TeamProgress: React.FC = () => {
         <AppCard>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 mb-4">
-              <TabsTrigger value="leaderboard" className="text-xs px-2">{t("teams.progress.tabAllTime")}</TabsTrigger>
-              <TabsTrigger value="week" className="text-xs px-2">{t("teams.progress.tabThisWeek")}</TabsTrigger>
-              <TabsTrigger value="badges" className="text-xs px-2">{t("teams.progress.tabBadges")}</TabsTrigger>
-              <TabsTrigger value="streaks" className="text-xs px-2">{t("teams.progress.tabStreaks")}</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="text-xs px-2">
+                {t("teams.progress.tabAllTime")}
+              </TabsTrigger>
+              <TabsTrigger value="week" className="text-xs px-2">
+                {t("teams.progress.tabThisWeek")}
+              </TabsTrigger>
+              <TabsTrigger value="badges" className="text-xs px-2">
+                {t("teams.progress.tabBadges")}
+              </TabsTrigger>
+              <TabsTrigger value="streaks" className="text-xs px-2">
+                {t("teams.progress.tabStreaks")}
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="leaderboard" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">{t("teams.progress.leaderMostSessions")}</span>
+                <span className="font-medium text-sm">
+                  {t("teams.progress.leaderMostSessions")}
+                </span>
               </div>
-              {leaderboardBySession.slice(0, 10).map((player, idx) =>
-                renderPlayerRow(player, idx + 1, "sessions")
-              )}
+              {leaderboardBySession
+                .slice(0, 10)
+                .map((player, idx) =>
+                  renderPlayerRow(player, idx + 1, "sessions"),
+                )}
               {leaderboardBySession.length === 0 && (
-                <p className="text-center text-text-muted py-4">{t("teams.progress.emptyActivity")}</p>
+                <p className="text-center text-text-muted py-4">
+                  {t("teams.progress.emptyActivity")}
+                </p>
               )}
             </TabsContent>
 
             <TabsContent value="week" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Calendar className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">{t("teams.progress.leaderThisWeek")}</span>
+                <span className="font-medium text-sm">
+                  {t("teams.progress.leaderThisWeek")}
+                </span>
               </div>
-              {leaderboardThisWeek.filter(p => p.thisWeekSessions > 0).slice(0, 10).map((player, idx) =>
-                renderPlayerRow(player, idx + 1, "week")
-              )}
-              {leaderboardThisWeek.filter(p => p.thisWeekSessions > 0).length === 0 && (
-                <p className="text-center text-text-muted py-4">{t("teams.progress.emptyWeek")}</p>
+              {leaderboardThisWeek
+                .filter((p) => p.thisWeekSessions > 0)
+                .slice(0, 10)
+                .map((player, idx) => renderPlayerRow(player, idx + 1, "week"))}
+              {leaderboardThisWeek.filter((p) => p.thisWeekSessions > 0)
+                .length === 0 && (
+                <p className="text-center text-text-muted py-4">
+                  {t("teams.progress.emptyWeek")}
+                </p>
               )}
             </TabsContent>
 
             <TabsContent value="badges" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Trophy className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">{t("teams.progress.leaderMostBadges")}</span>
+                <span className="font-medium text-sm">
+                  {t("teams.progress.leaderMostBadges")}
+                </span>
               </div>
-              {leaderboardByBadges.filter(p => p.totalBadges > 0).slice(0, 10).map((player, idx) =>
-                renderPlayerRow(player, idx + 1, "badges")
-              )}
-              {leaderboardByBadges.filter(p => p.totalBadges > 0).length === 0 && (
-                <p className="text-center text-text-muted py-4">{t("teams.progress.emptyBadges")}</p>
+              {leaderboardByBadges
+                .filter((p) => p.totalBadges > 0)
+                .slice(0, 10)
+                .map((player, idx) =>
+                  renderPlayerRow(player, idx + 1, "badges"),
+                )}
+              {leaderboardByBadges.filter((p) => p.totalBadges > 0).length ===
+                0 && (
+                <p className="text-center text-text-muted py-4">
+                  {t("teams.progress.emptyBadges")}
+                </p>
               )}
             </TabsContent>
 
             <TabsContent value="streaks" className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="w-4 h-4 text-primary" />
-                <span className="font-medium text-sm">{t("teams.progress.leaderLongestStreaks")}</span>
+                <span className="font-medium text-sm">
+                  {t("teams.progress.leaderLongestStreaks")}
+                </span>
               </div>
-              {leaderboardByStreak.filter(p => p.streak > 0).slice(0, 10).map((player, idx) =>
-                renderPlayerRow(player, idx + 1, "streak")
-              )}
-              {leaderboardByStreak.filter(p => p.streak > 0).length === 0 && (
-                <p className="text-center text-text-muted py-4">{t("teams.progress.emptyStreaks")}</p>
+              {leaderboardByStreak
+                .filter((p) => p.streak > 0)
+                .slice(0, 10)
+                .map((player, idx) =>
+                  renderPlayerRow(player, idx + 1, "streak"),
+                )}
+              {leaderboardByStreak.filter((p) => p.streak > 0).length === 0 && (
+                <p className="text-center text-text-muted py-4">
+                  {t("teams.progress.emptyStreaks")}
+                </p>
               )}
             </TabsContent>
           </Tabs>
@@ -501,37 +670,44 @@ const TeamProgress: React.FC = () => {
               description={t("teams.progress.emptyDescription")}
             />
           ) : (
-          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-            {playerStats.map((player) => (
-              <div
-                key={player.playerId}
-                className="text-center cursor-pointer group"
-                onClick={() => setSelectedPlayer(player)}
-              >
-                <div className="relative">
-                  <Avatar
-                    src={player.profilePhotoUrl}
-                    fallback={`${player.firstName} ${player.lastInitial || ""}`}
-                    size="lg"
-                    className="mx-auto group-hover:ring-2 ring-primary transition-all"
-                  />
-                  {player.streak >= 3 && (
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                      <Flame className="w-3 h-3 text-white" />
-                    </div>
-                  )}
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+              {playerStats.map((player) => (
+                <div
+                  key={player.playerId}
+                  className="text-center cursor-pointer group"
+                  onClick={() => setSelectedPlayer(player)}
+                >
+                  <div className="relative">
+                    <Avatar
+                      src={player.profilePhotoUrl}
+                      fallback={`${player.firstName} ${player.lastInitial || ""}`}
+                      size="lg"
+                      className="mx-auto group-hover:ring-2 ring-primary transition-all"
+                    />
+                    {player.streak >= 3 && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                        <Flame className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs mt-1 font-medium truncate">
+                    {player.firstName}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {player.totalSessions} {t("teams.progress.done")}
+                  </p>
                 </div>
-                <p className="text-xs mt-1 font-medium truncate">{player.firstName}</p>
-                <p className="text-xs text-text-muted">{player.totalSessions} {t("teams.progress.done")}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           )}
         </AppCard>
       </PageContainer>
 
       {/* Player Detail Sheet */}
-      <Sheet open={!!selectedPlayer} onOpenChange={() => setSelectedPlayer(null)}>
+      <Sheet
+        open={!!selectedPlayer}
+        onOpenChange={() => setSelectedPlayer(null)}
+      >
         <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl">
           {selectedPlayer && (
             <>
@@ -543,9 +719,13 @@ const TeamProgress: React.FC = () => {
                   className="mx-auto mb-2"
                 />
                 <SheetTitle>
-                  {selectedPlayer.firstName} {selectedPlayer.lastInitial && `${selectedPlayer.lastInitial}.`}
+                  {selectedPlayer.firstName}{" "}
+                  {selectedPlayer.lastInitial &&
+                    `${selectedPlayer.lastInitial}.`}
                   {selectedPlayer.jerseyNumber && (
-                    <span className="text-text-muted font-normal ml-2">#{selectedPlayer.jerseyNumber}</span>
+                    <span className="text-text-muted font-normal ml-2">
+                      #{selectedPlayer.jerseyNumber}
+                    </span>
                   )}
                 </SheetTitle>
               </SheetHeader>
@@ -555,18 +735,28 @@ const TeamProgress: React.FC = () => {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
                     <CheckCircle className="w-5 h-5 text-accent mx-auto mb-1" />
-                    <p className="text-xl font-bold">{selectedPlayer.totalSessions}</p>
-                    <p className="text-xs text-text-muted">{t("teams.progress.detailSessions")}</p>
+                    <p className="text-xl font-bold">
+                      {selectedPlayer.totalSessions}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {t("teams.progress.detailSessions")}
+                    </p>
                   </div>
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
                     <Trophy className="w-5 h-5 text-primary mx-auto mb-1" />
-                    <p className="text-xl font-bold">{selectedPlayer.totalBadges}</p>
-                    <p className="text-xs text-text-muted">{t("teams.progress.detailBadges")}</p>
+                    <p className="text-xl font-bold">
+                      {selectedPlayer.totalBadges}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {t("teams.progress.detailBadges")}
+                    </p>
                   </div>
                   <div className="text-center p-3 bg-surface-muted rounded-xl">
                     <Flame className="w-5 h-5 text-primary mx-auto mb-1" />
                     <p className="text-xl font-bold">{selectedPlayer.streak}</p>
-                    <p className="text-xs text-text-muted">{t("teams.progress.detailTeamStreak")}</p>
+                    <p className="text-xs text-text-muted">
+                      {t("teams.progress.detailTeamStreak")}
+                    </p>
                   </div>
                 </div>
 
@@ -577,16 +767,29 @@ const TeamProgress: React.FC = () => {
                       <Calendar className="w-4 h-4 text-primary" />
                       {t("teams.progress.detailThisWeek")}
                     </span>
-                    <span className="font-bold">{selectedPlayer.thisWeekSessions} {t("teams.progress.detailSessions")}</span>
+                    <span className="font-bold">
+                      {selectedPlayer.thisWeekSessions}{" "}
+                      {t("teams.progress.detailSessions")}
+                    </span>
                   </div>
-                  <ProgressBar value={selectedPlayer.thisWeekSessions} max={7} />
+                  <ProgressBar
+                    value={selectedPlayer.thisWeekSessions}
+                    max={7}
+                  />
                 </div>
 
                 {/* Last Active */}
                 {selectedPlayer.lastActive && (
                   <div className="flex items-center justify-between p-3 bg-surface-muted rounded-xl">
-                    <span className="text-sm text-text-muted">{t("teams.progress.detailLastActive")}</span>
-                    <span className="font-medium">{format(parseISO(selectedPlayer.lastActive), "MMM d, yyyy")}</span>
+                    <span className="text-sm text-text-muted">
+                      {t("teams.progress.detailLastActive")}
+                    </span>
+                    <span className="font-medium">
+                      {format(
+                        parseISO(selectedPlayer.lastActive),
+                        "MMM d, yyyy",
+                      )}
+                    </span>
                   </div>
                 )}
 
@@ -601,14 +804,23 @@ const TeamProgress: React.FC = () => {
                       {selectedPlayer.badges.map((badge, idx) => {
                         const IconComponent = getBadgeIcon(badge.icon);
                         return (
-                          <div key={idx} className="flex items-center gap-3 p-3 bg-surface-muted rounded-xl">
+                          <div
+                            key={idx}
+                            className="flex items-center gap-3 p-3 bg-surface-muted rounded-xl"
+                          >
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                               <IconComponent className="w-5 h-5 text-primary" />
                             </div>
                             <div className="flex-1">
-                              <p className="font-medium text-sm">{badge.name}</p>
+                              <p className="font-medium text-sm">
+                                {badge.name}
+                              </p>
                               <p className="text-xs text-text-muted">
-                                {t("teams.progress.detailEarned")} {format(parseISO(badge.awardedAt), "MMM d, yyyy")}
+                                {t("teams.progress.detailEarned")}{" "}
+                                {format(
+                                  parseISO(badge.awardedAt),
+                                  "MMM d, yyyy",
+                                )}
                               </p>
                             </div>
                           </div>
