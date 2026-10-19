@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,7 +89,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
   const [computerOpen, setComputerOpen] = useState(false);
 
   // Fetch existing schedule source
-  const { data: source, isLoading } = useQuery({
+  const { data: source, isLoading, isError: sourceError, refetch: retrySource } = useQuery({
     queryKey: ["solo-schedule-source", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -103,7 +104,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
   });
 
   // Fetch upcoming events
-  const { data: events } = useQuery({
+  const { data: events, isError: eventsError, refetch: retryEvents } = useQuery({
     queryKey: ["solo-events", playerId],
     queryFn: async () => {
       const now = new Date().toISOString();
@@ -189,6 +190,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
       onConnected?.();
     },
     onError: (error: Error) => {
+      void queryClient.invalidateQueries({queryKey:["solo-schedule-source",playerId]});
       toast.error("Failed to connect", { description: error.message });
     },
   });
@@ -212,6 +214,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
       toast.success("Schedule synced!");
     },
     onError: (error: Error) => {
+      void queryClient.invalidateQueries({queryKey:["solo-schedule-source",playerId]});
       toast.error("Sync failed", { description: error.message });
     },
   });
@@ -272,6 +275,8 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
   }
 
   // Connected state
+  if (sourceError || eventsError) return <DataLoadError title="Couldn’t load your calendar" onRetry={() => { if(sourceError) void retrySource(); if(eventsError) void retryEvents(); }} />;
+
   if (source) {
     return (
       <div className="space-y-4">
@@ -290,12 +295,13 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {source.last_synced_at 
                     ? `Last synced ${format(new Date(source.last_synced_at), "MMM d 'at' h:mm a")}`
-                    : "Syncing..."
+                    : source.sync_status === "error" ? "Sync needs attention" : syncMutation.isPending ? "Syncing..." : "Ready to sync"
                   }
                 </p>
               </div>
             </div>
             <Button
+              aria-label="Sync schedule"
               variant="ghost"
               size="sm"
               onClick={() => syncMutation.mutate()}
@@ -325,6 +331,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                 <p className="text-xs text-muted-foreground">Lighter workouts on game days</p>
               </div>
               <Switch
+                aria-label="Auto Game Day Prep"
                 checked={source.auto_game_day ?? true}
                 onCheckedChange={(checked) => updateSettingsMutation.mutate({ auto_game_day: checked })}
               />
@@ -335,6 +342,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                 <p className="text-xs text-muted-foreground">Adjust training around practice days</p>
               </div>
               <Switch
+                aria-label="Show Practices"
                 checked={source.include_practices ?? true}
                 onCheckedChange={(checked) => updateSettingsMutation.mutate({ include_practices: checked })}
               />
@@ -528,6 +536,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
             <div>
               <Label className="text-sm font-medium">iCal URL</Label>
               <Input
+                aria-label="Calendar subscription link"
                 className="mt-2"
                 placeholder="webcal://... or https://..."
                 value={icalUrl}
@@ -539,7 +548,7 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
             <div>
               <Label className="text-sm font-medium">Your Timezone</Label>
               <Select value={timezone} onValueChange={setTimezone}>
-                <SelectTrigger className="mt-2">
+                <SelectTrigger aria-label="Calendar timezone" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -616,14 +625,16 @@ export function SoloScheduleSyncSection({ playerId, onConnected }: SoloScheduleS
                       <p className="text-sm font-medium text-foreground">Auto Game Day Prep</p>
                       <p className="text-xs text-muted-foreground">Lighter workouts on game days</p>
                     </div>
-                    <Switch checked={autoGameDay} onCheckedChange={setAutoGameDay} />
+                    <Switch aria-label="Auto Game Day Prep"
+                            checked={autoGameDay} onCheckedChange={setAutoGameDay} />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-foreground">Include Practices</p>
                       <p className="text-xs text-muted-foreground">Adjust for practice days too</p>
                     </div>
-                    <Switch checked={includePractices} onCheckedChange={setIncludePractices} />
+                    <Switch aria-label="Show Practices"
+                            checked={includePractices} onCheckedChange={setIncludePractices} />
                   </div>
                 </div>
               </div>

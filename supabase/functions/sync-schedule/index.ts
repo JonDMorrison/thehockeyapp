@@ -1,3 +1,5 @@
+import { parseICalDate } from "../_shared/calendarDate.ts";
+import { fetchICal, isValidICalUrl } from "../_shared/calendarFeed.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
@@ -24,109 +26,8 @@ interface ParsedEvent {
   is_cancelled: boolean;
 }
 
-// Timezone offset map for common North American timezones
-const TIMEZONE_OFFSETS: Record<string, number> = {
-  "America/Los_Angeles": -8,
-  "America/Vancouver": -8,
-  "America/Denver": -7,
-  "America/Phoenix": -7,
-  "America/Chicago": -6,
-  "America/New_York": -5,
-  "America/Toronto": -5,
-  "US/Pacific": -8,
-  "US/Mountain": -7,
-  "US/Central": -6,
-  "US/Eastern": -5,
-  "Pacific": -8,
-  "PST": -8,
-  "PDT": -7,
-  "MST": -7,
-  "MDT": -6,
-  "CST": -6,
-  "CDT": -5,
-  "EST": -5,
-  "EDT": -4,
-};
-
-// Check if date falls in DST for North American timezones
-function isDST(date: Date, baseOffset: number): boolean {
-  // DST in North America: Second Sunday in March to First Sunday in November
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
-  
-  // March: Find second Sunday
-  const marchFirst = new Date(Date.UTC(year, 2, 1));
-  const marchFirstDay = marchFirst.getUTCDay();
-  const secondSunday = marchFirstDay === 0 ? 8 : 15 - marchFirstDay;
-  
-  // November: Find first Sunday
-  const novFirst = new Date(Date.UTC(year, 10, 1));
-  const novFirstDay = novFirst.getUTCDay();
-  const firstSunday = novFirstDay === 0 ? 1 : 8 - novFirstDay;
-  
-  // DST starts at 2am on second Sunday in March (becomes 3am)
-  // DST ends at 2am on first Sunday in November (becomes 1am)
-  if (month > 2 && month < 10) return true; // April-October
-  if (month === 2 && day > secondSunday) return true; // After March DST start
-  if (month === 2 && day === secondSunday) return true; // Simplified: count the day as DST
-  if (month === 10 && day < firstSunday) return true; // Before November DST end
-  
-  return false;
-}
-
-// Parse iCal date/time format
-function parseICalDate(dateStr: string, tzid?: string): Date {
-  // Handle formats: 20240115T180000Z, 20240115T180000, 20240115
-  const cleaned = dateStr.replace(/[^0-9TZ]/g, "");
-  
-  if (cleaned.length === 8) {
-    // Date only: YYYYMMDD - treat as local midnight
-    const year = parseInt(cleaned.slice(0, 4));
-    const month = parseInt(cleaned.slice(4, 6)) - 1;
-    const day = parseInt(cleaned.slice(6, 8));
-    // For date-only, use noon UTC to avoid date boundary issues
-    return new Date(Date.UTC(year, month, day, 12, 0, 0));
-  }
-  
-  // DateTime format: YYYYMMDDTHHmmss or YYYYMMDDTHHmmssZ
-  const year = parseInt(cleaned.slice(0, 4));
-  const month = parseInt(cleaned.slice(4, 6)) - 1;
-  const day = parseInt(cleaned.slice(6, 8));
-  const hour = parseInt(cleaned.slice(9, 11)) || 0;
-  const minute = parseInt(cleaned.slice(11, 13)) || 0;
-  const second = parseInt(cleaned.slice(13, 15)) || 0;
-  
-  if (cleaned.endsWith("Z")) {
-    // Already UTC
-    return new Date(Date.UTC(year, month, day, hour, minute, second));
-  }
-  
-  // If we have a timezone identifier, apply the offset
-  if (tzid) {
-    const baseOffset = TIMEZONE_OFFSETS[tzid];
-    if (baseOffset !== undefined) {
-      // Create a preliminary date to check DST
-      const prelimDate = new Date(Date.UTC(year, month, day, hour, minute, second));
-      const dstActive = isDST(prelimDate, baseOffset);
-      // DST adds 1 hour, so offset is less negative
-      const actualOffset = dstActive ? baseOffset + 1 : baseOffset;
-      // Convert local time to UTC by subtracting the offset
-      return new Date(Date.UTC(year, month, day, hour - actualOffset, minute, second));
-    }
-    console.log(`[sync-schedule] Unknown timezone: ${tzid}, treating as UTC`);
-  }
-  
-  // No timezone info - assume Pacific Time as default for TeamSnap
-  const prelimDate = new Date(Date.UTC(year, month, day, hour, minute, second));
-  const dstActive = isDST(prelimDate, -8);
-  const actualOffset = dstActive ? -7 : -8;
-  console.log(`[sync-schedule] No timezone for date ${dateStr}, assuming Pacific (offset: ${actualOffset})`);
-  return new Date(Date.UTC(year, month, day, hour - actualOffset, minute, second));
-}
-
 // Parse iCal content into events
-function parseICalContent(icalContent: string): ICalEvent[] {
+function parseICalContent(icalContent: string, defaultTimezone?: string): ICalEvent[] {
   const events: ICalEvent[] = [];
   
   // Unfold lines first (lines starting with space/tab are continuations)
@@ -151,9 +52,9 @@ function parseICalContent(icalContent: string): ICalEvent[] {
     if (trimmedLine === "END:VEVENT" && currentEvent) {
       if (currentEvent.uid && currentEvent.dtstart) {
         events.push(currentEvent as ICalEvent);
-        console.log(`[sync-schedule] Parsed event: ${currentEvent.summary} @ ${currentEvent.dtstart}`);
+
       } else {
-        console.log(`[sync-schedule] Skipped incomplete event: uid=${currentEvent.uid}, dtstart=${currentEvent.dtstart}`);
+        throw new Error("The calendar contains an incomplete event. Your existing schedule was kept.");
       }
       currentEvent = null;
       continue;
@@ -165,17 +66,19 @@ function parseICalContent(icalContent: string): ICalEvent[] {
       if (colonIndex > 0) {
         const key = trimmedLine.slice(0, colonIndex);
         const value = trimmedLine.slice(colonIndex + 1);
-        processKeyValue(currentEvent, key, value);
+        processKeyValue(currentEvent, key, value, defaultTimezone);
       }
     }
   }
   
+  if (currentEvent || eventCount !== events.length) throw new Error("The calendar contains an incomplete event. Your existing schedule was kept.");
+
   console.log(`[sync-schedule] Found ${eventCount} VEVENT blocks, parsed ${events.length} valid events`);
   
   return events;
 }
 
-function processKeyValue(event: Partial<ICalEvent>, key: string, value: string) {
+function processKeyValue(event: Partial<ICalEvent>, key: string, value: string, defaultTimezone?: string) {
   // Handle properties with parameters like DTSTART;TZID=America/New_York:20240115T180000
   const keyParts = key.split(";");
   const baseKey = keyParts[0];
@@ -197,11 +100,10 @@ function processKeyValue(event: Partial<ICalEvent>, key: string, value: string) 
       event.summary = unescapeICalValue(value);
       break;
     case "DTSTART":
-      event.dtstart = parseICalDate(value, tzid);
-      console.log(`[sync-schedule] Parsed DTSTART: ${value} (tzid: ${tzid}) -> ${event.dtstart?.toISOString()}`);
+      event.dtstart = parseICalDate(value, tzid || defaultTimezone);
       break;
     case "DTEND":
-      event.dtend = parseICalDate(value, tzid);
+      event.dtend = parseICalDate(value, tzid || defaultTimezone);
       break;
     case "LOCATION":
       event.location = unescapeICalValue(value);
@@ -268,62 +170,6 @@ function convertToEvent(icalEvent: ICalEvent, sourceType: string): ParsedEvent {
   };
 }
 
-const MAX_ICAL_BYTES = 2 * 1024 * 1024;
-
-function isPrivateHostname(hostname: string): boolean {
-  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
-  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) {
-    return true;
-  }
-
-  if (/^(10\.|127\.|169\.254\.|192\.168\.)/.test(host)) return true;
-  const match172 = host.match(/^172\.(\d{1,3})\./);
-  if (match172 && Number(match172[1]) >= 16 && Number(match172[1]) <= 31) return true;
-  if (host === "::1" || host.startsWith("fe80:") || host.startsWith("fc") || host.startsWith("fd")) return true;
-
-  return false;
-}
-
-// Calendar URLs are treated as secrets. Only fetch public HTTPS endpoints.
-function isValidICalUrl(url: string): boolean {
-  try {
-    const parsed = new URL(normalizeICalUrl(url));
-    return parsed.protocol === "https:"
-      && !parsed.username
-      && !parsed.password
-      && (parsed.port === "" || parsed.port === "443")
-      && !isPrivateHostname(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
-// Normalize webcal:// to https://
-function normalizeICalUrl(url: string): string {
-  if (url.startsWith("webcal://")) {
-    return url.replace("webcal://", "https://");
-  }
-  return url;
-}
-
-async function fetchICal(url: string): Promise<string> {
-  if (!isValidICalUrl(url)) throw new Error("Invalid iCal URL format");
-
-  const response = await fetch(normalizeICalUrl(url), {
-    headers: { "User-Agent": "TheHockeyApp/1.0" },
-    redirect: "error",
-    signal: AbortSignal.timeout(10_000),
-  });
-
-  if (!response.ok) throw new Error(`Calendar request failed with status ${response.status}`);
-  const declaredLength = Number(response.headers.get("content-length") || 0);
-  if (declaredLength > MAX_ICAL_BYTES) throw new Error("Calendar file is too large");
-
-  const bytes = await response.arrayBuffer();
-  if (bytes.byteLength > MAX_ICAL_BYTES) throw new Error("Calendar file is too large");
-  return new TextDecoder().decode(bytes);
-}
-
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -344,7 +190,7 @@ Deno.serve(async (req) => {
       const authClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user } } = await authClient.auth.getUser();
+      const { data: { user } } = await authClient.auth.getUser(authHeader.slice(7));
       userId = user?.id ?? null;
     }
 
@@ -355,7 +201,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, team_id, player_id, ical_url } = await req.json();
+    const { action, team_id, player_id, ical_url, timezone } = await req.json();
 
     console.log(`[sync-schedule] Action: ${action}, Team: ${team_id}, Player: ${player_id}`);
 
@@ -398,7 +244,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      const icalEvents = parseICalContent(icalContent);
+      const icalEvents = parseICalContent(icalContent, timezone);
       const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
 
       // Filter future events only
@@ -474,18 +320,19 @@ Deno.serve(async (req) => {
 
       try {
         const icalContent = await fetchICal(source.ical_url);
-        const icalEvents = parseICalContent(icalContent);
+        const icalEvents = parseICalContent(icalContent, source.timezone);
         const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
 
         console.log(`[sync-schedule] Parsed ${events.length} events`);
 
         // Get existing events for this team
-        const { data: existingEvents } = await supabase
+        const { data: existingEvents, error: existingError } = await supabase
           .from("team_events")
           .select("external_event_id")
           .eq("team_id", team_id)
           .eq("source_type", "teamsnap_ical");
 
+        if (existingError) throw new Error("Could not read your saved schedule");
         const existingIds = new Set(existingEvents?.map((e) => e.external_event_id) || []);
         const newIds = new Set(events.map((e) => e.external_event_id));
 
@@ -503,23 +350,24 @@ Deno.serve(async (req) => {
             });
 
           if (upsertError) {
-            console.error(`[sync-schedule] Failed to upsert event: ${upsertError.message}`);
+            throw new Error("Could not save a calendar event. Your existing schedule was kept; try again.");
           }
         }
 
         // Mark events that no longer exist as cancelled
         const removedIds = [...existingIds].filter((id) => !newIds.has(id));
         if (removedIds.length > 0) {
-          await supabase
+          const { error: cancelError } = await supabase
             .from("team_events")
             .update({ is_cancelled: true, updated_at: new Date().toISOString() })
             .eq("team_id", team_id)
             .eq("source_type", "teamsnap_ical")
             .in("external_event_id", removedIds);
+          if (cancelError) throw new Error("Could not update removed events. Please try syncing again.");
         }
 
         // Update sync status
-        await supabase
+        const { error: statusError } = await supabase
           .from("team_schedule_sources")
           .update({ 
             sync_status: "success", 
@@ -528,6 +376,8 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq("id", source.id);
+
+        if (statusError) throw new Error("The schedule was saved, but sync confirmation failed. Please retry.");
 
         // Check and enable game days if auto_game_day is on
         if (source.auto_game_day) {
@@ -612,18 +462,19 @@ Deno.serve(async (req) => {
 
       try {
         const icalContent = await fetchICal(source.ical_url);
-        const icalEvents = parseICalContent(icalContent);
+        const icalEvents = parseICalContent(icalContent, source.timezone);
         const events = icalEvents.map((e) => convertToEvent(e, "teamsnap_ical"));
 
         console.log(`[sync-schedule] Parsed ${events.length} events for solo player`);
 
         // Get existing events for this player
-        const { data: existingEvents } = await supabase
+        const { data: existingEvents, error: existingError } = await supabase
           .from("solo_events")
           .select("external_event_id")
           .eq("player_id", player_id)
           .eq("source_type", "teamsnap_ical");
 
+        if (existingError) throw new Error("Could not read your saved schedule");
         const existingIds = new Set(existingEvents?.map((e) => e.external_event_id) || []);
         const newIds = new Set(events.map((e) => e.external_event_id));
 
@@ -641,23 +492,24 @@ Deno.serve(async (req) => {
             });
 
           if (upsertError) {
-            console.error(`[sync-schedule] Failed to upsert solo event: ${upsertError.message}`);
+            throw new Error("Could not save a calendar event. Your existing schedule was kept; try again.");
           }
         }
 
         // Mark events that no longer exist as cancelled
         const removedIds = [...existingIds].filter((id) => !newIds.has(id));
         if (removedIds.length > 0) {
-          await supabase
+          const { error: cancelError } = await supabase
             .from("solo_events")
             .update({ is_cancelled: true, updated_at: new Date().toISOString() })
             .eq("player_id", player_id)
             .eq("source_type", "teamsnap_ical")
             .in("external_event_id", removedIds);
+          if (cancelError) throw new Error("Could not update removed events. Please try syncing again.");
         }
 
         // Update sync status
-        await supabase
+        const { error: statusError } = await supabase
           .from("solo_schedule_sources")
           .update({ 
             sync_status: "success", 
@@ -666,6 +518,8 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           })
           .eq("id", source.id);
+
+        if (statusError) throw new Error("The schedule was saved, but sync confirmation failed. Please retry.");
 
         console.log(`[sync-schedule] Solo sync complete for player ${player_id}`);
 
