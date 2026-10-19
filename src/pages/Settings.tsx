@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,10 +38,10 @@ export default function Settings() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, display_name, email, avatar_url")
+        .select("*")
         .eq("user_id", user.id)
         .single();
-      if (error) return null;
+      if (error) throw error;
       return data as ProfileData;
     },
     enabled: !!user,
@@ -198,12 +199,12 @@ export default function Settings() {
         </section>
 
         {/* Communication preferences */}
-        <section>
+        <section id="notifications" className="scroll-mt-24">
           <h2 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
             <Bell className="h-4 w-4" />
             Email preferences
           </h2>
-          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          {emailPreferences.isError ? <DataLoadError title="Couldn’t load email preferences" onRetry={() => emailPreferences.refetch()} retrying={emailPreferences.isFetching} /> : <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
             <PreferenceRow
               label="Coach weekly digest"
               description="A weekly team participation summary."
@@ -225,7 +226,7 @@ export default function Settings() {
               disabled={emailPreferences.isLoading || updateEmailPreference.isPending}
               onCheckedChange={(value) => updateEmailPreference.mutate({ key: "product_updates", value })}
             />
-          </div>
+          </div>}
         </section>
 
         {/* Association workspace */}

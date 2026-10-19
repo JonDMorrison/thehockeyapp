@@ -39,8 +39,17 @@ export function parsePrivateMediaReference(value?: string | null): {
   bucket: string;
   path: string;
 } | null {
-  if (!value || value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:") || value.startsWith("blob:")) {
-    return null;
+  if (!value || value.startsWith("data:") || value.startsWith("blob:")) return null;
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    try {
+      const url = new URL(value);
+      if (url.origin !== new URL(import.meta.env.VITE_SUPABASE_URL).origin) return null;
+      const prefix = "/storage/v1/object/public/";
+      if (!url.pathname.startsWith(prefix)) return null;
+      const [bucket, ...segments] = url.pathname.slice(prefix.length).split("/");
+      if (!PRIVATE_MEDIA_BUCKETS.has(bucket) || !segments.length) return null;
+      return { bucket, path: decodeURIComponent(segments.join("/")) };
+    } catch { return null; }
   }
 
   const separator = value.indexOf(":");

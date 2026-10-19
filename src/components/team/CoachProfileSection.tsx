@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -51,7 +52,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
 
   // Fetch current profile
-  const { data: profile, isLoading } = useQuery<ProfileData | null>({
+  const { data: profile, isLoading, isError, isFetching, refetch } = useQuery<ProfileData | null>({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -104,8 +105,8 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
     setUploading(true);
 
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      const fileExt = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `avatars/${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -123,7 +124,10 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
           email: user.email
         } as { user_id: string; avatar_url: string; email: string | undefined }, { onConflict: 'user_id' });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        await supabase.storage.from("profile-media").remove([filePath]);
+        throw updateError;
+      }
 
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       queryClient.invalidateQueries({ queryKey: ["coach-profile"] });
@@ -187,6 +191,8 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
     );
   }
 
+  if (isError) return <DataLoadError title="Couldn’t load your profile" onRetry={() => refetch()} retrying={isFetching} />;
+
   return (
     <AppCard>
       <AppCardTitle className="flex items-center gap-2 mb-1">
@@ -207,6 +213,7 @@ export const CoachProfileSection: React.FC<CoachProfileSectionProps> = ({
               size="xl"
             />
             <button
+              aria-label="Change coaching profile photo"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
