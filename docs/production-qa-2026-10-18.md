@@ -77,3 +77,11 @@ The first phone route inventory covered 43 authenticated routes: no runtime cras
 ## Limits
 
 Browser emulation does not prove physical iPhone/Android behavior or screen-reader usability. Email receipt, external calendar providers, payments and AI output require separate evidence; UI presence is not a passing integration check. Operational readiness (support response, restore drills, legal review) will be reported separately from application tests.
+
+## First verification batch
+
+The initial broad run completed with **104 passed, 24 skipped, 1 failed** in 7.3 minutes. The failure was the shared-workspace test clicking a welcome primary action while workout data changed that action, followed by clicking the departing page's workspace menu before the destination rendered. It now dismisses the stable close control and waits for the destination team heading. Both shared-account phone cases passed on replay (5.3 seconds). Skips remain explicit coverage gaps rather than counted passes.
+
+The required project check passed again after the read-recovery fixes. The first route replay was interrupted when the separate broad test run shut down its owned development server; subsequent audit runs use a persistent server so test lifecycle does not terminate other checks.
+
+The additive atomic program-save function passed rollback-only checks against the hosted schema: tier-scaled targets and notes preserved, invalid replacement rolls back prior draft and published tasks, retry keeps one program/card, started work remains unchanged, unrelated accounts are denied and anonymous execution is disabled. No schema change was committed to the hosted database during this test.

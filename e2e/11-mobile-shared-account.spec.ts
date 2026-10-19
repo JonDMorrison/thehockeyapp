@@ -18,7 +18,8 @@ test.describe("mobile shared-account journeys", () => {
 
   test("one account can switch between coach and parent workspaces", async ({ page }) => {
     await page.goto(`/players/${playerId}/home`);
-    const welcomeDismiss = page.getByRole("button", { name: /got it/i });
+    // This close action is stable while the workout query changes the primary welcome action.
+    const welcomeDismiss = page.getByRole("button", { name: "Close welcome", exact: true });
     if (await welcomeDismiss.waitFor({ state: "visible", timeout: 5_000 }).then(() => true).catch(() => false)) {
       await welcomeDismiss.click();
     }
@@ -32,6 +33,7 @@ test.describe("mobile shared-account journeys", () => {
 
     await teamItem.click();
     await expect(page).toHaveURL(new RegExp(`/teams/${teamId}`));
+    await expect(page.getByRole("heading", { name: teamName!, exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: /switch workspace or role/i }).click();
     await page.getByRole("menuitem").filter({ hasText: playerName! }).click();
