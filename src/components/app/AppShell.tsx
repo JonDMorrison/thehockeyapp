@@ -64,6 +64,17 @@ function getWorkspaceNavigation(pathname: string, t: (key: string) => string): W
     };
   }
 
+  const soloMatch = pathname.match(/^\/solo\/(?:dashboard|today|badges|planning|workout|week-planner|program|settings)\/([^/]+)/);
+  if (soloMatch) {
+    const playerId=soloMatch[1];
+    return {eyebrow:"Home training",items:[
+      {icon:Home,label:"Home",path:`/players/${playerId}/home`},
+      {icon:ClipboardCheck,label:"Today",path:`/solo/today/${playerId}`},
+      {icon:CalendarDays,label:"Week",path:`/solo/dashboard/${playerId}`},
+      {icon:History,label:"History",path:`/players/${playerId}/history`},
+    ]};
+  }
+
   const playerMatch = pathname.match(/^\/players\/([^/]+)/);
   if (playerMatch && playerMatch[1] !== "new") {
     const playerRoot = `/players/${playerMatch[1]}`;

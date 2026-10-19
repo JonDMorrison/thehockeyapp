@@ -1,5 +1,6 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,15 +79,16 @@ const PlayerWeek: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Resolve player's active team (mirror PlayerToday)
-  const { data: teamData, isLoading: teamLoading } = useQuery({
+  const { data: teamData, isLoading: teamLoading, isError: teamError, isFetching: teamFetching, refetch: retryTeam } = useQuery({
     queryKey: ["player-active-team", playerId],
     queryFn: async () => {
-      const { data: pref } = await supabase
+      const { data: pref, error: prefError } = await supabase
         .from("player_team_preferences")
         .select("active_team_id")
         .eq("player_id", playerId!)
         .maybeSingle();
 
+      if (prefError) throw prefError;
       if (!pref?.active_team_id) return null;
 
       const { data: team, error } = await supabase
@@ -295,21 +297,8 @@ const PlayerWeek: React.FC = () => {
     return null;
   }
 
-  if (noTeam) {
-    return (
-      <AppShell hideNav header={header}>
-        <Helmet>
-          <title>This Week | Hockey App</title>
-        </Helmet>
-        <PageContainer>
-          <AppCard className="text-center">
-            <CalendarDays className="w-8 h-8 mx-auto text-text-muted mb-2" />
-            <p className="text-sm text-text-muted py-2">{t("playerWeek.noTeam")}</p>
-          </AppCard>
-        </PageContainer>
-      </AppShell>
-    );
-  }
+  if (teamError) return <AppShell header={header}><PageContainer><DataLoadError title="Couldn’t load your week" onRetry={() => retryTeam()} retrying={teamFetching} /></PageContainer></AppShell>;
+  if (noTeam) return <Navigate to={`/solo/dashboard/${playerId}`} replace />;
 
   const dayContent = (day: DaySummary) => {
     const interactive = day.isToday && !!day.card;

@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -36,7 +37,7 @@ const JoinTeam: React.FC = () => {
   const { setTeamTheme } = useTeamTheme();
 
   // Preview team by token (public, no auth required)
-  const { data: preview, isLoading, error } = useQuery({
+  const { data: preview, isLoading, error, isFetching, refetch } = useQuery({
     queryKey: ["team-preview", token],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("preview_team_by_invite", {
@@ -72,8 +73,10 @@ const JoinTeam: React.FC = () => {
     );
   }
 
+  if (error) return <AppShell hideNav><PageContainer className="min-h-screen flex items-center justify-center"><div className="w-full max-w-sm"><DataLoadError title="Couldn’t load this invitation" onRetry={() => refetch()} retrying={isFetching} /></div></PageContainer></AppShell>;
+
   // Invalid or expired invite
-  if (error || !preview?.success) {
+  if (!preview?.success) {
     return (
       <AppShell hideNav>
         <PageContainer className="min-h-screen flex items-center justify-center">

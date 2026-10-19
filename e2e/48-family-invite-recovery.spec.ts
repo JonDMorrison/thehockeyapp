@@ -1,0 +1,25 @@
+import {test,expect} from '@playwright/test';
+import {createClient} from '@supabase/supabase-js';
+import {randomUUID} from 'node:crypto';
+import fs from 'node:fs';
+
+test.use({storageState:{cookies:[],origins:[]},viewport:{width:390,height:844}});
+test('expired and revoked invites stay closed while an existing family can retry and join two children',async({page})=>{
+ test.skip(process.env.FAMILY_INVITE_RELEASE_TEST!=='1','Opt in to fictional coach/family invitation fixtures.');test.setTimeout(120000);page.setDefaultTimeout(15000);
+ const actors=[];for(const role of ['coach','family']){const email=`qa-invite-${role}-${Date.now()}@example.com`,password=`QA-${randomUUID()}`;const client=createClient(process.env.VITE_SUPABASE_URL!,process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,{auth:{persistSession:false}});const result=await client.auth.signUp({email,password});expect(result.error).toBeNull();actors.push({client,email,password,id:result.data.user!.id});fs.appendFileSync('/tmp/hockey-qa-invite-fixtures.jsonl',JSON.stringify({email,userId:result.data.user!.id})+'\n');}
+ const [coach,family]=actors;const team=await coach.client.rpc('create_team_with_owner',{p_name:`Disposable Invite Recovery ${Date.now()}`,p_age_division:'U13',p_level:'rep'});expect(team.error).toBeNull();const teamId=team.data.team_id;fs.appendFileSync('/tmp/hockey-qa-invite-fixtures.jsonl',JSON.stringify({teamId})+'\n');
+ const children=[];for(const name of ['InviteKidOne','InviteKidTwo']){const player=await family.client.rpc('create_managed_player',{p_first_name:name,p_birth_year:2014});expect(player.error).toBeNull();children.push(player.data.player_id);fs.appendFileSync('/tmp/hockey-qa-invite-fixtures.jsonl',JSON.stringify({playerId:player.data.player_id})+'\n');}
+ const valid=randomUUID().replaceAll('-',''),expired=randomUUID().replaceAll('-','');
+ expect((await coach.client.from('team_invites').insert([{team_id:teamId,token:valid,created_by_user_id:coach.id,status:'active',collect_player_profile:false,expires_at:new Date(Date.now()+86400000).toISOString()},{team_id:teamId,token:expired,created_by_user_id:coach.id,status:'active',collect_player_profile:false,expires_at:new Date(Date.now()-86400000).toISOString()}])).error).toBeNull();
+ await page.goto(`/join/${expired}`);await expect(page.getByText('Invalid Invite',{exact:true})).toBeVisible();
+ await page.route('**/rest/v1/rpc/preview_team_by_invite',route=>route.fulfill({status:503,json:{message:'Simulated invitation read outage'}}));await page.goto(`/join/${valid}`);await expect(page.getByText('Couldn’t load this invitation',{exact:true})).toBeVisible({timeout:15000});await expect(page.getByText('Invalid Invite',{exact:true})).toHaveCount(0);await page.unroute('**/rest/v1/rpc/preview_team_by_invite');await page.getByRole('button',{name:'Try again',exact:true}).click();await page.getByRole('button',{name:'Join Team',exact:true}).click();
+ await expect(page.getByLabel(/^email/i)).toBeVisible();
+ if(await page.getByRole('button',{name:'Create Account',exact:true}).isVisible())await page.getByRole('button',{name:/already have an account/i}).click();await page.getByLabel(/^email/i).fill(family.email);await page.getByLabel(/^password/i).fill(family.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await expect(page).toHaveURL(new RegExp(`/join/${valid}/player$`));
+ await page.route('**/rest/v1/players?*',route=>route.request().url().includes('player_guardians')?route.fulfill({status:503,json:{message:'Simulated family list outage'}}):route.continue());await page.reload();await expect(page.getByText('Couldn’t load your players',{exact:true})).toBeVisible({timeout:15000});await expect(page.getByText('No players yet',{exact:true})).toHaveCount(0);await page.unroute('**/rest/v1/players?*');await page.getByRole('button',{name:'Try again',exact:true}).click();
+ for(const [index,name]of ['InviteKidOne','InviteKidTwo'].entries()){
+  await page.getByRole('button',{name:new RegExp(name)}).press(index?'Enter':'Space');await page.getByRole('button',{name:'Join Team',exact:true}).click();await expect(page.getByText(`${name} Joined!`,{exact:true})).toBeVisible();if(!index)await page.getByRole('button',{name:'Add Another Player',exact:true}).click();
+ }
+ expect((await family.client.from('team_memberships').select('player_id').eq('team_id',teamId).eq('status','active')).data?.map(x=>x.player_id).sort()).toEqual(children.sort());
+ expect((await coach.client.from('team_invites').update({status:'revoked'}).eq('token',valid)).error).toBeNull();await page.goto(`/join/${valid}`);await expect(page.getByText('Invalid Invite',{exact:true})).toBeVisible();const denied=await family.client.rpc('join_team_with_invite',{invite_token:valid,p_player_id:children[0]});expect(Boolean(denied.error)||denied.data?.success===false).toBe(true);expect((await family.client.from('team_memberships').select('player_id').eq('team_id',teamId).eq('status','active')).data).toHaveLength(2);
+ for(const actor of actors)await actor.client.auth.signOut({scope:'local'});
+});

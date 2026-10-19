@@ -529,7 +529,7 @@ const PlayerHome: React.FC = () => {
               />
 
               {/* Upcoming Workouts - All Teams */}
-              <UpcomingWorkouts playerId={id!} />
+              {Boolean(memberships?.length) && <UpcomingWorkouts playerId={id!} />}
 
               {/* Teammates */}
               {preferences?.active_team_id && (
@@ -707,7 +707,7 @@ const PlayerHome: React.FC = () => {
           />
 
           {/* Upcoming Workouts - All Teams - Mobile */}
-          <UpcomingWorkouts playerId={id!} compact />
+          {Boolean(memberships?.length) && <UpcomingWorkouts playerId={id!} compact />}
 
           {/* Weekly Summary - Mobile */}
           {preferences?.active_team_id && (
