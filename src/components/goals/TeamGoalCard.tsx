@@ -239,7 +239,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button aria-label="Goal options" variant="ghost" size="icon" className="h-8 w-8">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>

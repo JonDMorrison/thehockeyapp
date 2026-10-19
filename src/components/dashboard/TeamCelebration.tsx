@@ -82,7 +82,7 @@ export const TeamCelebration: React.FC<TeamCelebrationProps> = ({
             <p className="text-sm text-text-secondary">{highlight.label}</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon-sm">
+        <Button aria-label="View team celebration" variant="ghost" size="icon-sm">
           <ChevronRight className="w-5 h-5 text-text-muted" />
         </Button>
       </div>

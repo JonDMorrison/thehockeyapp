@@ -684,7 +684,7 @@ const PlayerToday: React.FC = () => {
       <AppShell hideNav>
         <PageContainer>
           <div className="flex items-center gap-3 mb-6">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/players/${playerId}/home`)}
@@ -733,7 +733,7 @@ const PlayerToday: React.FC = () => {
       <AppShell hideNav>
         <PageContainer>
           <div className="flex items-center gap-3 mb-6">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/players/${playerId}/home`)}
@@ -791,7 +791,7 @@ const PlayerToday: React.FC = () => {
     <AppShell
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/players/${playerId}/home`)}

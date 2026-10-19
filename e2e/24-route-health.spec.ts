@@ -31,14 +31,17 @@ test('authenticated phone route inventory has no crashes, failed reads or overfl
     await page.waitForTimeout(1200);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     const heading = await page.locator('h1,h2').allTextContents();
-    const unnamedControls = await page.locator('button').evaluateAll(buttons => buttons.filter(button => {
-      const rect = button.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && !button.textContent?.trim() && !button.getAttribute('aria-label') && !button.getAttribute('aria-labelledby') && !button.getAttribute('title');
-    }).map(button => ({ html: button.outerHTML.slice(0, 350) })));
+    const unnamedControls: Array<{ role: string; html: string }> = [];
+    for (const role of ['button','checkbox','switch','combobox'] as const) {
+      for (const control of await page.getByRole(role, { name: '', exact: true }).all()) {
+        unnamedControls.push({ role, html: await control.evaluate(element => element.outerHTML.slice(0, 500)) });
+      }
+    }
     report.push({ route, unnamedControls, finalPath: new URL(page.url()).pathname, heading, errors, failures, overflow });
     expect.soft(errors, route).toEqual([]);
     expect.soft(failures, route).toEqual([]);
     expect.soft(overflow, route).toBe(false);
+    expect.soft(unnamedControls, `Accessible control names: ${route}`).toEqual([]);
     page.off('pageerror', onError); page.off('response', onResponse);
   }
   fs.writeFileSync(`/tmp/hockey-route-health-${width}.json`, JSON.stringify(report, null, 2));

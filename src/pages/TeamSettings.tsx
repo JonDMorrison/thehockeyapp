@@ -382,7 +382,7 @@ const TeamSettings: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/teams/${id}`)}
@@ -455,6 +455,7 @@ const TeamSettings: React.FC = () => {
                     size="xl"
                   />
                   <Button
+                    aria-label="Change team photo"
                     variant="secondary"
                     size="icon-sm"
                     className="absolute -bottom-1 -right-1 rounded-full"
@@ -500,7 +501,7 @@ const TeamSettings: React.FC = () => {
                       <Upload className="w-6 h-6 text-text-muted" />
                     )}
                   </div>
-                  <Button
+                  <Button aria-label="Change team logo"
                     variant="secondary"
                     size="icon-sm"
                     className="absolute -bottom-1 -right-1 rounded-full"
@@ -537,7 +538,7 @@ const TeamSettings: React.FC = () => {
                 {t("teams.settings.teamColorsLabel")}
               </Label>
               <Select value={paletteId} onValueChange={setPaletteId}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Team colours">
                   <SelectValue>
                     {selectedPalette && (
                       <div className="flex items-center gap-2">
@@ -746,7 +747,7 @@ const TeamSettings: React.FC = () => {
                     </p>
                   </div>
                   {canRemove && (
-                    <Button
+                    <Button aria-label="Remove team staff member"
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => setRoleToRemove(role)}

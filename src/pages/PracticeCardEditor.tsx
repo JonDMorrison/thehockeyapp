@@ -400,7 +400,7 @@ const PracticeCardEditor: React.FC = () => {
       header={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/teams/${id}/practice`)}
@@ -431,7 +431,7 @@ const PracticeCardEditor: React.FC = () => {
                 )}
               </Button>
             )}
-            <Button
+            <Button aria-label="Get activity suggestions"
               variant="ghost"
               size="icon-sm"
               onClick={() => setShowAIAssist(true)}
@@ -475,7 +475,7 @@ const PracticeCardEditor: React.FC = () => {
             <div>
               <Label>{t('practice.tier')}</Label>
               <Select value={tier} onValueChange={setTier} disabled={isLocked}>
-                <SelectTrigger className="mt-1.5">
+                <SelectTrigger aria-label="Training intensity" className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -537,7 +537,7 @@ const PracticeCardEditor: React.FC = () => {
                   <div className="flex gap-3">
                     {/* Reorder buttons */}
                     <div className="flex flex-col gap-1 pt-2">
-                      <Button
+                      <Button aria-label="Move activity up"
                         variant="ghost"
                         size="icon-sm"
                         className="h-6 w-6"
@@ -546,7 +546,7 @@ const PracticeCardEditor: React.FC = () => {
                       >
                         <ArrowUp className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Move activity down"
                         variant="ghost"
                         size="icon-sm"
                         className="h-6 w-6"
@@ -566,7 +566,7 @@ const PracticeCardEditor: React.FC = () => {
                             onValueChange={(v) => updateTask(index, { task_type: v })}
                             disabled={isLocked}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger aria-label="Activity type">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -581,7 +581,7 @@ const PracticeCardEditor: React.FC = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button
+                        <Button aria-label="Remove activity"
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => removeTask(index)}
@@ -605,7 +605,7 @@ const PracticeCardEditor: React.FC = () => {
                           onValueChange={(v) => updateTask(index, { target_type: v })}
                           disabled={isLocked}
                         >
-                          <SelectTrigger className="w-28">
+                          <SelectTrigger aria-label="Target type" className="w-28">
                             <SelectValue placeholder={t('practice.target')} />
                           </SelectTrigger>
                           <SelectContent>
@@ -640,7 +640,7 @@ const PracticeCardEditor: React.FC = () => {
                             onValueChange={(v) => updateTask(index, { shot_type: v })}
                             disabled={isLocked}
                           >
-                            <SelectTrigger className="flex-1">
+                            <SelectTrigger aria-label="Shot type" className="flex-1">
                               <SelectValue placeholder={t('practice.shotType')} />
                             </SelectTrigger>
                             <SelectContent>

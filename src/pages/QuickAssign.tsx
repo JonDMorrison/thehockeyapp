@@ -529,7 +529,7 @@ const QuickAssign: React.FC = () => {
       header={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate(`/teams/${id}`)}
@@ -542,7 +542,7 @@ const QuickAssign: React.FC = () => {
           </div>
           {/* Date Picker */}
           <div className="flex items-center gap-1">
-            <Button
+            <Button aria-label="Previous day"
               variant="ghost"
               size="icon-sm"
               onClick={goToPreviousDay}
@@ -554,7 +554,7 @@ const QuickAssign: React.FC = () => {
               <p className="text-sm font-medium">{formatDateLabel(selectedDate)}</p>
               <p className="text-xs text-muted-foreground">{format(selectedDate, "MMM d")}</p>
             </div>
-            <Button
+            <Button aria-label="Next day"
               variant="ghost"
               size="icon-sm"
               onClick={goToNextDay}

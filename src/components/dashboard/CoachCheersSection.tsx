@@ -464,7 +464,7 @@ export const CoachCheersSection: React.FC<CoachCheersSectionProps> = ({
                     className="text-sm"
                     maxLength={100}
                   />
-                  <Button
+                  <Button aria-label="Send message"
                     size="icon-sm"
                     onClick={() => {
                       if (customMessage.trim()) {

@@ -1,6 +1,6 @@
 import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -137,7 +137,7 @@ const WorkoutBuilder: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/teams/${teamId}`)}
@@ -193,11 +193,8 @@ const WorkoutBuilder: React.FC = () => {
                 const endDate = addDays(startDate, 6);
                 
                 return (
-                  <AppCard
-                    key={plan.id}
-                    className="cursor-pointer hover:shadow-medium transition-shadow"
-                    onClick={() => navigate(`/teams/${teamId}/builder/${plan.id}`)}
-                  >
+                  <Link key={plan.id} to={`/teams/${teamId}/builder/${plan.id}`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                  <AppCard className="hover:shadow-medium transition-shadow">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Layers className="w-6 h-6 text-primary" />
@@ -222,6 +219,7 @@ const WorkoutBuilder: React.FC = () => {
                       <ChevronRight className="w-5 h-5 text-text-muted flex-shrink-0" />
                     </div>
                   </AppCard>
+                  </Link>
                 );
               })}
             </div>

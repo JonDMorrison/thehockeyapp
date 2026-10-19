@@ -300,7 +300,7 @@ export default function SoloProgramBuilder() {
       <div>
         <Label className="text-sm font-medium">{t('solo.duration')}</Label>
         <Select value={duration.toString()} onValueChange={(v) => setDuration(parseInt(v))}>
-          <SelectTrigger className="mt-2">
+          <SelectTrigger aria-label="Duration" className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -316,7 +316,7 @@ export default function SoloProgramBuilder() {
       <div>
         <Label className="text-sm font-medium">{t('solo.trainingDaysPerWeek')}</Label>
         <Select value={daysPerWeek.toString()} onValueChange={(v) => setDaysPerWeek(parseInt(v))}>
-          <SelectTrigger className="mt-2">
+          <SelectTrigger aria-label="Training days per week" className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -342,7 +342,7 @@ export default function SoloProgramBuilder() {
       <div>
         <Label className="text-sm font-medium">{t('solo.trainingIntensity')}</Label>
         <Select value={tier} onValueChange={(v) => setTier(v as typeof tier)}>
-          <SelectTrigger className="mt-2">
+          <SelectTrigger aria-label="Training intensity" className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -357,7 +357,7 @@ export default function SoloProgramBuilder() {
       <div>
         <Label className="text-sm font-medium">{t('solo.timePerSession')}</Label>
         <Select value={timeBudget.toString()} onValueChange={(v) => setTimeBudget(parseInt(v))}>
-          <SelectTrigger className="mt-2">
+          <SelectTrigger aria-label="Time per session" className="mt-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -515,7 +515,7 @@ export default function SoloProgramBuilder() {
         {/* Header */}
         <div className="px-5 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon"
               className="h-9 w-9"

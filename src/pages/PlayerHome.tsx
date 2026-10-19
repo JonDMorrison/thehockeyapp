@@ -431,7 +431,7 @@ const PlayerHome: React.FC = () => {
       header={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate("/players")}
@@ -606,7 +606,7 @@ const PlayerHome: React.FC = () => {
                 <AppCard>
                   <div className="flex items-center justify-between mb-4">
                     <AppCardTitle>{t("players.home.teams")}</AppCardTitle>
-                    <Button
+                    <Button aria-label="Join another team"
                       variant="ghost"
                       size="sm"
                       onClick={() => navigate(`/join?player=${id}`)}

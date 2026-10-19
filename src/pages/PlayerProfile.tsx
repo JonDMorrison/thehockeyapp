@@ -356,7 +356,7 @@ const PlayerProfile: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(-1)}
@@ -733,7 +733,7 @@ const PlayerProfile: React.FC = () => {
                     </p>
                   </div>
                   {canRemove && (
-                    <Button
+                    <Button aria-label="Remove guardian"
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => setGuardianToRemove(guardian)}

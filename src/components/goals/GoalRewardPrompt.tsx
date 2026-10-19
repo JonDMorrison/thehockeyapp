@@ -267,7 +267,7 @@ export const QuickGoalPrompt: React.FC<QuickGoalPromptProps> = ({
             Motivate players with a goal to work towards
           </p>
         </div>
-        <button
+        <button aria-label="Dismiss"
           onClick={onDismiss}
           className="text-muted-foreground hover:text-foreground p-1"
         >

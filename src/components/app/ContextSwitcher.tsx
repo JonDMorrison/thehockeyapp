@@ -83,7 +83,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <Button variant="ghost" size="sm" disabled className={className}>
+      <Button aria-label="Loading workspaces" variant="ghost" size="sm" disabled className={className}>
         <Loader2 className="w-4 h-4 animate-spin" />
       </Button>
     );

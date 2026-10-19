@@ -176,7 +176,7 @@ const SoloSetup: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={handleBack}>
+          <Button aria-label="Go back" variant="ghost" size="icon-sm" onClick={handleBack}>
             <ChevronLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">

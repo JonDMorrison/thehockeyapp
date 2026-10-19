@@ -141,7 +141,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
                 <Check className="h-4 w-4 text-success" />
               )}
             </Button>
-            <Button
+            <Button aria-label="Cancel title edit"
               variant="ghost"
               size="icon-sm"
               onClick={handleCancel}

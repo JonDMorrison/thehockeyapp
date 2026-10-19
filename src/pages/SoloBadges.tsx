@@ -159,7 +159,7 @@ export default function SoloBadges() {
         {/* Header */}
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon"
               className="h-9 w-9"

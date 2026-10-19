@@ -138,7 +138,7 @@ const TeamNew: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate("/teams")}
@@ -204,7 +204,7 @@ const TeamNew: React.FC = () => {
                 value={formData.palette_id}
                 onValueChange={(v) => updateField("palette_id", v)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Team colours">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

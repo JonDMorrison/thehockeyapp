@@ -65,7 +65,7 @@ export function SmartGoalSuggestions({
             <h3 className="text-sm font-semibold">Smart Goal Suggestions</h3>
           </div>
           {onDismiss && (
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleDismiss}>
+            <Button aria-label="Dismiss" variant="ghost" size="icon" className="h-6 w-6" onClick={handleDismiss}>
               <X className="w-3 h-3" />
             </Button>
           )}

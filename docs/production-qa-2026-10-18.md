@@ -119,3 +119,11 @@ The additive atomic program-save function passed rollback-only checks against th
 - In-flight sync is aborted on identity changes and reuses each event's original idempotency key. Two fresh-family browser tests verified that the next family sees no former pending work, cannot sync it, and the original family can return and finish exactly once.
 - Frozen build: **11 passed (1.2 minutes)** covering existing offline completion, shared-account use, server outage/reload/manual retry, automatic retry, and an interrupted account switch. Full project quality check passed.
 - The 320×568 route sweep found horizontal overflow on the team and player lists; all 43 routes were free of runtime crashes and failed reads. Small-screen overflow remains open for the next repair.
+
+## Small phones, keyboard access and browser coverage
+
+- [PR 29](https://github.com/JonDMorrison/thehockeyapp/pull/29) merged `f8587e4`; its complete real mobile profile/preferences/photo journey passed on production (18.5 seconds).
+- [PR 30](https://github.com/JonDMorrison/thehockeyapp/pull/30) merged `7ef97e1`; all three production offline recovery gates passed (50.3 seconds).
+- Removed duplicate workspace controls from crowded team/player headers and allowed actions to wrap. The 43-route sweep passed at 320×568 with no horizontal overflow, failed reads or runtime exceptions.
+- The route sweep now audits actual accessible names (including labels attached by HTML), rather than assuming every textless element is unnamed. Remaining unnamed buttons, switches and selects were labeled. Team/player/program cards are native links; a real-fixture keyboard test opens all three using Enter. Both strict route/control-name and keyboard gates passed (59.7 seconds).
+- Added opt-in WebKit and Firefox test projects. First public matrix: **147 passed, three Firefox scroll failures**. The router inherited CSS smooth scrolling during route replacement, which Firefox could interrupt at the wrong position. Route restoration now positions immediately; all three Firefox reproductions passed (12.1 seconds). The full matrix is being replayed before merge.

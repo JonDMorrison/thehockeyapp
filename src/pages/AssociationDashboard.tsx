@@ -316,7 +316,7 @@ export default function AssociationDashboard() {
     <AppShell
       header={
         <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate("/associations")}>
+          <Button aria-label="Go back" variant="ghost" size="icon-sm" onClick={() => navigate("/associations")}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex-1">

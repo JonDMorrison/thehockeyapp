@@ -115,7 +115,7 @@ export const TeamPulseBar: React.FC<TeamPulseBarProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <button className="ml-1 p-0.5 rounded-full hover:bg-muted transition-colors">
+            <button aria-label="About team progress" className="ml-1 p-0.5 rounded-full hover:bg-muted transition-colors">
               <Info className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </TooltipTrigger>

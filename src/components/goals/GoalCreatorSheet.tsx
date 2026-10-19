@@ -251,7 +251,7 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
               <SheetHeader className="mb-6">
                 <div className="flex items-center gap-2">
                   {teamStats && !isEditing && (
-                    <Button
+                    <Button aria-label="Go back"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 -ml-2"
