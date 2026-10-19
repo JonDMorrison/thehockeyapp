@@ -15,7 +15,7 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   const authFlow = useLocation().pathname === "/auth";
   const { resetActiveView } = useActiveView();
   const currentOwner = useRef<string | null | undefined>(undefined);
-  const [owner, setOwner] = useState<string | null>(null);
+  const [owner, setOwner] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     let active = true;
     let authEventObserved = false;
@@ -51,5 +51,6 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
     startSyncInterval();
     return () => stopSyncInterval();
   }, [owner]);
+  if (owner === undefined && !authFlow) return <div role="status" className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading your workspace…</div>;
   return <Fragment key={authFlow ? "auth-flow" : owner ?? "signed-out"}>{children}</Fragment>;
 }
