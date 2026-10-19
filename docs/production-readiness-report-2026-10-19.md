@@ -142,3 +142,12 @@ Final follow-up release checks: 174 public browser cases passed across three eng
 
 
 The final live banner review exposed a date-only parsing bug: `2026-10-19` displayed as Sunday October 18 in Vancouver. The header now parses a local calendar date without converting midnight UTC into the prior day. Nine browser cases passed across Vancouver, Honolulu and Auckland in all three engines. The banner application release is commit `533464462063b4c83e2876dbba2295b5ffcf9b7c`, verified READY in production; its email-preference, banner and font production replay is recorded separately below.
+
+
+## Follow-up production and cleanup checkpoint
+
+The production replay completed **36 passing cases** across Chromium, WebKit and Firefox for fonts, explicit email preferences, failed-save recovery, banner choice/upload/crop persistence, desktop hover, private-file access denial and failed-upload cleanup. The final date correction is [PR54](https://github.com/JonDMorrison/thehockeyapp/pull/54), production commit `61e4e41ca3c3be0bc98c1c08a44c684e2607549b`, verified READY; its **nine production timezone/browser cases passed**. The normal repository check passed after this correction.
+
+Follow-up cleanup removed the two real-mailbox alias accounts, one leftover interrupted recovery fixture, their disposable team and fictional player, 16 banner test objects, delivery test metadata and the synthetic urgent alert. Final checks found zero scoped temporary accounts, teams, players or alert rows. Existing team/player counts are both 14. Both complete weekly-recipient dry runs returned HTTP200, 14 processed, zero eligible, zero sent and zero failed after cleanup. Monday/Tuesday schedules remain active and require explicit opt-in; optional marketing stays disabled. The isolated restore database and its raw production-data exports were removed.
+
+The five remaining partial gates are unchanged: physical device/assistive-technology confirmation, a formal security review beyond targeted tests, actual optional-provider/feed validation, full hosted Auth/storage restoration, and field performance/image-weight work. A controlled team pilot remains the next practical step.
