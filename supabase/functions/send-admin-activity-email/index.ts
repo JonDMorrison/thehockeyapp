@@ -109,6 +109,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "Hockey App Admin <admin@hockeyapp.ca>",
+        reply_to: Deno.env.get("EMAIL_REPLY_TO") || undefined,
         to: [ADMIN_EMAIL],
         subject,
         html,

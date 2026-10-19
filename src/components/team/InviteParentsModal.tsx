@@ -220,7 +220,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         "Your coach";
       const inviteLink = `${window.location.origin}/join/${invite.token}`;
 
-      const { error } = await supabase.functions.invoke("send-transactional-email", {
+      const { data: delivery, error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           type: "parent_invitation",
           to: inviteEmail.trim(),
@@ -235,7 +235,14 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        let message = "Email could not be sent. Please retry or copy the invitation link.";
+        if (error.context instanceof Response) {
+          try { const body = await error.context.json(); if (typeof body.error === "string") message = body.error; } catch { /* Keep the actionable fallback. */ }
+        }
+        throw new Error(message);
+      }
+      if (!delivery?.success) throw new Error("Email was not sent. Please retry or copy the invitation link.");
     },
     onSuccess: () => {
       toast.success(

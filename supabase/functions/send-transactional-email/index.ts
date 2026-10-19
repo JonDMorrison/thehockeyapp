@@ -51,7 +51,7 @@ function button(label: string, href: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:28px 0;">
     <tr>
       <td align="left">
-        <a href="${escapeHtml(href)}" style="display:inline-block;padding:12px 28px;background-color:${NAVY};color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;border-radius:6px;">
+        <a href="${escapeHtml(href)}" style="display:inline-block;padding:14px 28px;background-color:${NAVY};color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;border-radius:6px;">
           ${label}
         </a>
       </td>
@@ -84,7 +84,7 @@ function heading(text: string): string {
 }
 
 function para(text: string): string {
-  return `<p style="font-size:15px;line-height:1.65;color:#333333;margin:0 0 16px 0;">${text}</p>`;
+  return `<p style="font-size:16px;line-height:1.65;color:#333333;margin:0 0 16px 0;">${text}</p>`;
 }
 
 function unsubscribeFooter(data: Record<string, unknown>): string {
@@ -99,6 +99,14 @@ interface DigestPlayer {
   name: string;
   sessions: number;
   streak: number;
+}
+
+function plainText(html: string): string {
+  return html.replace(/<head>[\s\S]*?<\/head>/gi, "")
+    .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<\/(?:p|h1|li|tr)>/gi, "\n\n").replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .split("\n").map(line => line.trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 // ── Per-type email builders ──
@@ -119,12 +127,12 @@ function buildCoachWelcome(data: Record<string, unknown>): { subject: string; ht
   const inner = `
     ${heading(subject)}
     ${para(`Hi ${coachName}, your team ${teamName} is ready. Here's the path most coaches take in week one:`)}
-    <ol style="font-size:15px;line-height:1.65;color:#333333;margin:0 0 16px 0;padding-left:20px;">
+    <ol style="font-size:16px;line-height:1.65;color:#333333;margin:0 0 16px 0;padding-left:20px;">
+      <li style="margin-bottom:8px;">Set up a program or shooting challenge, then publish it when you are ready.</li>
       <li style="margin-bottom:8px;">${inviteStep}</li>
-      <li style="margin-bottom:8px;">Publish your first week, players see it the moment you publish.</li>
       <li style="margin-bottom:8px;">Check the dashboard Friday, you'll see exactly who trained without asking anyone.</li>
     </ol>
-    ${para("Reply any time, a real person reads it.")}
+
     ${para("Jon, The Hockey App")}
     ${button("Open your dashboard", "https://www.hockeyapp.ca/teams")}
   `;
@@ -254,22 +262,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 serve(async (req) => {
   const cors = corsHeadersFor(req.headers.get("origin"));
 
+  if (req.method !== "POST" && req.method !== "OPTIONS") return jsonResp({ error: "Method not allowed" }, 405, cors);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: cors });
   }
 
   try {
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) {
-      console.log(
-        JSON.stringify({
-          fn: "send-transactional-email",
-          msg: "RESEND_API_KEY not configured, skipping send",
-        }),
-      );
-      return jsonResp({ skipped: true }, 200, cors);
-    }
-
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -281,7 +279,7 @@ serve(async (req) => {
       const authClient = createClient(SUPABASE_URL, ANON_KEY, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user: authUser } } = await authClient.auth.getUser();
+      const { data: { user: authUser } } = await authClient.auth.getUser(authHeader.slice(7));
       user = authUser ? { id: authUser.id, email: authUser.email } : null;
     }
 
@@ -289,12 +287,13 @@ serve(async (req) => {
       return jsonResp({ error: "Unauthorized" }, 401, cors);
     }
 
-    const { type, to, data } = (await req.json()) as {
+    const { type, to: rawTo, data } = (await req.json()) as {
       type?: string;
       to?: string;
       data?: Record<string, unknown>;
     };
 
+    const to = typeof rawTo === "string" ? rawTo.trim().toLowerCase() : "";
     if (!type || !to) {
       return jsonResp({ error: "Missing required fields: type, to" }, 400, cors);
     }
@@ -303,55 +302,56 @@ serve(async (req) => {
       return jsonResp({ error: "Invalid recipient email" }, 400, cors);
     }
 
+    if (data !== undefined && (typeof data !== "object" || data === null || Array.isArray(data))) return jsonResp({ error: "Invalid email data" }, 400, cors);
     const payload = data ?? {};
+    const authClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader! } } });
+    let eventId = "";
+    let builtPayload = payload;
 
     if (type === "weekly_coach_digest" || type === "player_weekly_progress") {
       if (!serviceRequest) return jsonResp({ error: "Forbidden" }, 403, cors);
-    } else if (type === "association_invitation" && !serviceRequest) {
+    } else if (type === "association_invitation") {
       const associationId = typeof payload.associationId === "string" ? payload.associationId : "";
       if (!associationId) return jsonResp({ error: "Missing association context" }, 400, cors);
-
-      const authClient = createClient(SUPABASE_URL, ANON_KEY, {
-        global: { headers: { Authorization: authHeader! } },
-      });
-      const { data: role } = await authClient
-        .from("association_roles")
-        .select("role")
-        .eq("association_id", associationId)
-        .eq("user_id", user!.id)
-        .in("role", ["owner", "director", "admin"])
-        .maybeSingle();
-      if (!role) return jsonResp({ error: "Forbidden" }, 403, cors);
-    } else if (!serviceRequest) {
+      const { data: role, error: roleError } = serviceRequest ? { data: null, error: null } : await authClient.from("association_roles").select("role").eq("association_id", associationId).eq("user_id", user?.id ?? "").in("role", ["owner", "director", "admin"]).maybeSingle();
+      if (roleError) return jsonResp({ error: "Could not verify invitation permissions" }, 503, cors);
+      if (!serviceRequest && !role) return jsonResp({ error: "Forbidden" }, 403, cors);
+      const lookup = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      const { data: invite, error } = await lookup.from("association_invites").select("id,token,role,expires_at").eq("association_id", associationId).eq("invited_email", to).eq("status", "pending").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: association, error: associationError } = await lookup.from("associations").select("name").eq("id", associationId).maybeSingle();
+      if (error || associationError) return jsonResp({ error: "Could not load invitation" }, 503, cors);
+      if (!invite || !association || Date.parse(invite.expires_at) <= Date.now()) return jsonResp({ error: "Create an active invitation before emailing it" }, 409, cors);
+      eventId = invite.id;
+      builtPayload = { associationName: association.name, role: invite.role, inviteLink: `${DEFAULT_ORIGIN}/association/join/${invite.token}` };
+    } else if (type === "parent_invitation" || type === "coach_welcome") {
       const teamId = typeof payload.teamId === "string" ? payload.teamId : "";
       if (!teamId) return jsonResp({ error: "Missing team context" }, 400, cors);
+      const { data: role, error: roleError } = serviceRequest ? { data: null, error: null } : await authClient.from("team_roles").select("role").eq("team_id", teamId).eq("user_id", user?.id ?? "").maybeSingle();
+      if (roleError) return jsonResp({ error: "Could not verify team permissions" }, 503, cors);
+      if (!serviceRequest && !["head_coach", "assistant_coach", "manager"].includes(role?.role)) return jsonResp({ error: "Forbidden" }, 403, cors);
+      if (type === "coach_welcome" && !serviceRequest && to !== user?.email?.toLowerCase()) return jsonResp({ error: "Welcome email recipient must match the signed-in account" }, 403, cors);
+      const lookup = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      const { data: team, error: teamError } = await lookup.from("teams").select("name").eq("id", teamId).maybeSingle();
+      const { data: invite, error: inviteError } = await lookup.from("team_invites").select("id,token,short_code,expires_at").eq("team_id", teamId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (teamError || inviteError) return jsonResp({ error: "Could not load team invitation" }, 503, cors);
+      if (!team || (type === "parent_invitation" && (!invite || Date.parse(invite.expires_at) <= Date.now()))) return jsonResp({ error: "Create an active invitation before emailing it" }, 409, cors);
+      eventId = type === "coach_welcome" ? teamId : invite!.id;
+      builtPayload = { coachName: type === "coach_welcome" ? "Coach" : "Your coach", teamName: team.name, teamCode: invite?.short_code ?? "", playerName: typeof payload.playerName === "string" ? payload.playerName.slice(0, 100) : "your player", inviteLink: invite ? `${DEFAULT_ORIGIN}/join/${invite.token}` : undefined };
+    } else return jsonResp({ error: "Unknown email type" }, 400, cors);
 
-      const authClient = createClient(SUPABASE_URL, ANON_KEY, {
-        global: { headers: { Authorization: authHeader! } },
-      });
-      const { data: role } = await authClient
-        .from("team_roles")
-        .select("role")
-        .eq("team_id", teamId)
-        .eq("user_id", user!.id)
-        .maybeSingle();
-
-      if (!role) return jsonResp({ error: "Forbidden" }, 403, cors);
-      if (type === "coach_welcome" && to.toLowerCase() !== user!.email?.toLowerCase()) {
-        return jsonResp({ error: "Welcome email recipient must match the signed-in account" }, 403, cors);
-      }
-    }
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) return jsonResp({ error: "Email delivery is temporarily unavailable. You can still copy the invitation link." }, 503, cors);
 
     let built: { subject: string; html: string };
     switch (type) {
       case "coach_welcome":
-        built = buildCoachWelcome(payload);
+        built = buildCoachWelcome(builtPayload);
         break;
       case "parent_invitation":
-        built = buildParentInvitation(payload);
+        built = buildParentInvitation(builtPayload);
         break;
       case "association_invitation":
-        built = buildAssociationInvitation(payload);
+        built = buildAssociationInvitation(builtPayload);
         break;
       case "weekly_coach_digest":
         built = buildWeeklyCoachDigest(payload);
@@ -363,46 +363,49 @@ serve(async (req) => {
         return jsonResp({ error: `Unknown email type: ${type}` }, 400, cors);
     }
 
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: FROM_ADDRESS,
-        to: [to],
-        subject: built.subject,
-        html: built.html,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const errBody = await resendRes.text();
-      console.log(
-        JSON.stringify({
-          fn: "send-transactional-email",
-          msg: "resend_failed",
-          type,
-          status: resendRes.status,
-          body: errBody,
-        }),
-      );
-      return jsonResp({ error: "Failed to send email" }, 500, cors);
+    const delivery = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    const digest = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))).map(byte => byte.toString(16).padStart(2, "0")).join("");
+    // Stable across retries. Invitations may be sent again the next UTC day.
+    const day = new Date().toISOString().slice(0, 10);
+    const idempotencyKey = `hockey-${await digest(JSON.stringify([type, to, eventId, builtPayload, type === "coach_welcome" ? "once" : day]))}`;
+    const recipientHash = await digest(to);
+    const { data: claim, error: claimError } = await delivery.rpc("claim_email_delivery", { p_key: idempotencyKey, p_actor: user?.id ?? null, p_recipient_hash: recipientHash, p_type: type });
+    if (claimError) return jsonResp({ error: "Could not prepare email delivery. Please try again." }, 503, cors);
+    if (claim?.status === "sent") return jsonResp({ success: true, already_sent: true, id: claim.id }, 200, cors);
+    if (claim?.status !== "ready") return jsonResp({ error: claim?.status === "rate_limited" ? "Email limit reached. Please wait before sending again, or copy the invitation link." : "This email is already being sent. Please wait a moment before retrying." }, 429, cors);
+    const markFailed = () => delivery.from("email_delivery_attempts").update({ status: "failed", updated_at: new Date().toISOString() }).eq("idempotency_key", idempotencyKey);
+    let resendRes: Response;
+    try {
+      resendRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        signal: AbortSignal.timeout(15000),
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body: JSON.stringify({ from: FROM_ADDRESS, reply_to: Deno.env.get("EMAIL_REPLY_TO") || undefined, to: [to], subject: built.subject.replace(/[\r\n]/g, " ").slice(0, 200), html: built.html, text: plainText(built.html) }),
+      });
+    } catch {
+      await markFailed();
+      return jsonResp({ error: "Email delivery timed out. Please try again or copy the invitation link." }, 503, cors);
     }
-
+    if (!resendRes.ok) {
+      await markFailed();
+      console.log(JSON.stringify({ fn: "send-transactional-email", msg: "resend_failed", type, status: resendRes.status }));
+      return jsonResp({ error: "Email could not be sent. Please try again or copy the invitation link." }, 503, cors);
+    }
     const resendData = await resendRes.json();
+    if (typeof resendData.id !== "string" || !resendData.id) { await markFailed(); return jsonResp({ error: "Email provider did not confirm delivery. Please try again." }, 503, cors); }
+    const { error: savedError } = await delivery.from("email_delivery_attempts").update({ status: "sent", provider_message_id: resendData.id, updated_at: new Date().toISOString() }).eq("idempotency_key", idempotencyKey);
+    if (savedError) return jsonResp({ error: "Could not confirm the email status. Retrying will not send a duplicate." }, 503, cors);
     return jsonResp({ success: true, id: resendData.id }, 200, cors);
-  } catch (error) {
+  } catch {
     console.log(
       JSON.stringify({
         fn: "send-transactional-email",
         msg: "unhandled_error",
-        error: error instanceof Error ? error.message : String(error),
+        error: "request_failed",
       }),
     );
     return jsonResp(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Email request could not be completed. Please try again." },
       500,
       cors,
     );

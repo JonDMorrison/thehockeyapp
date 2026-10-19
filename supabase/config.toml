@@ -17,6 +17,10 @@ enable_confirmations = false
 max_frequency = "1m"
 otp_length = 8
 
+[auth.email.template.recovery]
+subject = "Reset your Hockey App password"
+content_path = "./supabase/templates/recovery.html"
+
 [functions.generate-workout-ai]
 verify_jwt = true
 

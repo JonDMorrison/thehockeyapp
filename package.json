@@ -17,7 +17,7 @@
     "test:journeys": "node scripts/verify-launch-journeys.cjs",
     "test:template-start": "node --experimental-strip-types scripts/verify-template-start-date.ts",
     "test:template-ranking": "node --experimental-strip-types scripts/verify-template-ranking.ts",
-    "check": "npm run brand:check && npm run test:links && npm run test:journeys && npm run test:template-start && npm run test:template-ranking && npm run test:summary-privacy && npm run test:alert-dispatch && npm run test:starter-workout && npm run test:calendar-feed && npm run typecheck && npm run lint && npm run build",
+    "check": "npm run brand:check && npm run test:links && npm run test:journeys && npm run test:template-start && npm run test:template-ranking && npm run test:summary-privacy && npm run test:alert-dispatch && npm run test:transactional-delivery && npm run test:starter-workout && npm run test:calendar-feed && npm run typecheck && npm run lint && npm run build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -27,6 +27,7 @@
     "test:program-db": "node scripts/verify-program-database.mjs",
     "test:links": "node scripts/verify-internal-links.cjs",
     "test:summary-privacy": "node tests/functions/summary-privacy.mjs",
+    "test:transactional-delivery": "node tests/functions/transactional-delivery.mjs",
     "test:alert-dispatch": "node tests/functions/admin-alert-authorization.mjs",
     "test:starter-workout": "node tests/functions/starter-workout.mjs",
     "test:calendar-feed": "node tests/functions/calendar-feed.mjs"
