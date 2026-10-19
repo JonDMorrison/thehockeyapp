@@ -9,6 +9,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { publicMain, privateMain } = require('./marketing-fallbacks.cjs');
 const { spawn } = require('child_process');
 
 const distDir = path.join(__dirname, '..', 'dist');
@@ -20,10 +21,6 @@ const WAIT_MS = 3000;
 const routes = ['/', '/features', '/about', '/privacy', '/terms', '/contact', '/demo'];
 
 const routeMetadata = {
-  '/pricing': {
-    title: 'Pricing — The Hockey App',
-    description: 'Simple plans for hockey associations, coaches, players, and families.',
-  },
   '/features': {
     title: 'Features — The Hockey App',
     description: 'Weekly plans, player workouts, Hockey Canada skill videos, team participation, and association-wide progress in one private hockey development app.',
@@ -108,9 +105,11 @@ function writeMetadataFallbacks() {
       .replace(/<meta data-rh="true" property="og:image:alt" content="[^"]*" \/>/, `<meta data-rh="true" property="og:image:alt" content="${title}" />`)
       .replace(/<meta data-rh="true" name="twitter:title" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:title" content="${title}" />`)
       .replace(/<meta data-rh="true" name="twitter:description" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:description" content="${description}" />`);
+    const body = publicMain(route, meta);
+    const routeHtml = body ? html.replace(/<main\b[\s\S]*?<\/main>/, body) : html;
     const routeDir = path.join(distDir, route);
     fs.mkdirSync(routeDir, { recursive: true });
-    fs.writeFileSync(path.join(routeDir, 'index.html'), html);
+    fs.writeFileSync(path.join(routeDir, 'index.html'), routeHtml);
   }
 
   const privateDir = path.join(distDir, '_private');
@@ -129,7 +128,7 @@ function writeMetadataFallbacks() {
       .replace(/<meta data-rh="true" property="og:image:alt" content="[^"]*" \/>/, `<meta data-rh="true" property="og:image:alt" content="${title}" />`)
       .replace(/<meta data-rh="true" name="twitter:title" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:title" content="${title}" />`)
       .replace(/<meta data-rh="true" name="twitter:description" content="[^"]*" \/>/, `<meta data-rh="true" name="twitter:description" content="${description}" />`);
-    fs.writeFileSync(path.join(privateDir, `${fileName}.html`), html);
+    fs.writeFileSync(path.join(privateDir, `${fileName}.html`), html.replace(/<main\b[\s\S]*?<\/main>/, privateMain(meta)));
   }
 }
 
