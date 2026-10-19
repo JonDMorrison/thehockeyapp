@@ -1,0 +1,26 @@
+import {test,expect} from '@playwright/test';
+import {createClient} from '@supabase/supabase-js';
+import {randomUUID} from 'node:crypto';
+import fs from 'node:fs';
+
+test.use({storageState:{cookies:[],origins:[]},viewport:{width:320,height:568},timezoneId:'UTC'});
+test('family history combines home and team work and retains only its own records after leaving',async({page})=>{
+ test.skip(process.env.FAMILY_HISTORY_RELEASE_TEST!=='1','Opt in to two fictional accounts and separate training history.');test.setTimeout(90000);
+ const actors=[];
+ for(const role of ['coach','family']){const email=`qa-history-${role}-${Date.now()}@example.com`,password=`QA-${randomUUID()}`;const client=createClient(process.env.VITE_SUPABASE_URL!,process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,{auth:{persistSession:false}});const result=await client.auth.signUp({email,password});expect(result.error).toBeNull();actors.push({email,password,client,id:result.data.user!.id});fs.appendFileSync('/tmp/hockey-qa-history-fixtures.jsonl',JSON.stringify({email,userId:result.data.user!.id})+'\n');}
+ const [coach,family]=actors;const team=await coach.client.rpc('create_team_with_owner',{p_name:`Disposable Family History ${Date.now()}`,p_age_division:'U13',p_level:'rep'});expect(team.error).toBeNull();const teamId=team.data.team_id;
+ const player=await family.client.rpc('create_managed_player',{p_first_name:'HistoryPrivacyKid',p_birth_year:2014});expect(player.error).toBeNull();const playerId=player.data.player_id,token=randomUUID().replaceAll('-',''),cardId=randomUUID(),futureId=randomUUID();fs.appendFileSync('/tmp/hockey-qa-history-fixtures.jsonl',JSON.stringify({teamId,playerId,cardId,futureId})+'\n');
+ expect((await coach.client.from('team_invites').insert({team_id:teamId,token,created_by_user_id:coach.id,expires_at:new Date(Date.now()+86400000).toISOString()})).error).toBeNull();expect((await family.client.rpc('join_team_with_invite',{invite_token:token,p_player_id:playerId})).error).toBeNull();
+ const today=new Date().toISOString().slice(0,10),tomorrow=new Date(Date.now()+86400000).toISOString().slice(0,10);
+ for(const [id,date,title]of [[cardId,today,'Recorded team effort'],[futureId,tomorrow,'Future private team workout']])expect((await coach.client.rpc('save_team_practice_card',{p_id:id,p_team_id:teamId,p_date:date,p_tier:'rep',p_title:title,p_notes:'',p_publish:true,p_tasks:[{label:'History shots',task_type:'shooting',shots_expected:125}]})).error).toBeNull();
+ const task=await family.client.from('practice_tasks').select('id').eq('practice_card_id',cardId).single();expect(task.error).toBeNull();expect((await family.client.from('task_completions').insert({player_id:playerId,practice_task_id:task.data!.id,completed:true,shots_logged:125,completed_by:'parent'})).error).toBeNull();expect((await family.client.from('session_completions').insert({player_id:playerId,practice_card_id:cardId,status:'complete',completed_by:'parent'})).error).toBeNull();
+ expect((await family.client.rpc('save_personal_workouts',{p_player_id:playerId,p_tier:'rep',p_days:[{date:today,title:'Private home effort',tasks:[{label:'Home mobility',task_type:'mobility'}]}]})).error).toBeNull();
+ await page.goto(`/auth?mode=signin&redirect=${encodeURIComponent(`/players/${playerId}/history`)}`);await page.getByLabel(/^email/i).fill(family.email);await page.getByLabel(/^password/i).fill(family.password);await page.getByRole('button',{name:'Sign In',exact:true}).click();await expect(page).toHaveURL(new RegExp(`/players/${playerId}/history$`));
+ await expect(page.getByText('Recorded team effort',{exact:true})).toBeVisible();await expect(page.getByText('Private home effort',{exact:true})).toBeVisible();
+ expect((await coach.client.rpc('get_player_training_history',{p_player_id:playerId})).error).toBeTruthy();
+ expect((await family.client.rpc('leave_my_player_from_team',{p_player_id:playerId,p_team_id:teamId})).error).toBeNull();await page.reload();await expect(page.getByText('Recorded team effort',{exact:true})).toBeVisible();await expect(page.getByText('Private home effort',{exact:true})).toBeVisible();await expect(page.getByText('Previous team',{exact:true})).toBeVisible();await expect(page.getByText('125 shots',{exact:true})).toBeVisible();
+ expect((await family.client.from('practice_cards').select('id').eq('id',futureId)).data).toEqual([]);
+ const history=await family.client.rpc('get_player_training_history',{p_player_id:playerId});expect(history.error).toBeNull();expect(history.data.items.map((x:{id:string})=>x.id)).toContain(cardId);expect(history.data.items.map((x:{id:string})=>x.id)).not.toContain(futureId);
+ await page.route('**/rest/v1/rpc/get_player_training_history',route=>route.fulfill({status:503,json:{message:'Simulated history read outage'}}));await page.reload();await expect(page.getByText('Couldn’t load training history',{exact:true})).toBeVisible({timeout:15000});await page.unroute('**/rest/v1/rpc/get_player_training_history');await page.getByRole('button',{name:'Try again',exact:true}).click();await expect(page.getByText('Recorded team effort',{exact:true})).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
+ for(const actor of actors)await actor.client.auth.signOut({scope:'local'});
+});
