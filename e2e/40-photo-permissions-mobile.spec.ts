@@ -1,0 +1,47 @@
+import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+
+test.use({ viewport: { width: 320, height: 568 }, timezoneId: 'UTC' });
+test('family photo permissions, upload retry, and delete recovery work on a small phone', async ({ page }) => {
+  test.setTimeout(100000);page.setDefaultTimeout(15000);
+  const client=createClient(process.env.VITE_SUPABASE_URL!,process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,{auth:{persistSession:false}});
+  const login=await client.auth.signInWithPassword({email:process.env.TEST_USER_EMAIL!,password:process.env.TEST_USER_PASSWORD!});expect(login.error).toBeNull();const userId=login.data.user!.id;
+  const team=await client.rpc('create_team_with_owner',{p_name:`Disposable Photo Mobile ${Date.now()}`,p_age_division:'U13',p_level:'rep'});expect(team.error).toBeNull();
+  const player=await client.rpc('create_managed_player',{p_first_name:'PhotoMobileKid',p_birth_year:2014,p_photo_sharing_allowed:false});expect(player.error).toBeNull();
+  const teamId=team.data.team_id,playerId=player.data.player_id,cardId=randomUUID();fs.appendFileSync('/tmp/hockey-qa-photo-fixtures.jsonl',JSON.stringify({teamId,playerId,cardId,userId})+'\n');
+  expect((await client.rpc('add_my_player_to_team',{p_team_id:teamId,p_player_id:playerId})).error).toBeNull();
+  expect((await client.rpc('save_team_practice_card',{p_id:cardId,p_team_id:teamId,p_date:new Date().toISOString().slice(0,10),p_tier:'rep',p_title:'Phone photo proof',p_notes:'',p_publish:true,p_tasks:[{label:'Photo phone warm-up',task_type:'mobility'}]})).error).toBeNull();
+  await page.goto(`/players/${playerId}/today`);await expect(page.getByRole('button',{name:'Choose a photo',exact:true})).toBeVisible();
+  await page.locator('input[type=file]').last().setInputFiles('public/favicon.png');
+  const upload=page.getByRole('dialog',{name:'Add Photo',exact:true});await expect(upload).toBeVisible();await expect(upload.getByRole('switch',{name:'Share with coaches',exact:true})).toBeDisabled();
+  await upload.getByRole('button',{name:'Review photo permissions',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Player Settings',exact:true});const permission=settings.getByRole('switch',{name:'Allow coach photo sharing',exact:true});await expect(permission).toBeEnabled();await expect(permission).not.toBeChecked();await permission.click();await expect(permission).toBeChecked();
+  await expect.poll(async()=>(await client.from('player_consents').select('photo_sharing_allowed').eq('player_id',playerId).eq('guardian_user_id',userId).single()).data?.photo_sharing_allowed).toBe(true);
+  await settings.getByRole('button',{name:'Close',exact:true}).click();await expect(upload.getByRole('switch',{name:'Share with coaches',exact:true})).toBeEnabled();await upload.getByRole('switch',{name:'Share with coaches',exact:true}).check();await upload.getByRole('button',{name:'Save Photo',exact:true}).click();
+  const images=page.locator('img[alt="Session proof"]');await expect(images).toHaveCount(1);
+  const saved=await client.from('session_photos').select('id,storage_path,visibility').eq('practice_card_id',cardId);expect(saved.data).toEqual([expect.objectContaining({visibility:'team_adults'})]);
+  const prefix=`sessions/${cardId}/${playerId}`;
+  for(const photo of saved.data!)fs.appendFileSync('/tmp/hockey-qa-photo-fixtures.jsonl',JSON.stringify({userId,bucket:'session-photos',objectPath:photo.storage_path})+'\n');
+  await page.locator('input[type=file]').last().setInputFiles('public/favicon.png');await expect(upload).toBeVisible();
+  await page.route('**/rest/v1/session_photos*',route=>route.request().method()==='POST'?route.fulfill({status:503,json:{message:'Simulated photo metadata outage'}}):route.continue());
+  await upload.getByRole('button',{name:'Save Photo',exact:true}).click();await expect(page.getByText('Upload failed',{exact:true})).toBeVisible();
+  await expect.poll(async()=>(await client.storage.from('session-photos').list(prefix)).data?.length).toBe(1);
+  await page.unroute('**/rest/v1/session_photos*');await upload.getByRole('button',{name:'Save Photo',exact:true}).click();await expect(images).toHaveCount(2);
+  await page.route('**/storage/v1/object/session-photos*',route=>route.request().method()==='DELETE'?route.fulfill({status:503,json:{message:'Simulated photo removal outage'}}):route.continue());
+  await page.getByRole('button',{name:'Delete training photo',exact:true}).first().click();await expect(page.getByText('Delete failed',{exact:true})).toBeVisible();expect((await client.from('session_photos').select('id').eq('practice_card_id',cardId)).data).toHaveLength(2);
+  await page.unroute('**/storage/v1/object/session-photos*');
+  await page.route('**/rest/v1/session_photos*',route=>route.request().method()==='DELETE'?route.fulfill({status:503,json:{message:'Simulated photo record removal outage'}}):route.continue());
+  await page.getByRole('button',{name:'Delete training photo',exact:true}).first().click();await expect(page.getByText('Simulated photo record removal outage',{exact:true})).toBeVisible();
+  await page.unroute('**/rest/v1/session_photos*');await page.reload();await expect(page.getByRole('img',{name:'Photo unavailable',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Delete training photo',exact:true}).first().click();await expect(page.getByRole('img',{name:'Photo unavailable',exact:true})).toHaveCount(0);await expect(images).toHaveCount(1);
+  await page.getByRole('button',{name:'Player options',exact:true}).click();await expect(permission).toBeChecked();
+  await page.route('**/rest/v1/player_consents*',route=>route.request().method()==='PATCH'?route.fulfill({status:503,json:{message:'Simulated consent save outage'}}):route.continue());
+  await permission.click();await expect(page.getByText('Could not update photo sharing',{exact:true})).toBeVisible();await expect(permission).toBeChecked();
+  await page.unroute('**/rest/v1/player_consents*');await permission.click();await expect(permission).not.toBeChecked();await settings.getByRole('button',{name:'Close',exact:true}).click();await page.reload();await page.getByRole('button',{name:'Player options',exact:true}).click();await expect(permission).not.toBeChecked();await settings.getByRole('button',{name:'Close',exact:true}).click();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)).toBe(false);
+  const remaining=await client.from('session_photos').select('id,storage_path').eq('practice_card_id',cardId);
+  for(const photo of remaining.data||[]){await client.storage.from('session-photos').remove([photo.storage_path]);await client.from('session_photos').delete().eq('id',photo.id);}
+  await client.auth.signOut({scope:'local'});
+});

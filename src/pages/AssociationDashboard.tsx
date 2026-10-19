@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -130,7 +131,9 @@ export default function AssociationDashboard() {
         p_days: windowDays,
       });
       if (error) throw error;
-      return data as unknown as AssociationDashboardData;
+      const result = data as unknown as AssociationDashboardData;
+      if (!result?.association || !result.totals || !Array.isArray(result.teams)) throw new Error("The association response could not be loaded.");
+      return result;
     },
     enabled: !!user && !!id,
   });
@@ -258,14 +261,18 @@ export default function AssociationDashboard() {
       setInviteEmail("");
       queryClient.invalidateQueries({ queryKey: ["association-invites", id] });
       if (emailSent) toast.success("Invitation sent", "The access link is also ready to copy.");
-      else toast.info("Invitation created", "Email is not configured yet; copy the secure link below.");
+      else toast.info("Invitation created", "Email couldn’t be sent. Copy the secure link below.");
     },
     onError: (error: Error) => toast.error("Could not create invitation", error.message),
   });
 
   const copyLink = async (value: string) => {
-    await navigator.clipboard.writeText(value);
-    toast.success("Copied", "Invitation link copied to your clipboard.");
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success("Copied", "Invitation link copied to your clipboard.");
+    } catch {
+      toast.error("Couldn’t copy the link", "Select the invitation link and copy it manually.");
+    }
   };
 
   if (authLoading || dashboardQuery.isLoading) {
@@ -284,6 +291,9 @@ export default function AssociationDashboard() {
 
   if (!isAuthenticated) return null;
 
+  if (dashboardQuery.error && (dashboardQuery.error as { code?: string }).code !== "42501") {
+    return <AppShell hideNav><PageContainer><DataLoadError title="Couldn’t load this association" onRetry={() => dashboardQuery.refetch()} retrying={dashboardQuery.isFetching} /></PageContainer></AppShell>;
+  }
   if (dashboardQuery.error || !dashboard) {
     return (
       <AppShell hideNav>
@@ -474,7 +484,7 @@ export default function AssociationDashboard() {
                 <AppCardTitle className="flex items-center gap-2"><Plus className="h-4 w-4 text-primary" /> Connect teams</AppCardTitle>
                 <AppCardDescription className="mt-1">Only teams where you are head coach appear here.</AppCardDescription>
                 <div className="mt-4 space-y-2">
-                  {linkableTeams.length > 0 ? linkableTeams.map((role) => {
+                  {headCoachTeamsQuery.isError ? <DataLoadError title="Couldn’t load your teams" onRetry={() => headCoachTeamsQuery.refetch()} retrying={headCoachTeamsQuery.isFetching} /> : linkableTeams.length > 0 ? linkableTeams.map((role) => {
                     const team = role.teams;
                     if (!team) return null;
                     return (
@@ -503,6 +513,8 @@ export default function AssociationDashboard() {
               <AppCardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Staff access</AppCardTitle>
               <AppCardDescription className="mt-1">{rolesQuery.data?.length || 0} people can open this association view.</AppCardDescription>
 
+              {rolesQuery.isError && <DataLoadError title="Couldn’t load staff access" onRetry={() => rolesQuery.refetch()} retrying={rolesQuery.isFetching} />}
+              {invitesQuery.isError && <DataLoadError title="Couldn’t load pending invitations" onRetry={() => invitesQuery.refetch()} retrying={invitesQuery.isFetching} />}
               {canManage && (
                 <div className="mt-4 space-y-3 border-t border-border pt-4">
                   <div className="space-y-2">
@@ -516,7 +528,7 @@ export default function AssociationDashboard() {
                     />
                   </div>
                   <Select value={inviteRole} onValueChange={setInviteRole}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Association invitation role"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="viewer">Reporting access</SelectItem>
                       <SelectItem value="director">Director</SelectItem>
@@ -533,10 +545,11 @@ export default function AssociationDashboard() {
                     Send secure invite
                   </Button>
                   {lastInviteLink && (
-                    <button className="flex w-full items-center gap-2 rounded-lg bg-muted p-2 text-left text-[11px]" onClick={() => copyLink(lastInviteLink)}>
-                      <span className="min-w-0 flex-1 truncate text-muted-foreground">{lastInviteLink}</span>
-                      <Clipboard className="h-3.5 w-3.5 text-primary" />
-                    </button>
+                    <div className="space-y-2 rounded-xl border border-border p-3">
+                      <Label htmlFor="association-invitation-link">Secure invitation link</Label>
+                      <Input id="association-invitation-link" value={lastInviteLink} readOnly onFocus={event => event.target.select()} />
+                      <Button variant="outline" className="w-full" onClick={() => copyLink(lastInviteLink)}><Clipboard aria-hidden="true" className="h-4 w-4" />Copy invitation link</Button>
+                    </div>
                   )}
                   {(invitesQuery.data?.length || 0) > 0 && (
                     <div className="space-y-2 pt-1">

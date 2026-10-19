@@ -1,4 +1,8 @@
-import React, { useState, useRef } from "react";
+import { validateImageUpload } from "@/lib/media";
+import { DataLoadError } from "@/components/app/DataLoadError";
+import { usePlayerPhotoConsent } from "@/hooks/usePlayerPhotoConsent";
+import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
+import React, { useState, useRef, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,7 +26,7 @@ interface SessionPhoto {
   visibility: string;
   caption: string | null;
   created_at: string;
-  signed_url: string;
+  signed_url: string | null;
 }
 
 interface SessionPhotoUploadProps {
@@ -47,6 +51,8 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   disabled = false,
 }) => {
   const { user } = useAuth();
+  const photoConsent = usePlayerPhotoConsent(playerId);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,8 +63,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   const [shareWithCoaches, setShareWithCoaches] = useState(false);
   const [localQueuedPhotos, setLocalQueuedPhotos] = useState<QueuedPhoto[]>([]);
 
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+
   // Fetch existing photos
-  const { data: photos } = useQuery({
+  const { data: photos, isError: photosError, isFetching: photosFetching, refetch: refetchPhotos } = useQuery({
     queryKey: ["session-photos", practiceCardId, playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -74,8 +82,8 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           const { data: signed, error: signedError } = await supabase.storage
             .from("session-photos")
             .createSignedUrl(photo.storage_path, 3600);
-          if (signedError) throw signedError;
-          return { ...photo, signed_url: signed.signedUrl };
+          if (signedError && !/not found|does not exist/i.test(signedError.message)) throw signedError;
+          return { ...photo, signed_url: signed?.signedUrl ?? null };
         })
       );
 
@@ -99,7 +107,9 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
         throw new Error("Choose a JPEG, PNG, WebP, HEIC, or HEIF image under 5 MB.");
       }
 
-      const fileExt = file.name.split(".").pop();
+      const validation = validateImageUpload(file);
+      if (validation) throw new Error(validation);
+      const fileExt = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `sessions/${practiceCardId}/${playerId}/${fileName}`;
 
@@ -131,7 +141,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["session-photos", practiceCardId, playerId] });
-      toast.success("Photo saved", "Your proof-of-work has been uploaded.");
+      toast.success("Photo saved", "Your training moment is saved.");
       resetUploadState();
     },
     onError: (error: Error) => {
@@ -144,7 +154,8 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   const deletePhoto = useMutation({
     mutationFn: async (photo: SessionPhoto) => {
       // Delete from storage
-      await supabase.storage.from("session-photos").remove([photo.storage_path]);
+      const { error: removeError } = await supabase.storage.from("session-photos").remove([photo.storage_path]);
+      if (removeError) throw removeError;
       
       // Delete record
       const { error } = await supabase
@@ -165,7 +176,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
+      const validation = validateImageUpload(file);
+      if (validation) { toast.error("Choose a supported photo", validation); return; }
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -181,7 +195,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
     uploadPhoto.mutate({
       file: selectedFile,
       caption,
-      visibility: shareWithCoaches ? "team_adults" : "parent_only",
+      visibility: shareWithCoaches && photoConsent.data?.photo_sharing_allowed ? "team_adults" : "parent_only",
     });
   };
 
@@ -198,10 +212,11 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm text-text-muted">Proof (optional)</Label>
+        <Label className="text-sm text-text-muted">Training photos (optional)</Label>
         <span className="text-xs text-text-muted">{photoCount}/3</span>
       </div>
 
+      {photosError && <DataLoadError title="Couldn’t load training photos" onRetry={() => refetchPhotos()} retrying={photosFetching} />}
       {/* Photo thumbnails */}
       <div className="flex items-center gap-2 flex-wrap">
         {photos?.slice(0, 3).map((photo) => (
@@ -209,17 +224,14 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
             key={photo.id}
             className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted group"
           >
-            <img
-              src={photo.signed_url}
-              alt="Session proof"
-              className="w-full h-full object-cover"
-            />
+            {photo.signed_url ? <img src={photo.signed_url} alt="Session proof" className="w-full h-full object-cover" /> : <span role="img" aria-label="Photo unavailable" className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Photo unavailable</span>}
             {photo.visibility === "team_adults" && (
               <div className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
                 <Share2 className="w-2.5 h-2.5 text-white" />
               </div>
             )}
             <button
+              aria-label="Delete training photo"
               onClick={() => deletePhoto.mutate(photo)}
               disabled={deletePhoto.isPending}
               className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
@@ -253,7 +265,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
         ))}
 
         {/* Add photo button */}
-        {photoCount < 3 && !disabled && (
+        {photoCount < 3 && !disabled && !photosError && photos && (
           <button aria-label="Choose a photo"
             onClick={() => fileInputRef.current?.click()}
             className="w-16 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center hover:bg-surface-muted transition-colors"
@@ -266,7 +278,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
         capture="environment"
         className="hidden"
         onChange={handleFileSelect}
@@ -274,11 +286,11 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
 
       {/* Upload Sheet */}
       <Sheet open={showUploadSheet} onOpenChange={setShowUploadSheet}>
-        <SheetContent side="bottom" className="h-[80vh]">
+        <SheetContent side="bottom" className="h-auto max-h-[90dvh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Add Photo</SheetTitle>
             <SheetDescription>
-              Add a proof-of-work photo for {playerName}
+              Save a training moment for {playerName}
             </SheetDescription>
           </SheetHeader>
 
@@ -319,16 +331,23 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
                 <p className="text-xs text-text-muted">
                   {shareWithCoaches
                     ? "Coaches and managers can view this photo"
-                    : "Only you can view this photo"}
+                    : "Only your family can view this photo"}
                 </p>
               </div>
               <Switch
                 id="share"
-                checked={shareWithCoaches}
+                checked={shareWithCoaches && Boolean(photoConsent.data?.photo_sharing_allowed)}
+                disabled={!photoConsent.data?.photo_sharing_allowed || photoConsent.isLoading || photoConsent.isError}
                 onCheckedChange={setShareWithCoaches}
               />
             </div>
 
+            {!photoConsent.data?.photo_sharing_allowed && (
+              <div className="rounded-xl border border-border p-3 text-sm">
+                <p className="text-muted-foreground">Coach photo sharing is off. Your photo will stay with your family.</p>
+                <Button variant="link" className="mt-1 px-0" onClick={() => setShowPrivacySettings(true)}>Review photo permissions</Button>
+              </div>
+            )}
             {/* Actions */}
             <div className="flex gap-2 pt-4">
               <Button
@@ -352,6 +371,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           </div>
         </SheetContent>
       </Sheet>
+      <PlayerSettingsSheet open={showPrivacySettings} onOpenChange={setShowPrivacySettings} playerId={playerId} playerName={playerName} />
     </div>
   );
 };
