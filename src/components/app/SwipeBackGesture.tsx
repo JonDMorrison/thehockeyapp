@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
+import { motion, useMotionValue, useTransform, useAnimation, useDragControls, PanInfo } from "framer-motion";
 
 interface SwipeBackGestureProps {
   children: React.ReactNode;
@@ -25,10 +25,11 @@ export const SwipeBackGesture: React.FC<SwipeBackGestureProps> = ({
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
+  const dragControls = useDragControls();
   
   const x = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [canSwipeBack, setCanSwipeBack] = useState(false);
+  const canSwipeBack = enabled && !rootPages.includes(location.pathname);
   
   // Background opacity based on drag progress
   const backdropOpacity = useTransform(x, [0, 150], [0, 0.3]);
@@ -36,11 +37,6 @@ export const SwipeBackGesture: React.FC<SwipeBackGestureProps> = ({
   // Edge indicator visibility
   const edgeIndicatorOpacity = useTransform(x, [0, 20, 40], [0, 0.5, 0]);
   const edgeIndicatorScale = useTransform(x, [0, 40], [0.8, 1]);
-
-  // Check if we can swipe back on this route
-  useEffect(() => {
-    setCanSwipeBack(!rootPages.includes(location.pathname));
-  }, [location.pathname]);
 
   const handleDragStart = () => {
     if (!enabled || !canSwipeBack) return;
@@ -116,19 +112,21 @@ export const SwipeBackGesture: React.FC<SwipeBackGestureProps> = ({
         style={{ x }}
         animate={controls}
         drag={canSwipeBack ? "x" : false}
+        dragListener={false}
+        dragControls={dragControls}
         dragDirectionLock
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={{ left: 0, right: 0.2 }}
         onDragStart={handleDragStart}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
-        // Only start dragging from left 20px edge
-        onPointerDown={(e) => {
+        // Start only from the edge; ordinary buttons and inputs must retain their taps.
+        onPointerDown={(event) => {
           const rect = containerRef.current?.getBoundingClientRect();
-          if (rect && e.clientX - rect.left > 30) {
-            // Not from edge, disable drag
-            e.stopPropagation();
-          }
+          const target = event.target instanceof Element ? event.target : null;
+          if (!rect || event.clientX - rect.left > 30 || event.pointerType === "mouse"
+              || target?.closest("button,a,input,textarea,select,[role=button],[role=checkbox],[role=switch],[contenteditable=true]")) return;
+          dragControls.start(event);
         }}
       >
         {/* Previous page preview (simplified) */}

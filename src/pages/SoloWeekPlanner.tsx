@@ -1,3 +1,4 @@
+import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo, useEffect } from "react";
 import { logger } from "@/core";
@@ -146,52 +147,16 @@ export default function SoloWeekPlanner() {
     mutationFn: async () => {
       if (!player) throw new Error("Missing player");
 
-      // Create practice cards for each day
-      for (const day of weekPlan) {
-        if (day.template.id === "rest_day") continue;
-
-        const { data: card, error: cardError } = await supabase
-          .from("personal_practice_cards")
-          .insert({
-            player_id: playerId,
-            date: day.date,
-            title: day.template.title,
-            notes: day.template.subtitle,
-            tier: "rep",
-            mode: "normal",
-          })
-          .select()
-          .single();
-
-        if (cardError) throw cardError;
-
-        // Insert tasks
-        const tasks = getTasksForDay(day.template.id);
-        if (tasks.length > 0) {
-          const taskInserts = tasks.map((task, index) => ({
-            personal_practice_card_id: card.id,
-            label: task.label,
-            task_type: task.type,
-            sort_order: index,
-            shots_expected: task.shots || null,
-            target_value: task.minutes || task.reps || null,
-            target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none",
-            is_required: task.isRequired || false,
-            shot_type: task.shotType ?? "none",
-            video_url: getRecommendedCoachingVideoUrl({
-              label: task.label,
-              taskType: task.type,
-              shotType: task.shotType,
-            }),
-          }));
-
-          const { error: tasksError } = await supabase
-            .from("personal_practice_tasks")
-            .insert(taskInserts);
-
-          if (tasksError) throw tasksError;
-        }
-      }
+      await savePersonalWorkouts(playerId!, "rep", weekPlan.map(day => ({
+        date: day.date, title: day.template.title, notes: day.template.subtitle,
+        tasks: day.template.id === "rest_day" ? [] : getTasksForDay(day.template.id).map((task, index) => ({
+          label: task.label, task_type: task.type, sort_order: index,
+          shots_expected: task.shots || null, target_value: task.minutes || task.reps || null,
+          target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none", is_required: task.isRequired || false,
+          shot_type: task.shotType ?? "none",
+          video_url: getRecommendedCoachingVideoUrl({ label: task.label, taskType: task.type, shotType: task.shotType }),
+        })),
+      })));
 
       return true;
     },
@@ -202,7 +167,7 @@ export default function SoloWeekPlanner() {
     },
     onError: (error: Error) => {
       logger.error("Save error", { error });
-      toast.error(t('solo.failedToSavePlan'));
+      toast.error(t('solo.failedToSavePlan'), { description: error.message });
     },
   });
 

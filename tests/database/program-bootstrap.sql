@@ -16,3 +16,13 @@ create table task_completions(id uuid primary key default gen_random_uuid(),prac
 create table session_completions(id uuid primary key default gen_random_uuid(),practice_card_id uuid references practice_cards(id),status text);
 
 create table session_photos(id uuid primary key default gen_random_uuid(),practice_card_id uuid references practice_cards(id) on delete cascade);
+
+alter table practice_tasks add column coach_notes text;
+create function public.is_player_guardian(p_player uuid,p_user uuid) returns boolean language sql stable security definer set search_path='' as $$ select exists(select 1 from public.player_guardians where player_id=p_player and user_id=p_user); $$;
+create table personal_training_plans(id uuid primary key default gen_random_uuid(),player_id uuid unique references players(id),name text,tier text,days_per_week integer,training_focus text[],is_active boolean,updated_at timestamptz);
+create table personal_practice_cards(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),date date,title text,notes text,tier text,mode text,published_at timestamptz,updated_at timestamptz,unique(player_id,date));
+create table personal_practice_tasks(id uuid primary key default gen_random_uuid(),personal_practice_card_id uuid references personal_practice_cards(id) on delete cascade,sort_order integer,task_type text,label text,target_type text,target_value integer,shot_type text,shots_expected integer,is_required boolean,video_url text);
+create table personal_task_completions(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),personal_practice_task_id uuid references personal_practice_tasks(id) on delete cascade,completed boolean);
+create table personal_session_completions(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),personal_practice_card_id uuid references personal_practice_cards(id) on delete cascade,status text);
+alter table personal_task_completions add column completed_at timestamptz, add column completed_by text, add column source text;
+alter table personal_session_completions add column completed_at timestamptz, add unique(player_id,personal_practice_card_id);

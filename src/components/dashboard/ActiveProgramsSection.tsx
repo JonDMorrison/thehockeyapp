@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { format, differenceInDays, isAfter, startOfDay } from "date-fns";
+import { format, parseISO, differenceInDays, isAfter, startOfDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { AppCard } from "@/components/app/AppCard";
 import { SkeletonProgramCard } from "@/components/app/Skeleton";
@@ -121,8 +121,8 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
       for (const program of programs) {
         const plans = (programPlans || []).filter((plan) => plan.program_id === program.id);
         const nextPlan = plans.find((plan) => plan.status === "draft") || plans[0];
-        const startDate = new Date(program.start_date);
-        const endDate = new Date(program.end_date);
+        const startDate = parseISO(program.start_date);
+        const endDate = parseISO(program.end_date);
         const totalDays = differenceInDays(endDate, startDate) + 1;
         const daysElapsed = Math.min(
           Math.max(differenceInDays(today, startDate) + 1, 0),
@@ -152,13 +152,13 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
 
     // Group challenge cards into a single challenge program
     if (challengeCards && challengeCards.length > 0) {
-      const firstDate = new Date(challengeCards[0].date);
-      const lastDate = new Date(challengeCards[challengeCards.length - 1].date);
+      const firstDate = parseISO(challengeCards[0].date);
+      const lastDate = parseISO(challengeCards[challengeCards.length - 1].date);
       const totalDays = challengeCards.length;
       
       // Count completed days (cards with dates <= today)
       const completedCards = challengeCards.filter(
-        (card) => !isAfter(new Date(card.date), today)
+        (card) => !isAfter(parseISO(card.date), today)
       );
       const daysElapsed = completedCards.length;
       const progressPercent = Math.round((daysElapsed / totalDays) * 100);
@@ -245,8 +245,8 @@ export const ActiveProgramsSection: React.FC<ActiveProgramsSectionProps> = ({
                       {program.name}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(program.start_date), "MMM d")} –{" "}
-                      {format(new Date(program.end_date), "MMM d, yyyy")}
+                      {format(parseISO(program.start_date), "MMM d")} –{" "}
+                      {format(parseISO(program.end_date), "MMM d, yyyy")}
                     </p>
                     {!program.is_challenge && program.next_plan_status === "draft" && (
                       <p className="mt-1 text-xs font-medium text-primary">Review and publish next week</p>

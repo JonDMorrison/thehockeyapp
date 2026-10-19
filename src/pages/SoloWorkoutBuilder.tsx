@@ -1,10 +1,11 @@
+import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import {
   ChevronLeft, Plus, Target, Dumbbell, Heart, Timer, Sparkles,
   MoreHorizontal, Trash2, GripVertical, Check
@@ -78,7 +79,7 @@ export default function SoloWorkoutBuilder() {
 
   const dateParam = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(dateParam));
+  const [selectedDate, setSelectedDate] = useState<Date>(parseISO(dateParam));
   const [title, setTitle] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -164,46 +165,14 @@ export default function SoloWorkoutBuilder() {
       if (!player) throw new Error("Player not found");
       if (tasks.length === 0) throw new Error("Add at least one task");
 
-      // Create practice card
-      const { data: card, error: cardError } = await supabase
-        .from('personal_practice_cards')
-        .insert({
-          player_id: playerId,
-          date: format(selectedDate, 'yyyy-MM-dd'),
-          title: title || `Workout - ${format(selectedDate, 'MMM d')}`,
-          tier: 'rep',
-          mode: 'normal',
-        })
-        .select()
-        .single();
+      return savePersonalWorkouts(playerId!, 'rep', [{
+        date: format(selectedDate, 'yyyy-MM-dd'), title: title || `Workout - ${format(selectedDate, 'MMM d')}`,
+        tasks: tasks.map((task, index) => ({
+          ...task, sort_order: index,
+          video_url: getRecommendedCoachingVideoUrl({ label: task.label, taskType: task.task_type, shotType: task.shot_type }),
+        })),
+      }]);
 
-      if (cardError) throw cardError;
-
-      // Create tasks
-      const taskInserts = tasks.map((task, index) => ({
-        personal_practice_card_id: card.id,
-        sort_order: index,
-        task_type: task.task_type,
-        label: task.label,
-        target_type: task.target_type,
-        target_value: task.target_value,
-        shot_type: task.shot_type,
-        shots_expected: task.shots_expected,
-        is_required: task.is_required,
-        video_url: getRecommendedCoachingVideoUrl({
-          label: task.label,
-          taskType: task.task_type,
-          shotType: task.shot_type,
-        }),
-      }));
-
-      const { error: tasksError } = await supabase
-        .from('personal_practice_tasks')
-        .insert(taskInserts);
-
-      if (tasksError) throw tasksError;
-
-      return card;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['solo-dashboard', playerId] });

@@ -58,12 +58,16 @@ try {
     "-f", resolve("tests/database/program-bootstrap.sql"),
     "-f", resolve("supabase/migrations/20261019052512_atomic_program_publication.sql"),
     "-f", resolve("supabase/migrations/20261019055652_program_rest_day_publication.sql"),
+    "-f", resolve("supabase/migrations/20261019064519_atomic_workout_editing.sql"),
+    "-f", resolve("supabase/migrations/20261019064739_atomic_solo_completion.sql"),
     "-c", "select set_config('test.user_id','00000000-0000-0000-0000-000000000001',true)",
     "-f", resolve("tests/database/program-publication-release.sql"),
     "-f", resolve("tests/database/program-rest-day-release.sql"),
+    "-f", resolve("tests/database/workout-editing-release.sql"),
+    "-f", resolve("tests/database/solo-completion-release.sql"),
     "-c", "rollback",
   ]);
-  console.log("PASS: Atomic program save/publication, scaled targets, preserved notes, rollback after insert failure, idempotent retry, player-progress protection, cross-account denial, anonymous denial and safe rest-day clearing");
+  console.log("PASS: Atomic program save/publication, scaled targets, preserved notes, rollback after insert failure, idempotent retry, player-progress protection, cross-account denial, anonymous denial safe rest-day clearing, atomic team/solo workout editing, partial-program rollback and partial-progress protection");
 } catch (e) {
   process.stderr.write(e.stderr || e.message);
   process.exitCode = 1;

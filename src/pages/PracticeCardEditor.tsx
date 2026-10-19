@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -82,6 +83,7 @@ const PracticeCardEditor: React.FC = () => {
   const { setTeamTheme } = useTeamTheme();
 
   const isEditing = !!cardId;
+  const [draftId] = useState(() => crypto.randomUUID());
   const dateParam = searchParams.get("date") || format(new Date(), "yyyy-MM-dd");
 
   const tierOptions = [
@@ -116,7 +118,7 @@ const PracticeCardEditor: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch team
-  const { data: team } = useQuery({
+  const teamQuery = useQuery({
     queryKey: ["team", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -132,7 +134,7 @@ const PracticeCardEditor: React.FC = () => {
   });
 
   // Fetch existing card if editing
-  const { data: existingCard, isLoading: cardLoading } = useQuery({
+  const cardQuery = useQuery({
     queryKey: ["practice-card", cardId],
     queryFn: async () => {
       const { data: cardData, error: cardError } = await supabase
@@ -155,6 +157,9 @@ const PracticeCardEditor: React.FC = () => {
     },
     enabled: !!user && !!cardId,
   });
+
+  const { data: team } = teamQuery;
+  const { data: existingCard, isLoading: cardLoading } = cardQuery;
 
   // Populate form when editing
   useEffect(() => {
@@ -208,69 +213,22 @@ const PracticeCardEditor: React.FC = () => {
         throw new Error(t('practice.videoUrlInvalid'));
       }
 
-      let practiceCardId = cardId;
+      const practiceCardId = cardId || draftId;
+      const { data, error } = await supabase.rpc("save_team_practice_card", {
+        p_id: practiceCardId,
+        p_team_id: id!,
+        p_date: existingCard?.date || dateParam,
+        p_tier: tier,
+        p_title: title,
+        p_notes: notes,
+        p_publish: publish,
+        p_mode: existingCard?.mode || "normal",
+        p_tasks: tasks.map((task, index) => ({ ...task, sort_order: index })),
+      });
+      if (error) throw error;
+      if (!data || typeof data !== 'object' || Array.isArray(data) || data.success !== true) throw new Error("The workout could not be saved. Please try again.");
+      return { practiceCardId, published: data.published === true };
 
-      if (isEditing) {
-        // Update existing card
-        const { error: updateError } = await supabase
-          .from("practice_cards")
-          .update({
-            tier,
-            title: title || null,
-            notes: notes || null,
-            published_at: publish ? new Date().toISOString() : isPublished ? existingCard?.published_at : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", cardId);
-
-        if (updateError) throw updateError;
-
-        // Delete old tasks and re-insert
-        await supabase.from("practice_tasks").delete().eq("practice_card_id", cardId);
-      } else {
-        // Create new card
-        const { data: newCard, error: createError } = await supabase
-          .from("practice_cards")
-          .insert({
-            team_id: id,
-            date: dateParam,
-            tier,
-            title: title || null,
-            notes: notes || null,
-            created_by_user_id: user!.id,
-            published_at: publish ? new Date().toISOString() : null,
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        practiceCardId = newCard.id;
-      }
-
-      // Insert tasks
-      if (tasks.length > 0) {
-        const tasksToInsert = tasks.map((task, index) => ({
-          practice_card_id: practiceCardId,
-          sort_order: index,
-          task_type: task.task_type,
-          label: task.label,
-          target_type: task.target_type,
-          target_value: task.target_value,
-          shot_type: task.shot_type,
-          shots_expected: task.shots_expected,
-          is_required: task.is_required,
-          coach_notes: task.coach_notes || null,
-          video_url: task.video_url || null,
-        }));
-
-        const { error: tasksError } = await supabase
-          .from("practice_tasks")
-          .insert(tasksToInsert);
-
-        if (tasksError) throw tasksError;
-      }
-
-      return { practiceCardId, published: publish };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["practice-cards", id] });
@@ -394,6 +352,10 @@ const PracticeCardEditor: React.FC = () => {
     return null;
   }
 
+  if (teamQuery.isError || (isEditing && cardQuery.isError)) {
+    return <AppShell hideNav><PageContainer><DataLoadError title="Couldn’t load this workout" onRetry={() => { void teamQuery.refetch(); if (isEditing) void cardQuery.refetch(); }} retrying={teamQuery.isFetching || cardQuery.isFetching} /></PageContainer></AppShell>;
+  }
+
   return (
     <AppShell
       hideNav
@@ -421,6 +383,7 @@ const PracticeCardEditor: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon-sm"
+                aria-label={isLocked ? "Unlock workout" : "Lock workout"}
                 onClick={() => lockMutation.mutate(!isLocked)}
                 disabled={lockMutation.isPending}
               >
@@ -489,8 +452,9 @@ const PracticeCardEditor: React.FC = () => {
             </div>
 
             <div>
-              <Label>{t('practice.titleOptional')}</Label>
+              <Label htmlFor="practice-title">{t('practice.titleOptional')}</Label>
               <Input
+                id="practice-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('practice.titlePlaceholder')}
@@ -500,8 +464,9 @@ const PracticeCardEditor: React.FC = () => {
             </div>
 
             <div>
-              <Label>{t('practice.notesOptional')}</Label>
+              <Label htmlFor="practice-notes">{t('practice.notesOptional')}</Label>
               <Textarea
+                id="practice-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('practice.notesPlaceholder')}
@@ -592,6 +557,7 @@ const PracticeCardEditor: React.FC = () => {
                       </div>
 
                       <Input
+                        aria-label={`Activity ${index + 1} name`}
                         value={task.label}
                         onChange={(e) => updateTask(index, { label: e.target.value })}
                         placeholder={t('practice.taskDescPlaceholder')}
@@ -697,6 +663,7 @@ const PracticeCardEditor: React.FC = () => {
                           {task.coach_notes ? t('practice.editNote') : t('practice.addCoachNote')}
                         </button>
                         <Input
+                          aria-label={`Activity ${index + 1} coaching note`}
                           id={`task-notes-${index}`}
                           value={task.coach_notes}
                           onChange={(e) => updateTask(index, { coach_notes: e.target.value })}
@@ -732,7 +699,7 @@ const PracticeCardEditor: React.FC = () => {
             disabled={saveMutation.isPending || isLocked}
           >
             <Save className="w-4 h-4 mr-2" />
-            {t('practice.saveDraft')}
+            {isPublished ? 'Save changes' : t('practice.saveDraft')}
           </Button>
           <Button
             className="flex-1"

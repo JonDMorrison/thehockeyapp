@@ -6,6 +6,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 test("general mobile coach publishes a program before the family invitation opens", async ({
   page,
   browser,
+  browserName,
 }) => {
   test.skip(
     process.env.PROGRAM_INVITE_RELEASE_TEST !== "1" ||
@@ -31,7 +32,7 @@ test("general mobile coach publishes a program before the family invitation open
   await expect(page).toHaveURL(/\/teams\/[^/]+\/builder\/new\?inviteAfter=1/);
   const teamId = new URL(page.url()).pathname.split("/")[2];
   fs.writeFileSync(
-    "/tmp/program-first-fixture.json",
+    (process.env.PROGRAM_INVITE_FIXTURE_FILE || `/tmp/program-first-fixture-${browserName}.json`),
     JSON.stringify({ teamId }),
   );
   await expect(
@@ -164,13 +165,15 @@ test("general mobile coach publishes a program before the family invitation open
   const link = invitation.getByLabel("Family invitation link", { exact: true });
   await expect(link).toBeVisible({ timeout: 15000 });
   await expect(link).toHaveValue(/\/join\//);
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  if (browserName === "chromium") await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await invitation
     .getByRole("button", { name: "Copy invitation link", exact: true })
     .click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    await link.inputValue(),
-  );
+  if (browserName === "chromium") {
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(await link.inputValue());
+  } else {
+    await expect(invitation.getByRole("button", { name: "Copy invitation link", exact: true })).toContainText("Invitation copied");
+  }
   await expect(
     invitation.getByRole("button", {
       name: /shooting challenge|challenge dates/i,
@@ -214,7 +217,7 @@ test("general mobile coach publishes a program before the family invitation open
   const fixture: Record<string, string> = { teamId, familyEmail };
   const remember = () =>
     fs.writeFileSync(
-      "/tmp/program-first-fixture.json",
+      (process.env.PROGRAM_INVITE_FIXTURE_FILE || `/tmp/program-first-fixture-${browserName}.json`),
       JSON.stringify(fixture),
     );
   remember();
