@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, addWeeks, startOfWeek } from "date-fns";
+import { format, parseISO, addDays, addWeeks, startOfWeek } from "date-fns";
 import {
   ChevronLeft, ArrowRight, ArrowLeft, Target, Dumbbell, Heart,
   Timer, Zap, Brain, Loader2, CheckCircle, Sparkles, Check
@@ -499,7 +499,7 @@ export default function SoloProgramBuilder() {
                   key={day.date}
                   className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-medium text-primary"
                 >
-                  {format(new Date(day.date), "E")[0]}
+                  {format(parseISO(day.date), "E")[0]}
                 </div>
               ))}
             </div>

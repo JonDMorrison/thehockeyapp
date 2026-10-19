@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, parseISO, startOfWeek, addDays } from "date-fns";
 import { motion } from "framer-motion";
 import {
   Flame, Play, CheckCircle2, ChevronRight, Lock,
@@ -469,7 +469,7 @@ export default function SoloDashboard() {
                           {workout.title || t('solo.workoutFallback')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(workout.date), 'MMM d')} · {workout.task_count} {t('solo.tasks')}
+                          {format(parseISO(workout.date), 'MMM d')} · {workout.task_count} {t('solo.tasks')}
                         </p>
                       </div>
                     </div>

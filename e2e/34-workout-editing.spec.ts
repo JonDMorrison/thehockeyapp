@@ -1,0 +1,37 @@
+import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+
+test.use({ viewport: { width: 390, height: 844 }, timezoneId: 'UTC' });
+test('coach edits a complete workout atomically, family logs shots, and later edits preserve progress', async ({ page }) => {
+  test.setTimeout(90000); page.setDefaultTimeout(10000);
+  const client=createClient(process.env.VITE_SUPABASE_URL!,process.env.VITE_SUPABASE_PUBLISHABLE_KEY!,{auth:{persistSession:false}});
+  expect((await client.auth.signInWithPassword({email:process.env.TEST_USER_EMAIL!,password:process.env.TEST_USER_PASSWORD!})).error).toBeNull();
+  const team=await client.rpc('create_team_with_owner',{p_name:`Disposable Workout Edit ${Date.now()}`,p_age_division:'U13',p_level:'rep'});expect(team.error).toBeNull();
+  const player=await client.rpc('create_managed_player',{p_first_name:'WorkoutEditKid',p_birth_year:2014});expect(player.error).toBeNull();
+  const teamId=team.data.team_id,playerId=player.data.player_id,cardId=randomUUID();
+  fs.appendFileSync('/tmp/hockey-qa-workout-fixtures.jsonl',JSON.stringify({teamId,playerId,cardId})+'\n');
+  expect((await client.rpc('add_my_player_to_team',{p_team_id:teamId,p_player_id:playerId})).error).toBeNull();
+  expect((await client.rpc('save_team_practice_card',{p_id:cardId,p_team_id:teamId,p_date:new Date().toISOString().slice(0,10),p_tier:'rep',p_title:'Original edit workout',p_notes:'Keep team notes',p_publish:true,p_tasks:[{label:'Original wrist shots',task_type:'shooting',target_type:'none',shot_type:'wrist',shots_expected:50,is_required:true,coach_notes:'Hands out front',video_url:'https://youtu.be/dQw4w9WgXcQ'}]})).error).toBeNull();
+  await page.goto(`/teams/${teamId}/practice/${cardId}/edit`);
+  await expect(page.getByLabel('Title (optional)',{exact:true})).toHaveValue('Original edit workout');
+  await page.getByLabel('Title (optional)',{exact:true}).fill('Updated edit workout');
+  await page.getByLabel('Activity 1 name',{exact:true}).fill('Updated wrist shots');
+  await page.route('**/rest/v1/rpc/save_team_practice_card',route=>route.fulfill({status:503,json:{message:'Simulated failed workout save'}}));
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();await expect(page.getByText('Simulated failed workout save',{exact:true})).toBeVisible();
+  expect((await client.from('practice_cards').select('title').eq('id',cardId).single()).data?.title).toBe('Original edit workout');
+  expect((await client.from('practice_tasks').select('label').eq('practice_card_id',cardId)).data).toEqual([{label:'Original wrist shots'}]);
+  await page.unroute('**/rest/v1/rpc/save_team_practice_card');await page.getByRole('button',{name:'Save changes',exact:true}).click();await expect(page).toHaveURL(new RegExp(`/teams/${teamId}/practice$`));
+  const tasks=await client.from('practice_tasks').select('id,label,coach_notes,video_url').eq('practice_card_id',cardId);expect(tasks.error).toBeNull();
+  expect(tasks.data).toEqual([expect.objectContaining({label:'Updated wrist shots',coach_notes:'Hands out front',video_url:'https://youtu.be/dQw4w9WgXcQ'})]);
+  await page.goto(`/players/${playerId}/today`);await page.getByRole('button',{name:'0 shots',exact:true}).click();
+  await page.getByRole('dialog').locator('input[type=number]').fill('75');await page.getByRole('button',{name:'Save',exact:true}).click();
+  await expect.poll(async()=>(await client.from('task_completions').select('shots_logged').eq('player_id',playerId).eq('practice_task_id',tasks.data![0].id)).data).toEqual([{shots_logged:75}]);
+  await page.reload();await expect(page.getByRole('button',{name:'75 shots',exact:true})).toBeVisible();
+  await page.goto(`/teams/${teamId}/practice/${cardId}/edit`);await page.getByLabel('Title (optional)',{exact:true}).fill('Must not erase shots');await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  await expect(page.getByText(/workout is locked or has player progress/i)).toBeVisible();
+  expect((await client.from('practice_cards').select('title').eq('id',cardId).single()).data?.title).toBe('Updated edit workout');
+  expect((await client.from('task_completions').select('shots_logged').eq('player_id',playerId)).data).toEqual([{shots_logged:75}]);
+  await client.auth.signOut({scope:'local'});
+});

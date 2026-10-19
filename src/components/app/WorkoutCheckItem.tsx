@@ -41,7 +41,7 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
     const [justCompleted, setJustCompleted] = React.useState(false);
     const controls = useAnimation();
 
-    const handleClick = async () => {
+    const handleClick = () => {
       if (disabled) return;
 
       // Trigger ripple effect
@@ -52,15 +52,17 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
         setTimeout(() => setJustCompleted(false), 1000);
       }
 
+      // Save immediately; the celebration animation should never delay a tap.
+      onToggle?.(id, !completed);
+
       // Animate the checkmark area
       if (!completed) {
-        await controls.start({
+        void controls.start({
           scale: [1, 1.2, 0.9, 1.05, 1],
           transition: { duration: 0.5, times: [0, 0.2, 0.4, 0.7, 1] }
         });
       }
 
-      onToggle?.(id, !completed);
     };
 
     return (

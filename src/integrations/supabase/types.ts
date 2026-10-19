@@ -3177,6 +3177,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      save_team_practice_card: {
+        Args: { p_id: string; p_team_id: string; p_date: string; p_tier: string; p_title: string; p_notes: string; p_tasks: Json; p_publish: boolean; p_mode?: string }
+        Returns: Json
+      }
+      set_personal_task_completion: {
+        Args: { p_player_id: string; p_task_id: string; p_completed: boolean }
+        Returns: Json
+      }
+      save_personal_workouts: {
+        Args: { p_player_id: string; p_tier: string; p_days: Json }
+        Returns: Json
+      }
       save_team_week_plan: {
         Args: {
           p_id: string

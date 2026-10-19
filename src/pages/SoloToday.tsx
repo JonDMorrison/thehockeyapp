@@ -1,3 +1,4 @@
+import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -159,7 +160,7 @@ const SoloToday: React.FC = () => {
         .eq("player_id", playerId)
         .in("personal_practice_task_id", tasks.map(t => t.id));
       if (error) throw error;
-      return data as PersonalTaskCompletion[];
+      return (data as PersonalTaskCompletion[]).filter(completion => completion.completed);
     },
     enabled: !!tasks && tasks.length > 0,
   });
@@ -170,49 +171,17 @@ const SoloToday: React.FC = () => {
       const template = DAY_TEMPLATES.find((t) => t.id === templateId);
       if (!template) throw new Error("Template not found");
 
-      // Create the card
-      const { data: card, error: cardError } = await supabase
-        .from("personal_practice_cards")
-        .insert({
-          player_id: playerId,
-          date: todayStr,
-          title: template.title,
-          tier: trainingPlan?.tier || "base",
-          mode: "solo",
-        })
-        .select()
-        .single();
+      const tasks = template.taskIds.map(taskId => TASK_LIBRARY.find(task => task.id === taskId)).filter((task): task is NonNullable<typeof task> => Boolean(task));
+      return savePersonalWorkouts(playerId!, trainingPlan?.tier || "base", [{
+        date: todayStr, title: template.title, mode: "solo",
+        tasks: tasks.map((task, index) => ({
+          label: task.label, task_type: task.type, sort_order: index, is_required: task.isRequired || false,
+          shot_type: task.shotType ?? "none", shots_expected: task.shots || null,
+          target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none", target_value: task.minutes || task.reps || null,
+          video_url: getRecommendedCoachingVideoUrl({ label: task.label, taskType: task.type, shotType: task.shotType }),
+        })),
+      }]);
 
-      if (cardError) throw cardError;
-
-      // Create tasks from template
-      const taskInserts = template.taskIds.map((taskId, index) => {
-        const taskTemplate = TASK_LIBRARY.find((t) => t.id === taskId);
-        if (!taskTemplate) return null;
-
-        return {
-          personal_practice_card_id: card.id,
-          label: taskTemplate.label,
-          task_type: taskTemplate.type,
-          sort_order: index,
-          is_required: taskTemplate.isRequired || false,
-          shot_type: taskTemplate.shotType ?? "none",
-          shots_expected: taskTemplate.shots || null,
-          video_url: getRecommendedCoachingVideoUrl({
-            label: taskTemplate.label,
-            taskType: taskTemplate.type,
-            shotType: taskTemplate.shotType,
-          }),
-        };
-      }).filter(Boolean);
-
-      const { error: tasksError } = await supabase
-        .from("personal_practice_tasks")
-        .insert(taskInserts);
-
-      if (tasksError) throw tasksError;
-
-      return card;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["personal-practice-card", playerId, todayStr] });
@@ -226,62 +195,21 @@ const SoloToday: React.FC = () => {
 
   // Toggle task completion
   const toggleTask = useMutation({
-    mutationFn: async (taskId: string) => {
-      const existing = completions?.find((c) => c.personal_practice_task_id === taskId);
-      const task = tasks?.find((t) => t.id === taskId);
-
-      if (existing) {
-        // Toggle off
-        const { error } = await supabase
-          .from("personal_task_completions")
-          .delete()
-          .eq("id", existing.id);
-        if (error) throw error;
-        return { completed: false, taskLabel: task?.label };
-      } else {
-        // Toggle on
-        const { error } = await supabase
-          .from("personal_task_completions")
-          .insert({
-            player_id: playerId,
-            personal_practice_task_id: taskId,
-            completed: true,
-            completed_at: new Date().toISOString(),
-            completed_by: user!.id,
-            source: "solo",
-          });
-        if (error) throw error;
-        return { completed: true, taskLabel: task?.label };
-      }
+    mutationFn: async ({ taskId, completed }: { taskId: string; completed: boolean }) => {
+      const { data, error } = await supabase.rpc("set_personal_task_completion", {
+        p_player_id: playerId!, p_task_id: taskId, p_completed: completed,
+      });
+      if (error) throw error;
+      if (!data || typeof data !== "object" || Array.isArray(data) || data.success !== true) throw new Error("Your activity could not be saved. Please try again.");
+      return { completed: data.completed === true, allDone: data.session_status === "complete", taskLabel: tasks?.find(task => task.id === taskId)?.label };
     },
-    onSuccess: async (result) => {
-      queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
-
-      if (result?.completed) {
-        // Check if this completes all tasks
-        const newCompletedCount = (completions?.length || 0) + 1;
-        const isNowAllDone = newCompletedCount === totalCount;
-
-        if (isNowAllDone && todayCard) {
-          toast.success(t('solo.workoutComplete'), t('solo.amazingWorkToday'));
-
-          // Log session completion
-          await supabase
-            .from("personal_session_completions")
-            .upsert({
-              player_id: playerId,
-              personal_practice_card_id: todayCard.id,
-              status: "complete",
-              completed_at: new Date().toISOString(),
-            }, { onConflict: "player_id,personal_practice_card_id" });
-
-          // Invalidate dashboard data
-          queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
-        } else {
-          toast.success(t('solo.niceCheck'), result.taskLabel || t('solo.taskCompleted'));
-        }
-      }
+    onSuccess: async result => {
+      await queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
+      await queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
+      if (result.allDone) toast.success(t('solo.workoutComplete'), t('solo.amazingWorkToday'));
+      else if (result.completed) toast.success(t('solo.niceCheck'), result.taskLabel || t('solo.taskCompleted'));
     },
+
     onError: (error: Error) => {
       toast.error(t('solo.couldntSave'), error.message);
     },
@@ -457,7 +385,8 @@ const SoloToday: React.FC = () => {
                       target={target}
                       icon={taskTypeIcons[task.task_type] || taskTypeIcons.other}
                       completed={isCompleted || false}
-                      onToggle={(id) => toggleTask.mutate(id)}
+                      disabled={toggleTask.isPending || createWorkout.isPending}
+                      onToggle={(id, completed) => toggleTask.mutate({ taskId: id, completed })}
                     />
                     {task.video_url ? (
                       <SkillVideo
@@ -494,11 +423,8 @@ const SoloToday: React.FC = () => {
             </p>
             <div className="grid gap-3">
               {DAY_TEMPLATES.slice(0, 6).map((template) => (
-                <AppCard
-                  key={template.id}
-                  className="cursor-pointer hover:shadow-medium transition-all"
-                  onClick={() => createWorkout.mutate(template.id)}
-                >
+                <button type="button" key={template.id} disabled={createWorkout.isPending} onClick={() => createWorkout.mutate(template.id)} className="w-full rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+                <AppCard className="hover:shadow-medium transition-all">
                   <div className="flex items-center gap-4">
                     <div
                       className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${template.color} text-white`}
@@ -518,6 +444,7 @@ const SoloToday: React.FC = () => {
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
                 </AppCard>
+                </button>
               ))}
             </div>
           </div>
@@ -547,24 +474,9 @@ const SoloToday: React.FC = () => {
             </SheetDescription>
           </SheetHeader>
           <div className="py-4 space-y-3 overflow-y-auto max-h-[50vh]">
-            {DAY_TEMPLATES.map((template) => (
-              <AppCard
-                key={template.id}
-                className="cursor-pointer hover:shadow-medium transition-all"
-                onClick={async () => {
-                  if (!todayCard) return;
-                  // Delete the existing card (cascades to tasks and completions)
-                  const { error: deleteError } = await supabase
-                    .from("personal_practice_cards")
-                    .delete()
-                    .eq("id", todayCard.id);
-                  if (deleteError) {
-                    toast.error(t('solo.failedToCreateWorkout'), deleteError.message);
-                    return;
-                  }
-                  createWorkout.mutate(template.id);
-                }}
-              >
+            {DAY_TEMPLATES.filter(template => template.id !== "rest_day").map((template) => (
+              <button type="button" key={template.id} disabled={createWorkout.isPending} onClick={() => createWorkout.mutate(template.id)} className="w-full rounded-lg text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+              <AppCard className="hover:shadow-medium transition-all">
                 <div className="flex items-center gap-4">
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${template.color} text-white`}
@@ -579,6 +491,7 @@ const SoloToday: React.FC = () => {
                   </div>
                 </div>
               </AppCard>
+              </button>
             ))}
           </div>
         </SheetContent>
