@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { ProgramProgress } from "@/components/program/ProgramVisuals";
+import React, { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -72,6 +73,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
+  const [moreOptions, setMoreOptions] = useState(false);
+  const preparedFor = useRef<string | null>(null);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [collectPlayerProfile, setCollectPlayerProfile] = useState(true);
 
@@ -98,7 +101,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   }, [open, initialTab]);
 
   // Fetch current active invite
-  const { data: invite, isLoading: isLoadingInvite } = useQuery({
+  const { data: invite, isLoading: isLoadingInvite, isError: inviteLoadError, refetch: refreshInvite } = useQuery({
     queryKey: ["team-parent-invite", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -179,7 +182,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-parent-invite", teamId] });
-      toast.success(t("teams.inviteParents.toastCreatedTitle"), t("teams.inviteParents.toastCreatedDescription"));
+      if (!programReady) toast.success(t("teams.inviteParents.toastCreatedTitle"), t("teams.inviteParents.toastCreatedDescription"));
       setShowRegenerateConfirm(false);
     },
     onError: (error: Error) => {
@@ -394,6 +397,14 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   };
 
   const isExpired = invite?.expires_at && new Date(invite.expires_at) < new Date();
+  const generateInvite = regenerateInvite.mutate;
+  useEffect(() => {
+    if (programReady && open && !isLoadingInvite && !inviteLoadError && (!invite || isExpired) && preparedFor.current !== teamId) {
+      preparedFor.current = teamId;
+      generateInvite();
+    }
+  }, [programReady, open, isLoadingInvite, inviteLoadError, invite, isExpired, teamId, generateInvite]);
+
   const hasChildrenNotOnTeam = (childrenData?.childrenNotOnTeam?.length ?? 0) > 0;
   const hasChildrenOnTeam = (childrenData?.childrenOnTeam?.length ?? 0) > 0;
 
@@ -407,6 +418,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
+          {programReady && <ProgramProgress step={3} />}
           <DialogHeader>
             <DialogTitle>
               {activeTab === "add-child"
@@ -420,6 +432,13 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
             </DialogDescription>
           </DialogHeader>
 
+          {programReady && activeTab === "invite" && <div className="space-y-4">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4"><p className="font-semibold">One link. The whole team.</p><p className="mt-2 text-sm text-muted-foreground">Send it in your team chat. Families add their player and see the plan.</p></div>
+            {inviteLoadError ? <div><p role="alert">Couldn’t load your invitation.</p><Button onClick={() => refreshInvite()}>Try again</Button></div> : isLoadingInvite || regenerateInvite.isPending ? <p role="status">Preparing your invitation…</p> : inviteLink && !isExpired ? <div className="space-y-3"><Label htmlFor="program-family-link">Family invitation link</Label><Input id="program-family-link" value={inviteLink} readOnly onFocus={e => e.target.select()} /><Button className="min-h-12 w-full" aria-label="Copy invitation link" onClick={handleCopy}>{copied ? "Invitation copied" : "Copy invitation"}<Copy aria-hidden="true" className="h-4 w-4" /></Button><Button variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>Go to my team</Button></div> : <Button className="w-full" onClick={() => regenerateInvite.mutate()}>Generate Link</Button>}
+          </div>}
+          <details open={programReady ? undefined : true} onToggle={e => setMoreOptions(e.currentTarget.open)}>
+            <summary className={programReady ? "cursor-pointer py-2 text-sm text-muted-foreground" : "hidden"}>More invitation options</summary>
+            {(!programReady || moreOptions) && (<>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "invite" | "add-child")}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="add-child" className="gap-2">
@@ -795,6 +814,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
               )}
             </TabsContent>
           </Tabs>
+            </>)}
+          </details>
         </DialogContent>
       </Dialog>
 
