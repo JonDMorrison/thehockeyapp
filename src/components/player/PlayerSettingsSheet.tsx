@@ -63,7 +63,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
   const [challengesOptIn, setChallengesOptIn] = useState(false);
 
   // Fetch privacy settings
-  const { data: privacySettings } = useQuery({
+  const { data: privacySettings, isLoading: privacyLoading, isError: privacyError, isFetching: privacyFetching, refetch: retryPrivacy } = useQuery({
     queryKey: ["player-privacy-settings", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -121,17 +121,28 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
 
       if (error) throw error;
     },
-    onSuccess: (_, optIn) => {
-      queryClient.invalidateQueries({ queryKey: ["player-privacy-settings", playerId] });
+    onSuccess: async (_, optIn) => {
+      await queryClient.invalidateQueries({ queryKey: ["player-privacy-settings", playerId] });
+      if (optIn) {
+        try {
+          // Participation is already saved; a later badge visit retries any interrupted evaluation.
+          const { error } = await supabase.rpc("evaluate_player_challenges", { p_player_id: playerId });
+          if (!error) {
+            void queryClient.invalidateQueries({ queryKey: ["player-badges", playerId] });
+            void queryClient.invalidateQueries({ queryKey: ["player-challenge-progress", playerId] });
+          }
+        } catch { /* The saved participation choice remains valid. */ }
+      }
+
       toast.success(
         optIn ? "Opted in to challenges" : "Opted out of challenges",
         optIn ? "You can now participate in national challenges." : "Challenge participation disabled."
       );
     },
-    onError: (error: Error) => {
+    onError: (error: Error, optIn: boolean) => {
       toast.error("Failed to update", error.message);
-      // Revert local state
-      setChallengesOptIn(!challengesOptIn);
+      // Revert the exact attempted choice, independent of render timing.
+      setChallengesOptIn(!optIn);
     },
   });
 
@@ -185,6 +196,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
               <Label className="text-base font-semibold">National Challenges</Label>
             </div>
 
+            {privacyError ? <DataLoadError title="Couldn’t load challenge preferences" onRetry={() => retryPrivacy()} retrying={privacyFetching} /> : (
             <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-surface-muted">
               <div className="space-y-1 flex-1">
                 <Label htmlFor="challenges" className="font-medium">
@@ -198,15 +210,16 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
                 id="challenges"
                 checked={challengesOptIn}
                 onCheckedChange={handleToggle}
-                disabled={updateSettings.isPending}
+                disabled={updateSettings.isPending || privacyLoading}
               />
             </div>
+            )}
 
             {!teamHasChallenges && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-warning-muted/50 border border-warning/20">
                 <Info className="w-4 h-4 text-warning mt-0.5 shrink-0" />
                 <p className="text-xs text-text-muted">
-                  Your team hasn't enabled challenges yet. You can still opt in for future teams.
+                  You can earn individual badges with home workouts. Team challenges follow your coach’s settings.
                 </p>
               </div>
             )}

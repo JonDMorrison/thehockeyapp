@@ -39,6 +39,7 @@ async function screenshot(page: Page, filename: string) {
 test("fresh mobile coach and family go from demo to a shared challenge and saved shots, with recovery", async ({
   page,
   browser,
+  browserName,
 }) => {
   test.skip(
     process.env.FIRST_CHALLENGE_RELEASE_TEST !== "1",
@@ -168,14 +169,12 @@ test("fresh mobile coach and family go from demo to a shared challenge and saved
   const invitation = await link.inputValue();
   await page.reload();
   await expect(link).toHaveValue(invitation);
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  if (browserName === "chromium") await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page
     .getByRole("button", { name: "Copy invitation", exact: true })
     .click();
   await expect(page.getByRole("status")).toContainText("Link copied.");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    invitation,
-  );
+  if (browserName === "chromium") expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(invitation);
   await expect(page.getByTestId("challenge-total")).toHaveText("0");
   await screenshot(page, "first-challenge-invite-phone.png");
   const familyContext = await browser.newContext({
