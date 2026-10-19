@@ -1,6 +1,7 @@
+import { saveTeamWeekPlan } from "@/lib/saveTeamWeekPlan";
 import { ProgramProgress, ProgramWeek, ProgramAction } from "@/components/program/ProgramVisuals";
 import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,8 +46,7 @@ import {
   Zap,
 } from "lucide-react";
 import { DayEditorSheet, DayData, PlanTask } from "@/components/builder/DayEditorSheet";
-import { applyTierScaling, getTierLabel, getDayLabel } from "@/lib/tierScaling";
-import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
+import { getTierLabel, getDayLabel } from "@/lib/tierScaling";
 
 interface WeekPlan {
   id: string;
@@ -76,6 +76,7 @@ const WeekPlanEditor: React.FC = () => {
   const { id: teamId, planId } = useParams<{ id: string; planId?: string }>();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const newPlanId = useRef(crypto.randomUUID());
   const programSetup = searchParams.get("inviteAfter") === "1";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -324,88 +325,11 @@ const WeekPlanEditor: React.FC = () => {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (publishing: boolean = false) => {
-      let weekPlanId = planId;
-
-      if (isEditing) {
-        // Update existing plan
-        const { error: updateError } = await supabase
-          .from("team_week_plans")
-          .update({
-            name,
-            tier,
-            use_tier_scaling: useTierScaling,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", planId);
-
-        if (updateError) throw updateError;
-
-        // Delete old days and tasks
-        const { error: deleteDaysError } = await supabase
-          .from("team_week_plan_days")
-          .delete()
-          .eq("team_week_plan_id", planId);
-        if (deleteDaysError) throw deleteDaysError;
-      } else {
-        // Create new plan
-        const { data: newPlan, error: createError } = await supabase
-          .from("team_week_plans")
-          .insert({
-            team_id: teamId,
-            name,
-            start_date: startDate,
-            tier,
-            use_tier_scaling: useTierScaling,
-            status: "draft",
-            created_by_user_id: user!.id,
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        weekPlanId = newPlan.id;
-      }
-
-      // Insert days
-      for (const day of days) {
-        if (day.tasks.length === 0 && !day.title && !day.notes) continue;
-
-        const { data: newDay, error: dayError } = await supabase
-          .from("team_week_plan_days")
-          .insert({
-            team_week_plan_id: weekPlanId,
-            date: day.date,
-            title: day.title || null,
-            notes: day.notes || null,
-          })
-          .select()
-          .single();
-
-        if (dayError) throw dayError;
-
-        // Insert tasks
-        if (day.tasks.length > 0) {
-          const tasksToInsert = day.tasks.map((task, idx) => ({
-            team_week_plan_day_id: newDay.id,
-            sort_order: idx,
-            task_type: task.task_type,
-            label: task.label,
-            target_type: task.target_type,
-            target_value: task.target_value,
-            shot_type: task.shot_type,
-            shots_expected: task.shots_expected,
-            is_required: task.is_required,
-          }));
-
-          const { error: tasksError } = await supabase
-            .from("team_week_plan_tasks")
-            .insert(tasksToInsert);
-
-          if (tasksError) throw tasksError;
-        }
-      }
-
-      return { weekPlanId, publishing };
+      const saved = await saveTeamWeekPlan({
+        id: planId || newPlanId.current, teamId: teamId!, name, startDate, tier,
+        useTierScaling, days, publish: publishing,
+      });
+      return { weekPlanId: saved.id, publishing };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
@@ -415,149 +339,33 @@ const WeekPlanEditor: React.FC = () => {
       // Navigate back to dashboard after saving
       if (!result.publishing && !programSetup) navigate(`/teams/${teamId}`);
     },
-    onError: (error: Error) => {
-      toast.error(t('practice.failedToSave'), error.message);
+    onError: (error: Error, publishing: boolean) => {
+      if (!publishing) toast.error(t('practice.failedToSave'), error.message);
     },
   });
 
   // Check for conflicts before publishing
   const checkConflicts = async () => {
-    const conflictList: ConflictInfo[] = [];
-
-    for (const day of days) {
-      if (day.tasks.length === 0) continue;
-
-      // Check for existing published card
-      const { data: existingCard } = await supabase
-        .from("practice_cards")
-        .select("id, published_at")
-        .eq("team_id", teamId)
-        .eq("date", day.date)
-        .eq("mode", "normal")
-        .maybeSingle();
-
-      // Check for game day
-      const { data: gameDay } = await supabase
-        .from("team_game_days")
-        .select("enabled")
-        .eq("team_id", teamId)
-        .eq("date", day.date)
-        .maybeSingle();
-
-      if (existingCard?.published_at || gameDay?.enabled) {
-        conflictList.push({
-          date: day.date,
-          hasPublishedCard: !!existingCard?.published_at,
-          hasGameDay: !!gameDay?.enabled,
-        });
-      }
-    }
-
-    return conflictList;
+    const dates = days.filter(day => day.tasks.length > 0).map(day => day.date);
+    if (!dates.length) return [];
+    const [cards, games] = await Promise.all([
+      supabase.from("practice_cards").select("date, published_at")
+        .eq("team_id", teamId!).eq("program_source", "team").eq("mode", "normal").in("date", dates),
+      supabase.from("team_game_days").select("date, enabled").eq("team_id", teamId!).in("date", dates),
+    ]);
+    if (cards.error) throw cards.error;
+    if (games.error) throw games.error;
+    return dates.flatMap(date => {
+      const hasPublishedCard = !!cards.data?.some(card => card.date === date && card.published_at);
+      const hasGameDay = !!games.data?.some(game => game.date === date && game.enabled);
+      return hasPublishedCard || hasGameDay ? [{ date, hasPublishedCard, hasGameDay }] : [];
+    });
   };
 
   // Publish mutation
   const publishMutation = useMutation({
     mutationFn: async () => {
-      // First save the plan
       await saveMutation.mutateAsync(true);
-
-      // Then publish each day as a practice card
-      for (const day of days) {
-        if (day.tasks.length === 0) continue;
-
-        // Check if card exists
-        const { data: existingCard, error: existingError } = await supabase
-          .from("practice_cards")
-          .select("id")
-          .eq("team_id", teamId)
-          .eq("date", day.date)
-          .eq("mode", "normal")
-          .maybeSingle();
-
-        if (existingError) throw existingError;
-        let practiceCardId = existingCard?.id;
-
-        if (existingCard) {
-          // Update existing card
-          const { error: updateError } = await supabase
-            .from("practice_cards")
-            .update({
-              tier,
-              title: day.title || null,
-              notes: day.notes || null,
-              published_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingCard.id);
-
-          if (updateError) throw updateError;
-
-          // Delete old tasks
-          const { error: deleteError } = await supabase
-            .from("practice_tasks")
-            .delete()
-            .eq("practice_card_id", existingCard.id);
-          if (deleteError) throw deleteError;
-        } else {
-          // Create new card
-          const { data: newCard, error: createError } = await supabase
-            .from("practice_cards")
-            .insert({
-              team_id: teamId,
-              date: day.date,
-              mode: "normal",
-              tier,
-              title: day.title || null,
-              notes: day.notes || null,
-              created_by_user_id: user!.id,
-              published_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (createError) throw createError;
-          practiceCardId = newCard.id;
-        }
-
-        // Insert tasks with tier scaling
-        const tasksToInsert = day.tasks.map((task, idx) => ({
-          practice_card_id: practiceCardId,
-          sort_order: idx,
-          task_type: task.task_type,
-          label: task.label,
-          target_type: task.target_type,
-          target_value: useTierScaling
-            ? applyTierScaling(task.target_value, tier)
-            : task.target_value,
-          shot_type: task.shot_type,
-          shots_expected: useTierScaling
-            ? applyTierScaling(task.shots_expected, tier)
-            : task.shots_expected,
-          is_required: task.is_required,
-          video_url: getRecommendedCoachingVideoUrl({
-            label: task.label,
-            taskType: task.task_type,
-            shotType: task.shot_type,
-          }),
-        }));
-
-        const { error: tasksError } = await supabase
-          .from("practice_tasks")
-          .insert(tasksToInsert);
-
-        if (tasksError) throw tasksError;
-      }
-
-      // Update plan status
-      const currentPlanId = isEditing ? planId : undefined;
-      if (currentPlanId) {
-        const { error: statusError } = await supabase
-          .from("team_week_plans")
-          .update({ status: "published", updated_at: new Date().toISOString() })
-          .eq("id", currentPlanId);
-        if (statusError) throw statusError;
-      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-week-plans", teamId] });
@@ -574,9 +382,13 @@ const WeekPlanEditor: React.FC = () => {
   });
 
   const handlePublishClick = async () => {
-    const conflictList = await checkConflicts();
-    setConflicts(conflictList);
-    setShowPublishDialog(true);
+    try {
+      const conflictList = await checkConflicts();
+      setConflicts(conflictList);
+      setShowPublishDialog(true);
+    } catch {
+      toast.error("Couldn’t check this week", "Please retry before publishing so existing workouts can be checked.");
+    }
   };
 
   const handleDaySave = (updatedDay: DayData) => {

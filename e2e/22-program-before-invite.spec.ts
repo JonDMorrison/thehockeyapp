@@ -62,8 +62,8 @@ test("general mobile coach publishes a program before the family invitation open
       fullPage: true,
     });
   let failedDraft = false;
-  await page.route("**/rest/v1/team_week_plan_tasks*", async (route) => {
-    if (route.request().method() === "POST" && !failedDraft) {
+  await page.route("**/rest/v1/rpc/save_team_week_plan", async (route) => {
+    if (route.request().method() === "POST" && !route.request().postDataJSON().p_publish && !failedDraft) {
       failedDraft = true;
       return route.fulfill({
         status: 503,
@@ -120,8 +120,8 @@ test("general mobile coach publishes a program before the family invitation open
       fullPage: true,
     });
   let failed = false;
-  await page.route("**/rest/v1/practice_tasks*", async (route) => {
-    if (route.request().method() === "POST" && !failed) {
+  await page.route("**/rest/v1/rpc/save_team_week_plan", async (route) => {
+    if (route.request().method() === "POST" && route.request().postDataJSON().p_publish && !failed) {
       failed = true;
       return route.fulfill({
         status: 503,
@@ -296,5 +296,5 @@ test("general mobile coach publishes a program before the family invitation open
     ),
   ).toBeTruthy();
   await context.close();
-  await client.auth.signOut();
+  await client.auth.signOut({ scope: 'local' });
 });

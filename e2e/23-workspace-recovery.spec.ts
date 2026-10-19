@@ -52,6 +52,14 @@ for (const scenario of [
     await alert.getByRole('button', { name: 'Try again', exact: true }).click();
     await expect(alert).toBeHidden();
     await expect(page.locator('main')).toBeVisible();
-    await client.auth.signOut();
+    await client.auth.signOut({ scope: 'local' });
   });
 }
+
+test('quick mode without a player provides a way forward', async ({ page }) => {
+  test.skip(!process.env.TEST_USER_EMAIL, 'Requires the dedicated test account.');
+  await page.goto('/quick-checkoff');
+  await expect(page.getByRole('heading', { name: 'Choose a player', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Choose player', exact: true }).click();
+  await expect(page).toHaveURL(/\/players(?:\/|$)/);
+});

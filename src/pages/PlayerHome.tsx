@@ -55,7 +55,6 @@ import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuil
 import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
 import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
 import { FirstRunOverlay } from "@/components/player/FirstRunOverlay";
-import { AnimatePresence } from "framer-motion";
 import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
 // Milestone thresholds for celebrations
 const STREAK_MILESTONES = [7, 14, 21, 30, 60, 90, 100, 180, 365];
@@ -141,7 +140,7 @@ const PlayerHome: React.FC = () => {
   });
 
   // Fetch active team preference
-  const { data: preferences } = useQuery({
+  const { data: preferences, isLoading: preferencesLoading } = useQuery({
     queryKey: ["player-preferences", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -386,7 +385,7 @@ const PlayerHome: React.FC = () => {
   };
 
   // Combined loading state - check after all hooks are called
-  const isLoading = authLoading || playerLoading || membershipsLoading || snapshotLoading;
+  const isLoading = authLoading || playerLoading || membershipsLoading || preferencesLoading || snapshotLoading;
 
   // Show loading skeleton while auth or data is loading
   if (isLoading) {
@@ -855,7 +854,6 @@ const PlayerHome: React.FC = () => {
       )}
 
       {/* First-run welcome overlay */}
-      <AnimatePresence>
         {showFirstRun && player && (
           <FirstRunOverlay
             playerName={player.first_name}
@@ -871,7 +869,6 @@ const PlayerHome: React.FC = () => {
             onDismiss={handleDismissFirstRun}
           />
         )}
-      </AnimatePresence>
     </AppShell>
   );
 };

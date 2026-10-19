@@ -18,7 +18,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
-    storageState: 'e2e/.auth/user.json',
+    storageState: process.env.TEST_AUTH_STATE_FILE || 'e2e/.auth/user.json',
   },
   webServer: process.env.TEST_BASE_URL ? undefined : {
     command: 'npm run dev',

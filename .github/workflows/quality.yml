@@ -32,6 +32,9 @@ jobs:
       - name: Verify shooting challenge database release gates
         run: npm run test:shooting-db
 
+      - name: Verify atomic program database release gates
+        run: npm run test:program-db
+
       - name: Typecheck, lint, build, and verify crawlable pages
         run: npm run check
 

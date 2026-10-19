@@ -1,8 +1,9 @@
+import { format } from "date-fns";
 /**
  * Hook for managing today snapshot for widgets
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TodaySnapshot {
@@ -33,20 +34,26 @@ interface TodaySnapshot {
 const SNAPSHOT_CACHE_KEY = "today_snapshot_cache";
 
 export function useTodaySnapshot(playerId: string | null) {
+  const activePlayer = useRef(playerId);
+  activePlayer.current = playerId;
+  const requestSequence = useRef(0);
   const [snapshot, setSnapshot] = useState<TodaySnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load cached snapshot
   useEffect(() => {
+    requestSequence.current += 1;
+    setSnapshot(null);
+    setError(null);
     if (!playerId) return;
-    
+
     try {
       const cached = localStorage.getItem(`${SNAPSHOT_CACHE_KEY}_${playerId}`);
       if (cached) {
         const parsed = JSON.parse(cached);
         // Only use cache if it's from today
-        if (parsed.date === new Date().toISOString().split('T')[0]) {
+        if (parsed.date === format(new Date(), 'yyyy-MM-dd')) {
           setSnapshot(parsed);
         }
       }
@@ -57,8 +64,8 @@ export function useTodaySnapshot(playerId: string | null) {
 
   // Fetch fresh snapshot
   const refresh = useCallback(async () => {
-    if (!playerId) return null;
-    
+    if (!playerId || activePlayer.current !== playerId) return null;
+    const sequence = ++requestSequence.current;
     setIsLoading(true);
     setError(null);
     
@@ -68,6 +75,7 @@ export function useTodaySnapshot(playerId: string | null) {
       });
 
       if (rpcError) throw rpcError;
+      if (sequence !== requestSequence.current || activePlayer.current !== playerId) return null;
 
       const result = data as unknown as TodaySnapshot;
       
@@ -86,10 +94,10 @@ export function useTodaySnapshot(playerId: string | null) {
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch snapshot";
-      setError(message);
+      if (sequence === requestSequence.current && activePlayer.current === playerId) setError(message);
       return null;
     } finally {
-      setIsLoading(false);
+      if (sequence === requestSequence.current && activePlayer.current === playerId) setIsLoading(false);
     }
   }, [playerId]);
 
@@ -127,7 +135,7 @@ export function useTodaySnapshot(playerId: string | null) {
 
   return {
     snapshot,
-    isLoading,
+    isLoading: !!playerId && (isLoading || (!error && snapshot?.player_id !== playerId)),
     error,
     refresh,
     performQuickAction,
