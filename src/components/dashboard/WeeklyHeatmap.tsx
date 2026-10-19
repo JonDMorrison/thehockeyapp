@@ -1,5 +1,12 @@
 import React from "react";
-import { format, parseISO, getDay } from "date-fns";
+import {
+  format,
+  parseISO,
+  getDay,
+  startOfWeek,
+  endOfWeek,
+  isWithinInterval,
+} from "date-fns";
 
 interface WeeklyHeatmapProps {
   completions: Array<{ completed_at: string }>;
@@ -7,18 +14,28 @@ interface WeeklyHeatmapProps {
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => {
+export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({
+  completions,
+}) => {
   // Count completions by day of week (0 = Sunday, 1 = Monday, etc.)
   const dayCounts = React.useMemo(() => {
     const counts = [0, 0, 0, 0, 0, 0, 0]; // Sun through Sat
-    
+
+    const now = new Date();
+    const interval = {
+      start: startOfWeek(now, { weekStartsOn: 1 }),
+      end: endOfWeek(now, { weekStartsOn: 1 }),
+    };
     completions.forEach((c) => {
-      if (c.completed_at) {
+      if (
+        c.completed_at &&
+        isWithinInterval(parseISO(c.completed_at), interval)
+      ) {
         const dayIndex = getDay(parseISO(c.completed_at)); // 0 = Sunday
         counts[dayIndex]++;
       }
     });
-    
+
     // Reorder to Mon-Sun (shift Sunday to end)
     return [...counts.slice(1), counts[0]];
   }, [completions]);
@@ -50,7 +67,9 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
             <div
               className={`aspect-square rounded-lg flex items-center justify-center ${getIntensity(dayCounts[idx])} transition-colors`}
             >
-              <span className={`text-sm font-bold ${dayCounts[idx] > 0 ? "text-white" : "text-text-muted"}`}>
+              <span
+                className={`text-sm font-bold ${dayCounts[idx] > 0 ? "text-white" : "text-text-muted"}`}
+              >
                 {dayCounts[idx]}
               </span>
             </div>
@@ -59,7 +78,7 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
       </div>
 
       {/* Legend & Insights */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-1">
           <span className="text-text-muted">Less</span>
           <div className="w-3 h-3 rounded bg-surface-muted" />
@@ -71,7 +90,8 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
         </div>
         {bestDay && (
           <p className="text-text-muted">
-            <span className="font-medium text-foreground">{bestDay}</span> is the most active day
+            <span className="font-medium text-foreground">{bestDay}</span> is
+            the most active day
           </p>
         )}
       </div>
@@ -83,11 +103,15 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({ completions }) => 
           <p className="text-xs text-text-muted">Total Sessions</p>
         </div>
         <div className="text-center">
-          <p className="text-lg font-bold">{Math.round(totalCompletions / 7)}</p>
+          <p className="text-lg font-bold">
+            {(totalCompletions / 7).toFixed(1)}
+          </p>
           <p className="text-xs text-text-muted">Avg per Day</p>
         </div>
         <div className="text-center">
-          <p className="text-lg font-bold">{dayCounts.filter(c => c > 0).length}/7</p>
+          <p className="text-lg font-bold">
+            {dayCounts.filter((c) => c > 0).length}/7
+          </p>
           <p className="text-xs text-text-muted">Active Days</p>
         </div>
       </div>

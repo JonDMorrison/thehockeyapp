@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamDashboard } from "@/hooks/useTeamDashboard";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -43,7 +45,9 @@ const TeamRoster: React.FC = () => {
   const { activeView, activePlayerId } = useActiveView();
 
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteModalTab, setInviteModalTab] = useState<"add-child" | "invite">("add-child");
+  const [inviteModalTab, setInviteModalTab] = useState<"add-child" | "invite">(
+    "add-child",
+  );
   const [filterText, setFilterText] = useState("");
 
   // Context-aware back navigation
@@ -63,29 +67,27 @@ const TeamRoster: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  // Fetch team
-  const { data: team } = useQuery({
-    queryKey: ["team", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("teams")
-        .select("id, name, season_label")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user && !!id,
-  });
+  const {
+    data: dashboard,
+    isLoading: teamLoading,
+    isError: teamError,
+    refetch: retryTeam,
+  } = useTeamDashboard(id);
+  const team = teamError ? undefined : dashboard?.team;
 
   // Fetch roster (memberships with player data)
-  const { data: memberships, isLoading } = useQuery({
-    queryKey: ["team-roster", id],
+  const {
+    data: memberships,
+    isLoading,
+    isError: rosterError,
+    refetch: retryRoster,
+  } = useQuery({
+    queryKey: ["team-roster", id, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_memberships")
-        .select(`
+        .select(
+          `
           id,
           player_id,
           status,
@@ -100,7 +102,8 @@ const TeamRoster: React.FC = () => {
             profile_photo_url,
             position
           )
-        `)
+        `,
+        )
         .eq("team_id", id)
         .eq("status", "active")
         .order("joined_at", { ascending: true });
@@ -108,11 +111,11 @@ const TeamRoster: React.FC = () => {
       if (error) throw error;
       return data as Membership[];
     },
-    enabled: !!user && !!id,
+    enabled: !!user && !!id && !!team,
   });
 
   // Show loading state while auth or data is loading
-  if (isLoading || authLoading) {
+  if (isLoading || teamLoading || authLoading) {
     return (
       <AppShell hideNav>
         <PageContainer>
@@ -128,23 +131,44 @@ const TeamRoster: React.FC = () => {
     return null;
   }
 
+  if (teamError || rosterError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer>
+          <Button
+            variant="ghost"
+            className="mb-4 min-h-11"
+            onClick={() => navigate("/today")}
+          >
+            Back to my dashboard
+          </Button>
+          <DataLoadError
+            title="Team roster couldn’t load"
+            onRetry={() => {
+              void retryTeam();
+              if (team) void retryRoster();
+            }}
+          />
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       hideNav
       header={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <Button aria-label="Go back"
+            <Button
+              aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={handleBack}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <PageHeader
-              title={t("teams.roster.title")}
-              subtitle={team?.name}
-            />
+            <PageHeader title={t("teams.roster.title")} subtitle={team?.name} />
           </div>
           <Button
             variant="team"
@@ -160,7 +184,9 @@ const TeamRoster: React.FC = () => {
         </div>
       }
     >
-      <Helmet><title>Roster | Hockey App</title></Helmet>
+      <Helmet>
+        <title>Roster | Hockey App</title>
+      </Helmet>
       <PageContainer>
         {memberships && memberships.length > 0 ? (
           <div className="space-y-3">
@@ -178,58 +204,64 @@ const TeamRoster: React.FC = () => {
             <p className="text-sm text-text-muted">
               {t("teams.roster.playerCount", { count: memberships.length })}
             </p>
-            {memberships.filter((membership) => {
-              if (!filterText.trim()) return true;
-              const player = membership.players;
-              if (!player) return false;
-              const fullName = `${player.first_name} ${player.last_initial ?? ""}`.toLowerCase();
-              return fullName.includes(filterText.toLowerCase());
-            }).map((membership) => {
-              const player = membership.players;
-              if (!player) return null;
+            {memberships
+              .filter((membership) => {
+                if (!filterText.trim()) return true;
+                const player = membership.players;
+                if (!player) return false;
+                const fullName =
+                  `${player.first_name} ${player.last_initial ?? ""}`.toLowerCase();
+                return fullName.includes(filterText.toLowerCase());
+              })
+              .map((membership) => {
+                const player = membership.players;
+                if (!player) return null;
 
-              return (
-                <AppCard
-                  key={membership.id}
-                  className="cursor-pointer hover:bg-surface-muted/50 transition-colors"
-                  onClick={() => navigate(`/teams/${id}/roster/${player.id}`)}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={player.profile_photo_url}
-                      fallback={`${player.first_name} ${player.last_initial || ""}`}
-                      size="lg"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold">
-                        {player.first_name} {player.last_initial && `${player.last_initial}.`}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Tag variant="neutral" size="sm">
-                          {t("teams.roster.bornYear", { year: player.birth_year })}
-                        </Tag>
-                        {player.shoots && player.shoots !== "unknown" && (
-                          <Tag variant="accent" size="sm">
-                            {player.shoots === "left" ? "L" : "R"}
-                          </Tag>
-                        )}
-                        {player.jersey_number && (
-                          <Tag variant="tier" size="sm">
-                            #{player.jersey_number}
-                          </Tag>
-                        )}
-                        {getPlayerPositionLabel(player.position) && (
+                return (
+                  <AppCard
+                    key={membership.id}
+                    className="cursor-pointer hover:bg-surface-muted/50 transition-colors"
+                    onClick={() => navigate(`/teams/${id}/roster/${player.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={player.profile_photo_url}
+                        fallback={`${player.first_name} ${player.last_initial || ""}`}
+                        size="lg"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold">
+                          {player.first_name}{" "}
+                          {player.last_initial && `${player.last_initial}.`}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Tag variant="neutral" size="sm">
-                            {getPlayerPositionLabel(player.position)}
+                            {t("teams.roster.bornYear", {
+                              year: player.birth_year,
+                            })}
                           </Tag>
-                        )}
+                          {player.shoots && player.shoots !== "unknown" && (
+                            <Tag variant="accent" size="sm">
+                              {player.shoots === "left" ? "L" : "R"}
+                            </Tag>
+                          )}
+                          {player.jersey_number && (
+                            <Tag variant="tier" size="sm">
+                              #{player.jersey_number}
+                            </Tag>
+                          )}
+                          {getPlayerPositionLabel(player.position) && (
+                            <Tag variant="neutral" size="sm">
+                              {getPlayerPositionLabel(player.position)}
+                            </Tag>
+                          )}
+                        </div>
                       </div>
+                      <ChevronLeft className="w-4 h-4 text-text-muted rotate-180" />
                     </div>
-                    <ChevronLeft className="w-4 h-4 text-text-muted rotate-180" />
-                  </div>
-                </AppCard>
-              );
-            })}
+                  </AppCard>
+                );
+              })}
           </div>
         ) : (
           <AddPlayerChoice

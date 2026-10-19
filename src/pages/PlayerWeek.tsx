@@ -63,6 +63,16 @@ const PlayerWeek: React.FC = () => {
   const { setActiveView, setActivePlayerId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
 
+  const { data: player } = useQuery({
+    queryKey: ["player", playerId],
+    enabled: !!user && !!playerId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("players").select("*").eq("id", playerId!).single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // State holds the current week's Monday
   const [weekStart, setWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -108,11 +118,13 @@ const PlayerWeek: React.FC = () => {
     if (teamData?.palette_id) {
       setTeamTheme(teamData.palette_id);
     }
-    if (playerId) {
-      setActiveView("parent");
+    if (playerId && player) {
+      const isOwnTrainingProfile = player.owner_user_id === user?.id
+        && player.birth_year <= new Date().getFullYear() - 18;
+      setActiveView(isOwnTrainingProfile ? "player" : "parent");
       setActivePlayerId(playerId);
     }
-  }, [teamData?.palette_id, setTeamTheme, playerId, setActiveView, setActivePlayerId]);
+  }, [teamData?.palette_id, setTeamTheme, playerId, player, user?.id, setActiveView, setActivePlayerId]);
 
   // Fetch published team cards for the week with their task ids
   const { data: cards, isLoading: cardsLoading } = useQuery<WeekCard[]>({
