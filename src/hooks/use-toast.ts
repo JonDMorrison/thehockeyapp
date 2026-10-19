@@ -184,3 +184,7 @@ function useToast() {
 }
 
 export { useToast, toast };
+
+export function clearToasts(): void {
+  dispatch({ type: "REMOVE_TOAST" });
+}

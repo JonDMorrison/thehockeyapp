@@ -17,7 +17,7 @@ import {
   saveCompletionSnapshot,
   getCompletionSnapshot,
 } from "@/lib/offlineStorage";
-import { startSyncInterval, stopSyncInterval, syncPendingEvents } from "@/lib/syncEngine";
+import { syncPendingEvents } from "@/lib/syncEngine";
 import { fireGoalConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -153,10 +153,6 @@ const PlayerToday: React.FC = () => {
   const [cachedCardData, setCachedCardData] = useState<PracticeCard | null>(null);
 
   // Start sync interval on mount
-  useEffect(() => {
-    startSyncInterval();
-    return () => stopSyncInterval();
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -247,7 +243,7 @@ const PlayerToday: React.FC = () => {
           if (gameDayError) throw gameDayError;
           
           if (gameDayCard) {
-            await cachePracticeCard(teamData!.id, `${todayStr}_game_day`, gameDayCard);
+            await cachePracticeCard(teamData!.id, `${todayStr}_game_day`, gameDayCard, user?.id);
             setUsingCache(false);
             return gameDayCard as PracticeCard;
           }
@@ -271,7 +267,7 @@ const PlayerToday: React.FC = () => {
 
         // Cache for offline use
         if (data) {
-          await cachePracticeCard(teamData!.id, todayStr, data);
+          await cachePracticeCard(teamData!.id, todayStr, data, user?.id);
           setUsingCache(false);
         }
 
@@ -280,7 +276,7 @@ const PlayerToday: React.FC = () => {
         // Try to load from cache if network fails
         if (!isOnline) {
           // Try game day cache first
-          const cachedGameDay = await getCachedCard(teamData!.id, `${todayStr}_game_day`);
+          const cachedGameDay = await getCachedCard(teamData!.id, `${todayStr}_game_day`, user?.id);
           if (cachedGameDay) {
             setUsingCache(true);
             const cardData = cachedGameDay as PracticeCard;
@@ -289,7 +285,7 @@ const PlayerToday: React.FC = () => {
           }
           
           // Fall back to normal cache
-          const cached = await getCachedCard(teamData!.id, todayStr);
+          const cached = await getCachedCard(teamData!.id, todayStr, user?.id);
           if (cached) {
             setUsingCache(true);
             const cardData = cached as PracticeCard;
@@ -309,7 +305,7 @@ const PlayerToday: React.FC = () => {
   useEffect(() => {
     const loadCachedCompletions = async () => {
       if (practiceCard?.id && playerId) {
-        const snapshot = await getCompletionSnapshot(playerId, practiceCard.id);
+        const snapshot = await getCompletionSnapshot(playerId, practiceCard.id, user?.id);
         if (snapshot) {
           setLocalCompletions(snapshot.taskCompletionMap);
           setLocalSessionStatus(snapshot.sessionStatus);
@@ -317,7 +313,7 @@ const PlayerToday: React.FC = () => {
       }
     };
     loadCachedCompletions();
-  }, [practiceCard?.id, playerId]);
+  }, [practiceCard?.id, playerId, user?.id]);
 
   // Fetch task completions for this player (online only)
   const { data: taskCompletions, isLoading: completionsLoading } = useQuery({
@@ -409,9 +405,9 @@ const PlayerToday: React.FC = () => {
     sessionStatus: 'none' | 'partial' | 'complete'
   ) => {
     if (practiceCard?.id && playerId) {
-      await saveCompletionSnapshot(playerId, practiceCard.id, completions, sessionStatus);
+      await saveCompletionSnapshot(playerId, practiceCard.id, completions, sessionStatus, user?.id);
     }
-  }, [practiceCard?.id, playerId]);
+  }, [practiceCard?.id, playerId, user?.id]);
 
   // Handle task toggle with offline support
   const handleTaskToggle = useCallback(async (taskId: string, completed: boolean) => {

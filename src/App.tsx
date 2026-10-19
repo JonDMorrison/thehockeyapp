@@ -1,3 +1,4 @@
+import { SessionBoundary } from "@/components/auth/SessionBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -260,9 +261,11 @@ const App = () => {
             <MotionConfig reducedMotion="user">
               <BrowserRouter>
                 <RouteMetadata />
-                <Suspense fallback={<PageLoader />}>
-                  <AnimatedRoutes />
-                </Suspense>
+                <SessionBoundary>
+                  <Suspense fallback={<PageLoader />}>
+                    <AnimatedRoutes />
+                  </Suspense>
+                </SessionBoundary>
               </BrowserRouter>
             </MotionConfig>
           </TooltipProvider>

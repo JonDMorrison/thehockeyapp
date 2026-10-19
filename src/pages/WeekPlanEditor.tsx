@@ -346,7 +346,7 @@ const WeekPlanEditor: React.FC = () => {
 
   // Check for conflicts before publishing
   const checkConflicts = async () => {
-    const dates = days.filter(day => day.tasks.length > 0).map(day => day.date);
+    const dates = days.map(day => day.date);
     if (!dates.length) return [];
     const [cards, games] = await Promise.all([
       supabase.from("practice_cards").select("date, published_at")
@@ -619,6 +619,7 @@ const WeekPlanEditor: React.FC = () => {
                 <p>
                   {t('practice.publishWeekPlanDesc', { count: daysWithTasks })}
                 </p>
+                <p>Rest days clear workouts nobody has started. Players’ saved progress stays protected.</p>
 
                 {conflicts.length > 0 && (
                   <div className="p-3 rounded-lg bg-warning-muted border border-warning/20">

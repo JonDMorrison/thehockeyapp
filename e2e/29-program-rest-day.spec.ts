@@ -1,0 +1,53 @@
+import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+import { addDays, format, startOfWeek, parseISO } from 'date-fns';
+
+test.use({ timezoneId: 'UTC', viewport: { width: 390, height: 844 } });
+test('turning a published day into rest removes only its unstarted workout from the family week', async ({ page }) => {
+  test.skip(process.env.PROGRAM_LIFECYCLE_RELEASE_TEST !== '1', 'Opt in to a fictional published program.');
+  test.setTimeout(90000);
+  const client = createClient(process.env.VITE_SUPABASE_URL!, process.env.VITE_SUPABASE_PUBLISHABLE_KEY!, { auth: { persistSession: false } });
+  expect((await client.auth.signInWithPassword({ email: process.env.TEST_USER_EMAIL!, password: process.env.TEST_USER_PASSWORD! })).error).toBeNull();
+  const team = await client.rpc('create_team_with_owner', { p_name: `Disposable Program Lifecycle ${Date.now()}` });
+  expect(team.error).toBeNull(); const teamId = team.data.team_id, planId = randomUUID();
+  fs.appendFileSync('/tmp/hockey-qa-program-lifecycle-fixtures.jsonl', JSON.stringify({ teamId, planId })+'\n');
+  const player = await client.rpc('create_managed_player', { p_first_name: 'RestDayKid', p_birth_year: 2014 });
+  expect(player.error).toBeNull(); const playerId = player.data.player_id;
+  fs.appendFileSync('/tmp/hockey-qa-program-lifecycle-fixtures.jsonl', JSON.stringify({ teamId, playerId })+'\n');
+  expect((await client.rpc('add_my_player_to_team', { p_team_id: teamId, p_player_id: playerId })).error).toBeNull();
+  const utcToday = new Intl.DateTimeFormat('en-CA',{timeZone:'UTC',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const start = startOfWeek(addDays(parseISO(utcToday),7), { weekStartsOn: 1 });
+  const startDate = format(start,'yyyy-MM-dd');
+  const days = Array.from({length:7},(_,index)=>({ date:format(addDays(start,index),'yyyy-MM-dd'),title:index===0?'First training day':index===1?'Second training day':'',notes:'',tasks:index<2?[{label:'Gentle warm-up',task_type:'mobility',target_type:'none',shot_type:'none',is_required:true}]:[] }));
+  expect((await client.rpc('save_team_week_plan', {p_id:planId,p_team_id:teamId,p_name:'Week with a rest edit',p_start_date:startDate,p_tier:'rep',p_use_tier_scaling:false,p_days:days,p_publish:true})).error).toBeNull();
+  await page.goto(`/teams/${teamId}/builder/${planId}?inviteAfter=1`);
+  await page.getByRole('button',{name:'Edit Monday',exact:true}).click();
+  const editor = page.getByRole('dialog');
+  await editor.getByRole('button',{name:'Remove activity 1',exact:true}).click();
+  await editor.getByRole('button',{name:'Save Day',exact:true}).click();
+  let failedCheck=false;
+  await page.route('**/rest/v1/practice_cards?*',async route=>{
+    if(!failedCheck&&route.request().method()==='GET'){failedCheck=true;await route.fulfill({status:503,contentType:'application/json',body:'{"message":"Simulated conflict lookup outage"}'});}
+    else await route.continue();
+  });
+  await page.getByRole('button',{name:'Publish & invite families',exact:true}).click();
+  await expect(page.getByText('Couldn’t check this week',{exact:true})).toBeVisible();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await page.getByRole('button',{name:'Publish & invite families',exact:true}).click();
+  const confirmation=page.getByRole('alertdialog');
+  await expect(confirmation).toContainText('Rest days clear workouts nobody has started.');
+  await expect(confirmation).toContainText(format(start,'MMM d'));
+  await confirmation.getByRole('button',{name:'Publish',exact:true}).click();
+  await expect(page).toHaveURL(/inviteFamilies=1/);
+  const invitation=page.getByRole('dialog'); await expect(invitation).toBeVisible();
+  await invitation.getByRole('button',{name:'Close',exact:true}).click();
+  const cards=await client.from('practice_cards').select('date,title').eq('team_id',teamId);
+  expect(cards.error).toBeNull(); expect(cards.data).toEqual([{date:days[1].date,title:'Second training day'}]);
+  await page.goto(`/players/${playerId}/week`);
+  await page.getByRole('button',{name:'Next week',exact:true}).click();
+  await expect(page.getByText('Second training day',{exact:true})).toBeVisible();
+  await expect(page.getByText('First training day',{exact:true})).toHaveCount(0);
+  await client.auth.signOut({scope:'local'});
+});

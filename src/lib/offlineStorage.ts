@@ -7,6 +7,7 @@ const DB_NAME = 'hockey-training-offline';
 const DB_VERSION = 1;
 
 export interface CachedCard {
+  userId: string;
   key: string; // team_id + date
   teamId: string;
   date: string;
@@ -29,6 +30,7 @@ export interface QueuedEvent {
 }
 
 export interface QueuedPhoto {
+  userId: string;
   localPhotoId: string;
   playerId: string;
   practiceCardId: string;
@@ -41,6 +43,7 @@ export interface QueuedPhoto {
 }
 
 export interface CompletionSnapshot {
+  userId: string;
   key: string; // player_id + practice_card_id
   playerId: string;
   practiceCardId: string;
@@ -106,20 +109,30 @@ async function getDB(): Promise<IDBDatabase> {
   return db!;
 }
 
+let offlineAccountOwner: string | null = null;
+
+export function setOfflineAccountOwner(userId: string | null): void { offlineAccountOwner = userId; }
+export function getOfflineAccountOwner(): string | null { return offlineAccountOwner; }
+function currentAccountId(): string | null { return offlineAccountOwner; }
+
 // Cached Cards
 export async function cachePracticeCard(
   teamId: string,
   date: string,
-  cardData: unknown
+  cardData: unknown,
+  actorId: string | null = currentAccountId()
 ): Promise<void> {
   const database = await getDB();
-  const key = `${teamId}_${date}`;
+  const userId = actorId;
+  if (!userId) return;
+  const key = `${userId}_${teamId}_${date}`;
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('cachedCards', 'readwrite');
     const store = tx.objectStore('cachedCards');
     
     const data: CachedCard = {
+      userId,
       key,
       teamId,
       date,
@@ -135,10 +148,13 @@ export async function cachePracticeCard(
 
 export async function getCachedCard(
   teamId: string,
-  date: string
+  date: string,
+  actorId: string | null = currentAccountId()
 ): Promise<unknown | null> {
   const database = await getDB();
-  const key = `${teamId}_${date}`;
+  const userId = actorId;
+  if (!userId) return null;
+  const key = `${userId}_${teamId}_${date}`;
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('cachedCards', 'readonly');
@@ -181,6 +197,8 @@ export async function queueOfflineEvent(event: Omit<QueuedEvent, 'retryCount'>):
 }
 
 export async function getPendingEvents(): Promise<QueuedEvent[]> {
+  const userId = currentAccountId();
+  if (!userId) return [];
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
@@ -190,7 +208,7 @@ export async function getPendingEvents(): Promise<QueuedEvent[]> {
     const request = index.getAll('pending');
     
     request.onsuccess = () => {
-      const events = request.result as QueuedEvent[];
+      const events = (request.result as QueuedEvent[]).filter(event => event.userId === userId);
       // Sort by createdAt ascending
       events.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
       resolve(events);
@@ -288,16 +306,20 @@ export async function saveCompletionSnapshot(
   playerId: string,
   practiceCardId: string,
   taskCompletionMap: Record<string, { completed: boolean; shotsLogged: number }>,
-  sessionStatus: 'none' | 'partial' | 'complete'
+  sessionStatus: 'none' | 'partial' | 'complete',
+  actorId: string | null = currentAccountId()
 ): Promise<void> {
   const database = await getDB();
-  const key = `${playerId}_${practiceCardId}`;
+  const userId = actorId;
+  if (!userId) return;
+  const key = `${userId}_${playerId}_${practiceCardId}`;
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('completionSnapshots', 'readwrite');
     const store = tx.objectStore('completionSnapshots');
     
     const data: CompletionSnapshot = {
+      userId,
       key,
       playerId,
       practiceCardId,
@@ -314,10 +336,13 @@ export async function saveCompletionSnapshot(
 
 export async function getCompletionSnapshot(
   playerId: string,
-  practiceCardId: string
+  practiceCardId: string,
+  actorId: string | null = currentAccountId()
 ): Promise<CompletionSnapshot | null> {
   const database = await getDB();
-  const key = `${playerId}_${practiceCardId}`;
+  const userId = actorId;
+  if (!userId) return null;
+  const key = `${userId}_${playerId}_${practiceCardId}`;
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('completionSnapshots', 'readonly');
@@ -333,12 +358,14 @@ export async function getCompletionSnapshot(
 
 // Sync metadata
 export async function getLastSyncTime(): Promise<string | null> {
+  const userId = currentAccountId();
+  if (!userId) return null;
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('syncMeta', 'readonly');
     const store = tx.objectStore('syncMeta');
-    const request = store.get('lastSync');
+    const request = store.get(`${userId}_lastSync`);
     
     request.onsuccess = () => {
       const result = request.result as { key: string; value: string } | undefined;
@@ -349,12 +376,14 @@ export async function getLastSyncTime(): Promise<string | null> {
 }
 
 export async function setLastSyncTime(time: string): Promise<void> {
+  const userId = currentAccountId();
+  if (!userId) return;
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
     const tx = database.transaction('syncMeta', 'readwrite');
     const store = tx.objectStore('syncMeta');
-    const request = store.put({ key: 'lastSync', value: time });
+    const request = store.put({ key: `${userId}_lastSync`, value: time });
     
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
@@ -367,7 +396,9 @@ export function generateLocalEventId(): string {
 }
 
 // Queued Photos for offline upload
-export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount'>): Promise<void> {
+export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount' | 'userId'>): Promise<void> {
+  const userId = currentAccountId();
+  if (!userId) throw new Error("Sign in before saving a photo offline.");
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
@@ -376,6 +407,7 @@ export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount'>): Promis
     
     const data: QueuedPhoto = {
       ...photo,
+      userId,
       retryCount: 0,
     };
     
@@ -386,6 +418,8 @@ export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount'>): Promis
 }
 
 export async function getPendingPhotos(): Promise<QueuedPhoto[]> {
+  const userId = currentAccountId();
+  if (!userId) return [];
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
@@ -395,7 +429,7 @@ export async function getPendingPhotos(): Promise<QueuedPhoto[]> {
     const request = index.getAll('pending');
     
     request.onsuccess = () => {
-      resolve(request.result as QueuedPhoto[]);
+      resolve((request.result as QueuedPhoto[]).filter(photo => photo.userId === userId));
     };
     request.onerror = () => reject(request.error);
   });
@@ -455,6 +489,8 @@ export async function getQueuedPhotosForSession(
   playerId: string,
   practiceCardId: string
 ): Promise<QueuedPhoto[]> {
+  const userId = currentAccountId();
+  if (!userId) return [];
   const database = await getDB();
   
   return new Promise((resolve, reject) => {
@@ -465,7 +501,7 @@ export async function getQueuedPhotosForSession(
     request.onsuccess = () => {
       const all = request.result as QueuedPhoto[];
       const filtered = all.filter(
-        (p) => p.playerId === playerId && p.practiceCardId === practiceCardId
+        (p) => p.userId === userId && p.playerId === playerId && p.practiceCardId === practiceCardId
       );
       resolve(filtered);
     };

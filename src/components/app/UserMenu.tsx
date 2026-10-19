@@ -185,6 +185,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
+            aria-label="Account menu"
             className={cn(
               "relative flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2",
               isUploading && "opacity-50 pointer-events-none",

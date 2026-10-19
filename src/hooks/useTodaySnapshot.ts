@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 /**
  * Hook for managing today snapshot for widgets
@@ -34,8 +35,11 @@ interface TodaySnapshot {
 const SNAPSHOT_CACHE_KEY = "today_snapshot_cache";
 
 export function useTodaySnapshot(playerId: string | null) {
-  const activePlayer = useRef(playerId);
-  activePlayer.current = playerId;
+  const { user } = useAuth();
+  const userId = user?.id;
+  const actorKey = `${userId ?? ""}:${playerId ?? ""}`;
+  const activePlayer = useRef(actorKey);
+  activePlayer.current = actorKey;
   const requestSequence = useRef(0);
   const [snapshot, setSnapshot] = useState<TodaySnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,10 +50,10 @@ export function useTodaySnapshot(playerId: string | null) {
     requestSequence.current += 1;
     setSnapshot(null);
     setError(null);
-    if (!playerId) return;
+    if (!playerId || !userId) return;
 
     try {
-      const cached = localStorage.getItem(`${SNAPSHOT_CACHE_KEY}_${playerId}`);
+      const cached = localStorage.getItem(`${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`);
       if (cached) {
         const parsed = JSON.parse(cached);
         // Only use cache if it's from today
@@ -60,11 +64,11 @@ export function useTodaySnapshot(playerId: string | null) {
     } catch {
       // Ignore cache errors
     }
-  }, [playerId]);
+  }, [playerId, userId]);
 
   // Fetch fresh snapshot
   const refresh = useCallback(async () => {
-    if (!playerId || activePlayer.current !== playerId) return null;
+    if (!playerId || !userId || activePlayer.current !== actorKey) return null;
     const sequence = ++requestSequence.current;
     setIsLoading(true);
     setError(null);
@@ -75,7 +79,7 @@ export function useTodaySnapshot(playerId: string | null) {
       });
 
       if (rpcError) throw rpcError;
-      if (sequence !== requestSequence.current || activePlayer.current !== playerId) return null;
+      if (sequence !== requestSequence.current || activePlayer.current !== actorKey) return null;
 
       const result = data as unknown as TodaySnapshot;
       
@@ -83,7 +87,7 @@ export function useTodaySnapshot(playerId: string | null) {
         setSnapshot(result);
         // Cache the snapshot
         try {
-          localStorage.setItem(`${SNAPSHOT_CACHE_KEY}_${playerId}`, JSON.stringify(result));
+          localStorage.setItem(`${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`, JSON.stringify(result));
         } catch {
           // Ignore storage errors
         }
@@ -94,12 +98,12 @@ export function useTodaySnapshot(playerId: string | null) {
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch snapshot";
-      if (sequence === requestSequence.current && activePlayer.current === playerId) setError(message);
+      if (sequence === requestSequence.current && activePlayer.current === actorKey) setError(message);
       return null;
     } finally {
-      if (sequence === requestSequence.current && activePlayer.current === playerId) setIsLoading(false);
+      if (sequence === requestSequence.current && activePlayer.current === actorKey) setIsLoading(false);
     }
-  }, [playerId]);
+  }, [playerId, userId, actorKey]);
 
   // Initial fetch
   useEffect(() => {

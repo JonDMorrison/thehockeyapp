@@ -6,6 +6,8 @@ import { logger } from "@/core";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getPendingEvents,
+  getPendingEventCount,
+  getOfflineAccountOwner,
   markEventsSyncing,
   updateEventStatus,
   removeSucceededEvents,
@@ -101,11 +103,9 @@ export async function syncPendingEvents(): Promise<{ synced: number; failed: num
     const batchSize = 10;
     for (let i = 0; i < pendingEvents.length; i += batchSize) {
       const batch = pendingEvents.slice(i, i + batchSize);
-      const eventIds = batch.map((e) => e.localEventId);
-      
-      await markEventsSyncing(eventIds);
-
       for (const event of batch) {
+        if (getOfflineAccountOwner() !== event.userId) return { synced, failed };
+        await markEventsSyncing([event.localEventId]);
         // Skip events that have exceeded max retries
         if (event.retryCount >= MAX_RETRIES) {
           await updateEventStatus(event.localEventId, 'failed', 'Max retries exceeded');
@@ -114,6 +114,11 @@ export async function syncPendingEvents(): Promise<{ synced: number; failed: num
         }
 
         const result = await applyOfflineEvent(event);
+        if (getOfflineAccountOwner() !== event.userId) {
+          await updateEventStatus(event.localEventId, result.success ? 'succeeded' : 'pending');
+          notifyListeners('idle', await getPendingEventCount());
+          return { synced: synced + Number(result.success), failed };
+        }
 
         if (result.success) {
           await updateEventStatus(event.localEventId, 'succeeded');
