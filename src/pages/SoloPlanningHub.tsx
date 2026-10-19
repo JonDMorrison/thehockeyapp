@@ -106,7 +106,7 @@ export default function SoloPlanningHub() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
-        .select('id, first_name')
+        .select('*')
         .eq('id', playerId)
         .single();
       if (error) throw error;

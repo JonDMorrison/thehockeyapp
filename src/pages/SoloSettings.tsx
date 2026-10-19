@@ -28,7 +28,7 @@ export default function SoloSettings() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
-        .select('id, first_name, last_initial, profile_photo_url')
+        .select('*')
         .eq('id', playerId)
         .single();
       if (error) throw error;

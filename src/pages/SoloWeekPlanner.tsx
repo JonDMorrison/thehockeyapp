@@ -72,7 +72,7 @@ export default function SoloWeekPlanner() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
-        .select('id, first_name, owner_user_id')
+        .select('*')
         .eq('id', playerId)
         .single();
       if (error) throw error;

@@ -1,3 +1,5 @@
+import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTranslation } from 'react-i18next';
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -45,6 +47,11 @@ export default function SoloBadges() {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  const { evaluate: evaluateBadges } = useBadgeEvaluation(playerId);
+  useEffect(() => {
+    if (isAuthenticated && playerId) evaluateBadges();
+  }, [isAuthenticated, playerId, evaluateBadges]);
+
   // Badge categories defined inside component so t() is available
   const BADGE_CATEGORIES = [
     {
@@ -74,12 +81,12 @@ export default function SoloBadges() {
   ];
 
   // Fetch player
-  const { data: player } = useQuery({
+  const { data: player, isError: playerError, refetch: retryPlayer } = useQuery({
     queryKey: ['player', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('players')
-        .select('id, first_name')
+        .select('*')
         .eq('id', playerId)
         .single();
       if (error) throw error;
@@ -89,7 +96,7 @@ export default function SoloBadges() {
   });
 
   // Fetch all active challenges
-  const { data: challenges, isLoading } = useQuery({
+  const { data: challenges, isLoading, isError: challengesError, refetch: retryChallenges } = useQuery({
     queryKey: ['challenges'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -103,7 +110,7 @@ export default function SoloBadges() {
   });
 
   // Fetch player's progress
-  const { data: progress, isLoading: progressLoading } = useQuery({
+  const { data: progress, isLoading: progressLoading, isError: progressError, refetch: retryProgress } = useQuery({
     queryKey: ['player-challenge-progress', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -117,7 +124,7 @@ export default function SoloBadges() {
   });
 
   // Fetch player's earned badges
-  const { data: badges, isLoading: badgesLoading } = useQuery({
+  const { data: badges, isLoading: badgesLoading, isError: badgesError, refetch: retryBadges } = useQuery({
     queryKey: ['player-badges', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -151,6 +158,12 @@ export default function SoloBadges() {
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (playerError || challengesError || progressError || badgesError) {
+    return <AppShell><div className="p-5"><DataLoadError title="Couldn’t load your badges" onRetry={() => {
+      void Promise.all([retryPlayer(), retryChallenges(), retryProgress(), retryBadges()]);
+    }} /></div></AppShell>;
   }
 
   return (
