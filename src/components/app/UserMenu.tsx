@@ -20,11 +20,11 @@ import {
   HelpCircle,
   Bell,
   Shield,
-  CreditCard,
   Camera,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { privateMediaReference, resolveMediaUrl, validateImageUpload } from "@/lib/media";
 import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {
@@ -95,7 +95,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
   const displayName = customDisplayName || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
   const email = user?.email || "";
-  const avatarSrc = avatarUrl ?? user?.user_metadata?.avatar_url;
+  const avatarReference = avatarUrl ?? user?.user_metadata?.avatar_url;
+  const [avatarSrc, setAvatarSrc] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    let active = true;
+    setAvatarSrc(null);
+    void resolveMediaUrl(avatarReference).then(url => { if (active) setAvatarSrc(url); });
+    return () => { active = false; };
+  }, [avatarReference]);
 
   const sizeClasses = {
     sm: "h-8 w-8",
@@ -108,21 +115,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     if (!file || !playerId) return;
 
     // Validate file
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: t("common.invalidFile"),
-        description: t("common.selectImageFile"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: t("common.fileTooLarge"),
-        description: t("common.selectImageUnder5MB"),
-        variant: "destructive",
-      });
+    const validation = validateImageUpload(file);
+    if (validation) {
+      toast({ title: t("common.invalidFile"), description: validation, variant: "destructive" });
       return;
     }
 
@@ -130,34 +125,35 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
     try {
       // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${playerId}/profile.${fileExt}`;
+      const fileExt = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+      const fileName = `${playerId}/profile-${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('player-photos')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('player-photos')
-        .getPublicUrl(fileName);
+      const reference = privateMediaReference("player-photos", fileName);
 
       // Update player profile
       const { error: updateError } = await supabase
         .from('players')
-        .update({ profile_photo_url: publicUrl })
+        .update({ profile_photo_url: reference })
         .eq('id', playerId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        await supabase.storage.from("player-photos").remove([fileName]);
+        throw updateError;
+      }
+      setAvatarSrc(await resolveMediaUrl(reference));
 
       toast({
         title: t("common.photoUpdated"),
         description: t("common.profilePhotoUpdated"),
       });
 
-      onPhotoUploaded?.(publicUrl);
+      onPhotoUploaded?.(reference);
     } catch (error: unknown) {
       logger.error('Photo upload error', { error });
       toast({
@@ -185,7 +181,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            aria-label="Account menu"
+            aria-label={playerId ? `Player options for ${displayName}` : "Account menu"}
             className={cn(
               "relative flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2",
               isUploading && "opacity-50 pointer-events-none",
@@ -241,7 +237,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings/notifications" className="flex items-center cursor-pointer">
+              <Link to="/settings#notifications" className="flex items-center cursor-pointer">
                 <Bell className="mr-2 h-4 w-4" />
                 <span>{t("settings.settings.notifications")}</span>
               </Link>
@@ -250,19 +246,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link to="/settings/billing" className="flex items-center cursor-pointer">
-                <CreditCard className="mr-2 h-4 w-4" />
-                <span>{t("settings.settings.billing")}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings/privacy" className="flex items-center cursor-pointer">
+              <Link to="/privacy" className="flex items-center cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
                 <span>{t("settings.settings.privacy")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/help" className="flex items-center cursor-pointer">
+              <Link to="/contact" className="flex items-center cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>{t("common.helpAndSupport")}</span>
               </Link>

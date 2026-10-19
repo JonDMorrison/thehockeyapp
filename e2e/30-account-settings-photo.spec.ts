@@ -1,0 +1,76 @@
+import { expect, test } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
+
+test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 390, height: 844 } });
+test('mobile account links, preferences, and private player photo survive reload and recover from errors', async ({ page, request }) => {
+  test.skip(process.env.ACCOUNT_SETTINGS_RELEASE_TEST !== '1', 'Opt in to a fictional family and private photo.');
+  test.setTimeout(150000);
+  const email = `qa-settings-${Date.now()}@example.com`, password = `QA-${randomUUID()}`;
+  const client = createClient(process.env.VITE_SUPABASE_URL!, process.env.VITE_SUPABASE_PUBLISHABLE_KEY!, { auth: { persistSession: false } });
+  const signup = await client.auth.signUp({ email, password }); expect(signup.error).toBeNull();
+  const userId = signup.data.user!.id;
+  fs.appendFileSync('/tmp/hockey-qa-settings-fixtures.jsonl', JSON.stringify({ email, userId })+'\n');
+  const team = await client.rpc('create_team_with_owner', { p_name: `Disposable Settings QA ${Date.now()}`, p_age_division: 'U13', p_level: 'rep' }); expect(team.error).toBeNull();
+  fs.appendFileSync('/tmp/hockey-qa-settings-fixtures.jsonl', JSON.stringify({ userId, teamId: team.data.team_id })+'\n');
+  expect((await client.from('profiles').update({ coach_why: 'Help each kid love hockey', coach_love: 'Teamwork', coach_memory: 'First practice' }).eq('user_id', userId)).error).toBeNull();
+  await page.goto('/auth?mode=signin&redirect=%2Fsettings');
+  await page.getByLabel(/^email/i).fill(email); await page.getByLabel(/^password/i).fill(password);
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Account & Profile' })).toBeVisible();
+  await expect(page.locator('#coachWhy')).toHaveValue('Help each kid love hockey');
+  await page.getByLabel('Display Name', { exact: true }).fill('Coach Profile QA');
+  await page.getByRole('button', { name: 'Save Profile', exact: true }).click();
+  await expect(page.getByText('Profile saved', { exact: true })).toBeVisible();
+  await page.reload(); await expect(page.locator('#coachWhy')).toHaveValue('Help each kid love hockey');
+  expect((await client.from('profiles').select('coach_why,coach_love,coach_memory').eq('user_id', userId).single()).data).toEqual({ coach_why: 'Help each kid love hockey', coach_love: 'Teamwork', coach_memory: 'First practice' });
+  const product = page.getByRole('switch', { name: 'Product updates', exact: true });
+  await expect(product).toBeEnabled();
+  const initial = await product.getAttribute('aria-checked');
+  await product.click(); await expect(product).toHaveAttribute('aria-checked', initial === 'true' ? 'false' : 'true');
+  await page.reload(); await expect(product).toHaveAttribute('aria-checked', initial === 'true' ? 'false' : 'true');
+  await page.route('**/rest/v1/email_preferences*', route => route.request().method() === 'POST' ? route.fulfill({ status: 503, json: { message: 'Preference write unavailable' } }) : route.continue());
+  await product.click(); await expect(page.getByText('Could not save email preference', { exact: true })).toBeVisible();
+  await expect(product).toHaveAttribute('aria-checked', initial === 'true' ? 'false' : 'true');
+  await page.unroute('**/rest/v1/email_preferences*');
+  await page.route('**/rest/v1/email_preferences*', route => route.fulfill({ status: 503, json: { message: 'Preference read unavailable' } }));
+  await page.reload(); await expect(page.getByRole('button', { name: /try again/i })).toBeVisible({ timeout: 20000 });
+  await expect(product).toHaveCount(0);
+  await page.unroute('**/rest/v1/email_preferences*'); await page.getByRole('button', { name: /try again/i }).click(); await expect(product).toBeEnabled();
+  for (const [name, path] of [[/notifications/i, '/settings#notifications'], [/privacy/i, '/privacy'], [/help.*support/i, '/contact']] as const) {
+    await page.goto('/settings'); await page.getByRole('button', { name: 'Account menu', exact: true }).click();
+    await expect(page.getByRole('menuitem', { name: /billing/i })).toHaveCount(0);
+    await page.getByRole('menuitem', { name }).click(); await expect(page).toHaveURL(new RegExp(path.replace('#', '\\#')+'$'));
+    await expect(page.getByText(/page not found/i)).toHaveCount(0);
+    if (path.includes('#')) await expect(page.getByRole('heading', { name: 'Email preferences' })).toBeInViewport();
+  }
+  await page.goto('/solo/setup'); await page.locator('#firstName').fill('PhotoAuditKid'); await page.locator('#soloAdultAcknowledgement').check();
+  await page.getByRole('button', { name: /^continue/i }).click();
+  await page.getByRole('button', { name: /^continue/i }).click();
+  await page.getByRole('button', { name: /start training/i }).click();
+  await expect(page).toHaveURL(/\/solo\/today\/[a-f0-9-]+$/);
+  const playerId = page.url().split('/').pop()!;
+  fs.appendFileSync('/tmp/hockey-qa-settings-fixtures.jsonl', JSON.stringify({ userId, playerId })+'\n');
+  await page.goto(`/solo/dashboard/${playerId}`);
+  const avatar = page.getByRole('button', { name: 'Player options for PhotoAuditKid' });
+  await expect(avatar).toBeVisible();
+  // The actual hidden file input executes the same upload handler as the photo menu action.
+  await page.locator('input[type=file]').last().setInputFiles('public/favicon.png');
+  await expect(page.getByText('Photo updated!', { exact: true })).toBeVisible();
+  const saved = await client.from('players').select('profile_photo_url').eq('id', playerId).single(); expect(saved.error).toBeNull();
+  const reference = saved.data!.profile_photo_url as string;
+  expect(reference).toMatch(/^player-photos:/);
+  const objectPath = reference.slice('player-photos:'.length);
+  fs.appendFileSync('/tmp/hockey-qa-settings-fixtures.jsonl', JSON.stringify({ userId, playerId, bucket: 'player-photos', objectPath })+'\n');
+  await expect(avatar.locator('img')).toBeVisible();
+  expect(await avatar.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
+  await page.reload(); await expect(avatar.locator('img')).toBeVisible();
+  expect((await request.get(`${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/player-photos/${objectPath}`)).ok()).toBe(false);
+  // Existing records that saved a public-shaped URL for a private bucket are safely repaired on read.
+  await client.from('players').update({ profile_photo_url: `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/player-photos/${objectPath}` }).eq('id', playerId);
+  await page.reload(); await expect(avatar.locator('img')).toBeVisible();
+  await client.storage.from('player-photos').remove([objectPath]);
+  await client.from('players').update({ profile_photo_url: null }).eq('id', playerId);
+  await client.auth.signOut({ scope: 'local' });
+});
