@@ -278,6 +278,7 @@ const CoachDashboard: React.FC = () => {
       <Helmet><title>{`${dashboard.team?.name ?? "Dashboard"} | Hockey App`}</title></Helmet>
       <PageContainer className="space-y-6">
         <TodayHeader
+          teamId={id}
           teamName={dashboard.team?.name ?? "My Team"}
           seasonLabel={dashboard.team?.season_label}
           teamLogoUrl={dashboard.team?.logo_url}

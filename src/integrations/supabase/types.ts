@@ -39,6 +39,14 @@ export type Database = {
   }
   public: {
     Tables: {
+      team_banners: {
+        Row: { team_id: string; preset: string; storage_path: string | null; focal_x: number; focal_y: number }
+        Insert: { team_id: string; preset?: string; storage_path?: string | null; focal_x?: number; focal_y?: number }
+        Update: { team_id?: string; preset?: string; storage_path?: string | null; focal_x?: number; focal_y?: number }
+        Relationships: []
+      }
+
+
       admin_activity_log: {
         Row: {
           actor_user_id: string | null

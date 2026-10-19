@@ -184,7 +184,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Floating User Menu - Top Right */}
       {!hideUserMenu && (
-        <div className="fixed right-3 top-3 z-[60] flex items-center gap-1 rounded-full border border-white/[0.07] bg-background/85 p-1 shadow-lg backdrop-blur-xl lg:right-5">
+        <div className="fixed right-3 top-3 z-40 flex items-center gap-1 rounded-full border border-white/[0.07] bg-background/85 p-1 shadow-lg backdrop-blur-xl lg:right-5">
           <OfflineDot status={offlineStatus} />
           <ContextSwitcher compact />
           <UserMenu size="sm" />
