@@ -53,6 +53,7 @@ import {
   Edit3,
   X,
 } from "lucide-react";
+import { PlayerCard, PlayerPersonality } from "@/components/player/PlayerCard";
 import { InviteGuardianModal } from "@/components/player/InviteGuardianModal";
 
 interface Guardian {
@@ -381,7 +382,7 @@ const PlayerProfile: React.FC = () => {
         </div>
       }
     >
-      <PageContainer>
+      <PageContainer className="max-w-4xl">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -391,6 +392,22 @@ const PlayerProfile: React.FC = () => {
           className="hidden"
         />
 
+        {!isEditing && (
+          <PlayerCard
+            player={player}
+            photoAction={canEdit ? (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                aria-label={t("players.uploadProfilePhoto")}
+                className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full border-4 border-card bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
+            ) : undefined}
+          />
+        )}
+        {isEditing && <>
         {/* Profile Header */}
         <AppCard className="text-center">
           <div className="relative inline-block mx-auto mb-4">
@@ -606,6 +623,17 @@ const PlayerProfile: React.FC = () => {
             <p className="text-muted-foreground text-sm">{t("players.profile.seasonGoalsNone")}</p>
           )}
         </AppCard>
+
+        </>}
+        {!isEditing && (
+          <PlayerPersonality
+            player={player}
+            title={t("players.profile.favoritesTitle")}
+            emptyAction={canEdit ? (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>{t("common.edit")}</Button>
+            ) : undefined}
+          />
+        )}
 
         {/* Badges Earned */}
         <AppCard>

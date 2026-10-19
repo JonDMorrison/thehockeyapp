@@ -4,25 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer, PageHeader } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle } from "@/components/app/AppCard";
-import { Tag } from "@/components/app/Tag";
-import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
   Target,
-  Heart,
-  Trophy,
-  Star,
   User,
   Image as ImageIcon,
   Share2,
 } from "lucide-react";
-import { getPlayerPositionLabel } from "@/lib/playerProfile";
+import { PlayerCard, PlayerPersonality } from "@/components/player/PlayerCard";
 
 interface SessionPhoto {
   id: string;
@@ -35,10 +29,12 @@ interface SessionPhoto {
 
 const RosterPlayerDetail: React.FC = () => {
   const { t } = useTranslation();
-  const { teamId, playerId } = useParams<{ teamId: string; playerId: string }>();
+  const { teamId, playerId } = useParams<{
+    teamId: string;
+    playerId: string;
+  }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const { activeView, activePlayerId } = useActiveView();
 
   // Context-aware back navigation - go to roster, which will handle its own back navigation
   const handleBack = () => {
@@ -68,12 +64,18 @@ const RosterPlayerDetail: React.FC = () => {
   });
 
   // Fetch player via membership
-  const { data: player, isLoading } = useQuery({
-    queryKey: ["roster-player", teamId, playerId],
+  const {
+    data: player,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["roster-player", teamId, playerId, user?.id],
     queryFn: async () => {
       const { data: membership, error: membershipError } = await supabase
         .from("team_memberships")
-        .select(`
+        .select(
+          `
           id,
           player_id,
           players (
@@ -90,7 +92,8 @@ const RosterPlayerDetail: React.FC = () => {
             hockey_love,
             season_goals
           )
-        `)
+        `,
+        )
         .eq("team_id", teamId)
         .eq("player_id", playerId)
         .eq("status", "active")
@@ -104,10 +107,10 @@ const RosterPlayerDetail: React.FC = () => {
 
   // Fetch shared photos (visibility = team_adults)
   const { data: sharedPhotos } = useQuery({
-    queryKey: ["shared-photos", teamId, playerId],
+    queryKey: ["shared-photos", teamId, playerId, user?.id],
     queryFn: async () => {
       // Get recent practice cards for this team
-      const { data: cards } = await supabase
+      const { data: cards, error: cardsError } = await supabase
         .from("practice_cards")
         .select("id")
         .eq("team_id", teamId!)
@@ -115,6 +118,7 @@ const RosterPlayerDetail: React.FC = () => {
         .order("date", { ascending: false })
         .limit(10);
 
+      if (cardsError) throw cardsError;
       if (!cards || cards.length === 0) return [];
 
       const cardIds = cards.map((c) => c.id);
@@ -136,7 +140,7 @@ const RosterPlayerDetail: React.FC = () => {
             .createSignedUrl(photo.storage_path, 3600);
           if (signedError) throw signedError;
           return { ...photo, signed_url: signed.signedUrl };
-        })
+        }),
       );
 
       return photosWithUrls as SessionPhoto[];
@@ -159,6 +163,30 @@ const RosterPlayerDetail: React.FC = () => {
   // If not authenticated, render nothing while redirect happens
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (isError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer className="max-w-4xl">
+          <AppCard>
+            <div role="alert" className="space-y-3">
+              <h1 className="text-lg font-bold">Couldn’t load this player</h1>
+              <p className="text-sm text-muted-foreground">
+                Check your connection and try again. This profile may also be
+                unavailable to your account.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => void refetch()}>Try again</Button>
+                <Button variant="outline" onClick={handleBack}>
+                  Back to roster
+                </Button>
+              </div>
+            </div>
+          </AppCard>
+        </PageContainer>
+      </AppShell>
+    );
   }
 
   if (!player) {
@@ -185,106 +213,44 @@ const RosterPlayerDetail: React.FC = () => {
     <AppShell
       hideNav
       header={
-        <div className="flex items-center gap-3">
-          <Button aria-label="Go back"
+        <div className="flex min-w-0 items-center gap-3 [&_h1]:break-words [&_p]:break-words">
+          <Button
+            aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={handleBack}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <PageHeader
-            title={`${player.first_name} ${player.last_initial || ""}.`}
-            subtitle={team?.name}
-          />
+          <div className="min-w-0">
+            <PageHeader
+              title={`${player.first_name}${player.last_initial ? ` ${player.last_initial}.` : ""}`}
+              subtitle={team?.name}
+            />
+          </div>
         </div>
       }
     >
-      <PageContainer>
-        {/* Profile Header */}
-        <AppCard className="text-center">
-          <Avatar
-            src={player.profile_photo_url}
-            fallback={`${player.first_name} ${player.last_initial || ""}`}
-            size="xl"
-            className="mx-auto mb-4"
-          />
-          <h2 className="text-xl font-bold">
-            {player.first_name} {player.last_initial && `${player.last_initial}.`}
-          </h2>
-          <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-            <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
-            {player.shoots && player.shoots !== "unknown" && (
-              <Tag variant="accent">
-                {t("players.rosterDetail.shoots")} {player.shoots === "left" ? t("teams.addChild.shootsLeft") : t("teams.addChild.shootsRight")}
-              </Tag>
-            )}
-            {player.jersey_number && (
-              <Tag variant="tier">#{player.jersey_number}</Tag>
-            )}
-            {getPlayerPositionLabel(player.position) && (
-              <Tag variant="neutral">{getPlayerPositionLabel(player.position)}</Tag>
-            )}
-          </div>
-          <div className="mt-4">
+      <PageContainer className="max-w-4xl">
+        <PlayerCard
+          player={player}
+          teamName={team?.name}
+          action={
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => navigate(`/players/${playerId}/home`)}
+              className="gap-2 rounded-xl"
             >
-              <Target className="w-4 h-4 mr-2" />
+              <Target className="h-4 w-4" aria-hidden="true" />
               {t("players.rosterDetail.viewProgress")}
             </Button>
-          </div>
-        </AppCard>
-
-        {/* Fun Stuff */}
-        {(player.fav_nhl_city || player.fav_nhl_player || player.hockey_love || player.season_goals) && (
-          <AppCard>
-            <AppCardTitle className="text-base flex items-center gap-2 mb-4">
-              <Star className="w-4 h-4 text-primary" />
-              {t("players.rosterDetail.aboutTitle", { name: player.first_name })}
-            </AppCardTitle>
-            <div className="space-y-4 text-sm">
-              {player.fav_nhl_city && (
-                <div className="flex items-start gap-3">
-                  <Trophy className="w-4 h-4 text-text-muted mt-0.5" />
-                  <div>
-                    <p className="text-text-muted">{t("players.rosterDetail.favNhlCity")}</p>
-                    <p className="font-medium">{player.fav_nhl_city}</p>
-                  </div>
-                </div>
-              )}
-              {player.fav_nhl_player && (
-                <div className="flex items-start gap-3">
-                  <Star className="w-4 h-4 text-text-muted mt-0.5" />
-                  <div>
-                    <p className="text-text-muted">{t("players.rosterDetail.favPlayer")}</p>
-                    <p className="font-medium">{player.fav_nhl_player}</p>
-                  </div>
-                </div>
-              )}
-              {player.hockey_love && (
-                <div className="flex items-start gap-3">
-                  <Heart className="w-4 h-4 text-text-muted mt-0.5" />
-                  <div>
-                    <p className="text-text-muted">{t("players.rosterDetail.whatTheyLove")}</p>
-                    <p className="font-medium">{player.hockey_love}</p>
-                  </div>
-                </div>
-              )}
-              {player.season_goals && (
-                <div className="flex items-start gap-3">
-                  <Target className="w-4 h-4 text-text-muted mt-0.5" />
-                  <div>
-                    <p className="text-text-muted">{t("players.rosterDetail.seasonGoals")}</p>
-                    <p className="font-medium">{player.season_goals}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </AppCard>
-        )}
+          }
+        />
+        <PlayerPersonality
+          player={player}
+          title={t("players.rosterDetail.aboutTitle", {
+            name: player.first_name,
+          })}
+        />
 
         {/* Shared Photos */}
         {sharedPhotos && sharedPhotos.length > 0 && (
