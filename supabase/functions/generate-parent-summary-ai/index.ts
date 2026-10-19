@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { aiConsentedPlayers, validDateOnly } from "../_shared/summaryPrivacy.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -55,7 +57,7 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -79,14 +81,6 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
-    // ── Entitlement gate: on-demand requires Pro/team/comp ──
-    const supabaseGate = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: hasFullAccess } = await supabaseGate.rpc("has_full_access", { p_user_id: userId });
-    if (hasFullAccess !== true) {
-      console.log(JSON.stringify({ request_id: requestId, event: "summary_blocked", user_id: userId, reason: "no_full_access" }));
-      return jsonResp({ error: "upgrade_required", message: "On-demand summaries require Parent Pro or Team coverage." }, 403);
-    }
-
     // ── Input validation ──
     const body = await req.json();
     const { player_id, week_start } = body;
@@ -96,7 +90,7 @@ serve(async (req) => {
       typeof player_id !== "string" ||
       !week_start ||
       typeof week_start !== "string" ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(week_start)
+      !validDateOnly(week_start)
     ) {
       return jsonResp(
         { error: "player_id (uuid) and week_start (YYYY-MM-DD) are required" },
@@ -131,11 +125,12 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // ── Verify guardian/owner ──
-    const { data: player } = await supabase
+    const { data: player, error: playerError } = await supabase
       .from("players")
       .select("id, first_name, owner_user_id")
       .eq("id", player_id)
       .single();
+    if (playerError) throw playerError;
 
     if (!player) {
       return jsonResp({ error: "Player not found" }, 404);
@@ -157,26 +152,31 @@ serve(async (req) => {
       return jsonResp({ error: "Not authorized for this player" }, 403);
     }
 
-    // ── Tier: already verified Pro via gate above ──
+    const aiAllowed = (await aiConsentedPlayers(supabase, [player_id], userId)).has(player_id);
+
+    // Community access is free; summaries remain factual when AI is not enabled.
     const isPro = true; // gate ensures only Pro/team/comp users reach here
 
     log("tier_resolved", { isPro });
 
     // ── Fetch parent-only practice cards ──
-    const { data: practiceCards } = await supabase
+    const { data: practiceCards, error: practiceCardsError } = await supabase
       .from("practice_cards")
       .select("id, date, mode")
       .eq("program_source", "parent")
+      .eq("created_by_user_id", userId)
       .gte("date", week_start)
       .lte("date", weekEnd);
+    if (practiceCardsError) throw practiceCardsError;
 
     // Also fetch personal practice cards (solo/parent-created)
-    const { data: personalCards } = await supabase
+    const { data: personalCards, error: personalCardsError } = await supabase
       .from("personal_practice_cards")
       .select("id, date, title")
       .eq("player_id", player_id)
       .gte("date", week_start)
       .lte("date", weekEnd);
+    if (personalCardsError) throw personalCardsError;
 
     // ── Session completions (parent program_source) ──
     const parentCardIds = practiceCards?.map((c) => c.id) || [];
@@ -184,12 +184,13 @@ serve(async (req) => {
     const parentSessionsTotal = parentCardIds.length;
 
     if (parentCardIds.length > 0) {
-      const { data: sessions } = await supabase
+      const { data: sessions, error: sessionsError } = await supabase
         .from("session_completions")
         .select("status, practice_card_id")
         .eq("player_id", player_id)
         .eq("program_source", "parent")
         .in("practice_card_id", parentCardIds);
+    if (sessionsError) throw sessionsError;
 
       parentSessionsComplete =
         sessions?.filter((s) => s.status === "complete").length ?? 0;
@@ -201,11 +202,12 @@ serve(async (req) => {
     const personalSessionsTotal = personalCardIds.length;
 
     if (personalCardIds.length > 0) {
-      const { data: pSessions } = await supabase
+      const { data: pSessions, error: pSessionsError } = await supabase
         .from("personal_session_completions")
         .select("status, personal_practice_card_id")
         .eq("player_id", player_id)
         .in("personal_practice_card_id", personalCardIds);
+    if (pSessionsError) throw pSessionsError;
 
       personalSessionsComplete =
         pSessions?.filter((s) => s.status === "complete").length ?? 0;
@@ -220,7 +222,7 @@ serve(async (req) => {
     let totalMinutes = 0;
 
     if (parentCardIds.length > 0) {
-      const { data: taskComps } = await supabase
+      const { data: taskComps, error: taskCompsError } = await supabase
         .from("task_completions")
         .select(
           "shots_logged, practice_tasks!inner(practice_card_id, task_type, target_type, target_value)"
@@ -228,6 +230,7 @@ serve(async (req) => {
         .eq("player_id", player_id)
         .eq("completed", true)
         .in("practice_tasks.practice_card_id", parentCardIds);
+    if (taskCompsError) throw taskCompsError;
 
       for (const tc of taskComps || []) {
         const task = tc.practice_tasks as any;
@@ -246,7 +249,7 @@ serve(async (req) => {
 
     // Personal task completions
     if (personalCardIds.length > 0) {
-      const { data: pTaskComps } = await supabase
+      const { data: pTaskComps, error: pTaskCompsError } = await supabase
         .from("personal_task_completions")
         .select(
           "personal_practice_tasks!inner(personal_practice_card_id, task_type, shots_expected, target_type, target_value)"
@@ -257,6 +260,7 @@ serve(async (req) => {
           "personal_practice_tasks.personal_practice_card_id",
           personalCardIds
         );
+    if (pTaskCompsError) throw pTaskCompsError;
 
       for (const tc of pTaskComps || []) {
         const task = tc.personal_practice_tasks as any;
@@ -279,18 +283,20 @@ serve(async (req) => {
         : 0;
 
     // ── Streak calculation (parent-only) ──
-    const { data: allPersonalSessions } = await supabase
+    const { data: allPersonalSessions, error: allPersonalSessionsError } = await supabase
       .from("personal_session_completions")
       .select("personal_practice_cards!inner(date)")
       .eq("player_id", player_id)
       .eq("status", "complete");
+    if (allPersonalSessionsError) throw allPersonalSessionsError;
 
-    const { data: allParentSessions } = await supabase
+    const { data: allParentSessions, error: allParentSessionsError } = await supabase
       .from("session_completions")
       .select("completed_at")
       .eq("player_id", player_id)
       .eq("program_source", "parent")
       .eq("status", "complete");
+    if (allParentSessionsError) throw allParentSessionsError;
 
     const completedDatesSet = new Set<string>();
     for (const s of allPersonalSessions || []) {
@@ -355,12 +361,13 @@ serve(async (req) => {
     log("stats_computed", { stats });
 
     // ── Get focus areas ──
-    const { data: plan } = await supabase
+    const { data: plan, error: planError } = await supabase
       .from("personal_training_plans")
       .select("training_focus")
       .eq("player_id", player_id)
       .eq("is_active", true)
       .maybeSingle();
+    if (planError) throw planError;
 
     const focusAreas =
       plan?.training_focus?.join(", ") || "general development";
@@ -369,14 +376,14 @@ serve(async (req) => {
     const hasActiveProgram = !!plan;
 
     // FREE prompt: reflection only, max 70 words
-    const freePrompt = `Generate a brief weekly reflection for ${player.first_name}'s home development:
+    const freePrompt = `Generate a brief weekly reflection for a player's home development:
 - Workouts completed: ${workoutsCompleted} of ${workoutsScheduled} (${completionPct}%)
 - Current streak: ${currentStreak} days
 
 Remember: Max 70 words. Reflection only. No drill suggestions. No volume targets.`;
 
     // PRO prompt: reflection + focus + volume target + program alignment
-    const proPrompt = `Generate a parent weekly summary for ${player.first_name}'s home development program:
+    const proPrompt = `Generate a parent weekly summary for a player's home development program:
 - Workouts completed: ${workoutsCompleted} of ${workoutsScheduled} scheduled (${completionPct}%)
 - Total shots logged: ${totalShots}
 - Strength reps (pushups etc): ${totalStrengthReps}
@@ -392,11 +399,14 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
     const userPrompt = isPro ? proPrompt : freePrompt;
 
     let summaryText: string;
+    let aiUsed=false;
     try {
+      if (!aiAllowed || !LOVABLE_API_KEY) throw new Error("Factual summary selected");
       const aiResponse = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
           method: "POST",
+          signal: AbortSignal.timeout(15000),
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
@@ -418,6 +428,7 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
         summaryText = `${player.first_name} completed ${workoutsCompleted} of ${workoutsScheduled} home workouts this week with ${totalShots} shots logged. ${currentStreak > 0 ? `Current streak: ${currentStreak} days — keep it going!` : "Let's build a streak next week!"}`;
       } else {
         const aiData = await aiResponse.json();
+        aiUsed=Boolean(aiData.choices?.[0]?.message?.content?.trim());
         summaryText =
           aiData.choices?.[0]?.message?.content?.trim() ||
           `${player.first_name} completed ${workoutsCompleted} home workouts this week. Keep up the effort!`;
@@ -463,12 +474,13 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
 
     for (const m of metricsToUpsert) {
       // Upsert: increment count, rolling average for avg metrics
-      const { data: existing } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from("parent_weekly_summary_metrics")
         .select("metric_value, metadata")
         .eq("metric_date", m.metric_date)
         .eq("metric_name", m.metric_name)
         .maybeSingle();
+    if (existingError) throw existingError;
 
       if (existing) {
         if (m.metric_name === "weekly_summary_generated_count") {
@@ -499,6 +511,7 @@ Remember: 4-6 sentences. One specific win. One suggested focus area. One weekly 
 
     return jsonResp({
       success: true,
+      ai_personalization_used: aiUsed,
       player_id,
       week_start,
       week_end: weekEnd,

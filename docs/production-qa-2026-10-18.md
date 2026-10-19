@@ -168,3 +168,13 @@ The production API/storage test passed the private → shared → private transi
 - A broader replay exposed an intermittent WebKit sheet layering failure after nested photo permissions. Modal content now has an explicit layer above its backdrop, with a separate layer for nested permissions. Repeated verification is in progress before release.
 
 The corrected sheet build passed **15 repeated WebKit photo journeys** (4.1 minutes). The original build reproduced the overlay problem once in ten runs, with the DOM confirming the backdrop was appended above its equal-layer dialog. Explicit layers remove that ordering dependency. The broader integrity matrix passed 23 of 24 cases; one Firefox immediate shot tap did not open its dialog, while 20 instrumented repetitions then passed. That intermittent interaction remains under observation in the full browser sweep and is not counted as a clean matrix pass.
+
+## Optional AI and weekly summary accuracy
+
+The backend secret inventory contains Supabase's platform credentials only: no AI provider key, Resend key, administrator email or cron secret. Provider-generated workouts and email delivery cannot be represented as verified operational services. Family invitation links remain available. No real recipient was contacted during this audit.
+
+Three summary functions now honor active guardian AI consent and exclude player names from provider prompts. Opted-out or unavailable-provider cases produce factual summaries. Home summary scheduled counts are scoped to the requesting family's cards; scheduled weekly workout/streak totals use the requested week. Failed data reads fail the summary instead of silently persisting zero totals. Community summaries no longer require an unavailable paid entitlement.
+
+Fifteen handler-level scenarios pass with controlled database/provider responses, covering consent, withdrawal, removed guardians, invalid dates, foreign cards, prior weeks and provider failure. The actual live backend generated and persisted a factual summary without AI permission. Its mobile UI journey passed in all three browsers (47.4 seconds), including generation failure/retry, reload, list-read outage/retry and saved consent toggles. The test accounts for the deliberately asynchronous server-confirmed switch state and the shared component's hidden desktop/mobile copies.
+
+Player home now exposes privacy settings even without a team. First-run welcome also recognizes a ready personal workout and routes it to the home workout instead of telling the child to wait for a coach. Team-workout readiness and nested photo regressions passed independently across all three browsers.

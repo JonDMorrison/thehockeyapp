@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { aiConsentedPlayers, validDateOnly } from "../_shared/summaryPrivacy.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -44,9 +46,7 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -94,19 +94,8 @@ serve(async (req) => {
     // Use service role client for data operations + entitlement check
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // ─── Pro entitlement gate ───
-    const { data: entRow } = await supabase
-      .from("entitlements")
-      .select("can_receive_ai_summary")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!entRow?.can_receive_ai_summary) {
-      return new Response(JSON.stringify({ error: "AI summaries require a Pro subscription" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Team reporting is included in community access.
+    if(!team_id || !validDateOnly(week_start))return new Response(JSON.stringify({error:"A team and valid week_start date are required"}),{status:400,headers:{...corsHeaders,"Content-Type":"application/json"}});
 
     // Calculate week end
     const weekStartDate = new Date(week_start);
@@ -204,12 +193,13 @@ serve(async (req) => {
       };
     });
 
+    const consentedPlayers=await aiConsentedPlayers(supabase,playerStats.map(p=>p.player_id));
+
     // Generate player summaries
     const playerSummaries: { player_id: string; summary: string }[] = [];
     
     for (const stats of playerStats) {
       const prompt = `Generate a brief, encouraging weekly summary for a youth hockey player:
-- Name: ${stats.first_name}
 - Sessions completed: ${stats.sessions_completed} complete, ${stats.sessions_partial} partial
 - Total shots logged: ${stats.total_shots}
 - Game day prep sessions: ${stats.game_day_sessions}
@@ -217,8 +207,10 @@ serve(async (req) => {
 Keep it to 2-3 sentences. Be positive and factual.`;
 
       try {
+        if(!consentedPlayers.has(stats.player_id) || !LOVABLE_API_KEY)throw new Error("Factual summary selected");
         const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
+          signal: AbortSignal.timeout(15000),
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
@@ -273,8 +265,10 @@ Keep it to 2-3 sentences. Focus on team participation and effort.`;
 
     let teamSummary: string;
     try {
+      if(!LOVABLE_API_KEY || playerStats.some(p=>!consentedPlayers.has(p.player_id)))throw new Error("Factual team summary selected");
       const teamAiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
+        signal: AbortSignal.timeout(15000),
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
           "Content-Type": "application/json",

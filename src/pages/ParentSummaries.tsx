@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -39,7 +40,7 @@ const ParentSummaries: React.FC = () => {
     enabled: !!playerId && !!user,
   });
 
-  const { data: summaries, isLoading } = useQuery({
+  const { data: summaries, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["parent-summaries-list", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -78,7 +79,7 @@ const ParentSummaries: React.FC = () => {
   return (
     <AppShell header={header}>
       <div className="px-5 py-6 space-y-4">
-        {!summaries || summaries.length === 0 ? (
+        {isError ? <DataLoadError title="Couldn’t load weekly summaries" onRetry={() => refetch()} retrying={isFetching} /> : !summaries || summaries.length === 0 ? (
           <AppCard>
             <EmptyState
               icon={FileText}

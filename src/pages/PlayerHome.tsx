@@ -41,6 +41,7 @@ import {
   Target,
   Sparkles,
   CalendarDays,
+  Settings,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -54,6 +55,7 @@ import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
 import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
 import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
+import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { FirstRunOverlay } from "@/components/player/FirstRunOverlay";
 import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
 // Milestone thresholds for celebrations
@@ -88,6 +90,7 @@ const PlayerHome: React.FC = () => {
   const [showTeamSelector, setShowTeamSelector] = useState(false);
   const [showProgramBuilder, setShowProgramBuilder] = useState(false);
   const [showFirstRun, setShowFirstRun] = useState(false);
+  const [showPlayerSettings, setShowPlayerSettings] = useState(false);
 
   const scrollToTeammates = () => {
     teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -163,6 +166,17 @@ const PlayerHome: React.FC = () => {
   const { snapshot: todaySnapshot, isLoading: snapshotLoading } = useTodaySnapshot(
     preferences?.active_team_id ? id! : null
   );
+
+  const localToday = format(new Date(), "yyyy-MM-dd");
+  const { data: todayHomeWorkout, isLoading: homeWorkoutLoading } = useQuery({
+    queryKey: ["welcome-home-workout", id, localToday],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("personal_practice_cards").select("id").eq("player_id", id!).eq("date", localToday).not("published_at", "is", null).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: Boolean(user && id),
+  });
 
   // Calculate workout streak from session completions
   const { data: streakData } = useQuery({
@@ -385,7 +399,7 @@ const PlayerHome: React.FC = () => {
   };
 
   // Combined loading state - check after all hooks are called
-  const isLoading = authLoading || playerLoading || membershipsLoading || preferencesLoading || snapshotLoading;
+  const isLoading = authLoading || playerLoading || membershipsLoading || preferencesLoading || snapshotLoading || homeWorkoutLoading;
 
   // Show loading skeleton while auth or data is loading
   if (isLoading) {
@@ -443,7 +457,7 @@ const PlayerHome: React.FC = () => {
               <p className="truncate font-display text-base font-black uppercase">{player.first_name}</p>
             </div>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-1"><Button variant="ghost" size="icon" aria-label="Player options" onClick={() => setShowPlayerSettings(true)}><Settings className="h-5 w-5" /></Button><NotificationBell /></div>
         </div>
       }
     >
@@ -853,14 +867,16 @@ const PlayerHome: React.FC = () => {
         />
       )}
 
+      <PlayerSettingsSheet open={showPlayerSettings} onOpenChange={setShowPlayerSettings} playerId={id!} playerName={player.first_name} />
+
       {/* First-run welcome overlay */}
         {showFirstRun && player && (
           <FirstRunOverlay
             playerName={player.first_name}
-            hasWorkout={!!todaySnapshot?.has_card}
+            hasWorkout={Boolean(todaySnapshot?.has_card || todayHomeWorkout)}
             onStart={() => {
               handleDismissFirstRun();
-              if (preferences?.active_team_id) {
+              if (todaySnapshot?.has_card && preferences?.active_team_id) {
                 navigate(`/players/${id}/today`);
               } else {
                 navigate(`/solo/today/${id}`);
