@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState } from "react";
 import { logger } from "@/core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -124,7 +125,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
   const [showDesktopInstructions, setShowDesktopInstructions] = useState(false);
 
   // Fetch existing schedule source
-  const { data: source, isLoading: sourceLoading } = useQuery({
+  const { data: source, isLoading: sourceLoading, isError: sourceError, refetch: retrySource } = useQuery({
     queryKey: ["team-schedule-source", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -140,7 +141,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
   });
 
   // Fetch upcoming events
-  const { data: upcomingEvents } = useQuery({
+  const { data: upcomingEvents, isError: eventsError, refetch: retryEvents } = useQuery({
     queryKey: ["team-upcoming-events", teamId],
     queryFn: async () => {
       const now = new Date().toISOString();
@@ -198,9 +199,10 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       if (error) throw error;
 
       // Trigger initial sync
-      await supabase.functions.invoke("sync-schedule", {
+      const {data: syncResult, error: syncError} = await supabase.functions.invoke("sync-schedule", {
         body: { action: "sync", team_id: teamId },
       });
+      if(syncError || syncResult?.success !== true) throw new Error("Calendar link saved, but events could not be synced. Check the link and retry.");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team-schedule-source", teamId] });
@@ -212,7 +214,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       onConnected?.();
     },
     onError: (error) => {
-      toast.error(t("teams.scheduleSync.toastConnectFailed"));
+      void queryClient.invalidateQueries({queryKey:["team-schedule-source",teamId]});
+      toast.error(t("teams.scheduleSync.toastConnectFailed"), error instanceof Error ? error.message : undefined);
       logger.error("Failed to connect schedule", { error });
     },
   });
@@ -233,6 +236,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       toast.success(t("teams.scheduleSync.toastSynced"));
     },
     onError: () => {
+      void queryClient.invalidateQueries({queryKey:["team-schedule-source",teamId]});
       toast.error(t("teams.scheduleSync.toastSyncFailed"));
     },
   });
@@ -287,8 +291,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
       return;
     }
     setIsPreviewing(true);
-    await previewMutation.mutateAsync();
-    setIsPreviewing(false);
+    try { await previewMutation.mutateAsync(); } catch { /* The mutation reports the failure. */ } finally { setIsPreviewing(false); }
   };
 
   const handleConnect = () => {
@@ -307,6 +310,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
   }
 
   // Connected state
+  if (sourceError || eventsError) return <DataLoadError title="Couldn’t load your calendar" onRetry={() => { if(sourceError) void retrySource(); if(eventsError) void retryEvents(); }} />;
+
   if (source) {
     const nextGame = upcomingEvents?.find((e) => e.event_type === "game");
     const nextPractice = upcomingEvents?.find((e) => e.event_type === "practice");
@@ -403,6 +408,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
               </p>
             </div>
             <Switch
+              aria-label={t("teams.scheduleSync.autoGameDayLabel")}
               checked={source.auto_game_day}
               onCheckedChange={(checked) => updateSettingsMutation.mutate({ auto_game_day: checked })}
             />
@@ -416,6 +422,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
               </p>
             </div>
             <Switch
+              aria-label={t("teams.scheduleSync.showPracticesLabel")}
               checked={source.include_practices}
               onCheckedChange={(checked) => updateSettingsMutation.mutate({ include_practices: checked })}
             />
@@ -536,6 +543,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                 {t("teams.scheduleSync.step2Title")}
               </h4>
               <Input
+                aria-label="Calendar subscription link"
                 placeholder={t("teams.scheduleSync.urlPlaceholder")}
                 value={icalUrl}
                 onChange={(e) => {
@@ -602,7 +610,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                         <div>
                           <Label className="text-sm font-medium">{t("teams.scheduleSync.timezoneLabel")}</Label>
                           <Select value={timezone} onValueChange={setTimezone}>
-                            <SelectTrigger className="mt-1">
+                            <SelectTrigger aria-label="Calendar timezone" className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -622,7 +630,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                               {t("teams.scheduleSync.autoGameDaySetupDescription")}
                             </p>
                           </div>
-                          <Switch checked={autoGameDay} onCheckedChange={setAutoGameDay} />
+                          <Switch aria-label="Auto Game Day Prep"
+                            checked={autoGameDay} onCheckedChange={setAutoGameDay} />
                         </div>
 
                         <div className="flex items-center justify-between gap-4">
@@ -632,7 +641,8 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
                               {t("teams.scheduleSync.showPracticesDescription")}
                             </p>
                           </div>
-                          <Switch checked={includePractices} onCheckedChange={setIncludePractices} />
+                          <Switch aria-label="Show Practices"
+                            checked={includePractices} onCheckedChange={setIncludePractices} />
                         </div>
                       </div>
                     </div>
