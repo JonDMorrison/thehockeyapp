@@ -6,77 +6,9 @@ Audit started October 18 at 10:12 p.m. Vancouver time. Authorized work window: f
 
 Exercise real coach, family, player, solo and association journeys using fictional fixtures; inspect anonymous and cross-account access; inject failures; inspect phone layouts and keyboard use. Separate externally dependent checks from verified application behavior. Merge fixes only with appropriate regression coverage. Do not send unsolicited messages to real families or alter real teams.
 
-## QA gates
+## Final status and fifty release gates
 
-| # | Area / scenario | Evidence / result |
-|---|---|---|
-| 1 | Homepage first visit and primary actions | Verified — public journeys in the 136-pass run |
-| 2 | Demo workout completion and reset | Verified — interactive completion/reset |
-| 3 | Demo shooting challenge and signup handoff | Verified — real mobile handoff and saved shots |
-| 4 | About / features / support / legal navigation | Verified — public pages/navigation |
-| 5 | Small phone layouts and no horizontal overflow | 390px inventory passed; 320px welcome passed; full small-phone sweep pending |
-| 6 | Keyboard navigation and accessible control names | Keyboard workout/tabs and welcome focus/Escape passed; other controls under review |
-| 7 | Reduced motion and focus visibility | Code review passed; physical-device validation pending |
-| 8 | Signup validation and password visibility | Verified — signup normalization, six-character password and visibility |
-| 9 | Signin, signout, return destinations | Signin/return paths passed; account-switch cache repair passes locally |
-| 10 | Recovery invalid/expired links and request errors | Invalid-link/recovery UI passed; real mail receipt unverified |
-| 11 | Session expiry and protected routes | Route guards passed; dedicated expiry case pending |
-| 12 | Account/workspace lookup failure recovery | Verified — welcome and five workspace retry paths |
-| 13 | Coach team creation and validation | Verified — real coach signup/team setup |
-| 14 | Program/challenge choice and skipping | Program/challenge choices passed; skip path pending |
-| 15 | Visual program plans and date selection | Verified — visual plans and edited dates |
-| 16 | Program draft save, reload and retry | Verified — save/reload/retry plus atomic database gates |
-| 17 | Activity edit/add/remove/reorder/validation | Edit/remove passed; add/reorder cases pending |
-| 18 | Publish, conflicts, duplicates and failure recovery | Verified — atomic publication, failed-request retry and progress protection |
-| 19 | Template browse/filter/import and partial failures | Failed/partial import gates passed; catalog filtering still to exercise |
-| 20 | Family invite generation/copy/expiry/reuse | Generate/copy/reuse passed; expired/revoked cases pending |
-| 21 | Parent signup via invitation | Verified — real new parent signup and join |
-| 22 | Existing family joining and multiple players | Sibling switching passed; existing-player invite case pending |
-| 23 | Guardian acknowledgement and profile preferences | Adult acknowledgement/profile wizard passed; upload/privacy cases pending |
-| 24 | Invalid/revoked/wrong-account invitations | Malformed/private codes passed; invited-email staff cases pending |
-| 25 | Family/player sees correct published plan | Verified — published customized week and rest-day edit |
-| 26 | Required activity and session completion | Verified — persisted completion and reports on two local calendars |
-| 27 | Shot logging validation and persistence | Challenge shot gates passed; dedicated practice-shot gate pending |
-| 28 | Offline completion and reconnect exactly once | Loaded workout syncs exactly once; account-switch/offline recovery pending |
-| 29 | Shooting challenge dates and timezone | Verified — custom dates and daylight-saving boundaries |
-| 30 | Challenge leaderboard/final result consistency | Closed-window API guards passed; final-results browser fixture pending |
-| 31 | Coach roster/progress versus saved player work | Verified — persisted coach/player counts agree |
-| 32 | Program edit/unpublish/delete lifecycle | Rest-day edit passed; unpublish/delete lifecycle pending |
-| 33 | Quick assignment and schedule changes | Assignment API passed; full Quick Assign UI still to exercise |
-| 34 | Team settings and staff roles | Authorization review in progress; staff journeys pending |
-| 35 | Player profile edit/cancel/photos | Profile wizard passed; private-photo defect under repair |
-| 36 | Parent/shared device player switching | Verified — coach/parent switching and ten repeated phone cases |
-| 37 | Goals/badges/history/reflections | Routes passed; award/reflection write cases pending |
-| 38 | Solo setup, planning and workout completion | Routes passed; full solo setup/workout lifecycle pending |
-| 39 | Solo recurring programs and schedule | Pending |
-| 40 | Association setup/team linking/staff boundaries | Pending |
-| 41 | Anonymous and unrelated-account data denial | Fresh read denial passed; cached-view isolation repair reproduced and locally verified |
-| 42 | Database function/storage permission review | All 75 public tables have RLS; targeted storage/function review in progress |
-| 43 | Error/empty/loading states across routes | Five workspace recovery paths and phone route health passed |
-| 44 | Notifications/preferences/unsubscribe | Preferences render; persistence/unsubscribe cases pending |
-| 45 | AI/integration/payment failure states | Routes render; external integration results unverified |
-| 46 | Runtime error/failed request monitoring | Error-capture code reviewed; operational alerting/restore checks pending |
-| 47 | Dependency audit/typecheck/lint/build | Verified — full quality check and zero known runtime dependency vulnerabilities |
-| 48 | Performance and asset/network review | Pending |
-| 49 | Complete regression run and CI | Batch 27: 136 passed, 6 explicit skips; CI passed |
-| 50 | Production release verification and fixture cleanup | PRs 26 and 27 live and verified; ongoing repairs and fixture cleanup pending |
-
-## Findings
-
-| Severity | Finding | Repair / verification |
-|---|---|---|
-| Major | Failed team/player/association reads render empty-workspace setup prompts; failed practice/program reads expose creation flows. | Shared retry state added to five pages. Five authenticated mobile failure-injection/recovery tests passed. |
-| Minor | Single-team/player redirects run during React render. | Moved navigation to effects; failed refetches cannot trigger redirect using stale data. |
-| Minor | Solo planning treats a missing optional plan as an HTTP 406 error. | Use a nullable single-row read instead of requesting a required row. Route inventory replay pending. |
-| Major, investigation | Week publication and practice editing perform separate delete/insert requests, so a failed task write can leave incomplete published work. Existing team replacement also lacks a completed-work guard. | Atomic publication and progress-preservation repair being designed and tested. |
-
-Baseline quality check passed; runtime dependency audit: zero known vulnerabilities. All 75 public tables have RLS enabled. Database shooting release gates passed, including simultaneous-save conflict and daylight-saving boundaries. The leaked-password advisor warning reflects the user’s explicit earlier password preference; no password policy change made. Security-definer warnings require function-level review rather than blanket revocation.
-
-The first phone route inventory covered 43 authenticated routes: no runtime crashes or horizontal overflow; one failed read from the optional solo plan query above. This is route health evidence, not full feature-completion evidence.
-
-## Limits
-
-Browser emulation does not prove physical iPhone/Android behavior or screen-reader usability. Email receipt, external calendar providers, payments and AI output require separate evidence; UI presence is not a passing integration check. Operational readiness (support response, restore drills, legal review) will be reported separately from application tests.
+The [production readiness report](production-readiness-report-2026-10-19.md) is the authoritative final gate ledger, verification summary and remaining launch checklist. The entries below preserve investigation history, including failures subsequently repaired. They are not unresolved findings unless the final report identifies them as such.
 
 ## First verification batch
 
@@ -260,3 +192,18 @@ The hosted `cron.job` table was empty, despite automatic-calendar copy. A privat
 Local SQL dispatch/privilege gates and the required project check pass. Fifty-eight calendar helper/actual-handler scenarios pass, including batch bounds and partial failures. Six mobile calendar cases also completed a controlled public HTTPS fixture through the live function and database: a valid floating-time practice imports at the chosen timezone, the old event is cancelled only after successful import, and a subsequent invalid response preserves the new active event. This uses a fictional [HTTPbingo Base64 response fixture](https://httpbingo.org/), not a real family feed. Real TeamSnap/provider-specific recurrence remains separate validation.
 
 The combined browser batch passed eight cases with one API test exceeding its old 30-second limit. The privilege test now uses a bounded native request wrapper that omits authorization headers from diagnostics and a 90-second batch limit. Its three-browser replay passed (10.2 seconds). A temporary QA session exposed in that earlier local diagnostic was revoked and the stored diagnostic redacted. No credential is included in the delivered report.
+
+## Final badge preference and production regression checkpoint
+
+PR48 adds a visible Player options entry to the two badge pages for the owning or confirmed guardian. Privacy preference reads expose retry; failed writes restore the attempted switch; a separate optional award evaluation cannot misreport the already-saved choice. Final 320px tests passed in Chromium, WebKit and Firefox (three cases, 1.9 minutes), including read/write outages, one award after completion, repeat evaluation and persisted preference.
+
+The final frozen broad sweep completed 540 cases: 512 passed, 26 explicit skips, two harness failures. Both failures were unsupported clipboard permission requests on WebKit/Firefox, now corrected. All 12 production challenge/signup/family, privilege-denial and calendar replays then passed across all three engines. Production no-JavaScript route checks also passed all 21 cases; `/pricing` returned the intended HTTP308 redirect. PR48 required CI passed before merge.
+
+
+## Final live release, fixture cleanup and scheduler receipt
+
+Application release PR48 (`f62197db1284e706d758aa1e46d33591dd73ec86`) was confirmed READY on production. The final 320px badge/recovery case passed live in 39.6 seconds. Cleanup passed a rollback rehearsal and explicit baseline guards, then removed 379 fictional auth accounts via Auth Admin API, 607 fictional teams, 801 fictional players, 564 practice cards, 28 associations and dependent records. Three uploaded test objects were removed through Storage API. Scoped account/team/player verification returned zero remaining; original seven users, 14 teams and 14 players remain, including the protected QA fixtures.
+
+Private calendar dispatch request2 returned HTTP200, success=true, total=0 and failed=0 after cleanup. An actual scheduled run at 2026-10-19 10:25:00 UTC succeeded; request3 also returned HTTP200, success=true, total=0 and failed=0 with no timeout/error. The temporary one-minute verification cadence was immediately restored to active `*/15 * * * *`. Actual event import remains independently proved by the controlled HTTPS fixture cases; zero-source dispatch alone is not import evidence.
+
+Final gate ledger: 43 verified, seven partial, no pending gates. The partial gates and concrete launch conditions are listed in the final report. No real family emails were sent.

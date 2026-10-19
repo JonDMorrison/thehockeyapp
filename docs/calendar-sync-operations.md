@@ -23,3 +23,8 @@ Feed downloads are bounded and validated before importing. A failed bulk upsert 
 Timezone conversion uses the runtime timezone database and the selected timezone for floating values. Provider-specific recurrence and custom timezone definitions still require validation with a real account feed. Test fixtures use fictional events only and are removed before enabling the recurring job.
 
 Reference: [Supabase scheduled functions and Vault](https://supabase.com/docs/guides/functions/schedule-functions), [Cron controls and run history](https://supabase.com/docs/guides/cron/quickstart).
+
+
+## Activation checkpoint — October 19, 2026
+
+The private scheduler is active at `*/15 * * * *`. After audit fixtures were removed, a scheduled run at 10:25 UTC succeeded and its HTTP response returned 200, success=true, total=0 and failed=0 without timeout. Controlled HTTPS fixture imports were verified separately through the team and home calendar flows. Real provider-specific recurrence and timezone conventions remain a launch validation step.
