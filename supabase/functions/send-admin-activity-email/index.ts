@@ -1,3 +1,4 @@
+import { emailFrame, emailPlainText } from "../_shared/emailDesign.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -83,21 +84,19 @@ serve(async (req) => {
       .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">${escapeHtml(k)}</td><td style="font-size:13px;">${escapeHtml(v)}</td></tr>`)
       .join("");
 
-    const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#1a1a1a;max-width:560px;margin:0 auto;padding:24px;">
-  <p style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Admin Alert</p>
-  <h2 style="margin:0 0 16px;">${severityEmoji} ${eventType}</h2>
-  <table style="margin:0 0 16px;width:100%;">
-    <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Severity</td><td style="font-size:13px;font-weight:600;">${escapeHtml(evt.severity)}</td></tr>
-    <tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Time</td><td style="font-size:13px;">${new Date(evt.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver" })}</td></tr>
-    ${evt.actor_user_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">User</td><td style="font-size:13px;">${escapeHtml(evt.actor_user_id)}</td></tr>` : ""}
-    ${evt.email ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Email</td><td style="font-size:13px;">${escapeHtml(evt.email)}</td></tr>` : ""}
-    ${evt.team_id ? `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">Team</td><td style="font-size:13px;">${escapeHtml(evt.team_id)}</td></tr>` : ""}
+    const html = emailFrame(`
+  <p style="font-size:12px;color:#596671;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Admin Alert</p>
+  <h1 style="font-size:28px;line-height:1.2;margin:0 0 20px;">${severityEmoji} ${eventType}</h1>
+  <table role="presentation" style="margin:0 0 16px;width:100%;">
+    <tr><td style="padding:4px 12px 4px 0;color:#596671;font-size:16px;">Severity</td><td style="font-size:16px;font-weight:600;">${escapeHtml(evt.severity)}</td></tr>
+    <tr><td style="padding:4px 12px 4px 0;color:#596671;font-size:16px;">Time</td><td style="font-size:16px;">${new Date(evt.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver" })}</td></tr>
+    ${evt.actor_user_id ? `<tr><td style="padding:4px 12px 4px 0;color:#596671;font-size:16px;">User</td><td style="font-size:16px;">${escapeHtml(evt.actor_user_id)}</td></tr>` : ""}
+    ${evt.email ? `<tr><td style="padding:4px 12px 4px 0;color:#596671;font-size:16px;">Email</td><td style="font-size:16px;">${escapeHtml(evt.email)}</td></tr>` : ""}
+    ${evt.team_id ? `<tr><td style="padding:4px 12px 4px 0;color:#596671;font-size:16px;">Team</td><td style="font-size:16px;">${escapeHtml(evt.team_id)}</td></tr>` : ""}
     ${metaRows}
   </table>
-  <p style="font-size:11px;color:#aaa;margin-top:24px;">Hockey App Admin System</p>
-</body></html>`;
+  <p style="font-size:13px;color:#596671;margin-top:24px;">Hockey App Admin System</p>
+`, subject, {eyebrow: "Operations · action needed"});
 
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -113,6 +112,7 @@ serve(async (req) => {
         to: [ADMIN_EMAIL],
         subject,
         html,
+        text: emailPlainText(html),
       }),
     });
 

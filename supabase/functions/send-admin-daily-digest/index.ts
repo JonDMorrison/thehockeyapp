@@ -1,3 +1,4 @@
+import { emailFrame, emailPlainText, emailStats } from "../_shared/emailDesign.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -109,68 +110,67 @@ serve(async (req) => {
     const importantEvents = allEvents.filter(e => e.severity === "important");
 
     const urgentSection = urgentEvents.length > 0
-      ? `<h3 style="color:#dc2626;margin:16px 0 8px;">🚨 Urgent Events (${urgentEvents.length})</h3>
+      ? `<h2 style="color:#dc2626;margin:16px 0 8px;">🚨 Urgent Events (${urgentEvents.length})</h2>
          <ul style="margin:0;padding:0 0 0 20px;">
-           ${urgentEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(e.email || e.actor_user_id || "system")} — ${new Date(e.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit" })}</li>`).join("")}
+           ${urgentEvents.map(e => `<li style="font-size:16px;line-height:1.6;margin:8px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(e.email || e.actor_user_id || "system")} — ${new Date(e.created_at).toLocaleString("en-US", { timeZone: "America/Vancouver", hour: "numeric", minute: "2-digit" })}</li>`).join("")}
          </ul>`
       : "";
 
     const importantSection = importantEvents.length > 0
-      ? `<h3 style="color:#d97706;margin:16px 0 8px;">⚠️ Important (${importantEvents.length})</h3>
+      ? `<h2 style="color:#865008;margin:16px 0 8px;">⚠️ Important (${importantEvents.length})</h2>
          <ul style="margin:0;padding:0 0 0 20px;">
-           ${importantEvents.map(e => `<li style="font-size:13px;margin:4px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(JSON.stringify(e.metadata || {}).slice(0, 100))}</li>`).join("")}
+           ${importantEvents.map(e => `<li style="font-size:16px;line-height:1.6;margin:8px 0;">${escapeHtml(e.event_type.replace(/_/g, " "))} — ${escapeHtml(JSON.stringify(e.metadata || {}).slice(0, 100))}</li>`).join("")}
          </ul>`
       : "";
 
-    const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#1a1a1a;max-width:600px;margin:0 auto;padding:24px;">
-  <p style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Daily Admin Digest</p>
+    const html = emailFrame(`
+  <p style="font-size:12px;color:#596671;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Daily Admin Digest</p>
   <h1 style="font-size:20px;margin:0 0 4px;">Hockey App — ${digestDate}</h1>
-  <p style="font-size:13px;color:#888;margin:0 0 24px;">Last 24 hours · ${allEvents.length} total events</p>
+  <p style="font-size:16px;color:#596671;margin:0 0 24px;">Last 24 hours · ${allEvents.length} total events</p>
 
   <hr style="border:none;border-top:1px solid #e5e5e5;margin:0 0 20px;">
 
+  ${emailStats([{label:"New signups",value:signupParent + signupCoach},{label:"Team joins",value:joinTeam},{label:"Urgent events",value:urgentEvents.length}])}
   <!-- Key Metrics -->
-  <table style="width:100%;border-collapse:collapse;margin:0 0 20px;">
+  <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;">
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">New Signups (Parent)</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">New Signups (Parent)</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${signupParent}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">New Signups (Coach)</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">New Signups (Coach)</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${signupCoach}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Trials Started</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Trials Started</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${trialsStarted}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Trial Conversions</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Trial Conversions</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${trialsConverted}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Team Plans Purchased</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Team Plans Purchased</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${teamPlansPurchased}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Payment Failures</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Payment Failures</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;${paymentFailed > 0 ? "color:#dc2626;" : ""}">${paymentFailed}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Team Joins</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Team Joins</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${joinTeam}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Adoption Milestones</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Adoption Milestones</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${milestones}</td>
     </tr>
     <tr>
-      <td style="padding:8px 0;font-size:13px;color:#888;">Weekly Summaries Sent (7d)</td>
+      <td style="padding:8px 0;font-size:16px;color:#596671;">Weekly Summaries Sent (7d)</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;">${totalSummariesSent}</td>
     </tr>
     ${persistenceFailed > 0 ? `<tr>
-      <td style="padding:8px 0;font-size:13px;color:#dc2626;font-weight:600;">⚠️ Webhook Persistence Failures</td>
+      <td style="padding:8px 0;font-size:16px;color:#dc2626;font-weight:600;">⚠️ Webhook Persistence Failures</td>
       <td style="padding:8px 0;font-size:15px;font-weight:600;text-align:right;color:#dc2626;">${persistenceFailed}</td>
     </tr>` : ""}
   </table>
@@ -179,8 +179,8 @@ serve(async (req) => {
   ${importantSection}
 
   <hr style="border:none;border-top:1px solid #e5e5e5;margin:20px 0;">
-  <p style="font-size:11px;color:#aaa;text-align:center;">Hockey App Admin System · Automated Daily Digest</p>
-</body></html>`;
+  <p style="font-size:13px;color:#596671;text-align:center;">Hockey App Admin System · Automated Daily Digest</p>
+`, `Hockey App daily digest — ${digestDate}`, {eyebrow: "Your daily pulse"});
 
     const subject = `📊 Daily Digest — ${signupParent + signupCoach} signups, ${trialsStarted} trials, ${teamPlansPurchased} team plans${paymentFailed > 0 ? ` ⚠️ ${paymentFailed} payment failures` : ""}`;
 
@@ -196,6 +196,7 @@ serve(async (req) => {
         to: [ADMIN_EMAIL],
         subject,
         html,
+        text: emailPlainText(html),
       }),
     });
 
