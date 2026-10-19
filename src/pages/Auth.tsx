@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
@@ -77,7 +77,9 @@ const Auth: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [recoveryError, setRecoveryError] = useState("");
-  const [recovering, setRecovering] = useState(() => mode === "reset" && searchParams.has("code"));
+  const [recovering, setRecovering] = useState(() => mode === "reset");
+  const recoveryVerified = useRef(false);
+  const recoveryRequest = useRef<{ key: string; promise: Promise<{ error: { message: string } | null }> } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, signUp, isAuthenticated, loading: authLoading } = useAuth();
@@ -90,27 +92,44 @@ const Auth: React.FC = () => {
     [requestedRedirect],
   );
 
-  // This client disables automatic URL detection, so reset links must exchange
-  // their PKCE code before updateUser can change a password.
+  // Token-hash links work across browsers. Keep older PKCE links supported as well.
   useEffect(() => {
+    if (mode !== "reset") return;
     const code = searchParams.get("code");
-    if (mode !== "reset" || !code) return;
+    const tokenHash = searchParams.get("token_hash");
+    const invalidLink = searchParams.has("error") || new URLSearchParams(window.location.hash.slice(1)).has("error");
+    const failureMessage = "This reset link has expired or could not be opened. Request a new link and open the latest email.";
+    if (invalidLink) { setRecovering(false); setRecoveryError(failureMessage); return; }
+    if (!code && !tokenHash) {
+      if (authLoading) return;
+      setRecovering(false);
+      if (!recoveryVerified.current && !isAuthenticated) setRecoveryError(failureMessage);
+      return;
+    }
     let active = true;
-    void supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+    const key = tokenHash ? `token:${tokenHash}` : `code:${code}`;
+    if (recoveryRequest.current?.key !== key) {
+      const promise = tokenHash
+        ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        : supabase.auth.exchangeCodeForSession(code!);
+      recoveryRequest.current = { key, promise };
+    }
+    setRecovering(true);
+    void recoveryRequest.current.promise.then(({ error }) => {
       if (!active) return;
       setRecovering(false);
-      if (error) {
-        setRecoveryError("This reset link has expired or could not be opened. Request a new link in the same browser you used to request it.");
-      } else {
+      setRecoveryError(error ? failureMessage : "");
+      recoveryVerified.current = !error;
+      if (!error) {
         setSearchParams((current) => {
           const next = new URLSearchParams(current);
-          next.delete("code");
+          for (const name of ["code", "token_hash", "type"]) next.delete(name);
           return next;
         }, { replace: true });
       }
-    });
+    }).catch(() => { if (active) { setRecovering(false); setRecoveryError(failureMessage); } });
     return () => { active = false; };
-  }, [mode, searchParams, setSearchParams]);
+  }, [mode, searchParams, setSearchParams, authLoading, isAuthenticated]);
 
   // Redirect if already authenticated
   useEffect(() => {

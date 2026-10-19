@@ -287,6 +287,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             from: "The Hockey App <weekly@hockeyapp.ca>",
+            reply_to: Deno.env.get("EMAIL_REPLY_TO") || undefined,
             to: [profile.email],
             subject,
             html,

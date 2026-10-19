@@ -241,7 +241,7 @@ export default function AssociationDashboard() {
       if (!result.token) throw new Error("Invitation was not created");
       const inviteLink = `${window.location.origin}/association/join/${result.token}`;
 
-      const { error: emailError } = await supabase.functions.invoke("send-transactional-email", {
+      const { data: delivery, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           type: "association_invitation",
           to: normalizedEmail,
@@ -254,7 +254,7 @@ export default function AssociationDashboard() {
         },
       });
 
-      return { inviteLink, emailSent: !emailError };
+      return { inviteLink, emailSent: !emailError && delivery?.success === true };
     },
     onSuccess: ({ inviteLink, emailSent }) => {
       setLastInviteLink(inviteLink);
