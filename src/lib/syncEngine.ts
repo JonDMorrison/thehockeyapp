@@ -25,15 +25,8 @@ type SyncListener = (status: SyncStatus, pendingCount: number) => void;
 
 const listeners = new Set<SyncListener>();
 let currentStatus: SyncStatus = 'idle';
-let syncInProgress = false;
+let activeSync: { ownerId: string; controller: AbortController } | null = null;
 let syncInterval: ReturnType<typeof setInterval> | null = null;
-
-// Backoff configuration
-const INITIAL_RETRY_DELAY = 1000; // 1 second
-const MAX_RETRY_DELAY = 300000; // 5 minutes
-const MAX_RETRIES = 5;
-
-let currentRetryDelay = INITIAL_RETRY_DELAY;
 
 export function addSyncListener(listener: SyncListener): () => void {
   listeners.add(listener);
@@ -49,13 +42,13 @@ export function isOnline(): boolean {
   return navigator.onLine;
 }
 
-async function applyOfflineEvent(event: QueuedEvent): Promise<SyncResult> {
+async function applyOfflineEvent(event: QueuedEvent, signal: AbortSignal): Promise<SyncResult> {
   try {
     const { data, error } = await supabase.rpc('apply_offline_event', {
       p_local_event_id: event.localEventId,
       p_event_type: event.eventType,
       p_payload: event.payload as unknown as Record<string, never>,
-    });
+    }).abortSignal(signal);
 
     if (error) {
       // Check for auth errors
@@ -77,88 +70,54 @@ async function applyOfflineEvent(event: QueuedEvent): Promise<SyncResult> {
 }
 
 export async function syncPendingEvents(): Promise<{ synced: number; failed: number }> {
-  if (syncInProgress) {
+  const ownerId = getOfflineAccountOwner();
+  if (!ownerId || !isOnline()) return { synced: 0, failed: 0 };
+  if (activeSync) {
+    if (activeSync.ownerId !== ownerId) activeSync.controller.abort();
     return { synced: 0, failed: 0 };
   }
-
-  if (!isOnline()) {
-    return { synced: 0, failed: 0 };
-  }
-
-  syncInProgress = true;
+  const job = { ownerId, controller: new AbortController() };
+  activeSync = job;
+  const stillOwnsJob = () => activeSync === job && getOfflineAccountOwner() === ownerId && !job.controller.signal.aborted;
   let synced = 0;
   let failed = 0;
-
+  let inFlight: QueuedEvent | null = null;
   try {
     const pendingEvents = await getPendingEvents();
-    
-    if (pendingEvents.length === 0) {
-      notifyListeners('idle', 0);
-      return { synced: 0, failed: 0 };
-    }
-
-    notifyListeners('syncing', pendingEvents.length);
-
-    // Process in batches of 10
-    const batchSize = 10;
-    for (let i = 0; i < pendingEvents.length; i += batchSize) {
-      const batch = pendingEvents.slice(i, i + batchSize);
-      for (const event of batch) {
-        if (getOfflineAccountOwner() !== event.userId) return { synced, failed };
-        await markEventsSyncing([event.localEventId]);
-        // Skip events that have exceeded max retries
-        if (event.retryCount >= MAX_RETRIES) {
-          await updateEventStatus(event.localEventId, 'failed', 'Max retries exceeded');
-          failed++;
-          continue;
-        }
-
-        const result = await applyOfflineEvent(event);
-        if (getOfflineAccountOwner() !== event.userId) {
-          await updateEventStatus(event.localEventId, result.success ? 'succeeded' : 'pending');
-          notifyListeners('idle', await getPendingEventCount());
-          return { synced: synced + Number(result.success), failed };
-        }
-
-        if (result.success) {
-          await updateEventStatus(event.localEventId, 'succeeded');
-          synced++;
-          currentRetryDelay = INITIAL_RETRY_DELAY; // Reset backoff on success
-        } else {
-          // Handle auth errors specially
-          if (result.error === 'auth_expired') {
-            // Stop sync on auth errors
-            await updateEventStatus(event.localEventId, 'pending', result.error);
-            notifyListeners('error', pendingEvents.length - synced);
-            return { synced, failed };
-          }
-
-          await updateEventStatus(event.localEventId, 'failed', result.error);
-          failed++;
-
-          // Increase backoff for transient errors
-          currentRetryDelay = Math.min(currentRetryDelay * 2, MAX_RETRY_DELAY);
-        }
+    if (!stillOwnsJob()) return { synced, failed };
+    notifyListeners(pendingEvents.length ? 'syncing' : 'idle', pendingEvents.length);
+    // Preserve event order: a session must not finish before its queued task writes.
+    for (const event of pendingEvents) {
+      if (!stillOwnsJob() || event.userId !== ownerId) return { synced, failed };
+      inFlight = event;
+      await markEventsSyncing([event.localEventId]);
+      if (!stillOwnsJob()) return { synced, failed };
+      const result = await applyOfflineEvent(event, job.controller.signal);
+      // Replaying an interrupted request uses the same idempotency key.
+      await updateEventStatus(event.localEventId, result.success ? 'succeeded' : 'pending', result.error);
+      inFlight = null;
+      if (!stillOwnsJob()) return { synced: synced + Number(result.success), failed };
+      if (!result.success) {
+        failed++;
+        notifyListeners('error', await getPendingEventCount());
+        return { synced, failed };
       }
+      synced++;
     }
-
-    // Clean up succeeded events
     await removeSucceededEvents();
-
-    // Update last sync time
-    await setLastSyncTime(new Date().toISOString());
-
-    // Get remaining pending count
-    const remainingPending = await getPendingEvents();
-    notifyListeners(remainingPending.length > 0 ? 'error' : 'idle', remainingPending.length);
-
+    if (stillOwnsJob()) {
+      await setLastSyncTime(new Date().toISOString());
+      notifyListeners('idle', await getPendingEventCount());
+    }
     return { synced, failed };
   } catch (err) {
     logger.error('Sync error', { err });
-    notifyListeners('error', 0);
+    if (stillOwnsJob()) notifyListeners('error', await getPendingEventCount().catch(() => 0));
     return { synced, failed };
   } finally {
-    syncInProgress = false;
+    if (inFlight) await updateEventStatus(inFlight.localEventId, 'pending').catch(err => logger.error('Could not retain interrupted sync', { err }));
+    if (activeSync === job) activeSync = null;
+    if (job.controller.signal.aborted && getOfflineAccountOwner() && isOnline()) setTimeout(() => void syncPendingEvents(), 0);
   }
 }
 
@@ -179,6 +138,8 @@ export function startSyncInterval(intervalMs = 30000): void {
 }
 
 export function stopSyncInterval(): void {
+  activeSync?.controller.abort();
+  notifyListeners('idle', 0);
   if (syncInterval) {
     clearInterval(syncInterval);
     syncInterval = null;

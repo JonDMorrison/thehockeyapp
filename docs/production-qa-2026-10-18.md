@@ -111,3 +111,11 @@ The additive atomic program-save function passed rollback-only checks against th
 - Account-menu review found four absent destinations. Notifications now opens actual email preferences; privacy/support open existing pages, and the unavailable billing entry is removed for the community-free app. A static navigation checker is included in the required quality check.
 - Player-menu photos used public URLs for a private bucket, making saved images unavailable. Uploads now save private references, render signed URLs, use unique object names, validate type/size, and remove a new object if the profile write fails. Legacy public-shaped URLs for private buckets resolve through authorization. The mobile test verified upload, reload, legacy read repair, and anonymous public-URL denial.
 - Profile readers shared a cache key but requested different fields. Both now request the complete profile so changing a coach name cannot blank saved coaching answers. Failed profile/preference reads expose retry controls rather than editable default values.
+
+## Offline reliability repair
+
+- A real offline completion followed by an injected HTTP 503 reproduced lost retry visibility: failed events were excluded from every subsequent sync attempt and count. Unsaved failed/interrupted records are now retried in order, retained across reload, and never abandoned after a fixed retry limit.
+- The app-wide pending notice explains that work is saved on the device and offers an accessible Retry sync action. A brief outage also recovers through the automatic interval without pressing it.
+- In-flight sync is aborted on identity changes and reuses each event's original idempotency key. Two fresh-family browser tests verified that the next family sees no former pending work, cannot sync it, and the original family can return and finish exactly once.
+- Frozen build: **11 passed (1.2 minutes)** covering existing offline completion, shared-account use, server outage/reload/manual retry, automatic retry, and an interrupted account switch. Full project quality check passed.
+- The 320×568 route sweep found horizontal overflow on the team and player lists; all 43 routes were free of runtime crashes and failed reads. Small-screen overflow remains open for the next repair.

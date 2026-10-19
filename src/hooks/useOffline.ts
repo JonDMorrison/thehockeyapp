@@ -62,7 +62,9 @@ export function useOffline(): UseOfflineResult {
     status = 'offline';
   } else if (syncStatus === 'syncing') {
     status = 'syncing';
-  } else if (syncStatus === 'error' || pendingCount > 0) {
+  } else if (syncStatus === 'error') {
+    status = 'error';
+  } else if (pendingCount > 0) {
     status = 'pending';
   }
 
