@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -46,7 +47,7 @@ const TeamPractice: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch team
-  const { data: team, isLoading: teamLoading } = useQuery({
+  const { data: team, isLoading: teamLoading, isError: teamError, refetch: retryTeam, isFetching: fetchingTeam } = useQuery({
     queryKey: ["team", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,7 +63,7 @@ const TeamPractice: React.FC = () => {
   });
 
   // Fetch practice cards with total count
-  const { data: cardsResult, isLoading: cardsLoading } = useQuery({
+  const { data: cardsResult, isLoading: cardsLoading, isError: contentError, refetch: retryContent, isFetching: fetchingContent } = useQuery({
     queryKey: ["practice-cards", id],
     queryFn: async () => {
       const { data, error, count } = await supabase
@@ -90,6 +91,10 @@ const TeamPractice: React.FC = () => {
       setTeamTheme(team.palette_id);
     }
   }, [team?.palette_id, setTeamTheme]);
+
+  if (isAuthenticated && (teamError || contentError)) {
+    return <AppShell hideNav><PageContainer><DataLoadError title="Couldn’t load your practices" onRetry={() => { void retryTeam(); void retryContent(); }} retrying={fetchingTeam || fetchingContent} /><Button variant="ghost" onClick={() => navigate(`/teams/${id}`)}>Back to team</Button></PageContainer></AppShell>;
+  }
 
   const isLoading = teamLoading || cardsLoading || authLoading;
 

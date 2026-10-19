@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -52,7 +53,7 @@ const Players: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
   }, [queryClient, user?.id]);
 
-  const { data: players, isLoading, isFetched } = useQuery({
+  const { data: players, isLoading, isFetched, isError, refetch, isFetching } = useQuery({
     queryKey: ["players-with-teams", user?.id],
     queryFn: async () => {
       // Fetch players
@@ -96,6 +97,12 @@ const Players: React.FC = () => {
     enabled: !!user,
   });
 
+  useEffect(() => {
+    if (!isError && isFetched && players?.length === 1) {
+      navigate(`/players/${players[0].id}/home`, { replace: true });
+    }
+  }, [isError, isFetched, players, navigate]);
+
   // Show loading state while auth is checking
   if (authLoading) {
     return (
@@ -113,11 +120,6 @@ const Players: React.FC = () => {
     return null;
   }
 
-  // Smart redirect: if user has exactly one player, skip the list
-  if (isFetched && players && players.length === 1) {
-    navigate(`/players/${players[0].id}/home`, { replace: true });
-    return null;
-  }
 
   return (
     <AppShell
@@ -143,7 +145,7 @@ const Players: React.FC = () => {
     >
       <PullToRefresh onRefresh={handleRefresh} isRefreshing={isLoading}>
         <PageContainer>
-          {isLoading ? (
+          {isError ? <DataLoadError title="Couldn’t load your players" onRetry={() => refetch()} retrying={isFetching} /> : isLoading ? (
             <div className="space-y-3">
               <SkeletonTeamCard />
               <SkeletonTeamCard />
