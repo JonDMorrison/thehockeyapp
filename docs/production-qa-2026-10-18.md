@@ -229,3 +229,9 @@ A hosted rollback reproduction confirmed a completed home practice could not ear
 Solo completion triggers evaluation, and opening a badge page can catch up after an interrupted evaluation. The celebration now uses a keyboard-accessible dialog with Escape/focus handling, reduced-motion support and a cleaned-up confetti timer. Saved home workouts and both badge pages expose retry states instead of suggesting missing work or zero awards during a read outage. Shared player cache entries now have a consistent complete shape; the profile's guardian-enriched read has a distinct cache suffix.
 
 Local PostgreSQL checks and the required project check pass. First affected-browser matrix: nine passes across three browsers (1.7 minutes). Final starter/navigation/badge matrix after cache and catch-up refinements: 12 passes, no skips, across Chromium, WebKit and Firefox (2.3 minutes), including 320px reduced-motion completion, single award, Escape dismissal, and home/badge read-failure recovery.
+
+## Email preference behavior
+
+Anonymous unsubscribe testing found malformed category names silently changed every optional preference, and the page claimed the choice was saved even when the request failed. Unknown categories now leave preferences untouched; invalid links, temporary save failures and saved choices have distinct states. A failed save offers retry.
+
+All three phone-browser cases pass (8.7 seconds). Actual anonymous API writes verified category-specific changes, reload/idempotency, invalid token/category denial, a forced 503 followed by retry, and all-optional unsubscribe preserving team invites. No email was sent; delivery remains an external configuration gap.

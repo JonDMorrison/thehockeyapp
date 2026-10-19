@@ -14,26 +14,29 @@ const allowedKinds = new Set([
 export default function Unsubscribe() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
-  const requestedKind = searchParams.get("kind") || "all_optional";
-  const kind = allowedKinds.has(requestedKind) ? requestedKind : "all_optional";
-  const [status, setStatus] = useState<"working" | "done" | "error">("working");
+  const requestedKind = searchParams.get("kind") ?? "all_optional";
+  const kind = requestedKind;
+  const validKind = allowedKinds.has(kind);
+  const [attempt, setAttempt] = useState(0);
+  const [status, setStatus] = useState<"working" | "done" | "invalid" | "error">("working");
 
   useEffect(() => {
     let active = true;
     const unsubscribe = async () => {
-      if (!token) {
-        setStatus("error");
+      setStatus("working");
+      if (!token || !validKind) {
+        setStatus("invalid");
         return;
       }
       const { data, error } = await supabase.rpc("unsubscribe_email", {
         p_token: token,
         p_kind: kind,
       });
-      if (active) setStatus(!error && data === true ? "done" : "error");
+      if (active) setStatus(error ? "error" : data === true ? "done" : "invalid");
     };
-    unsubscribe();
+    void unsubscribe().catch(() => { if (active) setStatus("error"); });
     return () => { active = false; };
-  }, [kind, token]);
+  }, [kind, token, validKind, attempt]);
 
   const label = kind === "weekly_coach_digest"
     ? "weekly coach digest"
@@ -59,20 +62,23 @@ export default function Unsubscribe() {
 
         <p className="text-xs font-black uppercase tracking-[0.18em] text-primary">Email preferences</p>
         <h1 className="mt-2 font-display text-3xl font-black uppercase tracking-tight">
-          {status === "working" ? "Updating" : status === "done" ? "You're unsubscribed" : "Link unavailable"}
+          {status === "working" ? "Updating" : status === "done" ? "You're unsubscribed" : status === "invalid" ? "Link unavailable" : "Couldn’t save your choice"}
         </h1>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
           {status === "working"
             ? "Saving your preference now."
             : status === "done"
               ? `You will no longer receive the ${label}. Required account and security messages may still be sent.`
-              : "This unsubscribe link is invalid or no longer available. You can still change email preferences in your account settings."}
+              : status === "invalid"
+                ? "This unsubscribe link is invalid or no longer available. You can still change email preferences in your account settings."
+                : "Your preference hasn’t been saved yet. Please try again."}
         </p>
 
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        {status === "done" && <div className="mt-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="h-4 w-4 text-success" />
-          Your choice is saved immediately.
-        </div>
+          Your choice is saved.
+        </div>}
+        {status === "error" && <Button className="mt-6 min-h-11 w-full" onClick={() => setAttempt(value => value + 1)}>Try again</Button>}
 
         <Button className="mt-7 w-full" asChild>
           <Link to="/settings">Open account settings</Link>
