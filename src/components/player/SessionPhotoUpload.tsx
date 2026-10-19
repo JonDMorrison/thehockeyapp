@@ -371,7 +371,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           </div>
         </SheetContent>
       </Sheet>
-      <PlayerSettingsSheet open={showPrivacySettings} onOpenChange={setShowPrivacySettings} playerId={playerId} playerName={playerName} />
+      <PlayerSettingsSheet layer={90} open={showPrivacySettings} onOpenChange={setShowPrivacySettings} playerId={playerId} playerName={playerName} />
     </div>
   );
 };

@@ -21,6 +21,7 @@ interface PlayerSettingsSheetProps {
   onOpenChange: (open: boolean) => void;
   playerId: string;
   playerName: string;
+  layer?: number;
 }
 
 export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
@@ -28,6 +29,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
   onOpenChange,
   playerId,
   playerName,
+  layer,
 }) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -130,7 +132,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-auto max-h-[90dvh] overflow-y-auto">
+      <SheetContent layer={layer} side="bottom" className="h-auto max-h-[90dvh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Player Settings</SheetTitle>
           <SheetDescription>

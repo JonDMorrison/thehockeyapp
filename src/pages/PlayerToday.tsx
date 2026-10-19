@@ -141,6 +141,7 @@ const PlayerToday: React.FC = () => {
   const [showShotsSheet, setShowShotsSheet] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [shotsInput, setShotsInput] = useState("");
+  const [shotsError, setShotsError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [isFirstWorkout, setIsFirstWorkout] = useState(false);
@@ -541,7 +542,13 @@ const PlayerToday: React.FC = () => {
   const handleShotsSubmit = useCallback(async () => {
     if (!selectedTaskId || !shotsInput) return;
 
-    const shots = parseInt(shotsInput);
+    if (!/^\d+$/.test(shotsInput.trim()) || !Number.isSafeInteger(Number(shotsInput)) || Number(shotsInput) > 10000) {
+      setShotsError("Enter a whole number of shots from 0 to 10,000.");
+      document.getElementById("practice-shot-count")?.focus();
+      return;
+    }
+    setShotsError("");
+    const shots = Number(shotsInput);
     const now = new Date().toISOString();
     const existingCompleted = completionMap[selectedTaskId]?.completed || false;
 
@@ -670,6 +677,7 @@ const PlayerToday: React.FC = () => {
 
   const handleShotsClick = (taskId: string) => {
     setSelectedTaskId(taskId);
+    setShotsError("");
     setShotsInput(completionMap[taskId]?.shotsLogged?.toString() || "");
     setShowShotsSheet(true);
   };
@@ -897,7 +905,7 @@ const PlayerToday: React.FC = () => {
                     </div>
                     {isShooting && (
                       <button
-                        className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
+                        className="min-h-11 min-w-16 flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleShotsClick(task.id);
@@ -1000,14 +1008,22 @@ const PlayerToday: React.FC = () => {
           </SheetHeader>
           <div className="py-6 space-y-4">
             <Input
+              id="practice-shot-count"
+              aria-label="Shot count"
+              aria-invalid={Boolean(shotsError)}
+              aria-describedby={shotsError ? "practice-shot-error" : undefined}
               type="number"
+              min={0}
+              max={10000}
+              step={1}
               inputMode="numeric"
               value={shotsInput}
-              onChange={(e) => setShotsInput(e.target.value)}
+              onChange={(e) => { setShotsInput(e.target.value); setShotsError(""); }}
               placeholder="0"
               className="text-center text-2xl h-16 w-full"
               autoFocus
             />
+            {shotsError && <p id="practice-shot-error" role="alert" className="text-sm text-destructive">{shotsError}</p>}
             <div className="flex gap-3">
               {[10, 25, 50, 100].map((num) => (
                 <Button

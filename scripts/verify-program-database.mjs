@@ -68,9 +68,11 @@ try {
     "-f", resolve("tests/database/guardian-permission-release.sql"),
     "-f", resolve("tests/database/session-photo-privacy-release.sql"),
     "-f", resolve("tests/database/training-photo-consent-release.sql"),
+    "-f", resolve("tests/database/training-record-scope-release.sql"),
+    "-f", resolve("tests/database/session-photo-path-release.sql"),
     "-c", "rollback",
   ]);
-  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent and uploader identity.");
+  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent, uploader identity and storage paths; training record scope and shot bounds.");
 } catch (e) {
   process.stderr.write(e.stderr || e.message);
   process.exitCode = 1;
