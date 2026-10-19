@@ -4,10 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import coachPlanning from "@/assets/brand/coach-planning.jpg";
+import { useTeamBanner, defaultBanner } from "@/hooks/useTeamBanner";
+import { TeamBannerEditor, bannerImage } from "./TeamBannerEditor";
 
 interface TodayHeaderProps {
   teamName: string;
+  teamId?: string;
   seasonLabel?: string | null;
   teamLogoUrl?: string | null;
   date: string;
@@ -23,6 +25,7 @@ interface TodayHeaderProps {
 
 export const TodayHeader: React.FC<TodayHeaderProps> = ({
   teamName,
+  teamId,
   seasonLabel,
   teamLogoUrl,
   date,
@@ -32,6 +35,9 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   isUpdating = false,
 }) => {
   const { t } = useTranslation();
+  const banner = useTeamBanner(teamId);
+  const choice = banner.data ?? defaultBanner;
+  const imageUrl = banner.data?.imageUrl ?? bannerImage(choice.preset);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(teamName);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,8 +95,8 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   };
 
   return (
-    <section className="relative min-h-[168px] overflow-hidden rounded-xl border border-white/10 bg-black p-5 shadow-lg sm:p-6">
-      <img src={coachPlanning} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center opacity-62" />
+    <section className="group/banner relative min-h-[168px] overflow-hidden rounded-xl border border-white/10 bg-black p-5 shadow-lg sm:p-6">
+      <img src={imageUrl} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-65" style={{ objectPosition: `${choice.focal_x}% ${choice.focal_y}%` }} />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.88)_52%,rgba(8,10,14,0.32)_100%)]" />
       <div className="relative space-y-2">
       {/* Date and Day Type */}
@@ -178,6 +184,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
         )}
       </div>
       </div>
+      {teamId && <TeamBannerEditor teamId={teamId} teamName={teamName} />}
     </section>
   );
 };
