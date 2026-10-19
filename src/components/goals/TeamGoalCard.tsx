@@ -165,12 +165,12 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
   if (!goal) {
     return (
       <>
+        <button type="button" className="w-full rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" onClick={() => setShowCreator(true)}>
         <Card
           className={cn(
             'cursor-pointer transition-all hover:shadow-lg border-2 border-dashed hover:border-primary/50 overflow-hidden',
             className
           )}
-          onClick={() => setShowCreator(true)}
         >
           <CardContent className="p-5">
             <div className="flex items-center gap-4">
@@ -192,7 +192,7 @@ export function TeamGoalCard({ teamId, rosterCount = 10, className }: TeamGoalCa
               <Plus className="w-5 h-5 text-muted-foreground" />
             </div>
           </CardContent>
-        </Card>
+        </Card></button>
 
         <GoalCreatorSheet
           open={showCreator}

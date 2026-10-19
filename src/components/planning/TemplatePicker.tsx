@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
   const queryClient = useQueryClient();
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
-  const { data: templates, isLoading } = useQuery({
+  const { data: templates, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["program-templates"],
     queryFn: async (): Promise<ProgramTemplate[]> => {
       const { data, error } = await supabase
@@ -55,8 +56,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
         .eq("is_active", true)
         .order("created_at", { ascending: true });
 
-      // Table may not be migrated yet — treat as empty rather than crashing.
-      if (error) return [];
+      if (error) throw error;
 
       return (data ?? []).map((row) => ({
         id: row.id,
@@ -121,7 +121,7 @@ export const TemplatePicker: React.FC<TemplatePickerProps> = ({
               <SkeletonCard />
               <SkeletonCard />
             </>
-          ) : filtered.length === 0 ? (
+          ) : isError ? <DataLoadError title="Couldn’t load program templates" onRetry={() => refetch()} retrying={isFetching} /> : filtered.length === 0 ? (
             <AppCard className="border-dashed border-2">
               <div className="text-center py-6">
                 <LayoutTemplate className="w-8 h-8 mx-auto text-text-muted mb-2" />

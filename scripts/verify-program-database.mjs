@@ -72,9 +72,10 @@ try {
     "-f", resolve("tests/database/session-photo-path-release.sql"),
     "-f", resolve("tests/database/admin-alert-dispatch-release.sql"),
     "-f", resolve("tests/database/family-history-release.sql"),
+    "-f", resolve("tests/database/team-goal-scope-release.sql"),
     "-c", "rollback",
   ]);
-  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent, uploader identity and storage paths; training record scope and shot bounds; private alert dispatch; family history.");
+  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent, uploader identity and storage paths; training record scope and shot bounds; private alert dispatch; family history; team goal boundaries and correction.");
 } catch (e) {
   process.stderr.write(e.stderr || e.message);
   process.exitCode = 1;
