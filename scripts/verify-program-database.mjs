@@ -66,6 +66,7 @@ try {
     "-f", resolve("tests/database/workout-editing-release.sql"),
     "-f", resolve("tests/database/solo-completion-release.sql"),
     "-f", resolve("tests/database/guardian-permission-release.sql"),
+    "-f", resolve("tests/database/session-photo-privacy-release.sql"),
     "-c", "rollback",
   ]);
   console.log("PASS: Atomic program save/publication, scaled targets, preserved notes, rollback after insert failure, idempotent retry, player-progress protection, cross-account denial, anonymous denial safe rest-day clearing, atomic team/solo workout editing, partial-program rollback and partial-progress protection");
