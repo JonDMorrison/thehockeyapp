@@ -38,6 +38,7 @@ import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { ActiveProgramsSection } from "@/components/dashboard/ActiveProgramsSection";
 import { AssignedWorkoutsSection } from "@/components/dashboard/AssignedWorkoutsSection";
 import { CoachCheersSection } from "@/components/dashboard/CoachCheersSection";
+import { InviteAdultModal } from "@/components/team/InviteAdultModal";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
@@ -60,6 +61,7 @@ const CoachDashboard: React.FC = () => {
   const { setActiveView, setActiveTeamId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showStaffInvite, setShowStaffInvite] = useState(false);
   const [programReadyForTeam, setProgramReadyForTeam] = useState<string | null>(
     null,
   );
@@ -72,7 +74,12 @@ const CoachDashboard: React.FC = () => {
   const [showChallengeWizard, setShowChallengeWizard] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data: dashboard, isLoading, refetch } = useTeamDashboard(id);
+  const {
+    data: dashboard,
+    isLoading,
+    isError: dashboardError,
+    refetch,
+  } = useTeamDashboard(id);
 
   useEffect(() => {
     if (dashboard?.success && search.get("inviteFamilies") === "1") {
@@ -225,7 +232,7 @@ const CoachDashboard: React.FC = () => {
     return null;
   }
 
-  if (!dashboard) {
+  if (dashboardError || !dashboard) {
     return (
       <AppShell hideNav>
         <PageContainer>
@@ -337,6 +344,16 @@ const CoachDashboard: React.FC = () => {
         <title>{`${dashboard.team?.name ?? "Dashboard"} | Hockey App`}</title>
       </Helmet>
       <PageContainer className="space-y-6">
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            className="min-h-11"
+            onClick={() => setShowStaffInvite(true)}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Invite team staff
+          </Button>
+        </div>
         <TodayHeader
           teamId={id}
           teamName={dashboard.team?.name ?? "My Team"}
@@ -541,6 +558,13 @@ const CoachDashboard: React.FC = () => {
       </PageContainer>
 
       {/* Modals */}
+      <InviteAdultModal
+        open={showStaffInvite}
+        onOpenChange={setShowStaffInvite}
+        teamId={id!}
+        teamName={dashboard.team.name}
+      />
+
       <InviteParentsModal
         open={showInviteModal}
         onOpenChange={setShowInviteModal}

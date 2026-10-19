@@ -6,7 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
-import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
+import {
+  AppCard,
+  AppCardTitle,
+  AppCardDescription,
+} from "@/components/app/AppCard";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
@@ -24,13 +28,20 @@ const TeamAdultJoin: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const { setActiveView, setActiveTeamId } = useActiveView();
-  const [redeemStatus, setRedeemStatus] = useState<"idle" | "success" | "error">("idle");
+  const [redeemStatus, setRedeemStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   // Fetch invite details
-  const { data: invite, isLoading: inviteLoading, error: inviteError } = useQuery({
-    queryKey: ["team-adult-invite", token],
+  const {
+    data: invite,
+    isLoading: inviteLoading,
+    error: inviteError,
+    refetch: retryInvite,
+  } = useQuery({
+    queryKey: ["team-adult-invite", token, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("preview_team_adult_invite", {
         p_token: token,
@@ -45,12 +56,16 @@ const TeamAdultJoin: React.FC = () => {
         status?: string;
         expires_at?: string;
         email_domain?: string;
+        invitation_kind?: "email" | "link";
+        already_member?: boolean;
+        team_id?: string;
       };
     },
     enabled: !!token,
   });
 
-  const isExpired = invite?.expires_at && new Date(invite.expires_at) < new Date();
+  const isExpired =
+    invite?.expires_at && new Date(invite.expires_at) < new Date();
   const isRevoked = invite?.status === "revoked";
   const isAlreadyAccepted = invite?.status === "accepted";
 
@@ -63,7 +78,11 @@ const TeamAdultJoin: React.FC = () => {
 
       if (error) throw error;
 
-      const result = data as { success: boolean; error?: string; team_id?: string };
+      const result = data as {
+        success: boolean;
+        error?: string;
+        team_id?: string;
+      };
       if (!result.success) {
         throw new Error(result.error || "Failed to redeem invite");
       }
@@ -78,10 +97,11 @@ const TeamAdultJoin: React.FC = () => {
         setActiveTeamId(result.team_id);
       }
       setRedeemStatus("success");
-      toast.success(t("auth.teamAdultJoin.welcomeTitle"), t("auth.teamAdultJoin.welcomeMessage"));
-      setTimeout(() => {
-        navigate(`/teams/${result.team_id}`, { replace: true });
-      }, 1500);
+      toast.success(
+        t("auth.teamAdultJoin.welcomeTitle"),
+        t("auth.teamAdultJoin.welcomeMessage"),
+      );
+      navigate(`/teams/${result.team_id}`, { replace: true });
     },
     onError: (error: Error) => {
       setRedeemStatus("error");
@@ -101,7 +121,29 @@ const TeamAdultJoin: React.FC = () => {
     );
   }
 
-  if (inviteError || !invite?.success) {
+  if (inviteError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer className="flex min-h-[80dvh] items-center justify-center">
+          <AppCard className="w-full max-w-sm text-center">
+            <div role="alert">
+              <AppCardTitle>Couldn’t load invitation</AppCardTitle>
+              <AppCardDescription className="my-4">
+                Your link is still here. Try loading it again.
+              </AppCardDescription>
+            </div>
+            <Button
+              className="min-h-12 w-full"
+              onClick={() => void retryInvite()}
+            >
+              Retry invitation
+            </Button>
+          </AppCard>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+  if (!invite?.success) {
     return (
       <AppShell hideNav>
         <PageContainer className="min-h-screen flex items-center justify-center">
@@ -118,6 +160,32 @@ const TeamAdultJoin: React.FC = () => {
               />
             </AppCard>
           </div>
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
+  if (invite.already_member && invite.team_id) {
+    return (
+      <AppShell hideNav>
+        <PageContainer className="flex min-h-[80dvh] items-center justify-center">
+          <AppCard className="w-full max-w-sm text-center">
+            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-success" />
+            <AppCardTitle>You’re on the team</AppCardTitle>
+            <AppCardDescription className="my-4">
+              Open {invite.team_name}’s coaching workspace.
+            </AppCardDescription>
+            <Button
+              className="min-h-12 w-full"
+              onClick={() => {
+                setActiveView("coach");
+                setActiveTeamId(invite.team_id!);
+                navigate(`/teams/${invite.team_id}`, { replace: true });
+              }}
+            >
+              Open coaching dashboard
+            </Button>
+          </AppCard>
         </PageContainer>
       </AppShell>
     );
@@ -196,19 +264,29 @@ const TeamAdultJoin: React.FC = () => {
       <AppShell hideNav>
         <PageContainer className="min-h-screen flex items-center justify-center">
           <div className="max-w-sm w-full">
-            <AppCard className="text-center">
+            <AppCard className="break-words text-center">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-primary" />
               </div>
-              <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.inviteTitle")}</AppCardTitle>
+              <AppCardTitle className="text-xl mb-2">
+                {t("auth.teamAdultJoin.inviteTitle")}
+              </AppCardTitle>
               <AppCardDescription className="mb-4">
-                {t("auth.teamAdultJoin.invitePrompt", { teamName, role: roleLabels[invite.role || ""] || "Team Staff" })}
+                Join {teamName}’s coaching workspace to see plans, roster,
+                shooting challenges and team progress.{" "}
+                {invite.invitation_kind === "link"
+                  ? "Sign in or create an account to accept this private, single-use invitation."
+                  : "Use the email address that received this invitation."}
               </AppCardDescription>
               <Button
                 variant="team"
                 size="lg"
                 className="w-full"
-                onClick={() => navigate(`/auth?redirect=${encodeURIComponent(`/team/adult/join/${token}`)}`)}
+                onClick={() =>
+                  navigate(
+                    `/auth?redirect=${encodeURIComponent(`/team/adult/join/${token}`)}`,
+                  )
+                }
               >
                 {t("auth.signInOrCreateAccount")}
               </Button>
@@ -223,15 +301,19 @@ const TeamAdultJoin: React.FC = () => {
     <AppShell hideNav>
       <PageContainer className="min-h-screen flex items-center justify-center">
         <div className="max-w-sm w-full">
-          <AppCard className="text-center">
+          <AppCard className="break-words text-center">
             {redeemStatus === "success" ? (
               <>
                 <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-success" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">{t("auth.invite.youreInTitle")}</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">
+                  {t("auth.invite.youreInTitle")}
+                </AppCardTitle>
                 <AppCardDescription>
-                  {t("auth.teamAdultJoin.joinedRedirectingMessage", { teamName })}
+                  {t("auth.teamAdultJoin.joinedRedirectingMessage", {
+                    teamName,
+                  })}
                 </AppCardDescription>
               </>
             ) : redeemStatus === "error" ? (
@@ -239,9 +321,13 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
                   <AlertCircle className="w-8 h-8 text-destructive" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">{t("common.somethingWentWrong")}</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">
+                  {t("common.somethingWentWrong")}
+                </AppCardTitle>
                 <AppCardDescription className="mb-4">
-                  {t("auth.teamAdultJoin.couldNotAddMessage")}
+                  {redeemInvite.error instanceof Error
+                    ? redeemInvite.error.message
+                    : t("auth.teamAdultJoin.couldNotAddMessage")}
                 </AppCardDescription>
                 <Button
                   variant="team"
@@ -258,9 +344,14 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-primary" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">{t("auth.teamAdultJoin.joiningTitle")}</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">
+                  {t("auth.teamAdultJoin.joiningTitle")}
+                </AppCardTitle>
                 <AppCardDescription className="mb-4">
-                  {t("auth.teamAdultJoin.joiningMessage", { teamName, role: roleLabels[invite.role || ""] || "Team Staff" })}
+                  {t("auth.teamAdultJoin.joiningMessage", {
+                    teamName,
+                    role: roleLabels[invite.role || ""] || "Team Staff",
+                  })}
                 </AppCardDescription>
                 <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
               </>
@@ -269,9 +360,15 @@ const TeamAdultJoin: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-8 h-8 text-primary" />
                 </div>
-                <AppCardTitle className="text-xl mb-2">Join {teamName}</AppCardTitle>
+                <AppCardTitle className="text-xl mb-2">
+                  Join {teamName}
+                </AppCardTitle>
                 <AppCardDescription className="mb-5">
-                  Accept the {roleLabels[invite.role || ""] || "team staff"} invitation. For security, use the email address that received it.
+                  Coaches and managers share one dashboard for plans, roster,
+                  challenges and progress.{" "}
+                  {invite.invitation_kind === "link"
+                    ? "This private link can be accepted once."
+                    : "Use the email address that received this invitation."}
                 </AppCardDescription>
                 <Button
                   variant="team"
@@ -279,10 +376,26 @@ const TeamAdultJoin: React.FC = () => {
                   className="w-full"
                   onClick={() => redeemInvite.mutate()}
                 >
-                  Accept team role
+                  Join coaching workspace
                 </Button>
               </>
             )}
+            {invite.invitation_kind !== "link" &&
+              redeemStatus !== "success" && (
+                <Button
+                  variant="ghost"
+                  className="mt-4 min-h-11 w-full"
+                  disabled={redeemInvite.isPending}
+                  onClick={async () => {
+                    await supabase.auth.signOut({ scope: "local" });
+                    navigate(
+                      `/auth?mode=signin&redirect=${encodeURIComponent(`/team/adult/join/${token}`)}`,
+                    );
+                  }}
+                >
+                  Use a different account
+                </Button>
+              )}
           </AppCard>
         </div>
       </PageContainer>

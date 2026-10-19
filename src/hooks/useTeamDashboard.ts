@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -56,14 +57,18 @@ interface TeamDashboardSnapshot {
 }
 
 export function useTeamDashboard(teamId: string | undefined) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ["team-dashboard", teamId],
+    queryKey: ["team-dashboard", teamId, user?.id],
     queryFn: async () => {
       if (!teamId) return null;
 
-      const { data, error } = await supabase.rpc("get_team_dashboard_snapshot", {
-        p_team_id: teamId,
-      });
+      const { data, error } = await supabase.rpc(
+        "get_team_dashboard_snapshot",
+        {
+          p_team_id: teamId,
+        },
+      );
 
       if (error) throw error;
 
@@ -74,7 +79,7 @@ export function useTeamDashboard(teamId: string | undefined) {
 
       return result;
     },
-    enabled: !!teamId,
+    enabled: Boolean(teamId && user),
     refetchInterval: 60000, // Refresh every minute
   });
 }

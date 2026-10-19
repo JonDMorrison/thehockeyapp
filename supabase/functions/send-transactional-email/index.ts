@@ -128,6 +128,21 @@ function buildParentInvitation(data: Record<string, unknown>): { subject: string
   return { subject, html: wrap(inner, subject, "driveway") };
 }
 
+function buildStaffInvitation(data: Record<string, unknown>): {subject:string;html:string} {
+  const rawTeamName = String(data.teamName ?? "your team");
+  const teamName = escapeHtml(rawTeamName);
+  const subject = `Join ${rawTeamName}’s coaching workspace`;
+  const expiry = typeof data.expiresAt === "string" && Number.isFinite(Date.parse(data.expiresAt))
+    ? ` It expires on ${new Intl.DateTimeFormat("en-CA", {dateStyle:"long",timeZone:"UTC"}).format(new Date(data.expiresAt))} (UTC).` : "";
+  const inner = `${heading("Great teams have great people behind them.")}
+    ${para(`You’ve been invited to help ${teamName} on The Hockey App. Coaches and managers share one workspace, so everyone can see the plan and cheer on the progress.`)}
+    <div style="padding:18px 20px;background:#f0f4f5;border-radius:14px;margin:20px 0;font-size:16px;line-height:1.7;color:#333333;">&#10003; Team plans and workouts<br>&#10003; Roster and shooting challenges<br>&#10003; Team progress, all in one place</div>
+    ${button("Join the coaching workspace", String(data.inviteLink))}
+    ${para("Sign in or create an account using the email address that received this invitation. No player profile or new team setup needed.")}
+    <p style="font-size:13px;line-height:1.6;color:#596671;">This private invitation can be accepted once.${escapeHtml(expiry)} If you weren’t expecting it, you can ignore this email.</p>`;
+  return {subject, html:wrap(inner,subject)};
+}
+
 function buildAssociationInvitation(data: Record<string, unknown>): { subject: string; html: string } {
   const associationName = escapeHtml(data.associationName ?? "your hockey association");
   const role = escapeHtml(String(data.role ?? "viewer").replaceAll("_", " "));
@@ -295,6 +310,21 @@ serve(async (req) => {
       if (!invite || !association || Date.parse(invite.expires_at) <= Date.now()) return jsonResp({ error: "Create an active invitation before emailing it" }, 409, cors);
       eventId = invite.id;
       builtPayload = { associationName: association.name, role: invite.role, inviteLink: `${DEFAULT_ORIGIN}/association/join/${invite.token}` };
+    } else if (type === "staff_invitation") {
+      const teamId = typeof payload.teamId === "string" ? payload.teamId : "";
+      const inviteId = typeof payload.inviteId === "string" ? payload.inviteId : "";
+      if (!teamId || !inviteId) return jsonResp({error:"Missing staff invitation context"},400,cors);
+      const {data:role,error:roleError} = serviceRequest ? {data:null,error:null} : await authClient.from("team_roles").select("role").eq("team_id",teamId).eq("user_id",user?.id??"").maybeSingle();
+      if (roleError) return jsonResp({error:"Could not verify team permissions"},503,cors);
+      if (!serviceRequest && !["head_coach","assistant_coach","manager"].includes(role?.role)) return jsonResp({error:"Forbidden"},403,cors);
+      const lookup = createClient(SUPABASE_URL,SERVICE_ROLE_KEY);
+      const {data:invite,error:inviteError} = await lookup.from("team_adult_invites").select("id,team_id,invited_email,invitation_kind,status,token,expires_at").eq("id",inviteId).eq("team_id",teamId).maybeSingle();
+      const {data:team,error:teamError} = await lookup.from("teams").select("name").eq("id",teamId).maybeSingle();
+      if (inviteError || teamError) return jsonResp({error:"Could not load staff invitation"},503,cors);
+      if (!invite || !team || invite.team_id !== teamId || invite.invitation_kind !== "email" || invite.status !== "pending" || Date.parse(invite.expires_at) <= Date.now()) return jsonResp({error:"Create an active email invitation before sending it"},409,cors);
+      if (invite.invited_email.trim().toLowerCase() !== to) return jsonResp({error:"Recipient must match the staff invitation"},403,cors);
+      eventId = invite.id;
+      builtPayload = {teamName:team.name,inviteLink:`${DEFAULT_ORIGIN}/team/adult/join/${invite.token}`,expiresAt:invite.expires_at};
     } else if (type === "parent_invitation" || type === "coach_welcome") {
       const teamId = typeof payload.teamId === "string" ? payload.teamId : "";
       if (!teamId) return jsonResp({ error: "Missing team context" }, 400, cors);
@@ -321,6 +351,9 @@ serve(async (req) => {
         break;
       case "parent_invitation":
         built = buildParentInvitation(builtPayload);
+        break;
+      case "staff_invitation":
+        built = buildStaffInvitation(builtPayload);
         break;
       case "association_invitation":
         built = buildAssociationInvitation(builtPayload);
