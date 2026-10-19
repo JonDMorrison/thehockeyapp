@@ -138,3 +138,14 @@ The additive atomic program-save function passed rollback-only checks against th
 - Local PostgreSQL and rollback-only hosted-schema gates passed. Five new real mobile lifecycle checks passed on a frozen build (13.1 seconds), including a genuinely committed save with a lost response followed by a duplicate-free retry and a Vancouver custom date. Broader replay is in progress before merge.
 
 The workout browser matrix initially found two unsupported clipboard-permission requests in the test harness (WebKit/Firefox) and an intermittent Firefox tap failure. Browser-specific clipboard verification now uses the actual supported capabilities; fixture manifests have configurable/browser-specific paths. The repaired lifecycle matrix passed all **36 cases** across three browsers. Investigating rapid taps also exposed swipe handling that changed wrapper structure after mount and attached drag recognition to ordinary controls; gestures now start explicitly at the edge, and the session boundary resolves the local account before mounting the workspace. Final repeated readiness checks are running before this release is merged.
+## Guardian authorization finding
+
+A fresh unrelated family could insert itself into another fictional child's guardian list because the INSERT policy accepted `user_id = auth.uid()` as authorization. The reproduction failed before repair and removed its temporary grant in cleanup. The policy now requires the actual player owner; verified invite redemption remains separately authorized.
+
+The repair is installed in production. Two real-account API gates passed (3.3 seconds): self-grants as guardian/owner are denied, the true owner can grant/revoke, relationship acknowledgement is required for guardian invite redemption, and email-bound staff invitations still work. Direct uninvited staff assignment was already denied by table privileges. At inspection, additional guardian memberships and mismatched owner-role rows both counted zero; this is current-state evidence, not a historical-access claim. A local RLS test deliberately grants table INSERT and proves the row policy itself still denies self-grants.
+
+## Session-photo privacy finding
+
+The private-photo fixture reproduced a coach reading a caption marked `parent_only`. The photo-record policy now limits staff access to photos explicitly shared with team adults; private images remain accessible to their family. Storage signing inherits that record visibility. Additional owner-path policies allow cleanup when the photo-record write fails, avoiding inaccessible orphan uploads.
+
+The production API/storage test passed the private → shared → private transition, denied/allowed image signing, and an uploaded object's deletion before any photo record exists (3.4 seconds). Matching local row/storage-policy gates passed. Issued signed URLs have an expiry; changing access prevents new signed URLs rather than undoing an image someone already received.
