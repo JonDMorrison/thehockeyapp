@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +25,7 @@ export default function Associations() {
     if (!authLoading && !isAuthenticated) navigate("/auth", { replace: true });
   }, [authLoading, isAuthenticated, navigate]);
 
-  const { data: memberships, isLoading } = useQuery({
+  const { data: memberships, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["associations", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -92,7 +93,7 @@ export default function Associations() {
           </div>
         </section>
 
-        {memberships && memberships.length > 0 ? (
+        {isError ? <DataLoadError title="Couldn’t load your associations" onRetry={() => refetch()} retrying={isFetching} /> : memberships && memberships.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
             {memberships.map((membership) => {
               const association = membership.associations;

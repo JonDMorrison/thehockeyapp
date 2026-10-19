@@ -124,8 +124,8 @@ export default function SoloPlanningHub() {
         .select('*')
         .eq('player_id', playerId!)
         .eq('is_active', true)
-        .single();
-      if (error && error.code !== 'PGRST116') throw error;
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !!playerId,

@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +38,7 @@ const Teams: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ["teams", user?.id] });
   }, [queryClient, user?.id]);
 
-  const { data: teams, isLoading, isFetched } = useQuery({
+  const { data: teams, isLoading, isFetched, isError, refetch, isFetching } = useQuery({
     queryKey: ["teams", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,6 +63,12 @@ const Teams: React.FC = () => {
     enabled: !!user,
   });
 
+  useEffect(() => {
+    if (!isError && isFetched && teams?.length === 1 && teams[0].teams) {
+      navigate(`/teams/${teams[0].teams.id}`, { replace: true });
+    }
+  }, [isError, isFetched, teams, navigate]);
+
   // Show loading state while auth is checking
   if (authLoading) {
     return (
@@ -79,14 +86,6 @@ const Teams: React.FC = () => {
     return null;
   }
 
-  // Smart redirect: if user has exactly one team, skip the list
-  if (isFetched && teams && teams.length === 1) {
-    const team = teams[0].teams as { id: string } | null;
-    if (team) {
-      navigate(`/teams/${team.id}`, { replace: true });
-      return null;
-    }
-  }
 
   return (
     <AppShell
@@ -131,7 +130,7 @@ const Teams: React.FC = () => {
             </div>
           </button>
 
-          {isLoading ? (
+          {isError ? <DataLoadError title="Couldn’t load your teams" onRetry={() => refetch()} retrying={isFetching} /> : isLoading ? (
             <div className="space-y-3">
               <SkeletonTeamCard />
               <SkeletonTeamCard />

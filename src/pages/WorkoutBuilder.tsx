@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ const WorkoutBuilder: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch team
-  const { data: team, isLoading: teamLoading } = useQuery({
+  const { data: team, isLoading: teamLoading, isError: teamError, refetch: retryTeam, isFetching: fetchingTeam } = useQuery({
     queryKey: ["team", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -71,7 +72,7 @@ const WorkoutBuilder: React.FC = () => {
   });
 
   // Fetch week plans
-  const { data: weekPlans, isLoading: plansLoading } = useQuery({
+  const { data: weekPlans, isLoading: plansLoading, isError: contentError, refetch: retryContent, isFetching: fetchingContent } = useQuery({
     queryKey: ["team-week-plans", teamId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -107,6 +108,10 @@ const WorkoutBuilder: React.FC = () => {
       setTeamTheme(team.palette_id);
     }
   }, [team?.palette_id, setTeamTheme]);
+
+  if (isAuthenticated && (teamError || contentError)) {
+    return <AppShell hideNav><PageContainer><DataLoadError title="Couldn’t load your programs" onRetry={() => { void retryTeam(); void retryContent(); }} retrying={fetchingTeam || fetchingContent} /><Button variant="ghost" onClick={() => navigate(`/teams/${teamId}`)}>Back to team</Button></PageContainer></AppShell>;
+  }
 
   const isLoading = teamLoading || plansLoading || authLoading;
 
