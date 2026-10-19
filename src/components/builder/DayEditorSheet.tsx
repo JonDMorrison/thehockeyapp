@@ -203,7 +203,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                   <div className="flex gap-2">
                     {/* Reorder */}
                     <div className="flex flex-col gap-1">
-                      <Button
+                      <Button aria-label="Move activity up"
                         variant="ghost"
                         size="icon-sm"
                         className="h-6 w-6"
@@ -212,7 +212,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                       >
                         <ArrowUp className="w-3 h-3" />
                       </Button>
-                      <Button
+                      <Button aria-label="Move activity down"
                         variant="ghost"
                         size="icon-sm"
                         className="h-6 w-6"

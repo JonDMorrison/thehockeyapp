@@ -150,7 +150,7 @@ const SeasonReport: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3 no-print">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/teams/${teamId}`)}

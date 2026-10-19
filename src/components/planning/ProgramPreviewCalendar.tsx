@@ -103,7 +103,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
     <div className="space-y-4">
       {/* Week Navigation */}
       <div className="flex items-center justify-between">
-        <Button
+        <Button aria-label="Previous week"
           variant="ghost"
           size="icon"
           onClick={handlePrevWeek}
@@ -119,7 +119,7 @@ export const ProgramPreviewCalendar: React.FC<ProgramPreviewCalendarProps> = ({
           </p>
         </div>
 
-        <Button
+        <Button aria-label="Next week"
           variant="ghost"
           size="icon"
           onClick={handleNextWeek}

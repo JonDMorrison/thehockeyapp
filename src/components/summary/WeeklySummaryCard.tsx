@@ -176,7 +176,7 @@ export const TeamWeeklySummaryCard: React.FC<TeamWeeklySummaryCardProps> = ({
             )}
           </div>
         </div>
-        <Button
+        <Button aria-label="Refresh team summary"
           variant="ghost"
           size="icon-sm"
           onClick={() => generateMutation.mutate()}

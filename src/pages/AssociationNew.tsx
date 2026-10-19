@@ -73,7 +73,7 @@ export default function AssociationNew() {
       hideNav
       header={
         <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={() => navigate("/associations")}>
+          <Button aria-label="Go back" variant="ghost" size="icon-sm" onClick={() => navigate("/associations")}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <PageHeader title="Create association" subtitle="Set up the shared operating layer" />

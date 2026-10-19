@@ -75,7 +75,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         {variant === "icon" ? (
-          <Button
+          <Button aria-label="Send a cheer"
             variant="ghost"
             size="icon-sm"
             className="text-primary hover:text-primary hover:bg-primary/10"
@@ -125,7 +125,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
               className="text-sm"
               maxLength={100}
             />
-            <Button
+            <Button aria-label="Send message"
               size="icon-sm"
               onClick={handleSendMessage}
               disabled={!customMessage.trim() || sendCheer.isPending}

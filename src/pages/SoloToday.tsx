@@ -333,7 +333,7 @@ const SoloToday: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center justify-between w-full">
-          <button
+          <button aria-label="Go back"
             onClick={() => navigate(`/solo/dashboard/${playerId}`)}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors -ml-1 p-1"
           >
@@ -352,7 +352,7 @@ const SoloToday: React.FC = () => {
               </p>
             </div>
           </div>
-          <Button
+          <Button aria-label="Open player profile"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/players/${playerId}/home`)}

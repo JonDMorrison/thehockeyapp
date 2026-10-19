@@ -327,7 +327,7 @@ export const ScheduleSyncSection: React.FC<ScheduleSyncSectionProps> = ({ teamId
               </p>
             </div>
           </div>
-          <Button
+          <Button aria-label="Sync schedule"
             variant="ghost"
             size="sm"
             onClick={() => syncMutation.mutate()}

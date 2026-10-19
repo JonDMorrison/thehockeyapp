@@ -68,7 +68,7 @@ function NotificationItem({
         </div>
         <div className="flex items-center gap-1">
           {!notification.is_read && (
-            <Button
+            <Button aria-label="Mark notification as read"
               variant="ghost"
               size="icon"
               className="h-6 w-6"
@@ -80,7 +80,7 @@ function NotificationItem({
               <Check className="w-3 h-3" />
             </Button>
           )}
-          <Button
+          <Button aria-label="Delete notification"
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"

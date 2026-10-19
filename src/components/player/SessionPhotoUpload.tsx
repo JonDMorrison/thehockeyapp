@@ -254,7 +254,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
 
         {/* Add photo button */}
         {photoCount < 3 && !disabled && (
-          <button
+          <button aria-label="Choose a photo"
             onClick={() => fileInputRef.current?.click()}
             className="w-16 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center hover:bg-surface-muted transition-colors"
           >
@@ -291,7 +291,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
                   alt="Preview"
                   className="w-full h-full object-contain"
                 />
-                <button
+                <button aria-label="Remove selected photo"
                   onClick={resetUploadState}
                   className="absolute top-2 right-2 p-1 bg-black/50 rounded-full"
                 >

@@ -28,5 +28,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    ...(process.env.QA_CROSS_BROWSER === '1' ? [
+      { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+      { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    ] : []),
   ],
 });

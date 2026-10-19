@@ -113,8 +113,8 @@ const RouteScroll = (): null => {
     } catch {
       // An invalid fragment should never prevent the route from opening.
     }
-    if (anchor) anchor.scrollIntoView({ block: "start" });
-    else window.scrollTo(0, 0);
+    if (anchor) anchor.scrollIntoView({ block: "start", behavior: "instant" });
+    else window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [pathname, hash]);
   return null;
 };

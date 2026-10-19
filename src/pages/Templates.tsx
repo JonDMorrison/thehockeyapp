@@ -189,7 +189,7 @@ const Templates: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(-1)}
@@ -249,7 +249,7 @@ const Templates: React.FC = () => {
                     </p>
                   </div>
                   <div className="flex gap-1">
-                    <Button
+                    <Button aria-label="Edit template"
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => {
@@ -259,7 +259,7 @@ const Templates: React.FC = () => {
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
-                    <Button
+                    <Button aria-label="Delete template"
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => setDeleteTemplate(template)}

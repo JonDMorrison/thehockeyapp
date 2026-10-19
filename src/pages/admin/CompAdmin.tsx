@@ -150,7 +150,7 @@ export default function CompAdmin() {
       {/* Header */}
       <div className="border-b border-border bg-card">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
+          <button aria-label="Go back" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <Shield className="w-5 h-5 text-primary" />
@@ -332,7 +332,7 @@ export default function CompAdmin() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {c.email && (
-                            <Button
+                            <Button aria-label="Copy email address"
                               size="sm"
                               variant="ghost"
                               onClick={() => {
@@ -344,7 +344,7 @@ export default function CompAdmin() {
                             </Button>
                           )}
                           {c.status === "comped" && (
-                            <Button
+                            <Button aria-label="Revoke access"
                               size="sm"
                               variant="ghost"
                               className="text-destructive hover:text-destructive"

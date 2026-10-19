@@ -244,7 +244,7 @@ const PlayerWeek: React.FC = () => {
 
   const header = (
     <div className="flex items-center gap-3 w-full">
-      <Button
+      <Button aria-label="Go back"
         variant="ghost"
         size="icon-sm"
         onClick={() => navigate(`/players/${playerId}/home`)}

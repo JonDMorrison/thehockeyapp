@@ -198,7 +198,7 @@ const PlayerTeamGoals: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button
+          <Button aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(`/players/${playerId}/home`)}

@@ -1,6 +1,6 @@
 import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,6 @@ import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonTeamCard } from "@/components/app/Skeleton";
-import { ContextSwitcher } from "@/components/app/ContextSwitcher";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, UserPlus } from "lucide-react";
@@ -124,13 +123,12 @@ const Players: React.FC = () => {
   return (
     <AppShell
       header={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <PageHeader
             title={t("players.list.title")}
             subtitle={t("players.list.subtitle")}
           />
           <div className="flex items-center gap-2">
-            <ContextSwitcher />
             <Button
               variant="team"
               size="sm"
@@ -162,11 +160,8 @@ const Players: React.FC = () => {
                   : null;
 
                 return (
-                  <AppCard
-                    key={player.id}
-                    className="cursor-pointer hover:shadow-medium transition-shadow"
-                    onClick={() => navigate(`/players/${player.id}/home`)}
-                  >
+                  <Link key={player.id} to={`/players/${player.id}/home`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                  <AppCard className="hover:shadow-medium transition-shadow">
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <Avatar
@@ -210,6 +205,7 @@ const Players: React.FC = () => {
                       <ChevronRight className="w-5 h-5 text-text-muted" />
                     </div>
                   </AppCard>
+                  </Link>
                 );
               })}
             </div>

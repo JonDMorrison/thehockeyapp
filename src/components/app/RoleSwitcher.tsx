@@ -71,7 +71,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   // Don't show if user only has one role
   if (isLoading) {
     return (
-      <Button variant="ghost" size="sm" disabled className={className}>
+      <Button aria-label="Loading workspaces" variant="ghost" size="sm" disabled className={className}>
         <Loader2 className="w-4 h-4 animate-spin" />
       </Button>
     );

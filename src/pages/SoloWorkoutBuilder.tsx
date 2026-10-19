@@ -234,7 +234,7 @@ export default function SoloWorkoutBuilder() {
         {/* Header */}
         <div className="px-5 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <Button
+            <Button aria-label="Go back"
               variant="ghost"
               size="icon"
               className="h-9 w-9"
@@ -393,7 +393,7 @@ export default function SoloWorkoutBuilder() {
                         </div>
                       </div>
 
-                      <Button
+                      <Button aria-label="Remove activity"
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground"

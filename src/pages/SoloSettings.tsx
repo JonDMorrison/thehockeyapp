@@ -39,7 +39,7 @@ export default function SoloSettings() {
 
   const header = (
     <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-background">
-      <Button
+      <Button aria-label="Go back"
         variant="ghost"
         size="icon"
         onClick={() => navigate(`/solo/dashboard/${playerId}`)}

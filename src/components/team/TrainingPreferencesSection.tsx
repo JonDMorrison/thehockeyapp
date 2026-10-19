@@ -220,7 +220,7 @@ export const TrainingPreferencesSection: React.FC<TrainingPreferencesSectionProp
                 : t("teams.trainingPrefs.aiDescriptionDisabled")}
             </p>
           </div>
-          <Switch
+          <Switch aria-label="AI workout generation"
             checked={useAiAssist}
             onCheckedChange={(checked) => updateMutation.mutate({ use_ai_assist: checked })}
           />

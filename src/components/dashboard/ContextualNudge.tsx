@@ -100,7 +100,7 @@ export const ContextualNudge: React.FC<ContextualNudgeProps> = ({
         {activeNudge.actionLabel}
       </Button>
       {onDismiss && (
-        <Button
+        <Button aria-label="Dismiss"
           size="icon-sm"
           variant="ghost"
           className="flex-shrink-0 text-text-muted"
