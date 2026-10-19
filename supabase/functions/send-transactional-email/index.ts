@@ -188,7 +188,7 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
     return b.sessions - a.sessions;
   });
 
-  const subject = `${teamName} this week: ${completedCount} of ${rosterCount} players trained`;
+  const subject = `${teamName} last week: ${completedCount} of ${rosterCount} players trained`;
 
   const rows = ordered
     .map(
@@ -196,27 +196,27 @@ function buildWeeklyCoachDigest(data: Record<string, unknown>): { subject: strin
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#1a1a1a;">${escapeHtml(p.name)}</td>
         <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#333333;text-align:center;">${p.sessions}</td>
-        <td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:14px;color:#333333;text-align:center;">${p.streak}</td>
+        
       </tr>`,
     )
     .join("");
 
   const inner = `
-    ${heading(`${teamName} this week`)}
+    ${heading(`${teamName} last week`)}
     ${para(`${completedCount} of ${rosterCount} players trained.`)}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0;border-collapse:collapse;">
       <thead>
         <tr>
           <th style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#888888;text-align:left;">Player</th>
           <th style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#888888;text-align:center;">Sessions</th>
-          <th style="padding:8px 12px;border-bottom:2px solid ${NAVY};font-size:12px;text-transform:uppercase;letter-spacing:0.3px;color:#888888;text-align:center;">Streak</th>
+          
         </tr>
       </thead>
       <tbody>
         ${rows}
       </tbody>
     </table>
-    ${para("Players who haven't started this week are at the bottom, no action needed unless you want to nudge them.")}
+    ${para("Players with no completed sessions last week appear at the bottom.")}
     ${button("See full progress", teamProgressUrl)}
     ${unsubscribeFooter(data)}
   `;
@@ -229,20 +229,20 @@ function buildPlayerWeeklyProgress(data: Record<string, unknown>): { subject: st
   const playerId = String(data.playerId ?? "");
   const sessionsCount = Number(data.sessionsCount ?? 0);
   const shotsCount = Number(data.shotsCount ?? 0);
-  const streak = Number(data.streak ?? 0);
+  const targetShots = Number(data.targetShotsCount ?? 0);
 
   const weekUrl = `https://www.hockeyapp.ca/players/${playerId}/week`;
-  const isZeroWeek = sessionsCount === 0;
+  const isZeroWeek = sessionsCount === 0 && shotsCount === 0 && targetShots === 0;
 
   let subject: string;
   let bodyText: string;
 
   if (isZeroWeek) {
-    subject = `${firstName}'s training is ready for a fresh week`;
-    bodyText = `A fresh week is a clean slate. ${firstName}'s training plan is ready whenever they are. Even one session this week keeps the habit alive.`;
+    subject = `${firstName}'s weekly training recap`;
+    bodyText = `No completed sessions or logged shots were recorded last week. Open the app to see the next available workout, or check with your coach.`;
   } else {
     subject = `${firstName}'s week: ${sessionsCount} sessions, ${shotsCount} shots`;
-    bodyText = `Nice work this week. ${firstName} completed ${sessionsCount} training sessions and logged ${shotsCount} shots. Current streak: ${streak}. Next week's plan is ready — keep the momentum going.`;
+    bodyText = `${firstName} completed ${sessionsCount} training sessions and logged ${shotsCount} shots last week.${targetShots > 0 ? ` Completed home shooting drills had targets of ${targetShots} additional shots.` : ""} Small, steady efforts build the habit.`;
   }
 
   const inner = `
@@ -367,12 +367,13 @@ serve(async (req) => {
     const digest = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))).map(byte => byte.toString(16).padStart(2, "0")).join("");
     // Stable across retries. Invitations may be sent again the next UTC day.
     const day = new Date().toISOString().slice(0, 10);
-    const idempotencyKey = `hockey-${await digest(JSON.stringify([type, to, eventId, builtPayload, type === "coach_welcome" ? "once" : day]))}`;
+    const logicalDelivery = serviceRequest && typeof payload.deliveryKey === "string" && payload.deliveryKey.length <= 200 ? payload.deliveryKey : null;
+    const idempotencyKey = `hockey-${await digest(JSON.stringify(logicalDelivery ? [type, to, logicalDelivery] : [type, to, eventId, builtPayload, type === "coach_welcome" ? "once" : day]))}`;
     const recipientHash = await digest(to);
     const { data: claim, error: claimError } = await delivery.rpc("claim_email_delivery", { p_key: idempotencyKey, p_actor: user?.id ?? null, p_recipient_hash: recipientHash, p_type: type });
     if (claimError) return jsonResp({ error: "Could not prepare email delivery. Please try again." }, 503, cors);
     if (claim?.status === "sent") return jsonResp({ success: true, already_sent: true, id: claim.id }, 200, cors);
-    if (claim?.status !== "ready") return jsonResp({ error: claim?.status === "rate_limited" ? "Email limit reached. Please wait before sending again, or copy the invitation link." : "This email is already being sent. Please wait a moment before retrying." }, 429, cors);
+    if (claim?.status !== "ready") return jsonResp({ error: claim?.status === "rate_limited" || claim?.status === "expired" ? "Email limit reached. Please wait before sending again, or copy the invitation link." : "This email is already being sent. Please wait a moment before retrying." }, 429, cors);
     const markFailed = () => delivery.from("email_delivery_attempts").update({ status: "failed", updated_at: new Date().toISOString() }).eq("idempotency_key", idempotencyKey);
     let resendRes: Response;
     try {

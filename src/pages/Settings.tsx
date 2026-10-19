@@ -21,6 +21,8 @@ interface ProfileData {
 }
 
 interface EmailPreferences {
+  coach_digest_confirmed_at: string | null;
+  player_progress_confirmed_at: string | null;
   weekly_coach_digest: boolean;
   player_weekly_progress: boolean;
   product_updates: boolean;
@@ -81,7 +83,7 @@ export default function Settings() {
       if (!user) return null;
       const { data: existing, error } = await supabase
         .from("email_preferences")
-        .select("weekly_coach_digest, player_weekly_progress, product_updates")
+        .select("weekly_coach_digest, player_weekly_progress, product_updates, coach_digest_confirmed_at, player_progress_confirmed_at")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
@@ -90,7 +92,7 @@ export default function Settings() {
       const { data: created, error: createError } = await supabase
         .from("email_preferences")
         .insert({ user_id: user.id })
-        .select("weekly_coach_digest, player_weekly_progress, product_updates")
+        .select("weekly_coach_digest, player_weekly_progress, product_updates, coach_digest_confirmed_at, player_progress_confirmed_at")
         .single();
       if (createError) throw createError;
       return created as EmailPreferences;
@@ -99,11 +101,11 @@ export default function Settings() {
   });
 
   const updateEmailPreference = useMutation({
-    mutationFn: async ({ key, value }: { key: keyof EmailPreferences; value: boolean }) => {
+    mutationFn: async ({ key, value }: { key: "weekly_coach_digest" | "player_weekly_progress" | "product_updates"; value: boolean }) => {
       if (!user) throw new Error("Sign in to update email preferences");
       const { error } = await supabase
         .from("email_preferences")
-        .upsert({ user_id: user.id, [key]: value }, { onConflict: "user_id" });
+        .upsert({ user_id: user.id, [key]: value, ...(key === "weekly_coach_digest" ? { coach_digest_confirmed_at: value ? new Date().toISOString() : null } : key === "player_weekly_progress" ? { player_progress_confirmed_at: value ? new Date().toISOString() : null } : {}) }, { onConflict: "user_id" });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["email-preferences", user?.id] }),
@@ -207,15 +209,15 @@ export default function Settings() {
           {emailPreferences.isError ? <DataLoadError title="Couldn’t load email preferences" onRetry={() => emailPreferences.refetch()} retrying={emailPreferences.isFetching} /> : <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
             <PreferenceRow
               label="Coach weekly digest"
-              description="A weekly team participation summary."
-              checked={emailPreferences.data?.weekly_coach_digest ?? true}
+              description="Choose to receive last week’s team participation summary each Monday."
+              checked={Boolean(emailPreferences.data?.weekly_coach_digest && emailPreferences.data?.coach_digest_confirmed_at)}
               disabled={emailPreferences.isLoading || updateEmailPreference.isPending || !isCoach}
               onCheckedChange={(value) => updateEmailPreference.mutate({ key: "weekly_coach_digest", value })}
             />
             <PreferenceRow
               label="Player weekly progress"
-              description="Sessions, shots, and streak progress for your players."
-              checked={emailPreferences.data?.player_weekly_progress ?? true}
+              description="Choose to receive last week’s sessions and shooting progress each Monday."
+              checked={Boolean(emailPreferences.data?.player_weekly_progress && emailPreferences.data?.player_progress_confirmed_at)}
               disabled={emailPreferences.isLoading || updateEmailPreference.isPending}
               onCheckedChange={(value) => updateEmailPreference.mutate({ key: "player_weekly_progress", value })}
             />

@@ -454,6 +454,8 @@ export type Database = {
       }
       email_preferences: {
         Row: {
+          coach_digest_confirmed_at: string | null
+          player_progress_confirmed_at: string | null
           player_weekly_progress: boolean
           product_updates: boolean
           team_invites: boolean
@@ -463,6 +465,8 @@ export type Database = {
           weekly_coach_digest: boolean
         }
         Insert: {
+          coach_digest_confirmed_at?: string | null
+          player_progress_confirmed_at?: string | null
           player_weekly_progress?: boolean
           product_updates?: boolean
           team_invites?: boolean
@@ -472,6 +476,8 @@ export type Database = {
           weekly_coach_digest?: boolean
         }
         Update: {
+          coach_digest_confirmed_at?: string | null
+          player_progress_confirmed_at?: string | null
           player_weekly_progress?: boolean
           product_updates?: boolean
           team_invites?: boolean
