@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
+import { isModuleLoadError, recoverModuleLoad } from "@/lib/moduleRecovery";
 import { logger } from "./logger";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,9 +10,14 @@ function redact(value: string, maxLength: number): string {
     .slice(0, maxLength);
 }
 
-async function reportClientError(error: Error, errorInfo: ErrorInfo): Promise<void> {
+async function reportClientError(
+  error: Error,
+  errorInfo: ErrorInfo,
+): Promise<void> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session?.user) return;
     await supabase.from("client_error_events").insert({
       user_id: session.user.id,
@@ -34,19 +40,21 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  moduleLoadError: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, moduleLoadError: false };
   }
 
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, moduleLoadError: isModuleLoadError(error) };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    if (isModuleLoadError(error) && recoverModuleLoad()) return;
     logger.error("Uncaught UI error", {
       message: error.message,
       stack: error.stack,
@@ -63,10 +71,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <span className="text-3xl">🏒</span>
           </div>
           <h1 className="text-xl font-bold text-foreground mb-2">
-            Something went wrong
+            {this.state.moduleLoadError
+              ? "This page couldn’t load"
+              : "Something went wrong"}
           </h1>
           <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-            An unexpected error occurred. Please reload the page and try again.
+            {this.state.moduleLoadError
+              ? "Check your connection, then reload to get the latest version of this page."
+              : "An unexpected error occurred. Please reload the page and try again."}
           </p>
           <button
             onClick={() => window.location.reload()}

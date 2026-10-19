@@ -30,3 +30,11 @@ Screenshots, logs and production deployment verification are retained in `hockey
 The first production run completed 20 checks and exposed one intermittent fast-Escape failure in Chromium; an unchanged rerun reproduced it at another viewport. Instrumenting focus added enough delay to avoid the failure, pointing to the opening-frame dismissal-listener timing. The menu now controls its open state and handles Escape on the trigger/content capture path immediately, while retaining normal selection and focus restoration. It also closes when navigating or reloading workspace roles. The roster test explicitly checks that focus returns to Switch. The original failed runs remain in the QA artifacts.
 
 A compiled production-build check was repeated ten times in Chromium, covering 30 immediate menu open/Escape/focus-return interactions across 320px, 390px and 1440px without diagnostic delays.
+
+## Failed page-module recovery
+
+Further production stress checks exposed intermittent page loading failures, including an error screen. Existing client error records confirmed failed dynamic module imports. Add a guarded refresh for a recognized module-load error, capped at once per tab per minute. Keep the same URL and session; persistent failures show a clear manual retry screen. Offline mode and `/auth` do not automatically navigate, and unrelated render errors retain the normal error boundary/reporting behavior.
+
+`e2e/70-module-load-recovery.spec.ts` covers stale-deployment recovery at 320px/1440px, persistent failure without a reload loop, manual retry, unrelated render errors, auth callback safety and offline behavior in Chromium/WebKit/Firefox (18 checks). The stale-deployment fixture changes the entry/lazy-module URLs on the refreshed document to model a real release; WebKit retains failed module URLs across a plain refresh. Initial test document counts included same-document history updates and were corrected to count successful main-document responses.
+
+Implementation follows Vite's load-error handling guidance: https://vite.dev/guide/build.html#load-error-handling . HTML already uses revalidation headers. No schema, permission or email change is involved.
