@@ -16,11 +16,13 @@ export function ChallengeLinks({
   playerId,
   inline = false,
   coachOverview = false,
+  familyOverview = false,
 }: {
   teamId?: string;
   playerId?: string;
   inline?: boolean;
   coachOverview?: boolean;
+  familyOverview?: boolean;
 }) {
   const { user } = useAuth();
   const list = useQuery({
@@ -32,7 +34,7 @@ export function ChallengeLinks({
   const first = list.data?.find((c) => c.status === "Live") || list.data?.[0];
   const snapshot = useQuery({
     queryKey: ["shooting-snapshot", first?.id, user?.id],
-    enabled: (inline || coachOverview) && !!first,
+    enabled: (inline || coachOverview || familyOverview) && !!first,
     queryFn: () => shootingSnapshot(first!.id),
     refetchInterval: 10000,
   });
@@ -51,10 +53,150 @@ export function ChallengeLinks({
         </Button>
       </AppCard>
     );
+  if (!first && playerId && familyOverview)
+    return (
+      <section
+        aria-label="Your shooting challenge"
+        className="flex h-full min-h-[300px] flex-col items-start rounded-2xl border border-border bg-card p-5 sm:p-6"
+      >
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <Target className="h-4 w-4 text-primary" />
+          Shooting challenge
+        </p>
+        <Target
+          aria-hidden="true"
+          className="my-5 h-12 w-12 text-primary"
+          strokeWidth={1.2}
+        />
+        <h2 className="font-display text-2xl font-bold">
+          Your next challenge is coming
+        </h2>
+        <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
+          Your coach’s shooting challenges will appear here. For now, keep the
+          puck moving with a home workout.
+        </p>
+        <Button asChild variant="outline" className="mt-auto min-h-11">
+          <Link to={`/solo/today/${playerId}`}>
+            Practise at home
+            <ArrowUpRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+      </section>
+    );
   if (!first && playerId) return null;
   const mine = snapshot.data?.players.find(
     (p) => p.player_id === playerId && p.is_mine && p.active_member,
   );
+  if (familyOverview && first) {
+    const phase = snapshot.data?.status ?? first.status;
+    return (
+      <section
+        aria-label="Your shooting challenge"
+        className="relative flex h-full min-h-[300px] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-6"
+      >
+        <Target
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-5 -top-5 h-40 w-40 text-primary opacity-[0.07]"
+          strokeWidth={0.7}
+        />
+        <p className="relative flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <Target className="h-4 w-4 text-primary" />
+          Shooting challenge
+        </p>
+        <div className="relative mt-4">
+          <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-xs ${phase === "Live" ? "bg-success/10 text-success" : "bg-white/[0.05] text-muted-foreground"}`}
+          >
+            {phase === "Live" ? "Let’s shoot" : phase}
+          </span>
+          <h2 className="mt-3 break-words font-display text-2xl font-bold leading-tight">
+            {first.name}
+          </h2>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {displayShotDate(first.start_date)} –{" "}
+            {displayShotDate(first.end_date)}
+          </p>
+        </div>
+        {snapshot.isError ? (
+          <div role="alert" className="my-5 text-sm">
+            <p>Your shots couldn’t load.</p>
+            <Button
+              variant="outline"
+              className="mt-3"
+              onClick={() => void snapshot.refetch()}
+            >
+              Retry your shots
+            </Button>
+          </div>
+        ) : snapshot.isPending ? (
+          <p role="status" className="my-6 text-sm text-muted-foreground">
+            Loading your shots…
+          </p>
+        ) : mine ? (
+          <div className="my-5 flex items-end gap-5">
+            <div>
+              <p className="font-display text-4xl font-bold tabular-nums">
+                {mine.total.toLocaleString()}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Your shots</p>
+            </div>
+            <p className="max-w-[12rem] border-l border-border pl-4 text-sm leading-6 text-muted-foreground">
+              {phase === "Finished"
+                ? "Look back at the effort you put in."
+                : mine.total > 0
+                  ? "Look at that effort adding up. Keep it going!"
+                  : "Your first shots are the start of something good."}
+            </p>
+          </div>
+        ) : (
+          <p className="my-5 text-sm text-muted-foreground">
+            Open the challenge to see your team’s progress.
+          </p>
+        )}
+        <Button
+          asChild
+          variant={
+            phase === "Live" && mine && !snapshot.isError
+              ? "default"
+              : "outline"
+          }
+          className="mt-auto min-h-12 w-full sm:w-auto sm:self-start"
+        >
+          <Link to={`/shooting/${first.id}?player=${playerId}`}>
+            {phase === "Live" && mine && !snapshot.isError
+              ? "Log shots"
+              : phase === "Finished"
+                ? "View results"
+                : "View challenge"}
+            <ArrowUpRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+        {(list.data?.length ?? 0) > 1 && (
+          <details className="mt-4 border-t border-border pt-3">
+            <summary className="cursor-pointer text-sm text-muted-foreground">
+              More challenges ({list.data!.length - 1})
+            </summary>
+            <div className="mt-2 space-y-1">
+              {list
+                .data!.filter((c) => c.id !== first.id)
+                .map((c) => (
+                  <Link
+                    key={c.id}
+                    className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-2 text-sm hover:bg-muted"
+                    to={`/shooting/${c.id}?player=${playerId}`}
+                  >
+                    <span>{c.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {c.status}
+                    </span>
+                  </Link>
+                ))}
+            </div>
+          </details>
+        )}
+      </section>
+    );
+  }
   if (coachOverview) {
     const shots =
       snapshot.data?.players.reduce((sum, p) => sum + p.total, 0) ?? 0;

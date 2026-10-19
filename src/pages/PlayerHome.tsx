@@ -1,21 +1,30 @@
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useActiveView } from "@/contexts/ActiveViewContext";
 import { useTeamTheme } from "@/hooks/useTeamTheme";
+import { usePersonalToday } from "@/hooks/usePersonalToday";
+import {
+  FamilyTodayCard,
+  type FamilyWorkout,
+} from "@/components/player/FamilyTodayCard";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTodaySnapshot } from "@/hooks/useTodaySnapshot";
 import { teamPalettes } from "@/lib/themes";
 import { fireStreakConfetti } from "@/lib/confetti";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
-import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
+import { AppCard } from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SkeletonDashboardHeader, SkeletonHeroCard, SkeletonActivityFeed, SkeletonLeaderboard } from "@/components/app/Skeleton";
+import {
+  SkeletonDashboardHeader,
+  SkeletonHeroCard,
+} from "@/components/app/Skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -31,15 +40,10 @@ import {
   Users,
   User,
   Check,
-  Star,
   Trophy,
-  Plus,
   Dumbbell,
-  CheckCircle,
-  Clock,
   Flame,
   Target,
-  Sparkles,
   CalendarDays,
   Settings,
 } from "lucide-react";
@@ -53,7 +57,6 @@ import { UpcomingWorkouts } from "@/components/player/UpcomingWorkouts";
 import { format, subDays, parseISO } from "date-fns";
 import { JoinTeamCard } from "@/components/player/JoinTeamCard";
 import { ParentProgramBuilderModal } from "@/components/player/ParentProgramBuilderModal";
-import { TeamAssignmentsSection } from "@/components/player/TeamAssignmentsSection";
 import { HomeDevelopmentSection } from "@/components/player/HomeDevelopmentSection";
 import { PlayerSettingsSheet } from "@/components/player/PlayerSettingsSheet";
 import { FirstRunOverlay } from "@/components/player/FirstRunOverlay";
@@ -93,11 +96,19 @@ const PlayerHome: React.FC = () => {
   const [showPlayerSettings, setShowPlayerSettings] = useState(false);
 
   const scrollToTeammates = () => {
-    teammatesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    teammatesRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   // Fetch player - ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
-  const { data: player, isLoading: playerLoading } = useQuery({
+  const {
+    data: player,
+    isLoading: playerLoading,
+    isError: playerError,
+    refetch: retryPlayer,
+  } = useQuery({
     queryKey: ["player", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -113,12 +124,18 @@ const PlayerHome: React.FC = () => {
   });
 
   // Fetch player's team memberships
-  const { data: memberships, isLoading: membershipsLoading } = useQuery({
+  const {
+    data: memberships,
+    isLoading: membershipsLoading,
+    isError: membershipError,
+    refetch: retryMemberships,
+  } = useQuery({
     queryKey: ["player-memberships", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_memberships")
-        .select(`
+        .select(
+          `
           id,
           team_id,
           status,
@@ -131,7 +148,8 @@ const PlayerHome: React.FC = () => {
             team_logo_url,
             palette_id
           )
-        `)
+        `,
+        )
         .eq("player_id", id)
         .eq("status", "active")
         .order("joined_at", { ascending: false });
@@ -143,7 +161,12 @@ const PlayerHome: React.FC = () => {
   });
 
   // Fetch active team preference
-  const { data: preferences, isLoading: preferencesLoading } = useQuery({
+  const {
+    data: preferences,
+    isLoading: preferencesLoading,
+    isError: preferenceError,
+    refetch: retryPreferences,
+  } = useQuery({
     queryKey: ["player-preferences", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -159,23 +182,40 @@ const PlayerHome: React.FC = () => {
   });
 
   const activeTeam = memberships?.find(
-    (m) => m.team_id === preferences?.active_team_id
+    (m) => m.team_id === preferences?.active_team_id,
   )?.teams;
 
   // Fetch today's workout snapshot
-  const { snapshot: todaySnapshot, isLoading: snapshotLoading } = useTodaySnapshot(
-    preferences?.active_team_id ? id! : null
-  );
+  const {
+    snapshot: todaySnapshot,
+    isLoading: snapshotLoading,
+    error: todayError,
+    refresh: retryToday,
+  } = useTodaySnapshot(activeTeam ? id! : null, activeTeam?.id);
 
-  const localToday = format(new Date(), "yyyy-MM-dd");
-  const { data: todayHomeWorkout, isLoading: homeWorkoutLoading } = useQuery({
-    queryKey: ["welcome-home-workout", id, localToday],
+  const personalToday = usePersonalToday(id);
+  const todayHomeWorkout = personalToday.data;
+  const teamSession = useQuery({
+    queryKey: ["family-team-session", user?.id, id, todaySnapshot?.card_id],
+    enabled: Boolean(user && id && todaySnapshot?.card_id),
     queryFn: async () => {
-      const { data, error } = await supabase.from("personal_practice_cards").select("id").eq("player_id", id!).eq("date", localToday).not("published_at", "is", null).maybeSingle();
-      if (error) throw error;
-      return data;
+      const [session, card] = await Promise.all([
+        supabase
+          .from("session_completions")
+          .select("status")
+          .eq("player_id", id!)
+          .eq("practice_card_id", todaySnapshot!.card_id!)
+          .maybeSingle(),
+        supabase
+          .from("practice_cards")
+          .select("title")
+          .eq("id", todaySnapshot!.card_id!)
+          .single(),
+      ]);
+      if (session.error) throw session.error;
+      if (card.error) throw card.error;
+      return { status: session.data?.status, title: card.data.title };
     },
-    enabled: Boolean(user && id),
   });
 
   // Calculate workout streak from session completions
@@ -185,10 +225,12 @@ const PlayerHome: React.FC = () => {
       // Get session completions for this player on the active team (team-only)
       const { data: completions, error } = await supabase
         .from("session_completions")
-        .select(`
+        .select(
+          `
           completed_at,
           practice_cards!inner(team_id, date)
-        `)
+        `,
+        )
         .eq("player_id", id)
         .eq("practice_cards.team_id", preferences!.active_team_id)
         .eq("program_source", "team")
@@ -198,11 +240,13 @@ const PlayerHome: React.FC = () => {
       if (error) throw error;
 
       // Get unique completion dates sorted oldest to newest for best streak calc
-      const completedDates = [...new Set(
-        (completions || [])
-          .filter((c) => c.completed_at)
-          .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd"))
-      )].sort();
+      const completedDates = [
+        ...new Set(
+          (completions || [])
+            .filter((c) => c.completed_at)
+            .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd")),
+        ),
+      ].sort();
 
       if (completedDates.length === 0) {
         return { currentStreak: 0, bestStreak: 0 };
@@ -211,12 +255,14 @@ const PlayerHome: React.FC = () => {
       // Calculate best streak by iterating through all dates
       let bestStreak = 1;
       let tempStreak = 1;
-      
+
       for (let i = 1; i < completedDates.length; i++) {
         const prevDate = parseISO(completedDates[i - 1]);
         const currDate = parseISO(completedDates[i]);
-        const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+        const diffDays = Math.round(
+          (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
         if (diffDays === 1) {
           tempStreak++;
           bestStreak = Math.max(bestStreak, tempStreak);
@@ -254,9 +300,9 @@ const PlayerHome: React.FC = () => {
         }
       }
 
-      return { 
-        currentStreak, 
-        bestStreak: Math.max(bestStreak, currentStreak) 
+      return {
+        currentStreak,
+        bestStreak: Math.max(bestStreak, currentStreak),
       };
     },
     enabled: !!user && !!id && !!preferences?.active_team_id,
@@ -265,19 +311,20 @@ const PlayerHome: React.FC = () => {
   // Update active team mutation
   const updateActiveTeam = useMutation({
     mutationFn: async (teamId: string) => {
-      const { error } = await supabase
-        .from("player_team_preferences")
-        .upsert({
-          player_id: id,
-          active_team_id: teamId,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("player_team_preferences").upsert({
+        player_id: id,
+        active_team_id: teamId,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player-preferences", id] });
-      toast.success(t("players.home.toastTeamUpdatedTitle"), t("players.home.toastTeamUpdatedDescription"));
+      toast.success(
+        t("players.home.toastTeamUpdatedTitle"),
+        t("players.home.toastTeamUpdatedDescription"),
+      );
       setShowTeamSelector(false);
     },
     onError: (error: Error) => {
@@ -296,7 +343,7 @@ const PlayerHome: React.FC = () => {
   useEffect(() => {
     if (preferences?.active_team_id && memberships) {
       const activeTeam = memberships.find(
-        (m) => m.team_id === preferences.active_team_id
+        (m) => m.team_id === preferences.active_team_id,
       )?.teams;
       if (activeTeam?.palette_id) {
         setTeamTheme(activeTeam.palette_id);
@@ -305,54 +352,94 @@ const PlayerHome: React.FC = () => {
     // Persist the correct role for this profile. Adult-owned profiles are the
     // account holder's training view; managed youth profiles are the parent view.
     if (id && player) {
-      const isOwnTrainingProfile = player.owner_user_id === user?.id
-        && player.birth_year <= new Date().getFullYear() - 18;
+      const isOwnTrainingProfile =
+        player.owner_user_id === user?.id &&
+        player.birth_year <= new Date().getFullYear() - 18;
       setActiveView(isOwnTrainingProfile ? "player" : "parent");
       setActivePlayerId(id);
     }
-  }, [preferences, memberships, player, user?.id, setTeamTheme, id, setActiveView, setActivePlayerId]);
+  }, [
+    preferences,
+    memberships,
+    player,
+    user?.id,
+    setTeamTheme,
+    id,
+    setActiveView,
+    setActivePlayerId,
+  ]);
 
   // Check for streak milestones and celebrate
   useEffect(() => {
     const currentStreak = streakData?.currentStreak ?? 0;
-    
+
     if (currentStreak > 0) {
       // Find if current streak hits a milestone
-      const hitMilestone = STREAK_MILESTONES.find(m => currentStreak === m);
-      
+      const hitMilestone = STREAK_MILESTONES.find((m) => currentStreak === m);
+
       if (hitMilestone && celebratedMilestoneRef.current !== hitMilestone) {
         // Check localStorage to see if we already celebrated this milestone for this player
         const celebratedKey = `streak_celebrated_${id}_${hitMilestone}`;
         const alreadyCelebrated = localStorage.getItem(celebratedKey);
-        
+
         if (!alreadyCelebrated) {
           // Celebrate!
           celebratedMilestoneRef.current = hitMilestone;
           localStorage.setItem(celebratedKey, new Date().toISOString());
-          
+
           // Fire confetti
           setTimeout(() => {
             fireStreakConfetti(hitMilestone);
           }, 500);
-          
+
           // Show celebratory toast
-          const messages: Record<number, { title: string; description: string }> = {
-            7: { title: t("players.home.streak7Title"), description: t("players.home.streak7Description") },
-            14: { title: t("players.home.streak14Title"), description: t("players.home.streak14Description") },
-            21: { title: t("players.home.streak21Title"), description: t("players.home.streak21Description") },
-            30: { title: t("players.home.streak30Title"), description: t("players.home.streak30Description") },
-            60: { title: t("players.home.streak60Title"), description: t("players.home.streak60Description") },
-            90: { title: t("players.home.streak90Title"), description: t("players.home.streak90Description") },
-            100: { title: t("players.home.streak100Title"), description: t("players.home.streak100Description") },
-            180: { title: t("players.home.streak180Title"), description: t("players.home.streak180Description") },
-            365: { title: t("players.home.streak365Title"), description: t("players.home.streak365Description") },
+          const messages: Record<
+            number,
+            { title: string; description: string }
+          > = {
+            7: {
+              title: t("players.home.streak7Title"),
+              description: t("players.home.streak7Description"),
+            },
+            14: {
+              title: t("players.home.streak14Title"),
+              description: t("players.home.streak14Description"),
+            },
+            21: {
+              title: t("players.home.streak21Title"),
+              description: t("players.home.streak21Description"),
+            },
+            30: {
+              title: t("players.home.streak30Title"),
+              description: t("players.home.streak30Description"),
+            },
+            60: {
+              title: t("players.home.streak60Title"),
+              description: t("players.home.streak60Description"),
+            },
+            90: {
+              title: t("players.home.streak90Title"),
+              description: t("players.home.streak90Description"),
+            },
+            100: {
+              title: t("players.home.streak100Title"),
+              description: t("players.home.streak100Description"),
+            },
+            180: {
+              title: t("players.home.streak180Title"),
+              description: t("players.home.streak180Description"),
+            },
+            365: {
+              title: t("players.home.streak365Title"),
+              description: t("players.home.streak365Description"),
+            },
           };
 
           const message = messages[hitMilestone] || {
             title: t("players.home.streakDefaultTitle", { days: hitMilestone }),
-            description: t("players.home.streakDefaultDescription")
+            description: t("players.home.streakDefaultDescription"),
           };
-          
+
           setTimeout(() => {
             toast.success(message.title, message.description);
           }, 800);
@@ -399,7 +486,12 @@ const PlayerHome: React.FC = () => {
   };
 
   // Combined loading state - check after all hooks are called
-  const isLoading = authLoading || playerLoading || membershipsLoading || preferencesLoading || snapshotLoading || homeWorkoutLoading;
+  const isLoading =
+    authLoading ||
+    playerLoading ||
+    membershipsLoading ||
+    preferencesLoading ||
+    snapshotLoading;
 
   // Show loading skeleton while auth or data is loading
   if (isLoading) {
@@ -408,8 +500,6 @@ const PlayerHome: React.FC = () => {
         <PageContainer className="space-y-4">
           <SkeletonDashboardHeader />
           <SkeletonHeroCard />
-          <SkeletonActivityFeed />
-          <SkeletonLeaderboard />
         </PageContainer>
       </AppShell>
     );
@@ -419,6 +509,22 @@ const PlayerHome: React.FC = () => {
   if (!isAuthenticated) {
     return null;
   }
+
+  if (playerError || membershipError || preferenceError)
+    return (
+      <AppShell>
+        <PageContainer>
+          <DataLoadError
+            title="Your player home couldn’t load"
+            onRetry={() => {
+              void retryPlayer();
+              void retryMemberships();
+              void retryPreferences();
+            }}
+          />
+        </PageContainer>
+      </AppShell>
+    );
 
   if (!player) {
     return (
@@ -440,12 +546,41 @@ const PlayerHome: React.FC = () => {
     );
   }
 
+  const teamWorkout =
+    activeTeam && todaySnapshot?.has_card
+      ? {
+          title: teamSession.data?.title ?? "Team workout",
+          source: "Team workout",
+          href: `/players/${id}/today`,
+          completed: todaySnapshot.progress?.completed ?? 0,
+          total: todaySnapshot.progress?.total_required ?? 0,
+          finished: teamSession.data?.status === "complete",
+        }
+      : undefined;
+  const homeWorkout = todayHomeWorkout
+    ? {
+        title: todayHomeWorkout.title ?? "Home workout",
+        source: "Home workout",
+        href: `/solo/today/${id}`,
+        completed: todayHomeWorkout.completed,
+        total: todayHomeWorkout.total,
+        finished: todayHomeWorkout.finished,
+      }
+    : undefined;
+  const featuredWorkout: FamilyWorkout | undefined = teamWorkout ?? homeWorkout;
+  const retryWorkouts = () => {
+    if (activeTeam) void retryToday();
+    void personalToday.refetch();
+    if (todaySnapshot?.card_id) void teamSession.refetch();
+  };
+
   return (
     <AppShell
       header={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <Button aria-label="Go back"
+            <Button
+              aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate("/players")}
@@ -453,355 +588,241 @@ const PlayerHome: React.FC = () => {
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Player home</p>
-              <p className="truncate font-display text-base font-black uppercase">{player.first_name}</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">
+                Player home
+              </p>
+              <p className="truncate font-display text-base font-black uppercase">
+                {player.first_name}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-1"><Button variant="ghost" size="icon" aria-label="Player options" onClick={() => setShowPlayerSettings(true)}><Settings className="h-5 w-5" /></Button><NotificationBell /></div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Player options"
+              onClick={() => setShowPlayerSettings(true)}
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            <NotificationBell />
+          </div>
         </div>
       }
     >
-      <PageContainer className="pb-6">
-        <ChallengeLinks playerId={id} />
-        {/* Desktop Layout */}
-        <div className="hidden md:block">
-          {/* Hero Header with Player Info and Stats */}
-          <section className="relative mb-6 min-h-[150px] overflow-hidden rounded-xl border border-white/10 bg-black p-6">
-            <img src={toeDragDetail} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-58" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.84)_58%,rgba(8,10,14,0.24)_100%)]" />
-            <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar
-                src={player.profile_photo_url}
-                fallback={`${player.first_name} ${player.last_initial || ""}`}
-                size="lg"
-              />
-              <div className="flex items-center gap-3">
-                <h2 className="font-display text-3xl font-black uppercase text-white">
-                  {player.first_name} {player.last_initial && `${player.last_initial}.`}
-                </h2>
-                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
-                {player.jersey_number && (
-                  <Tag variant="tier">#{player.jersey_number}</Tag>
-                )}
-                {activeTeam && (
-                  <div className="flex items-center gap-2">
-                    <Tag
-                      variant="accent"
-                      className="cursor-pointer hover:opacity-80"
-                      onClick={() => setShowTeamSelector(true)}
-                    >
-                      {activeTeam.name}
-                    </Tag>
-                    {activeTeam.season_label && (
-                      <Tag variant="neutral" size="sm">{activeTeam.season_label}</Tag>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            </div>
-          </section>
-
-          {/* Desktop Grid Layout - 2 column for better balance */}
-          <div className="grid grid-cols-12 gap-6">
-            {/* Main Column - Two Sections */}
-            <div className="col-span-8 space-y-8">
-              {/* Section 1 — Team Assignments */}
-              {preferences?.active_team_id && activeTeam && (
-                <TeamAssignmentsSection
-                  playerId={id!}
-                  teamId={preferences.active_team_id}
-                  teamName={activeTeam.name}
-                  streakData={streakData}
-                />
-              )}
-
-              {/* Divider */}
-              {preferences?.active_team_id && (
-                <div className="border-t border-border" />
-              )}
-
-              {/* Section 2 — Home Development */}
-              <HomeDevelopmentSection
-                playerId={id!}
-                onBuildPlan={() => setShowProgramBuilder(true)}
-              />
-
-              {/* Upcoming Workouts - All Teams */}
-              {Boolean(memberships?.length) && <UpcomingWorkouts playerId={id!} />}
-
-              {/* Teammates */}
-              {preferences?.active_team_id && (
-                <div ref={teammatesRef}>
-                  <TeammateRoster
-                    teamId={preferences.active_team_id}
-                    currentPlayerId={id!}
-                  />
-                </div>
-              )}
-
-              {/* Weekly Summary */}
-              {preferences?.active_team_id && (
-                <WeeklySummaryCard 
-                  playerId={id!} 
-                  teamId={preferences.active_team_id} 
-                />
-              )}
-
-              {/* Team Activity Feed */}
-              {preferences?.active_team_id && (
-                <TeamActivityFeed
-                  teamId={preferences.active_team_id}
-                  currentPlayerId={id!}
-                />
+      <PageContainer className="space-y-5 pb-6">
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-4 sm:p-6">
+          <img
+            src={toeDragDetail}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-50"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/20" />
+          <div className="relative flex items-center gap-4">
+            <Avatar
+              src={player.profile_photo_url}
+              fallback={`${player.first_name} ${player.last_initial ?? ""}`}
+              size="lg"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-white/65">
+                Your next small win starts here
+              </p>
+              <h1 className="mt-1 break-words font-display text-2xl font-bold text-white sm:text-3xl">
+                Let’s go, {player.first_name}.
+              </h1>
+              {activeTeam && (
+                <button
+                  className="mt-1 inline-flex min-h-11 max-w-full items-center gap-1 text-left text-xs text-white/75 hover:text-white"
+                  onClick={() => setShowTeamSelector(true)}
+                  aria-label="Change active team"
+                >
+                  <span className="truncate">{activeTeam.name}</span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+                </button>
               )}
             </div>
-
-            {/* Right Sidebar - Secondary Content */}
-            <div className="col-span-4 space-y-6">
-              {/* Quick Actions */}
-              <AppCard>
-                <AppCardTitle>{t("players.home.quickActions")}</AppCardTitle>
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/players/${id}/week`)}
-                    className="flex flex-col items-center gap-2 h-auto py-4"
-                  >
-                    <CalendarDays className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{t("playerWeek.thisWeek")}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/players/${id}/goals`)}
-                    className="flex flex-col items-center gap-2 h-auto py-4"
-                  >
-                    <Target className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{t("players.home.goals")}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/players/${id}/badges`)}
-                    className="flex flex-col items-center gap-2 h-auto py-4"
-                  >
-                    <Trophy className="w-5 h-5 text-primary" />
-                    <span className="text-sm">{t("players.home.badges")}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/players/${id}`)}
-                    className="flex flex-col items-center gap-2 h-auto py-4"
-                  >
-                    <User className="w-5 h-5 text-text-muted" />
-                    <span className="text-sm">{t("players.home.profile")}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/players")}
-                    className="flex flex-col items-center gap-2 h-auto py-4"
-                  >
-                    <Users className="w-5 h-5 text-text-muted" />
-                    <span className="text-sm">{t("players.home.switch")}</span>
-                  </Button>
-                </div>
-              </AppCard>
-
-              {/* Weekly Leaderboard */}
-              {preferences?.active_team_id && (
-                <TeamLeaderboard
-                  teamId={preferences.active_team_id}
-                  currentPlayerId={id!}
-                />
+            <Link
+              to="/players"
+              aria-label="Switch player"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white"
+            >
+              <Users className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+        <nav
+          aria-label="Today’s shortcuts"
+          className="grid grid-cols-2 gap-2 sm:flex"
+        >
+          <a
+            href="#today-workout"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium sm:text-sm"
+          >
+            <Dumbbell className="h-4 w-4 text-primary" />
+            Today’s workout
+          </a>
+          <a
+            href="#shooting-challenge"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-medium sm:text-sm"
+          >
+            <Target className="h-4 w-4 text-primary" />
+            Shooting challenge
+          </a>
+        </nav>
+        <div className="grid items-stretch gap-4 xl:grid-cols-2">
+          <div id="today-workout" className="scroll-mt-24">
+            <FamilyTodayCard
+              playerId={id!}
+              teamName={activeTeam?.name}
+              workout={featuredWorkout}
+              loading={
+                personalToday.isLoading ||
+                Boolean(todaySnapshot?.has_card && teamSession.isLoading)
+              }
+              error={Boolean(
+                (activeTeam && todayError) ||
+                teamSession.isError ||
+                personalToday.isError,
               )}
-
-              {/* Teams List */}
-              {memberships && memberships.length > 0 && (
-                <AppCard>
-                  <div className="flex items-center justify-between mb-4">
-                    <AppCardTitle>{t("players.home.teams")}</AppCardTitle>
-                    <Button aria-label="Join another team"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/join?player=${id}`)}
-                      className="text-primary -mr-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="space-y-2">
-                    {memberships.map((membership) => {
-                      const team = membership.teams;
-                      if (!team) return null;
-                      const isActive = team.id === preferences?.active_team_id;
-                      return (
-                        <div
-                          key={membership.id}
-                          className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-surface-muted transition-colors ${isActive ? 'bg-primary/5' : ''}`}
-                          onClick={() => navigate(`/teams/${team.id}/roster`)}
-                        >
-                          <Avatar
-                            src={team.team_logo_url || team.team_photo_url}
-                            fallback={team.name}
-                            size="sm"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate text-sm">{team.name}</p>
-                          </div>
-                          {isActive && (
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </AppCard>
-              )}
-            </div>
+              restDay={
+                todaySnapshot?.mode === "game_day" ||
+                todaySnapshot?.mode === "gameday"
+              }
+              onRetry={retryWorkouts}
+              homeAlsoReady={Boolean(teamWorkout && homeWorkout)}
+            />
+          </div>
+          <div id="shooting-challenge" className="scroll-mt-24">
+            <ChallengeLinks playerId={id} familyOverview />
           </div>
         </div>
-
-        {/* Mobile Layout - Keep existing stacked layout */}
-        <div className="md:hidden space-y-4">
-          {/* Player Header - Mobile only */}
-          <section className="relative flex min-h-[142px] items-center gap-4 overflow-hidden rounded-xl border border-white/10 bg-black p-4">
-            <img src={toeDragDetail} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-52" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.97)_0%,rgba(8,10,14,0.82)_70%,rgba(8,10,14,0.3)_100%)]" />
-            <div className="relative"><Avatar
-              src={player.profile_photo_url}
-              fallback={`${player.first_name} ${player.last_initial || ""}`}
-              size="lg"
-            /></div>
-            <div className="relative min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Ready to train</p>
-              <h2 className="mt-1 font-display text-2xl font-black uppercase text-white">
-                {player.first_name} {player.last_initial && `${player.last_initial}.`}
-              </h2>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
-                {player.jersey_number && <Tag variant="tier">#{player.jersey_number}</Tag>}
-              </div>
-            </div>
-          </section>
-
-          {/* Section 1 — Team Assignments - Mobile */}
-          {preferences?.active_team_id && activeTeam && (
-            <TeamAssignmentsSection
+        <section
+          aria-label="Your next wins"
+          className="grid grid-cols-3 gap-2 sm:gap-3"
+        >
+          {[
+            {
+              to: `/players/${id}/week`,
+              label: "This week",
+              hint: "Find your rhythm",
+              icon: CalendarDays,
+            },
+            {
+              to: `/players/${id}/badges`,
+              label: "Your badges",
+              hint: "Celebrate the effort",
+              icon: Trophy,
+            },
+            {
+              to: `/players/${id}/goals`,
+              label: "Team goals",
+              hint: "Build something together",
+              icon: Target,
+            },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="flex min-w-0 flex-col items-center gap-2 rounded-2xl border border-border bg-card px-2 py-4 text-center transition-colors hover:border-primary/40"
+            >
+              <item.icon className="h-5 w-5 text-primary" />
+              <span className="text-xs font-semibold sm:text-sm">
+                {item.label}
+              </span>
+              <span className="hidden text-xs text-muted-foreground sm:block">
+                {item.hint}
+              </span>
+            </Link>
+          ))}
+        </section>
+        {(streakData?.currentStreak ?? 0) > 0 && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Flame className="h-4 w-4 text-primary" />
+            <strong className="text-foreground">
+              {streakData!.currentStreak}-day team streak
+            </strong>{" "}
+            · One day at a time.
+          </p>
+        )}
+        <details className="group rounded-2xl border border-border bg-card">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+            <span className="flex-1">Your home plan</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90" />
+          </summary>
+          <div className="border-t border-border p-4">
+            <HomeDevelopmentSection
               playerId={id!}
-              teamId={preferences.active_team_id}
-              teamName={activeTeam.name}
-              streakData={streakData}
-              compact
+              onBuildPlan={() => setShowProgramBuilder(true)}
             />
-          )}
-
-          {/* Divider */}
-          {preferences?.active_team_id && (
-            <div className="border-t border-border" />
-          )}
-
-          {/* Section 2 — Home Development - Mobile */}
-          <HomeDevelopmentSection
-            playerId={id!}
-            onBuildPlan={() => setShowProgramBuilder(true)}
-          />
-
-          {/* Upcoming Workouts - All Teams - Mobile */}
-          {Boolean(memberships?.length) && <UpcomingWorkouts playerId={id!} compact />}
-
-          {/* Weekly Summary - Mobile */}
-          {preferences?.active_team_id && (
-            <WeeklySummaryCard 
-              playerId={id!} 
-              teamId={preferences.active_team_id} 
-            />
-          )}
-
-          {/* Team Activity & Social - Mobile, progressively disclosed */}
-          {preferences?.active_team_id && (
-            <details className="group overflow-hidden rounded-lg border border-border bg-card">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center px-4 font-semibold [&::-webkit-details-marker]:hidden">
-                <span className="flex-1">Team activity</span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-              </summary>
-              <div className="space-y-4 border-t border-border p-4">
-                <TeamActivityFeed
+          </div>
+        </details>
+        {Boolean(memberships?.length) && (
+          <UpcomingWorkouts playerId={id!} compact />
+        )}
+        {preferences?.active_team_id && (
+          <details className="group rounded-2xl border border-border bg-card">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+              <span className="flex-1">Team activity</span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90" />
+            </summary>
+            <div className="space-y-4 border-t border-border p-4">
+              <WeeklySummaryCard
+                playerId={id!}
+                teamId={preferences.active_team_id}
+              />
+              <TeamActivityFeed
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+              />
+              <TeamLeaderboard
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+              />
+              <div ref={teammatesRef}>
+                <TeammateRoster
                   teamId={preferences.active_team_id}
                   currentPlayerId={id!}
-                />
-                <TeamLeaderboard
-                  teamId={preferences.active_team_id}
-                  currentPlayerId={id!}
-                />
-                <div ref={teammatesRef}>
-                  <TeammateRoster
-                    teamId={preferences.active_team_id}
-                    currentPlayerId={id!}
-                  />
-                </div>
-                <TeamCheersFeed
-                  teamId={preferences.active_team_id}
-                  currentPlayerId={id!}
-                  onSendCheer={scrollToTeammates}
                 />
               </div>
-            </details>
-          )}
-
-          {/* Teams Section - Mobile */}
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-text-secondary">{t("players.home.teams")}</h2>
-
-            {memberships && memberships.length > 0 && (
-              <div className="space-y-3">
-                {memberships.map((membership) => {
-                  const team = membership.teams;
-                  if (!team) return null;
-
-                  const palette = teamPalettes.find((p) => p.id === team.palette_id);
-                  const isActive = team.id === preferences?.active_team_id;
-
-                  return (
-                    <AppCard
-                      key={membership.id}
-                      className="cursor-pointer hover:shadow-medium transition-shadow"
-                      style={{
-                        background: palette
-                          ? `linear-gradient(135deg, hsl(${palette.primary} / 0.05), transparent)`
-                          : undefined,
-                      }}
-                      onClick={() => navigate(`/teams/${team.id}/roster`)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={team.team_logo_url || team.team_photo_url}
-                          fallback={team.name}
-                          size="lg"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold truncate">{team.name}</p>
-                            {isActive && (
-                              <Tag variant="accent" size="sm">{t("players.home.activeTag")}</Tag>
-                            )}
-                          </div>
-                          {team.season_label && (
-                            <p className="text-sm text-text-muted">{team.season_label}</p>
-                          )}
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-text-muted" />
-                      </div>
-                    </AppCard>
-                  );
-                })}
-              </div>
+              <TeamCheersFeed
+                teamId={preferences.active_team_id}
+                currentPlayerId={id!}
+                onSendCheer={scrollToTeammates}
+              />
+            </div>
+          </details>
+        )}
+        <details className="group rounded-2xl border border-border bg-card">
+          <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
+            <span className="flex-1">Your teams</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90" />
+          </summary>
+          <div className="space-y-3 border-t border-border p-4">
+            {memberships?.map(
+              (m) =>
+                m.teams && (
+                  <Link
+                    key={m.id}
+                    to={`/teams/${m.team_id}/roster`}
+                    className="flex min-h-14 items-center gap-3 rounded-xl border border-border p-3"
+                  >
+                    <Avatar
+                      src={m.teams.team_logo_url}
+                      fallback={m.teams.name}
+                      size="sm"
+                    />
+                    <span className="min-w-0 flex-1 break-words text-sm font-medium">
+                      {m.teams.name}
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </Link>
+                ),
             )}
-
-            {/* Join Team Card - Always visible */}
             <JoinTeamCard playerId={id!} />
           </div>
-
-        </div>
+        </details>
       </PageContainer>
 
       {/* Team Selector Sheet */}
@@ -819,12 +840,17 @@ const PlayerHome: React.FC = () => {
               if (!team) return null;
 
               const isActive = team.id === preferences?.active_team_id;
-              const palette = teamPalettes.find((p) => p.id === team.palette_id);
+              const palette = teamPalettes.find(
+                (p) => p.id === team.palette_id,
+              );
 
               return (
-                <AppCard
+                <button
+                  type="button"
                   key={membership.id}
-                  className={`cursor-pointer transition-all ${
+                  aria-pressed={isActive}
+                  disabled={updateActiveTeam.isPending}
+                  className={`w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                     isActive ? "ring-2 ring-primary ring-offset-2" : ""
                   }`}
                   onClick={() => updateActiveTeam.mutate(team.id)}
@@ -849,7 +875,7 @@ const PlayerHome: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </AppCard>
+                </button>
               );
             })}
           </div>
@@ -862,29 +888,36 @@ const PlayerHome: React.FC = () => {
           open={showProgramBuilder}
           onOpenChange={setShowProgramBuilder}
           playerId={id}
-          playerAge={player ? new Date().getFullYear() - player.birth_year : undefined}
+          playerAge={
+            player ? new Date().getFullYear() - player.birth_year : undefined
+          }
           playerShoots={player?.shoots}
         />
       )}
 
-      <PlayerSettingsSheet open={showPlayerSettings} onOpenChange={setShowPlayerSettings} playerId={id!} playerName={player.first_name} />
+      <PlayerSettingsSheet
+        open={showPlayerSettings}
+        onOpenChange={setShowPlayerSettings}
+        playerId={id!}
+        playerName={player.first_name}
+      />
 
       {/* First-run welcome overlay */}
-        {showFirstRun && player && (
-          <FirstRunOverlay
-            playerName={player.first_name}
-            hasWorkout={Boolean(todaySnapshot?.has_card || todayHomeWorkout)}
-            onStart={() => {
-              handleDismissFirstRun();
-              if (todaySnapshot?.has_card && preferences?.active_team_id) {
-                navigate(`/players/${id}/today`);
-              } else {
-                navigate(`/solo/today/${id}`);
-              }
-            }}
-            onDismiss={handleDismissFirstRun}
-          />
-        )}
+      {showFirstRun && player && (
+        <FirstRunOverlay
+          playerName={player.first_name}
+          hasWorkout={Boolean(featuredWorkout)}
+          onStart={() => {
+            handleDismissFirstRun();
+            if (todaySnapshot?.has_card && preferences?.active_team_id) {
+              navigate(`/players/${id}/today`);
+            } else {
+              navigate(`/solo/today/${id}`);
+            }
+          }}
+          onDismiss={handleDismissFirstRun}
+        />
+      )}
     </AppShell>
   );
 };

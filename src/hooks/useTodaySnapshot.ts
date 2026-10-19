@@ -34,13 +34,17 @@ interface TodaySnapshot {
 
 const SNAPSHOT_CACHE_KEY = "today_snapshot_cache";
 
-export function useTodaySnapshot(playerId: string | null) {
+export function useTodaySnapshot(
+  playerId: string | null,
+  expectedTeamId?: string,
+) {
   const { user } = useAuth();
   const userId = user?.id;
-  const actorKey = `${userId ?? ""}:${playerId ?? ""}`;
+  const actorKey = `${userId ?? ""}:${playerId ?? ""}:${expectedTeamId ?? ""}`;
   const activePlayer = useRef(actorKey);
   activePlayer.current = actorKey;
   const requestSequence = useRef(0);
+  const snapshotActor = useRef("");
   const [snapshot, setSnapshot] = useState<TodaySnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,18 +57,24 @@ export function useTodaySnapshot(playerId: string | null) {
     if (!playerId || !userId) return;
 
     try {
-      const cached = localStorage.getItem(`${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`);
+      const cached = localStorage.getItem(
+        `${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`,
+      );
       if (cached) {
         const parsed = JSON.parse(cached);
         // Only use cache if it's from today
-        if (parsed.date === format(new Date(), 'yyyy-MM-dd')) {
+        if (
+          parsed.date === format(new Date(), "yyyy-MM-dd") &&
+          (!expectedTeamId || parsed.team_id === expectedTeamId)
+        ) {
+          snapshotActor.current = actorKey;
           setSnapshot(parsed);
         }
       }
     } catch {
       // Ignore cache errors
     }
-  }, [playerId, userId]);
+  }, [playerId, userId, expectedTeamId, actorKey]);
 
   // Fetch fresh snapshot
   const refresh = useCallback(async () => {
@@ -72,38 +82,61 @@ export function useTodaySnapshot(playerId: string | null) {
     const sequence = ++requestSequence.current;
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const { data, error: rpcError } = await supabase.rpc("get_today_snapshot", {
-        p_player_id: playerId,
-      });
+      const { data, error: rpcError } = await supabase.rpc(
+        "get_today_snapshot",
+        {
+          p_player_id: playerId,
+        },
+      );
 
       if (rpcError) throw rpcError;
-      if (sequence !== requestSequence.current || activePlayer.current !== actorKey) return null;
+      if (
+        sequence !== requestSequence.current ||
+        activePlayer.current !== actorKey
+      )
+        return null;
 
       const result = data as unknown as TodaySnapshot;
-      
-      if (result.success) {
+
+      if (
+        result.success &&
+        (!expectedTeamId || result.team_id === expectedTeamId)
+      ) {
+        snapshotActor.current = actorKey;
         setSnapshot(result);
         // Cache the snapshot
         try {
-          localStorage.setItem(`${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`, JSON.stringify(result));
+          localStorage.setItem(
+            `${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`,
+            JSON.stringify(result),
+          );
         } catch {
           // Ignore storage errors
         }
       } else {
-        setError(result.error || "Unknown error");
+        setError(result.error || "Could not load the selected team’s workout");
       }
-      
+
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch snapshot";
-      if (sequence === requestSequence.current && activePlayer.current === actorKey) setError(message);
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch snapshot";
+      if (
+        sequence === requestSequence.current &&
+        activePlayer.current === actorKey
+      )
+        setError(message);
       return null;
     } finally {
-      if (sequence === requestSequence.current && activePlayer.current === actorKey) setIsLoading(false);
+      if (
+        sequence === requestSequence.current &&
+        activePlayer.current === actorKey
+      )
+        setIsLoading(false);
     }
-  }, [playerId, userId, actorKey]);
+  }, [playerId, userId, actorKey, expectedTeamId]);
 
   // Initial fetch
   useEffect(() => {
@@ -111,35 +144,47 @@ export function useTodaySnapshot(playerId: string | null) {
   }, [refresh]);
 
   // Quick action helper
-  const performQuickAction = useCallback(async (
-    actionType: "toggle_next_task" | "complete_session"
-  ) => {
-    if (!playerId) return { success: false, error: "No player" };
-    
-    const localEventId = `quick_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    
-    try {
-      const { data, error: rpcError } = await supabase.rpc("apply_quick_action", {
-        p_player_id: playerId,
-        p_action_type: actionType,
-        p_local_event_id: localEventId,
-      });
+  const performQuickAction = useCallback(
+    async (actionType: "toggle_next_task" | "complete_session") => {
+      if (!playerId) return { success: false, error: "No player" };
 
-      if (rpcError) throw rpcError;
+      const localEventId = `quick_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-      // Refresh snapshot after action
-      await refresh();
-      
-      return data as unknown as { success: boolean; action?: string; error?: string };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Action failed";
-      return { success: false, error: message };
-    }
-  }, [playerId, refresh]);
+      try {
+        const { data, error: rpcError } = await supabase.rpc(
+          "apply_quick_action",
+          {
+            p_player_id: playerId,
+            p_action_type: actionType,
+            p_local_event_id: localEventId,
+          },
+        );
 
+        if (rpcError) throw rpcError;
+
+        // Refresh snapshot after action
+        await refresh();
+
+        return data as unknown as {
+          success: boolean;
+          action?: string;
+          error?: string;
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Action failed";
+        return { success: false, error: message };
+      }
+    },
+    [playerId, refresh],
+  );
+
+  const belongsToView =
+    snapshotActor.current === actorKey &&
+    snapshot?.player_id === playerId &&
+    (!expectedTeamId || snapshot?.team_id === expectedTeamId);
   return {
-    snapshot,
-    isLoading: !!playerId && (isLoading || (!error && snapshot?.player_id !== playerId)),
+    snapshot: belongsToView ? snapshot : null,
+    isLoading: !!playerId && (isLoading || (!error && !belongsToView)),
     error,
     refresh,
     performQuickAction,

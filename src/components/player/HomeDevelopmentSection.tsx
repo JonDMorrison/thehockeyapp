@@ -41,7 +41,12 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
   const navigate = useNavigate();
 
   // Home plans use the player-specific tables so they stay private from team staff.
-  const { data: stats, isLoading } = useQuery({
+  const {
+    data: stats,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["parent-program-stats", playerId],
     queryFn: async (): Promise<ParentProgramStats> => {
       const { data: cards, error: cardsError } = await supabase
@@ -87,17 +92,20 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
       let totalConditioningReps = 0;
 
       if (taskIds.length > 0) {
-        const { data: taskCompletions, error: taskCompletionsError } = await supabase
-          .from("personal_task_completions")
-          .select("personal_practice_task_id, completed")
-          .eq("player_id", playerId)
-          .eq("completed", true)
-          .in("personal_practice_task_id", taskIds);
+        const { data: taskCompletions, error: taskCompletionsError } =
+          await supabase
+            .from("personal_task_completions")
+            .select("personal_practice_task_id, completed")
+            .eq("player_id", playerId)
+            .eq("completed", true)
+            .in("personal_practice_task_id", taskIds);
         if (taskCompletionsError) throw taskCompletionsError;
 
         if (taskCompletions && tasks) {
           for (const tc of taskCompletions) {
-            const task = tasks.find((t) => t.id === tc.personal_practice_task_id);
+            const task = tasks.find(
+              (t) => t.id === tc.personal_practice_task_id,
+            );
             if (!task) continue;
             totalShots += task.shots_expected ?? 0;
             if (
@@ -115,7 +123,7 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         ...new Set(
           (completions ?? [])
             .filter((c) => c.completed_at && c.status === "complete")
-            .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd"))
+            .map((c) => format(parseISO(c.completed_at!), "yyyy-MM-dd")),
         ),
       ].sort();
 
@@ -129,14 +137,15 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         let startOffset = 0;
         if (reversed.includes(today)) startOffset = 0;
         else if (reversed.includes(yesterday)) startOffset = 1;
-        else return {
-          totalCards: cards.length,
-          completedCards,
-          totalShots,
-          totalConditioningReps,
-          currentStreak: 0,
-          hasTodayWorkout: cards.some((card) => card.date === today),
-        };
+        else
+          return {
+            totalCards: cards.length,
+            completedCards,
+            totalShots,
+            totalConditioningReps,
+            currentStreak: 0,
+            hasTodayWorkout: cards.some((card) => card.date === today),
+          };
 
         for (let i = startOffset; i < 365; i++) {
           const d = format(subDays(now, i), "yyyy-MM-dd");
@@ -151,11 +160,23 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         totalShots,
         totalConditioningReps,
         currentStreak,
-        hasTodayWorkout: cards.some((card) => card.date === format(new Date(), "yyyy-MM-dd")),
+        hasTodayWorkout: cards.some(
+          (card) => card.date === format(new Date(), "yyyy-MM-dd"),
+        ),
       };
     },
     enabled: !!user && !!playerId,
   });
+
+  if (isError)
+    return (
+      <div role="alert" className="space-y-3">
+        <p>Your home plan couldn’t load.</p>
+        <Button variant="outline" onClick={() => void refetch()}>
+          Retry home plan
+        </Button>
+      </div>
+    );
 
   const hasParentPlan = (stats?.totalCards ?? 0) > 0;
   const progressPct =
@@ -195,14 +216,19 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
         </div>
         <div>
           <h3 className="font-bold text-base">Your Home Plan</h3>
-          <p className="text-xs text-muted-foreground">This is your family's development system.</p>
+          <p className="text-xs text-muted-foreground">
+            This is your family's development system.
+          </p>
         </div>
       </div>
 
       {hasParentPlan ? (
         <>
           {stats?.hasTodayWorkout && (
-            <Button className="w-full" onClick={() => navigate(`/solo/today/${playerId}`)}>
+            <Button
+              className="w-full"
+              onClick={() => navigate(`/solo/today/${playerId}`)}
+            >
               <Target className="mr-2 h-4 w-4" />
               Start today&apos;s home workout
               <ChevronRight className="ml-auto h-4 w-4" />
@@ -287,11 +313,7 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
           <ParentTotalsPanel playerId={playerId} />
 
           {/* Build another plan CTA */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onBuildPlan}
-          >
+          <Button variant="outline" className="w-full" onClick={onBuildPlan}>
             <TrendingUp className="w-4 h-4 mr-2" />
             Update Development Plan
           </Button>
@@ -304,9 +326,12 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
             <div>
-              <h4 className="font-bold text-base">Build Your Development Plan</h4>
+              <h4 className="font-bold text-base">
+                Build Your Development Plan
+              </h4>
               <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-                Create a private home training plan you can customize around your player's goals.
+                Create a private home training plan you can customize around
+                your player's goals.
               </p>
             </div>
             <Button onClick={onBuildPlan}>
