@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   const [editedName, setEditedName] = useState(teamName);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const dateObj = date ? new Date(date) : new Date();
+  const dateObj = date ? parseISO(date) : new Date();
   const isValidDate = !isNaN(dateObj.getTime());
   const formattedDate = isValidDate ? format(dateObj, "EEE, MMM d").toUpperCase() : format(new Date(), "EEE, MMM d").toUpperCase();
 
