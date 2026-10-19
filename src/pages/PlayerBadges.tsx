@@ -1,3 +1,5 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
+import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import React, { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -48,13 +50,18 @@ const PlayerBadges: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  const { evaluate: evaluateBadges } = useBadgeEvaluation(playerId);
+  useEffect(() => {
+    if (isAuthenticated && playerId) evaluateBadges();
+  }, [isAuthenticated, playerId, evaluateBadges]);
+
   // Fetch player
-  const { data: player } = useQuery({
+  const { data: player, isError: playerError, refetch: retryPlayer } = useQuery({
     queryKey: ["player", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("players")
-        .select("id, first_name, last_initial, profile_photo_url")
+        .select("*")
         .eq("id", playerId)
         .single();
 
@@ -65,7 +72,7 @@ const PlayerBadges: React.FC = () => {
   });
 
   // Fetch all active challenges
-  const { data: challenges, isLoading: challengesLoading } = useQuery({
+  const { data: challenges, isLoading: challengesLoading, isError: challengesError, refetch: retryChallenges } = useQuery({
     queryKey: ["challenges"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -81,7 +88,7 @@ const PlayerBadges: React.FC = () => {
   });
 
   // Fetch player's progress
-  const { data: progress } = useQuery({
+  const { data: progress, isLoading: progressLoading, isError: progressError, refetch: retryProgress } = useQuery({
     queryKey: ["player-challenge-progress", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -96,7 +103,7 @@ const PlayerBadges: React.FC = () => {
   });
 
   // Fetch player's badges
-  const { data: badges } = useQuery({
+  const { data: badges, isLoading: badgesLoading, isError: badgesError, refetch: retryBadges } = useQuery({
     queryKey: ["player-badges", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -118,7 +125,7 @@ const PlayerBadges: React.FC = () => {
   const inProgress = challenges?.filter((c) => !badgeMap.has(c.id)) || [];
 
   // Show loading state while auth or data is loading
-  if (challengesLoading || authLoading) {
+  if (challengesLoading || progressLoading || badgesLoading || authLoading) {
     return (
       <AppShell hideNav>
         <PageContainer>
@@ -132,6 +139,12 @@ const PlayerBadges: React.FC = () => {
   // If not authenticated, render nothing while redirect happens
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (playerError || challengesError || progressError || badgesError) {
+    return <AppShell><PageContainer><DataLoadError title="Couldn’t load your badges" onRetry={() => {
+      void Promise.all([retryPlayer(), retryChallenges(), retryProgress(), retryBadges()]);
+    }} /></PageContainer></AppShell>;
   }
 
   return (

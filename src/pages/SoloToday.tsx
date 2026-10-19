@@ -1,3 +1,6 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
+import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
+import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
 import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
@@ -78,6 +81,8 @@ const SoloToday: React.FC = () => {
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
 
+  const { evaluate: evaluateBadges, newBadges, dismissAllBadges } = useBadgeEvaluation(playerId);
+
   const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
   const todayStr = format(startOfDay(new Date()), "yyyy-MM-dd");
 
@@ -88,7 +93,7 @@ const SoloToday: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch player
-  const { data: player, isLoading: playerLoading } = useQuery({
+  const { data: player, isLoading: playerLoading, isError: playerError, refetch: retryPlayer } = useQuery({
     queryKey: ["player", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -103,7 +108,7 @@ const SoloToday: React.FC = () => {
   });
 
   // Fetch training plan
-  const { data: trainingPlan } = useQuery({
+  const { data: trainingPlan, isError: planError, refetch: retryPlan } = useQuery({
     queryKey: ["personal-training-plan", playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -119,7 +124,7 @@ const SoloToday: React.FC = () => {
   });
 
   // Fetch today's card
-  const { data: todayCard, isLoading: cardLoading } = useQuery({
+  const { data: todayCard, isLoading: cardLoading, isError: cardError, refetch: retryCard } = useQuery({
     queryKey: ["personal-practice-card", playerId, todayStr],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -135,7 +140,7 @@ const SoloToday: React.FC = () => {
   });
 
   // Fetch tasks for today's card
-  const { data: tasks } = useQuery({
+  const { data: tasks, isLoading: tasksLoading, isError: tasksError, refetch: retryTasks } = useQuery({
     queryKey: ["personal-practice-tasks", todayCard?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -150,7 +155,7 @@ const SoloToday: React.FC = () => {
   });
 
   // Fetch task completions (using personal_task_completions table)
-  const { data: completions } = useQuery({
+  const { data: completions, isLoading: completionsLoading, isError: completionsError, refetch: retryCompletions } = useQuery({
     queryKey: ["personal-task-completions", playerId, tasks?.map(t => t.id)],
     queryFn: async () => {
       if (!tasks || tasks.length === 0) return [];
@@ -206,7 +211,10 @@ const SoloToday: React.FC = () => {
     onSuccess: async result => {
       await queryClient.invalidateQueries({ queryKey: ["personal-task-completions", playerId] });
       await queryClient.invalidateQueries({ queryKey: ["solo-dashboard", playerId] });
-      if (result.allDone) toast.success(t('solo.workoutComplete'), t('solo.amazingWorkToday'));
+      if (result.allDone) {
+        toast.success(t('solo.workoutComplete'), t('solo.amazingWorkToday'));
+        evaluateBadges();
+      }
       else if (result.completed) toast.success(t('solo.niceCheck'), result.taskLabel || t('solo.taskCompleted'));
     },
 
@@ -220,7 +228,7 @@ const SoloToday: React.FC = () => {
   const isAllDone = totalCount > 0 && completedCount === totalCount;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  const isLoading = playerLoading || cardLoading || authLoading;
+  const isLoading = playerLoading || cardLoading || tasksLoading || completionsLoading || authLoading;
 
   // Show loading state while auth or data is loading
   if (isLoading) {
@@ -237,6 +245,12 @@ const SoloToday: React.FC = () => {
   // If not authenticated, render nothing while redirect happens
   if (!isAuthenticated) {
     return null;
+  }
+
+  if (playerError || planError || cardError || tasksError || completionsError) {
+    return <AppShell><PageContainer><DataLoadError title="Couldn’t load your home workout" onRetry={() => {
+      void Promise.all([playerError && retryPlayer(), planError && retryPlan(), cardError && retryCard(), tasksError && retryTasks(), completionsError && retryCompletions()]);
+    }} /></PageContainer></AppShell>;
   }
 
   if (!player) {
@@ -495,6 +509,7 @@ const SoloToday: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+      {newBadges.length > 0 && <BadgeEarnedToast badgeName={newBadges[0].name} onClose={dismissAllBadges} />}
     </AppShell>
   );
 };

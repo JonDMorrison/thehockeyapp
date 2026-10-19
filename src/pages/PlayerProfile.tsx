@@ -109,7 +109,7 @@ const PlayerProfile: React.FC = () => {
 
   // Fetch player with guardians
   const { data: player, isLoading } = useQuery({
-    queryKey: ["player", id],
+    queryKey: ["player", id, "profile"],
     queryFn: async () => {
       // Fetch player
       const { data: playerData, error: playerError } = await supabase

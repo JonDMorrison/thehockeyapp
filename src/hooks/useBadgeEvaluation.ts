@@ -24,12 +24,12 @@ export function useBadgeEvaluation(playerId: string | undefined) {
       }
 
       // Get current badge count before evaluation
-      const { data: beforeBadges } = await supabase
+      const { data: beforeBadges, error: beforeError } = await supabase
         .from("player_badges")
         .select("id, challenge_id")
         .eq("player_id", playerId);
 
-      const beforeCount = beforeBadges?.length || 0;
+      if (beforeError) throw beforeError;
 
       // Call the evaluation function
       const { data, error } = await supabase.rpc("evaluate_player_challenges", {
@@ -42,11 +42,12 @@ export function useBadgeEvaluation(playerId: string | undefined) {
 
       // If badges were awarded, fetch the new ones
       if (result.badges_awarded > 0) {
-        const { data: afterBadges } = await supabase
+        const { data: afterBadges, error: afterError } = await supabase
           .from("player_badges")
           .select("id, challenge_id, challenges(name)")
           .eq("player_id", playerId);
 
+        if (afterError) throw afterError;
         const beforeIds = new Set(beforeBadges?.map((b) => b.id) || []);
         const newlyAwarded = afterBadges?.filter((b) => !beforeIds.has(b.id)) || [];
 
