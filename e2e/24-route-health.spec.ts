@@ -16,7 +16,8 @@ test('authenticated phone route inventory has no crashes, failed reads or overfl
     ...['','/roster','/practice','/practice/new','/builder','/builder/new','/progress','/season-report','/settings','/assign','/shooting/new'].map(s=>`/teams/${t}${s}`),
     ...['dashboard','today','badges','planning','workout','week-planner','program','settings'].map(s=>`/solo/${s}/${p}`)];
   const report: unknown[] = [];
-  await page.setViewportSize({ width: 390, height: 844 });
+  const width = Number(process.env.QA_VIEWPORT_WIDTH || 390);
+  await page.setViewportSize({ width, height: Number(process.env.QA_VIEWPORT_HEIGHT || 844) });
   for (const route of routes) {
     const errors: string[] = [], failures: string[] = [];
     const onError = (error: Error) => errors.push(error.message);
@@ -30,12 +31,16 @@ test('authenticated phone route inventory has no crashes, failed reads or overfl
     await page.waitForTimeout(1200);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     const heading = await page.locator('h1,h2').allTextContents();
-    report.push({ route, finalPath: new URL(page.url()).pathname, heading, errors, failures, overflow });
+    const unnamedControls = await page.locator('button').evaluateAll(buttons => buttons.filter(button => {
+      const rect = button.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && !button.textContent?.trim() && !button.getAttribute('aria-label') && !button.getAttribute('aria-labelledby') && !button.getAttribute('title');
+    }).map(button => ({ html: button.outerHTML.slice(0, 350) })));
+    report.push({ route, unnamedControls, finalPath: new URL(page.url()).pathname, heading, errors, failures, overflow });
     expect.soft(errors, route).toEqual([]);
     expect.soft(failures, route).toEqual([]);
     expect.soft(overflow, route).toBe(false);
     page.off('pageerror', onError); page.off('response', onResponse);
   }
-  fs.writeFileSync('/tmp/hockey-route-health.json', JSON.stringify(report, null, 2));
-  await client.auth.signOut();
+  fs.writeFileSync(`/tmp/hockey-route-health-${width}.json`, JSON.stringify(report, null, 2));
+  await client.auth.signOut({ scope: 'local' });
 });

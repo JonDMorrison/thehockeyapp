@@ -1,5 +1,5 @@
-import React, { useId } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useRef } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Play, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -11,76 +11,35 @@ interface FirstRunOverlayProps {
   onDismiss: () => void;
 }
 
-export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
-  playerName,
-  hasWorkout,
-  onStart,
-  onDismiss,
-}) => {
+export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({ playerName, hasWorkout, onStart, onDismiss }) => {
   const { t } = useTranslation();
-  const titleId = useId();
-
+  const primaryAction = useRef<HTMLButtonElement>(null);
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm flex items-center justify-center p-6"
-    >
-      <motion.div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="bg-card border border-border rounded-3xl p-8 max-w-sm w-full text-center shadow-xl relative"
-      >
-        <button
-          onClick={onDismiss}
-          aria-label="Close welcome"
-          className="absolute top-4 right-4 p-3 rounded-full hover:bg-muted transition-colors"
+    <Dialog.Root open onOpenChange={open => { if (!open) onDismiss(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[70] bg-background/95 backdrop-blur-sm" />
+        <Dialog.Content
+          onOpenAutoFocus={event => { event.preventDefault(); primaryAction.current?.focus(); }}
+          className="fixed left-1/2 top-1/2 z-[70] max-h-[calc(100dvh_-_3rem)] w-[calc(100vw_-_3rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-border bg-card p-8 text-center shadow-xl"
         >
-          <X className="w-4 h-4 text-muted-foreground" />
-        </button>
-
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-          <Play className="w-8 h-8 text-primary" />
-        </div>
-
-        <h2 id={titleId} className="text-2xl font-bold mb-2">
-          {t("welcome.firstRun.title", { name: playerName })}
-        </h2>
-
-        <p className="text-muted-foreground mb-6">
-          {hasWorkout
-            ? t("welcome.firstRun.hasWorkout")
-            : t("welcome.firstRun.noWorkout")}
-        </p>
-
-        {hasWorkout ? (
-          <Button
-            size="lg"
-            className="w-full rounded-xl"
-            onClick={onStart}
-            autoFocus
-          >
-            <Play className="w-5 h-5 mr-2" />
-            {t("welcome.firstRun.startButton")}
+          <Dialog.Close asChild>
+            <button aria-label="Close welcome" className="absolute right-4 top-4 rounded-full p-3 transition-colors hover:bg-muted">
+              <X aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </Dialog.Close>
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+            <Play aria-hidden="true" className="h-8 w-8 text-primary" />
+          </div>
+          <Dialog.Title className="mb-2 text-2xl font-bold">{t("welcome.firstRun.title", { name: playerName })}</Dialog.Title>
+          <Dialog.Description className="mb-6 text-muted-foreground">
+            {hasWorkout ? t("welcome.firstRun.hasWorkout") : t("welcome.firstRun.noWorkout")}
+          </Dialog.Description>
+          <Button ref={primaryAction} size="lg" variant={hasWorkout ? "default" : "outline"} className="w-full rounded-xl" onClick={hasWorkout ? onStart : onDismiss}>
+            {hasWorkout && <Play aria-hidden="true" className="mr-2 h-5 w-5" />}
+            {hasWorkout ? t("welcome.firstRun.startButton") : t("welcome.firstRun.gotItButton")}
           </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full rounded-xl"
-            onClick={onDismiss}
-            autoFocus
-          >
-            {t("welcome.firstRun.gotItButton")}
-          </Button>
-        )}
-      </motion.div>
-    </motion.div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

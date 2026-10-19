@@ -236,6 +236,6 @@ test("fresh mobile coach and family go from demo to a shared challenge and saved
     .eq("team_id", fixture.teamId);
   expect(result.error).toBeNull();
   expect(result.data).toHaveLength(1);
-  await coach.auth.signOut();
+  await coach.auth.signOut({ scope: 'local' });
   await familyContext.close();
 });

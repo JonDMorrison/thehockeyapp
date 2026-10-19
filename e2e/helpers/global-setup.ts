@@ -1,14 +1,16 @@
 import { chromium, type FullConfig } from '@playwright/test';
 import * as fs from 'fs';
+import path from 'node:path';
 
 async function globalSetup(config: FullConfig) {
-  fs.mkdirSync('e2e/.auth', { recursive: true });
+  const authStateFile = process.env.TEST_AUTH_STATE_FILE || 'e2e/.auth/user.json';
+  fs.mkdirSync(path.dirname(authStateFile), { recursive: true });
 
   const email = process.env.TEST_USER_EMAIL;
   const password = process.env.TEST_USER_PASSWORD;
 
   if (!email || !password) {
-    fs.writeFileSync('e2e/.auth/user.json', JSON.stringify({
+    fs.writeFileSync(authStateFile, JSON.stringify({
       cookies: [],
       origins: []
     }));
@@ -25,7 +27,7 @@ async function globalSetup(config: FullConfig) {
     await page.getByLabel(/^password/i).fill(password);
     await page.getByRole('button', { name: /sign in/i }).click();
     await page.waitForURL((url) => !url.pathname.includes('/auth'), { timeout: 15_000 });
-    await page.context().storageState({ path: 'e2e/.auth/user.json' });
+    await page.context().storageState({ path: authStateFile });
   } finally {
     await browser.close();
   }

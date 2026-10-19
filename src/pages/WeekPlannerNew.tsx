@@ -1,3 +1,4 @@
+import { saveTeamWeekPlan } from "@/lib/saveTeamWeekPlan";
 import {
   ProgramProgress,
   ProgramPlans,
@@ -234,68 +235,26 @@ const WeekPlannerNew: React.FC = () => {
       const theme = WEEK_THEMES.find((t) => t.id === selectedTheme);
 
       setSaveError("");
-      // Reuse the draft on retry, including when a response was lost.
-      const { data: plan, error: planError } = await supabase
-        .from("team_week_plans")
-        .upsert({
-          id: draftId.current,
-          team_id: teamId,
-          created_by_user_id: user.id,
-          name: theme?.title || "Week Plan",
-          start_date: format(startDate, "yyyy-MM-dd"),
-          status: "draft",
-        })
-        .select()
-        .single();
-
-      if (planError) throw planError;
-
-      const { error: clearError } = await supabase
-        .from("team_week_plan_days")
-        .delete()
-        .eq("team_week_plan_id", plan.id);
-      if (clearError) throw clearError;
-      // Create days and tasks
-      for (const day of weekPlan) {
-        if (day.template.id === "rest_day") continue;
-
-        const { data: dayData, error: dayError } = await supabase
-          .from("team_week_plan_days")
-          .insert({
-            team_week_plan_id: plan.id,
-            date: format(addDays(startDate, day.dayIndex), "yyyy-MM-dd"),
-            title: day.template.title,
-            notes: day.template.subtitle,
-          })
-          .select()
-          .single();
-
-        if (dayError) throw dayError;
-
-        // Insert tasks
-        const tasks = getTasksForDay(day.template.id);
-        if (tasks.length > 0) {
-          const taskInserts = tasks.map((task, index) => ({
-            team_week_plan_day_id: dayData.id,
-            label: task.label,
-            task_type: task.type,
-            sort_order: index,
-            shots_expected: task.shots || null,
-            shot_type: task.shotType || "none",
-            target_value: task.minutes || task.reps || null,
+      return saveTeamWeekPlan({
+        id: draftId.current,
+        teamId,
+        name: theme?.title || "Week Plan",
+        startDate: format(startDate, "yyyy-MM-dd"),
+        tier: "rep",
+        useTierScaling: true,
+        days: weekPlan.map(day => ({
+          date: format(addDays(startDate, day.dayIndex), "yyyy-MM-dd"),
+          title: day.template.id === "rest_day" ? "" : day.template.title,
+          notes: day.template.id === "rest_day" ? "" : day.template.subtitle,
+          tasks: day.template.id === "rest_day" ? [] : getTasksForDay(day.template.id).map((task, index) => ({
+            label: task.label, task_type: task.type, sort_order: index,
+            shots_expected: task.shots ?? null, shot_type: task.shotType || "none",
+            target_value: task.minutes ?? task.reps ?? null,
             target_type: task.minutes ? "minutes" : task.reps ? "reps" : "none",
-            is_required: task.isRequired || false,
-          }));
-
-          const { error: tasksError } = await supabase
-            .from("team_week_plan_tasks")
-            .insert(taskInserts);
-
-          if (tasksError) throw tasksError;
-        }
-      }
-
-      return plan;
+            is_required: task.isRequired ?? false,
+          })),
+        })),
+      });
     },
     onSuccess: (plan) => {
       try {

@@ -398,9 +398,11 @@ const QuickCheckoff: React.FC = () => {
 
   if (!playerId) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">{t('solo.noPlayerSelected')}</p>
-      </div>
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-6 text-center">
+        <h1 className="text-2xl font-bold">Choose a player</h1>
+        <p className="text-muted-foreground">Choose whose workout you want to check off.</p>
+        <Button onClick={() => navigate("/players")}>Choose player</Button>
+      </main>
     );
   }
 
@@ -420,14 +422,14 @@ const QuickCheckoff: React.FC = () => {
 
   if (!practiceCard) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">{t('solo.noWorkoutPublishedToday')}</p>
           <Button variant="outline" onClick={() => navigate(`/players/${playerId}/home`)}>
             {t('solo.backToHome')}
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -437,6 +439,7 @@ const QuickCheckoff: React.FC = () => {
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <button
+            aria-label="Close quick mode"
             onClick={() => navigate(`/players/${playerId}/today`)}
             className="p-2 -ml-2 hover:bg-muted rounded-full transition-colors"
           >

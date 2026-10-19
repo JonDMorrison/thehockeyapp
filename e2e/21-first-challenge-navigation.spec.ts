@@ -59,7 +59,16 @@ for (const width of [390, 1280]) {
     await page.route("**/rest/v1/**", async (route) => {
       const url = new URL(route.request().url());
       let data: unknown = [];
-      if (url.pathname.endsWith("/rpc/create_team_with_owner")) {
+      if (url.pathname.endsWith("/rpc/save_team_week_plan")) {
+        const payload = route.request().postDataJSON();
+        mockPlan = { id: payload.p_id, team_id: payload.p_team_id, name: payload.p_name,
+          start_date: payload.p_start_date, tier: payload.p_tier, use_tier_scaling: payload.p_use_tier_scaling,
+          status: payload.p_publish ? "published" : "draft" };
+        mockDays = payload.p_days.map((day: Record<string, unknown>, index: number) => ({
+          ...day, id: `day-${index}`, team_week_plan_tasks: day.tasks,
+        }));
+        data = { success: true, plan_id: payload.p_id, published: payload.p_publish };
+      } else if (url.pathname.endsWith("/rpc/create_team_with_owner")) {
         teamName = route.request().postDataJSON().p_name;
         data = { success: true, team_id: team };
       } else if (url.pathname.endsWith("/teams"))

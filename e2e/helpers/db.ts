@@ -8,7 +8,7 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
 function getAuthToken(): string {
   if (process.env.TEST_AUTH_TOKEN) return process.env.TEST_AUTH_TOKEN;
   // Global setup already captures the dedicated test user's real session.
-  const state = JSON.parse(fs.readFileSync('e2e/.auth/user.json', 'utf8'));
+  const state = JSON.parse(fs.readFileSync(process.env.TEST_AUTH_STATE_FILE || 'e2e/.auth/user.json', 'utf8'));
   for (const origin of state.origins ?? []) {
     const entry = origin.localStorage?.find((item: { name: string }) => /^sb-.*-auth-token$/.test(item.name));
     if (entry) {

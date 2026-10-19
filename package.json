@@ -23,7 +23,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
-    "test:shooting-db": "node scripts/verify-shooting-database.mjs"
+    "test:shooting-db": "node scripts/verify-shooting-database.mjs",
+    "test:program-db": "node scripts/verify-program-database.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

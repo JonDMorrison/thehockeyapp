@@ -3177,6 +3177,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      save_team_week_plan: {
+        Args: {
+          p_id: string
+          p_team_id: string
+          p_name: string
+          p_start_date: string
+          p_tier: string
+          p_use_tier_scaling: boolean
+          p_days: Json
+          p_publish?: boolean
+        }
+        Returns: Json
+      }
       add_my_player_to_team: {
         Args: { p_player_id: string; p_team_id: string }
         Returns: Json
