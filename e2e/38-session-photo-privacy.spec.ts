@@ -31,12 +31,21 @@ test('a parent-only session photo stays private from the coach until the family 
   expect((await parent.client.storage.from('session-photos').createSignedUrl(orphanPath,60)).error).toBeTruthy();
   let photoId='';
   try{
+    const spoof=await parent.client.from('session_photos').insert({practice_card_id:cardId,player_id:playerId,uploaded_by_user_id:coach.id,storage_path:objectPath,visibility:'team_adults'}).select('id').maybeSingle();
+    if(!spoof.error && spoof.data)await parent.client.from('session_photos').delete().eq('id',spoof.data.id);
+    expect(spoof.error,'An uploader cannot impersonate another guardian’s sharing permission').toBeTruthy();
     const photo=await parent.client.from('session_photos').insert({practice_card_id:cardId,player_id:playerId,uploaded_by_user_id:parent.id,storage_path:objectPath,visibility:'parent_only',caption:'Private family caption'}).select('id').single();expect(photo.error).toBeNull();photoId=photo.data!.id;
     expect((await parent.client.storage.from('session-photos').createSignedUrl(objectPath,60)).error).toBeNull();
     expect((await coach.client.from('session_photos').select('id,caption').eq('id',photoId)).data).toEqual([]);
     expect((await coach.client.storage.from('session-photos').createSignedUrl(objectPath,60)).error).toBeTruthy();
     expect((await parent.client.from('session_photos').update({visibility:'team_adults'}).eq('id',photoId)).error).toBeNull();
+    expect((await coach.client.from('session_photos').select('id').eq('id',photoId)).data).toEqual([]);
+    expect((await parent.client.from('player_consents').update({photo_sharing_allowed:true}).eq('player_id',playerId).eq('guardian_user_id',parent.id)).error).toBeNull();
     expect((await coach.client.from('session_photos').select('id').eq('id',photoId)).data).toEqual([{id:photoId}]);
+    expect((await parent.client.from('player_consents').update({photo_sharing_allowed:false}).eq('player_id',playerId).eq('guardian_user_id',parent.id)).error).toBeNull();
+    expect((await coach.client.from('session_photos').select('id').eq('id',photoId)).data).toEqual([]);
+    expect((await coach.client.storage.from('session-photos').createSignedUrl(objectPath,60)).error).toBeTruthy();
+    expect((await parent.client.from('player_consents').update({photo_sharing_allowed:true}).eq('player_id',playerId).eq('guardian_user_id',parent.id)).error).toBeNull();
     expect((await coach.client.storage.from('session-photos').createSignedUrl(objectPath,60)).error).toBeNull();
     expect((await parent.client.from('session_photos').update({visibility:'parent_only'}).eq('id',photoId)).error).toBeNull();
     expect((await coach.client.from('session_photos').select('id').eq('id',photoId)).data).toEqual([]);

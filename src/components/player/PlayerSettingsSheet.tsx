@@ -1,3 +1,6 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
+import { useAuth } from "@/hooks/useAuth";
+import { usePlayerPhotoConsent } from "@/hooks/usePlayerPhotoConsent";
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +30,22 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
   playerName,
 }) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const photoConsent = usePlayerPhotoConsent(playerId, open);
+  const canManageConsent = Boolean(photoConsent.data?.relationship_confirmed && !photoConsent.data.withdrawn_at);
+  const updatePhotoConsent = useMutation({
+    mutationFn: async (allowed: boolean) => {
+      if (!canManageConsent || !user) throw new Error("A confirmed guardian must manage photo sharing.");
+      const { error } = await supabase.from("player_consents").update({ photo_sharing_allowed: allowed }).eq("player_id", playerId).eq("guardian_user_id", user.id).select("id").single();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["player-photo-consent", playerId] });
+      void queryClient.invalidateQueries({ queryKey: ["session-photos"] });
+      toast.success("Photo sharing updated");
+    },
+    onError: (error: Error) => toast.error("Could not update photo sharing", error.message),
+  });
   const [challengesOptIn, setChallengesOptIn] = useState(false);
 
   // Fetch privacy settings
@@ -111,7 +130,7 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-auto">
+      <SheetContent side="bottom" className="h-auto max-h-[90dvh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Player Settings</SheetTitle>
           <SheetDescription>
@@ -120,6 +139,19 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
         </SheetHeader>
 
         <div className="py-6 space-y-6">
+          <section className="space-y-3">
+            <h3 className="font-semibold">Training photos</h3>
+            {photoConsent.isError ? <DataLoadError title="Couldn’t load photo permissions" onRetry={() => photoConsent.refetch()} retrying={photoConsent.isFetching} /> : (
+              <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-surface-muted p-4">
+                <div className="space-y-1">
+                  <Label htmlFor="coach-photo-consent">Allow coach photo sharing</Label>
+                  <p className="text-xs leading-5 text-muted-foreground">Coaches can see photos your family marks as shared. Turning this off hides the training photos you have shared from staff. Family-only photos stay private.</p>
+                  {!canManageConsent && !photoConsent.isLoading && <p className="text-xs text-muted-foreground">A confirmed guardian manages this permission.</p>}
+                </div>
+                <Switch id="coach-photo-consent" checked={photoConsent.data?.photo_sharing_allowed ?? false} onCheckedChange={allowed => updatePhotoConsent.mutate(allowed)} disabled={photoConsent.isLoading || updatePhotoConsent.isPending || !canManageConsent} />
+              </div>
+            )}
+          </section>
           {/* National Challenges */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
