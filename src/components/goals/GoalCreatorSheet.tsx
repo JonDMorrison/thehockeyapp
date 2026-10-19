@@ -133,7 +133,23 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
       return;
     }
 
+    const target = Number(targetValue);
+    if (
+      !/^\d+$/.test(targetValue.trim()) ||
+      !Number.isSafeInteger(target) || target < 1 || target > 10_000_000 ||
+      (goalType === 'participation' && target > 100)
+    ) {
+      toast.error(goalType === 'participation'
+        ? 'Enter a whole percentage from 1 to 100'
+        : 'Enter a whole-number target from 1 to 10,000,000');
+      document.getElementById('target')?.focus();
+      return;
+    }
     const dateRange = getDateRange();
+    if (!Number.isFinite(dateRange.start.getTime()) || !Number.isFinite(dateRange.end.getTime()) || dateRange.end < dateRange.start) {
+      toast.error('End date must be on or after the start date');
+      return;
+    }
 
     try {
       if (isEditing) {
@@ -142,7 +158,7 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
           name: name.trim(),
           description: description.trim() || null,
           goal_type: goalType,
-          target_value: parseInt(targetValue),
+          target_value: target,
           timeframe,
           start_date: format(dateRange.start, 'yyyy-MM-dd'),
           end_date: format(dateRange.end, 'yyyy-MM-dd'),
@@ -157,7 +173,7 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
           name: name.trim(),
           description: description.trim() || null,
           goal_type: goalType,
-          target_value: parseInt(targetValue),
+          target_value: target,
           timeframe,
           start_date: format(dateRange.start, 'yyyy-MM-dd'),
           end_date: format(dateRange.end, 'yyyy-MM-dd'),
@@ -330,6 +346,8 @@ export function GoalCreatorSheet({ open, onOpenChange, teamId, rosterCount = 10,
                     id="target"
                     type="number"
                     min="1"
+                    step="1"
+                    max={goalType==='participation'?100:10000000}
                     placeholder={`e.g., ${getSuggestedTarget()}`}
                     value={targetValue}
                     onChange={(e) => setTargetValue(e.target.value)}
