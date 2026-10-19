@@ -1,4 +1,6 @@
 import { ProgramProgress } from "@/components/program/ProgramVisuals";
+import { useNavigate } from "react-router-dom";
+import { useActiveView } from "@/contexts/ActiveViewContext";
 import React, { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -70,6 +72,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { setActiveView, setActivePlayerId, setActiveTeamId, setActiveAssociationId } = useActiveView();
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
@@ -126,27 +130,29 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   }, [invite]);
 
   // Get user's children that are NOT on this team yet
-  const { data: childrenData, isLoading: loadingChildren } = useQuery({
+  const { data: childrenData, isLoading: loadingChildren, isError: childrenLoadError, refetch: retryChildren } = useQuery({
     queryKey: ["user-children-not-on-team", teamId, user?.id],
     queryFn: async () => {
       const adultBirthYear = new Date().getFullYear() - 18;
-      const { data: children } = await supabase
+      const { data: children, error: childrenError } = await supabase
         .from("players")
         .select("id, first_name, last_initial, birth_year")
         .eq("owner_user_id", user!.id)
         .gt("birth_year", adultBirthYear);
 
+      if (childrenError) throw childrenError;
       if (!children || children.length === 0) {
         return { childrenOnTeam: [], childrenNotOnTeam: [] };
       }
 
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipsError } = await supabase
         .from("team_memberships")
         .select("player_id")
         .eq("team_id", teamId)
         .in("player_id", children.map((c) => c.id))
         .eq("status", "active");
 
+      if (membershipsError) throw membershipsError;
       const onTeamIds = new Set(memberships?.map((m) => m.player_id) || []);
 
       return {
@@ -294,6 +300,14 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
         const created = result as unknown as { player_id?: string };
         if (!created.player_id) throw new Error("Player profile was not created");
         playerId = created.player_id;
+        // Profile creation and team membership are separate writes. Keep this
+        // profile selectable even if joining fails, and retry without duplicating it.
+        setSelectedChildId(playerId);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["user-guardian-roles", user?.id], refetchType: "all" }),
+          queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] }),
+          queryClient.invalidateQueries({ queryKey: ["user-children-not-on-team", teamId, user?.id] }),
+        ]);
       }
 
       const { error: membershipError } = await supabase.rpc("add_my_player_to_team", {
@@ -317,7 +331,8 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["user-children-not-on-team", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-dashboard", teamId] });
-      queryClient.invalidateQueries({ queryKey: ["user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-guardian-roles", user?.id], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
       toast.success(t("teams.inviteParents.toastAddedTitle"), t("teams.inviteParents.toastAddedDescription"));
       resetChildForm();
       onOpenChange(false);
@@ -462,6 +477,11 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
             <TabsContent value="add-child" className="space-y-4 mt-4">
               {loadingChildren ? (
                 <SkeletonListItem />
+              ) : childrenLoadError ? (
+                <div role="alert" className="space-y-3 rounded-xl border border-border p-4">
+                  <p>Your players couldn’t load. Try again before adding a profile.</p>
+                  <Button variant="outline" onClick={() => void retryChildren()}>Retry players</Button>
+                </div>
               ) : (
                 <>
                   {hasChildrenOnTeam && (
@@ -476,6 +496,17 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
                       </div>
                     </div>
                   )}
+
+                  {childrenData?.childrenOnTeam.map((child) => (
+                    <Button key={child.id} variant="outline" className="min-h-11 w-full whitespace-normal" onClick={() => {
+                      setActiveView("parent");
+                      setActivePlayerId(child.id);
+                      setActiveTeamId(null);
+                      setActiveAssociationId(null);
+                      onOpenChange(false);
+                      navigate(`/players/${child.id}/home`);
+                    }}>Switch to {child.first_name}’s dashboard</Button>
+                  ))}
 
                   {/* Existing children not on team */}
                   {hasChildrenNotOnTeam && (

@@ -46,7 +46,7 @@ const PlayerNew: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const { setActiveView, setActivePlayerId } = useActiveView();
+  const { setActiveView, setActivePlayerId, setActiveTeamId, setActiveAssociationId } = useActiveView();
 
   const [formData, setFormData] = useState<PlayerFormData>({
     first_name: "",
@@ -119,6 +119,9 @@ const PlayerNew: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
       await queryClient.invalidateQueries({ queryKey: ["user-own-player"] });
       await queryClient.invalidateQueries({ queryKey: ["welcome-check"] });
+      await queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
+      setActiveTeamId(null);
+      setActiveAssociationId(null);
       setActiveView("parent");
       setActivePlayerId(player.id);
       toast.success(t("players.new.toastAddedTitle"), t("players.new.toastAddedDescription", { name: player.first_name }));

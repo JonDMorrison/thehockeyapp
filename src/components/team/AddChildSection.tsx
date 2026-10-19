@@ -56,29 +56,31 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
   const [adultAcknowledged, setAdultAcknowledged] = useState(false);
 
   // Get user's children that are NOT on this team yet
-  const { data: childrenData, isLoading: loadingChildren } = useQuery({
+  const { data: childrenData, isLoading: loadingChildren, isError: childrenLoadError, refetch: retryChildren } = useQuery({
     queryKey: ["user-children-not-on-team", teamId, user?.id],
     queryFn: async () => {
       const adultBirthYear = new Date().getFullYear() - 18;
       // Get all child players owned by this user
-      const { data: children } = await supabase
+      const { data: children, error: childrenError } = await supabase
         .from("players")
         .select("id, first_name, last_initial, birth_year")
         .eq("owner_user_id", user!.id)
         .gt("birth_year", adultBirthYear);
 
+      if (childrenError) throw childrenError;
       if (!children || children.length === 0) {
         return { childrenOnTeam: [], childrenNotOnTeam: [] };
       }
 
       // Check which are already on this team
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipsError } = await supabase
         .from("team_memberships")
         .select("player_id")
         .eq("team_id", teamId)
         .in("player_id", children.map((c) => c.id))
         .eq("status", "active");
 
+      if (membershipsError) throw membershipsError;
       const onTeamIds = new Set(memberships?.map((m) => m.player_id) || []);
 
       return {
@@ -117,6 +119,14 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
         const newPlayer = result as unknown as CreatePlayerResult;
         if (!newPlayer.player_id) throw new Error("Player profile was not created");
         playerId = newPlayer.player_id;
+        // Profile creation and team membership are separate writes. Keep this
+        // profile selectable even if joining fails, and retry without duplicating it.
+        setSelectedChildId(playerId);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["user-guardian-roles", user?.id], refetchType: "all" }),
+          queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] }),
+          queryClient.invalidateQueries({ queryKey: ["user-children-not-on-team", teamId, user?.id] }),
+        ]);
       }
 
       // Add to team roster
@@ -140,7 +150,8 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-children-not-on-team", teamId] });
       queryClient.invalidateQueries({ queryKey: ["team-roster", teamId] });
-      queryClient.invalidateQueries({ queryKey: ["user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-guardian-roles", user?.id], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["players-with-teams", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["user-guardian-roles"] });
       toast.success(t("teams.addChild.toastAddedTitle"), t("teams.addChild.toastAddedDescription"));
       resetForm();
@@ -203,6 +214,8 @@ export const AddChildSection: React.FC<AddChildSectionProps> = ({
 
   const hasChildrenOnTeam = (childrenData?.childrenOnTeam?.length ?? 0) > 0;
   const hasChildrenNotOnTeam = (childrenData?.childrenNotOnTeam?.length ?? 0) > 0;
+
+  if (childrenLoadError) return <div role="alert" className="space-y-3 rounded-xl border border-border p-4"><p>Your players couldn’t load. Try again before adding a profile.</p><Button variant="outline" onClick={() => void retryChildren()}>Retry players</Button></div>;
 
   return (
     <>

@@ -184,7 +184,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Floating User Menu - Top Right */}
       {!hideUserMenu && (
-        <div className="fixed right-3 top-3 z-40 flex items-center gap-1 rounded-full border border-white/[0.07] bg-background/85 p-1 shadow-lg backdrop-blur-xl lg:right-5">
+        <div className="fixed right-3 top-3 z-50 flex items-center gap-1 rounded-full border border-white/[0.07] bg-background/85 p-1 shadow-lg backdrop-blur-xl lg:right-5">
           <OfflineDot status={offlineStatus} />
           <ContextSwitcher compact />
           <UserMenu size="sm" />
@@ -194,7 +194,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       {/* Smart Navigation Header */}
       {useNavHeader && (
         <header className={cn("sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl", !hideNav && "lg:pl-60")}>
-          <div className="mx-auto max-w-7xl px-4 py-2 pr-28 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 py-2 pr-36 sm:px-6 sm:pr-36 lg:px-8 lg:pr-36">
             <NavigationHeader
               title={navTitle}
               subtitle={navSubtitle}
@@ -209,7 +209,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       {/* Legacy Header (for backward compatibility) */}
       {!useNavHeader && header && (
         <header className={cn("sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl", !hideNav && "lg:pl-60")}>
-          <div className={cn("mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8", !hideUserMenu && "pr-28")}>
+          <div className={cn("mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8", !hideUserMenu && "pr-36 sm:pr-36 lg:pr-36 [&>div]:flex-wrap [&>div]:gap-y-2")}>
             {header}
           </div>
         </header>
@@ -309,11 +309,11 @@ interface PageHeaderProps {
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action }) => {
   return (
-    <div className="flex items-start justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+    <div className="flex min-w-0 items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="break-words text-2xl font-bold tracking-tight">{title}</h1>
         {subtitle && (
-          <p className="text-sm text-text-secondary mt-0.5">{subtitle}</p>
+          <p className="break-words text-sm text-text-secondary mt-0.5">{subtitle}</p>
         )}
       </div>
       {action && <div>{action}</div>}
