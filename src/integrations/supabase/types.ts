@@ -2127,6 +2127,8 @@ export type Database = {
       }
       team_adult_invites: {
         Row: {
+          invitation_kind: string
+          accepted_by_user_id: string | null
           created_at: string | null
           created_by_user_id: string
           expires_at: string
@@ -2138,6 +2140,8 @@ export type Database = {
           token: string
         }
         Insert: {
+          invitation_kind?: string
+          accepted_by_user_id?: string | null
           created_at?: string | null
           created_by_user_id: string
           expires_at: string
@@ -2149,6 +2153,8 @@ export type Database = {
           token: string
         }
         Update: {
+          invitation_kind?: string
+          accepted_by_user_id?: string | null
           created_at?: string | null
           created_by_user_id?: string
           expires_at?: string
@@ -3315,6 +3321,14 @@ export type Database = {
           p_time_budget: number
           p_weeks: Json
         }
+        Returns: Json
+      }
+      list_team_staff: {
+        Args: { p_team_id: string }
+        Returns: Json
+      }
+      create_team_staff_invite: {
+        Args: { p_id: string; p_team_id: string; p_email?: string }
         Returns: Json
       }
       create_team_with_owner: {
