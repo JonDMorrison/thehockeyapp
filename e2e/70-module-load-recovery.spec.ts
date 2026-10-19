@@ -54,6 +54,9 @@ for (const width of [320, 1440]) {
         : r.continue(),
     );
     await page.goto("/contact?qa=module#message", { waitUntil: "commit" });
+    // Prerendered production HTML already contains the heading; require the
+    // refreshed module request before accepting that visible content.
+    await expect.poll(() => requests, { timeout: 15000 }).toBe(2);
     await expect(
       page.getByRole("heading", {
         name: "Talk to a real person.",
