@@ -13,7 +13,7 @@ create table practice_cards(id uuid primary key default gen_random_uuid(),team_i
 create unique index practice_cards_team_schedule_unique on practice_cards(team_id,date,mode) where program_source='team';
 create table practice_tasks(id uuid primary key default gen_random_uuid(),practice_card_id uuid references practice_cards(id),sort_order integer,task_type text check(task_type in ('shooting','conditioning','mobility','recovery','prep','other','video')),label text,target_type text,target_value integer,shot_type text,shots_expected integer,is_required boolean,video_url text,program_source text default 'team');
 create table task_completions(id uuid primary key default gen_random_uuid(),practice_task_id uuid references practice_tasks(id),player_id uuid references players(id),completed boolean,completed_at timestamptz,shots_logged integer);
-create table session_completions(id uuid primary key default gen_random_uuid(),practice_card_id uuid references practice_cards(id),status text);
+create table session_completions(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),practice_card_id uuid references practice_cards(id),status text);
 
 create table session_photos(id uuid primary key default gen_random_uuid(),practice_card_id uuid references practice_cards(id) on delete cascade);
 
