@@ -7,7 +7,7 @@ export function usePlayerPhotoConsent(playerId: string, enabled = true) {
   return useQuery({
     queryKey: ["player-photo-consent", playerId, user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("player_consents").select("guardian_user_id,photo_sharing_allowed,relationship_confirmed,withdrawn_at").eq("player_id", playerId).eq("guardian_user_id", user!.id).maybeSingle();
+      const { data, error } = await supabase.from("player_consents").select("guardian_user_id,photo_sharing_allowed,ai_personalization_allowed,relationship_confirmed,withdrawn_at").eq("player_id", playerId).eq("guardian_user_id", user!.id).maybeSingle();
       if (error) throw error;
       return data;
     },

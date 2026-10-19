@@ -1,4 +1,5 @@
 import React from "react";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,7 +33,7 @@ export const ParentWeeklySummary: React.FC<ParentWeeklySummaryProps> = ({
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
 
   // Fetch existing summary
-  const { data: summary, isLoading } = useQuery({
+  const { data: summary, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["parent-week-summary", playerId, weekStart],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_parent_week_summary", {
@@ -67,7 +68,8 @@ export const ParentWeeklySummary: React.FC<ParentWeeklySummaryProps> = ({
         body: { player_id: playerId, week_start: weekStart },
       });
 
-      if (res.error) throw res.error;
+      if (res.error) throw new Error("Couldn’t generate the summary. Please try again.");
+      if (!res.data?.success) throw new Error("The summary wasn’t saved. Please try again.");
       return res.data;
     },
     onSuccess: () => {
@@ -105,6 +107,8 @@ export const ParentWeeklySummary: React.FC<ParentWeeklySummaryProps> = ({
           <Skeleton className="h-4 w-3/4" />
           <Skeleton className="h-4 w-1/2" />
         </AppCard>
+      ) : isError ? (
+        <DataLoadError title="Couldn’t load this week’s summary" onRetry={() => refetch()} retrying={isFetching} />
       ) : hasSummary ? (
         <AppCard className="p-4 space-y-3">
           <p className="text-sm leading-relaxed">{summary.summary_text}</p>

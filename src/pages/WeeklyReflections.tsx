@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,6 @@ import {
   Flame,
   Dumbbell,
   FileText,
-  Crown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -36,41 +36,32 @@ const WeeklyReflections: React.FC = () => {
   const [page, setPage] = useState(0);
 
   // Access control: must not be a coach-only user (must own or guard a player)
-  const { data: hasPlayerAccess, isLoading: accessLoading } = useQuery({
+  const { data: hasPlayerAccess, isLoading: accessLoading, isError: accessError, refetch: retryAccess } = useQuery({
     queryKey: ["has-player-access", user?.id],
     queryFn: async () => {
-      const { data: owned } = await supabase
+      const { data: owned, error: ownedError } = await supabase
         .from("players")
         .select("id")
         .eq("owner_user_id", user!.id)
         .limit(1);
 
+      if (ownedError) throw ownedError;
       if (owned && owned.length > 0) return true;
 
-      const { data: guarded } = await supabase
+      const { data: guarded, error: guardedError } = await supabase
         .from("player_guardians")
         .select("player_id")
         .eq("user_id", user!.id)
         .limit(1);
 
+      if (guardedError) throw guardedError;
       return (guarded && guarded.length > 0) || false;
     },
     enabled: !!user,
   });
 
-  // Check Pro access
-  const { data: hasPro, isLoading: proLoading } = useQuery({
-    queryKey: ["has-full-access", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_my_access_status");
-      if (error) throw error;
-      return Boolean((data as { has_full_access?: boolean } | null)?.has_full_access);
-    },
-    enabled: !!user,
-  });
-
   // Fetch summaries with pagination
-  const { data: summaries, isLoading: summariesLoading } = useQuery({
+  const { data: summaries, isLoading: summariesLoading, isError: summariesError, isFetching, refetch: retrySummaries } = useQuery({
     queryKey: ["weekly-reflections", user?.id, page],
     queryFn: async () => {
       const from = page * PAGE_SIZE;
@@ -91,7 +82,7 @@ const WeeklyReflections: React.FC = () => {
   });
 
   const totalPages = Math.ceil((summaries?.total || 0) / PAGE_SIZE);
-  const isLoading = authLoading || accessLoading || proLoading || summariesLoading;
+  const isLoading = authLoading || accessLoading || summariesLoading;
 
   const header = (
     <NavigationHeader title={t("players.reflections.title")} backPath="/players" />
@@ -114,6 +105,8 @@ const WeeklyReflections: React.FC = () => {
   }
 
   if (!isAuthenticated) return null;
+
+  if (accessError || summariesError) return <AppShell header={header}><div className="px-5 py-6"><DataLoadError title="Couldn’t load weekly reflections" onRetry={() => accessError ? retryAccess() : retrySummaries()} retrying={isFetching} /></div></AppShell>;
 
   // Coach-only users blocked
   if (!hasPlayerAccess) {
@@ -141,18 +134,6 @@ const WeeklyReflections: React.FC = () => {
   return (
     <AppShell header={header}>
       <div className="px-5 py-6 space-y-4">
-        {/* Pro badge shown once at the top */}
-        {hasPro && items.length > 0 && (
-          <div className="flex justify-end">
-            <Badge
-              variant="outline"
-              className="gap-1 text-[10px] font-semibold border-primary/30 text-primary"
-            >
-              <Crown className="w-3 h-3" />
-              Pro
-            </Badge>
-          </div>
-        )}
         {items.length === 0 ? (
           // Empty state
           <AppCard className="p-6 text-center space-y-3">

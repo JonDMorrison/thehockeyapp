@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { aiConsentedPlayers, validDateOnly } from "../_shared/summaryPrivacy.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -62,7 +64,7 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -81,6 +83,7 @@ serve(async (req) => {
       weekStart = getMondayOfCurrentWeek();
     }
 
+    if (!validDateOnly(weekStart)) return jsonResp({error:"Invalid week_start date"},400);
     const weekStartDate = new Date(weekStart + "T00:00:00Z");
     const weekEndDate = new Date(weekStartDate);
     weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 6);
@@ -109,11 +112,12 @@ serve(async (req) => {
     // ── Dedup: find parents who already have a summary this week ──
     const parentUserIds = eligibleParents.map((p: { user_id: string }) => p.user_id);
 
-    const { data: existingSummaries } = await supabase
+    const { data: existingSummaries, error: existingSummariesError } = await supabase
       .from("parent_weekly_summaries")
       .select("user_id")
       .eq("week_start", weekStart)
       .in("user_id", parentUserIds);
+    if (existingSummariesError) throw existingSummariesError;
 
     const alreadyGenerated = new Set(
       (existingSummaries || []).map((s: { user_id: string }) => s.user_id)
@@ -141,6 +145,11 @@ serve(async (req) => {
 
         const metrics = await fetchParentMetrics(supabase, userId, weekStart, weekEnd);
 
+        const {data:relationships,error:relationshipError}=await supabase.from("player_guardians").select("player_id").eq("user_id",userId);
+        if(relationshipError)throw relationshipError;
+        const childIds=[...new Set((relationships||[]).map((r:any)=>r.player_id))] as string[];
+        const consented=await aiConsentedPlayers(supabase,childIds,userId);
+        const aiAllowed=childIds.length>0 && childIds.every(id=>consented.has(id));
         // ── Determine tier (Free vs Pro) ──
         const { data: accessRow } = await supabase.rpc("has_full_access", {
           p_user_id: userId,
@@ -167,10 +176,12 @@ Write a calm, measured weekly reflection. ${isPro ? "Include one modest next-wee
         // ── AI call ──
         let aiSummary: string;
         try {
+          if(!aiAllowed || !LOVABLE_API_KEY)throw new Error("Factual summary selected");
           const aiResponse = await fetch(
             "https://ai.gateway.lovable.dev/v1/chat/completions",
             {
               method: "POST",
+              signal: AbortSignal.timeout(15000),
               headers: {
                 Authorization: `Bearer ${LOVABLE_API_KEY}`,
                 "Content-Type": "application/json",
@@ -282,15 +293,17 @@ async function fetchParentMetrics(
   weekEnd: string
 ): Promise<ParentMetrics> {
   // Get all player IDs for this parent
-  const { data: ownedPlayers } = await supabase
+  const { data: ownedPlayers, error: ownedPlayersError } = await supabase
     .from("players")
     .select("id")
     .eq("owner_user_id", userId);
+    if (ownedPlayersError) throw ownedPlayersError;
 
-  const { data: guardedPlayers } = await supabase
+  const { data: guardedPlayers, error: guardedPlayersError } = await supabase
     .from("player_guardians")
     .select("player_id")
     .eq("user_id", userId);
+    if (guardedPlayersError) throw guardedPlayersError;
 
   const playerIds = [
     ...new Set([
@@ -310,21 +323,14 @@ async function fetchParentMetrics(
     };
   }
 
-  // Workouts (parent program_source)
-  const { count: parentWorkouts } = await supabase
-    .from("session_completions")
-    .select("id", { count: "exact", head: true })
-    .in("player_id", playerIds)
-    .eq("program_source", "parent")
-    .eq("status", "complete");
-
   // Personal workouts in date range
-  const { data: personalCards } = await supabase
+  const { data: personalCards, error: personalCardsError } = await supabase
     .from("personal_practice_cards")
     .select("id")
     .in("player_id", playerIds)
     .gte("date", weekStart)
     .lte("date", weekEnd);
+    if (personalCardsError) throw personalCardsError;
 
   const personalCardIds = personalCards?.map((c) => c.id) || [];
   let personalWorkouts = 0;
@@ -339,24 +345,33 @@ async function fetchParentMetrics(
   }
 
   // Parent practice cards in date range
-  const { data: parentCards } = await supabase
+  const { data: parentCards, error: parentCardsError } = await supabase
     .from("practice_cards")
     .select("id")
     .eq("program_source", "parent")
+    .eq("created_by_user_id",userId)
     .gte("date", weekStart)
     .lte("date", weekEnd);
+    if (parentCardsError) throw parentCardsError;
 
   const parentCardIds = parentCards?.map((c) => c.id) || [];
+  let parentWorkouts=0;
+  if(parentCardIds.length){
+    const {count,error}=await supabase.from("session_completions").select("id",{count:"exact",head:true}).in("player_id",playerIds).eq("program_source","parent").eq("status","complete").in("practice_card_id",parentCardIds);
+    if(error)throw error;
+    parentWorkouts=count??0;
+  }
 
   // Shots
   let totalShots = 0;
   if (parentCardIds.length > 0) {
-    const { data: taskComps } = await supabase
+    const { data: taskComps, error: taskCompsError } = await supabase
       .from("task_completions")
       .select("shots_logged, practice_tasks!inner(practice_card_id)")
       .in("player_id", playerIds)
       .eq("completed", true)
       .in("practice_tasks.practice_card_id", parentCardIds);
+    if (taskCompsError) throw taskCompsError;
 
     totalShots = (taskComps || []).reduce(
       (sum, tc) => sum + (tc.shots_logged || 0),
@@ -366,7 +381,7 @@ async function fetchParentMetrics(
 
   // Personal shots
   if (personalCardIds.length > 0) {
-    const { data: pTaskComps } = await supabase
+    const { data: pTaskComps, error: pTaskCompsError } = await supabase
       .from("personal_task_completions")
       .select(
         "personal_practice_tasks!inner(personal_practice_card_id, shots_expected)"
@@ -374,6 +389,7 @@ async function fetchParentMetrics(
       .in("player_id", playerIds)
       .eq("completed", true)
       .in("personal_practice_tasks.personal_practice_card_id", personalCardIds);
+    if (pTaskCompsError) throw pTaskCompsError;
 
     totalShots += (pTaskComps || []).reduce((sum, tc) => {
       const task = tc.personal_practice_tasks as any;
@@ -384,7 +400,7 @@ async function fetchParentMetrics(
   // Strength reps (pushups)
   let totalPushups = 0;
   if (parentCardIds.length > 0) {
-    const { data: strengthComps } = await supabase
+    const { data: strengthComps, error: strengthCompsError } = await supabase
       .from("task_completions")
       .select(
         "practice_tasks!inner(practice_card_id, task_type, target_type, target_value)"
@@ -392,6 +408,7 @@ async function fetchParentMetrics(
       .in("player_id", playerIds)
       .eq("completed", true)
       .in("practice_tasks.practice_card_id", parentCardIds);
+    if (strengthCompsError) throw strengthCompsError;
 
     totalPushups = (strengthComps || []).reduce((sum, tc) => {
       const task = tc.practice_tasks as any;
@@ -403,7 +420,7 @@ async function fetchParentMetrics(
   }
 
   if (personalCardIds.length > 0) {
-    const { data: pStrengthComps } = await supabase
+    const { data: pStrengthComps, error: pStrengthCompsError } = await supabase
       .from("personal_task_completions")
       .select(
         "personal_practice_tasks!inner(personal_practice_card_id, task_type, target_type, target_value)"
@@ -411,6 +428,7 @@ async function fetchParentMetrics(
       .in("player_id", playerIds)
       .eq("completed", true)
       .in("personal_practice_tasks.personal_practice_card_id", personalCardIds);
+    if (pStrengthCompsError) throw pStrengthCompsError;
 
     totalPushups += (pStrengthComps || []).reduce((sum, tc) => {
       const task = tc.personal_practice_tasks as any;
@@ -422,18 +440,24 @@ async function fetchParentMetrics(
   }
 
   // Streak (gap-and-island across all children, parent-only)
-  const { data: parentSessions } = await supabase
+  const { data: parentSessions, error: parentSessionsError } = await supabase
     .from("session_completions")
     .select("completed_at")
     .in("player_id", playerIds)
     .eq("program_source", "parent")
-    .eq("status", "complete");
+    .eq("status", "complete")
+    .gte("completed_at",weekStart+"T00:00:00Z")
+    .lt("completed_at",new Date(Date.parse(weekEnd+"T00:00:00Z")+86400000).toISOString());
+    if (parentSessionsError) throw parentSessionsError;
 
-  const { data: personalSessions } = await supabase
+  const { data: personalSessions, error: personalSessionsError } = await supabase
     .from("personal_session_completions")
     .select("personal_practice_cards!inner(date)")
     .in("player_id", playerIds)
-    .eq("status", "complete");
+    .eq("status", "complete")
+    .gte("personal_practice_cards.date",weekStart)
+    .lte("personal_practice_cards.date",weekEnd);
+    if (personalSessionsError) throw personalSessionsError;
 
   const completedDates = new Set<string>();
   for (const s of parentSessions || []) {
@@ -461,11 +485,12 @@ async function fetchParentMetrics(
   }
 
   // Focus areas
-  const { data: plans } = await supabase
+  const { data: plans, error: plansError } = await supabase
     .from("personal_training_plans")
     .select("training_focus, is_active")
     .in("player_id", playerIds)
     .eq("is_active", true);
+    if (plansError) throw plansError;
 
   const focusSet = new Set<string>();
   for (const plan of plans || []) {

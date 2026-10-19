@@ -17,7 +17,7 @@
     "test:journeys": "node scripts/verify-launch-journeys.cjs",
     "test:template-start": "node --experimental-strip-types scripts/verify-template-start-date.ts",
     "test:template-ranking": "node --experimental-strip-types scripts/verify-template-ranking.ts",
-    "check": "npm run brand:check && npm run test:links && npm run test:journeys && npm run test:template-start && npm run test:template-ranking && npm run typecheck && npm run lint && npm run build",
+    "check": "npm run brand:check && npm run test:links && npm run test:journeys && npm run test:template-start && npm run test:template-ranking && npm run test:summary-privacy && npm run typecheck && npm run lint && npm run build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -25,7 +25,8 @@
     "test:e2e:report": "playwright show-report",
     "test:shooting-db": "node scripts/verify-shooting-database.mjs",
     "test:program-db": "node scripts/verify-program-database.mjs",
-    "test:links": "node scripts/verify-internal-links.cjs"
+    "test:links": "node scripts/verify-internal-links.cjs",
+    "test:summary-privacy": "node tests/functions/summary-privacy.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

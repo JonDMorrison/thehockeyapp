@@ -48,6 +48,18 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
     },
     onError: (error: Error) => toast.error("Could not update photo sharing", error.message),
   });
+  const updateAiConsent = useMutation({
+    mutationFn: async (allowed: boolean) => {
+      if (!canManageConsent || !user) throw new Error("A confirmed guardian must manage AI personalization.");
+      const { error } = await supabase.from("player_consents").update({ ai_personalization_allowed: allowed }).eq("player_id", playerId).eq("guardian_user_id", user.id).select("id").single();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["player-photo-consent", playerId] });
+      toast.success("AI personalization updated");
+    },
+    onError: (error: Error) => toast.error("Could not update AI personalization", error.message),
+  });
   const [challengesOptIn, setChallengesOptIn] = useState(false);
 
   // Fetch privacy settings
@@ -151,6 +163,18 @@ export const PlayerSettingsSheet: React.FC<PlayerSettingsSheetProps> = ({
                   {!canManageConsent && !photoConsent.isLoading && <p className="text-xs text-muted-foreground">A confirmed guardian manages this permission.</p>}
                 </div>
                 <Switch id="coach-photo-consent" checked={photoConsent.data?.photo_sharing_allowed ?? false} onCheckedChange={allowed => updatePhotoConsent.mutate(allowed)} disabled={photoConsent.isLoading || updatePhotoConsent.isPending || !canManageConsent} />
+              </div>
+            )}
+          </section>
+          <section className="space-y-3">
+            <h3 className="font-semibold">Optional AI personalization</h3>
+            {photoConsent.isError ? <p className="text-sm text-muted-foreground">Retry permissions above to manage this setting.</p> : (
+              <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-surface-muted p-4">
+                <div className="space-y-1">
+                  <Label htmlFor="ai-training-consent">Allow AI training summaries</Label>
+                  <p className="text-xs leading-5 text-muted-foreground">Allow training totals and focus areas to personalize summaries. Player names are excluded. When off, you still receive a factual summary and can use the core training tools.</p>
+                </div>
+                <Switch id="ai-training-consent" checked={photoConsent.data?.ai_personalization_allowed ?? false} onCheckedChange={allowed => updateAiConsent.mutate(allowed)} disabled={photoConsent.isLoading || updateAiConsent.isPending || !canManageConsent} />
               </div>
             )}
           </section>
