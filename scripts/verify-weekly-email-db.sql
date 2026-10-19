@@ -1,0 +1,31 @@
+BEGIN;
+SELECT set_config('qa.actor', :'actor', true);
+DO $$ DECLARE
+ actor uuid:=current_setting('qa.actor')::uuid; p uuid:=gen_random_uuid(); a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid();
+ c1 uuid:=gen_random_uuid(); c2 uuid:=gen_random_uuid(); c3 uuid:=gen_random_uuid(); t1 uuid:=gen_random_uuid(); t2 uuid:=gen_random_uuid(); t3 uuid:=gen_random_uuid();
+ home uuid:=gen_random_uuid(); ht uuid:=gen_random_uuid(); h1 uuid:=gen_random_uuid(); h2 uuid:=gen_random_uuid();
+ start_day date:=date_trunc('week',current_date)::date-7; result jsonb; denied boolean:=false;
+BEGIN
+ IF has_function_privilege('authenticated','public.weekly_email_metrics(uuid,date,date,uuid)','EXECUTE') OR has_function_privilege('anon','public.weekly_email_metrics(uuid,date,date,uuid)','EXECUTE') THEN RAISE EXCEPTION 'Weekly private metrics exposed'; END IF;
+ INSERT INTO teams(id,name,created_by_user_id) VALUES(a,'Disposable Weekly Scope A',actor),(b,'Disposable Weekly Scope B',actor);
+ INSERT INTO players(id,first_name,birth_year,owner_user_id) VALUES(p,'WeeklyEmailBoundaryKid',2014,actor);
+ INSERT INTO team_memberships(team_id,player_id,status) VALUES(a,p,'active'),(b,p,'active');
+ INSERT INTO practice_cards(id,team_id,date,created_by_user_id,published_at) VALUES(c1,a,start_day+1,actor,now()),(c2,b,start_day+1,actor,now()),(c3,a,start_day-1,actor,now());
+ INSERT INTO practice_tasks(id,practice_card_id,label,task_type,sort_order) VALUES(t1,c1,'QA shots','shooting',0),(t2,c2,'QA shots','shooting',0),(t3,c3,'QA shots','shooting',0);
+ INSERT INTO task_completions(player_id,practice_task_id,shots_logged,completed) VALUES(p,t1,10,true),(p,t2,20,true),(p,t3,500,true);
+ INSERT INTO session_completions(player_id,practice_card_id,status) VALUES(p,c1,'complete'),(p,c2,'complete'),(p,c3,'complete');
+ INSERT INTO personal_practice_cards(id,player_id,date) VALUES(home,p,start_day+1);
+ INSERT INTO personal_practice_tasks(id,personal_practice_card_id,label,task_type,shots_expected) VALUES(ht,home,'QA home target','shooting',30);
+ INSERT INTO personal_task_completions(player_id,personal_practice_task_id,completed) VALUES(p,ht,true);
+ INSERT INTO personal_session_completions(player_id,personal_practice_card_id,status) VALUES(p,home,'complete');
+ INSERT INTO shooting_challenges(id,team_id,name,created_by,start_date,end_date,timezone) VALUES(h1,a,'QA challenge',actor,start_day,start_day+6,'UTC'),(h2,b,'QA challenge',actor,start_day,start_day+6,'UTC');
+ INSERT INTO shooting_challenge_players(challenge_id,player_id,first_name) VALUES(h1,p,'WeeklyEmailBoundaryKid'),(h2,p,'WeeklyEmailBoundaryKid');
+ INSERT INTO shooting_challenge_days(challenge_id,player_id,shot_date,shots,version) VALUES(h1,p,start_day+1,5,1),(h2,p,start_day+1,7,1);
+ result:=public.weekly_email_metrics(p,start_day,start_day+7,a);
+ IF result<>jsonb_build_object('sessions',1,'shots',15,'targetShots',0) THEN RAISE EXCEPTION 'Team scope mismatch: %',result; END IF;
+ result:=public.weekly_email_metrics(p,start_day,start_day+7);
+ IF result<>jsonb_build_object('sessions',3,'shots',42,'targetShots',30) THEN RAISE EXCEPTION 'Family scope mismatch: %',result; END IF;
+ BEGIN PERFORM public.weekly_email_metrics(p,current_date,current_date+7); EXCEPTION WHEN OTHERS THEN denied:=true; END;
+ IF NOT denied THEN RAISE EXCEPTION 'Future week was accepted'; END IF;
+END $$;
+ROLLBACK;

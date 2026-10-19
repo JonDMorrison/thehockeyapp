@@ -29,3 +29,13 @@ Actual launch tests use only disposable accounts with aliases of the connected m
 Weekly messages and operational schedules must be verified separately before activation. Do not equate a configured provider or a queued SQL job with delivery. Check recipient preferences, duplicate prevention, provider response and the actual mailbox. Optional marketing mail stays disabled.
 
 References: [Resend SMTP for Supabase](https://resend.com/docs/send-with-supabase-smtp), [Supabase custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [email templates](https://supabase.com/docs/guides/auth/auth-email-templates).
+
+## Weekly recap safety
+
+Weekly recaps require a deliberate choice in Settings: the category flag and its confirmation timestamp must both be set. Historical default-true rows are not permission to send. Opting out suppresses the category immediately. Only the player's consenting primary owner receives the family recap; additional guardians are never chosen arbitrarily.
+
+Recaps cover the previous completed Monday–Sunday week, using UTC date boundaries. Coach totals include only their team. Family totals include team and personal sessions plus logged challenge shots; completed personal-drill shot targets are labelled separately from logged shots. Any failed preference, roster, consent or metric read prevents sending that message. The retired legacy parent sender returns 410 to its service caller.
+
+Private batches process at most 50 teams/players and queue subsequent pages with a Vault-held secret. Scheduled jobs run Monday, with Tuesday retry, at 17:00 UTC for coaches and 17:15 UTC for families. A stable per-recipient/team/player/week delivery key prevents repeat sends if totals change; unresolved deliveries expire before the provider's 24-hour idempotency window. Jobs start paused until mailbox and opt-out tests pass. Optional product marketing remains disabled.
+
+Verification: `npm run test:weekly-email`; `scripts/verify-weekly-email-db.sql` (rollback); `e2e/58-weekly-email-opt-in.spec.ts` with an explicit disposable fixture. The latter exercises failed saves, persisted explicit choices and 320px layouts in Chromium, WebKit and Firefox.
