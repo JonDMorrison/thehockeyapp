@@ -74,9 +74,10 @@ try {
     "-f", resolve("tests/database/family-history-release.sql"),
     "-f", resolve("tests/database/team-goal-scope-release.sql"),
     "-f", resolve("tests/database/home-badge-release.sql"),
+    "-f", resolve("tests/database/calendar-dispatch-release.sql"),
     "-c", "rollback",
   ]);
-  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent, uploader identity and storage paths; training record scope and shot bounds; private alert dispatch; family history; team goal boundaries and correction; opted-in home badge awards.");
+  console.log("PASS: Program/workout atomicity, retry and progress protection; solo completion/undo; guardian authorization; photo visibility, consent, uploader identity and storage paths; training record scope and shot bounds; private alert dispatch; family history; team goal boundaries and correction; opted-in home badge awards; private calendar dispatch.");
 } catch (e) {
   process.stderr.write(e.stderr || e.message);
   process.exitCode = 1;
