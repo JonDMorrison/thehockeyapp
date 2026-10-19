@@ -56,6 +56,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const {
     associationWorkspaces,
     availableRoles,
@@ -79,6 +80,20 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
   const routeTeamId = currentTeamId ?? location.pathname.match(/^\/teams\/([^/]+)/)?.[1];
   const routePlayerId = currentPlayerId ?? location.pathname.match(/^\/players\/([^/]+)/)?.[1];
   const routeAssociationId = currentAssociationId ?? location.pathname.match(/^\/associations\/([^/]+)/)?.[1];
+
+  React.useEffect(() => {
+    setMenuOpen(false);
+  }, [isLoading, location.pathname]);
+
+  // Handle Escape on the focused element immediately; the menu library's
+  // document-level dismissal listener can attach after the opening frame.
+  const closeOnEscape = (event: React.KeyboardEvent) => {
+    if (menuOpen && event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setMenuOpen(false);
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -151,13 +166,14 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
 
   // Nothing to switch to
   return (
-    <DropdownMenu>
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
           className={cn("min-h-11 gap-1.5 max-w-[180px]", compact && "px-2 text-xs", className)}
           aria-label={t("nav.switchWorkspace")}
+          onKeyDownCapture={closeOnEscape}
         >
           {!compact && <CurrentIcon className="w-4 h-4 shrink-0" />}
           {compact && <><span>{t("nav.switch")}</span><ChevronDown className="h-3 w-3" aria-hidden="true" /></>}
@@ -169,7 +185,7 @@ export const ContextSwitcher: React.FC<ContextSwitcherProps> = ({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-24px)] max-h-[min(520px,75dvh)] overflow-y-auto">
+      <DropdownMenuContent onKeyDownCapture={closeOnEscape} align="end" className="w-64 max-w-[calc(100vw-24px)] max-h-[min(520px,75dvh)] overflow-y-auto">
 
         {/* Association Workspaces Section */}
         {isAssociation && associationWorkspaces.length > 0 && (
