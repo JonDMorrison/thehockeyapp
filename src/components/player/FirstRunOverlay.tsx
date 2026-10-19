@@ -39,7 +39,8 @@ export const FirstRunOverlay: React.FC<FirstRunOverlayProps> = ({
       >
         <button
           onClick={onDismiss}
-          className="absolute top-4 right-4 p-1 rounded-full hover:bg-muted transition-colors"
+          aria-label="Close welcome"
+          className="absolute top-4 right-4 p-3 rounded-full hover:bg-muted transition-colors"
         >
           <X className="w-4 h-4 text-muted-foreground" />
         </button>

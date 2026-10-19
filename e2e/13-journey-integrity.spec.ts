@@ -1,14 +1,16 @@
 import { expect, test } from '@playwright/test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-import { format } from 'date-fns';
 
 dotenv.config({ path: '.env.local', quiet: true });
+// Keep the browser and practice-card fixture on the database calendar.
+test.use({ timezoneId: 'UTC' });
 let client: SupabaseClient;
 let teamId: string;
 let playerId: string;
 let cardId: string;
-const today = format(new Date(), 'yyyy-MM-dd');
+// Practice-card release gates use the database's UTC calendar date.
+const today = new Date().toISOString().slice(0, 10);
 
 test.describe('persisted parent and coach journey', () => {
   test.beforeAll(async () => {

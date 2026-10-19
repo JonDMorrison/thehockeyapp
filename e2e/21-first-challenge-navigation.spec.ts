@@ -52,12 +52,45 @@ for (const width of [390, 1280]) {
     let teamName = "";
     let publication: Record<string, string> | undefined;
     let inviteReads = 0;
+    let mockPlan: Record<string, unknown> = {};
+    let mockDays: Array<
+      Record<string, unknown> & { id: string; team_week_plan_tasks: unknown[] }
+    > = [];
     await page.route("**/rest/v1/**", async (route) => {
       const url = new URL(route.request().url());
       let data: unknown = [];
       if (url.pathname.endsWith("/rpc/create_team_with_owner")) {
         teamName = route.request().postDataJSON().p_name;
         data = { success: true, team_id: team };
+      } else if (url.pathname.endsWith("/teams"))
+        data = { id: team, name: teamName, palette_id: "brand" };
+      else if (url.pathname.endsWith("/team_week_plans")) {
+        if (route.request().method() !== "GET")
+          mockPlan = {
+            tier: "rep",
+            use_tier_scaling: true,
+            ...mockPlan,
+            ...route.request().postDataJSON(),
+          };
+        data = mockPlan;
+      } else if (url.pathname.endsWith("/team_week_plan_days")) {
+        if (route.request().method() === "DELETE") mockDays = [];
+        else if (route.request().method() === "POST") {
+          const day = {
+            ...route.request().postDataJSON(),
+            id: `mock-day-${mockDays.length}`,
+            team_week_plan_tasks: [],
+          };
+          mockDays.push(day);
+          data = day;
+        } else data = mockDays;
+      } else if (url.pathname.endsWith("/team_week_plan_tasks")) {
+        const tasks = route.request().postDataJSON() || [];
+        for (const task of tasks)
+          mockDays
+            .find((d) => d.id === task.team_week_plan_day_id)
+            ?.team_week_plan_tasks.push(task);
+        data = [];
       } else if (url.pathname.endsWith("/team_roles"))
         data = [
           { id: "role", team_id: team, user_id: user.id, role: "head_coach" },
@@ -201,6 +234,46 @@ for (const width of [390, 1280]) {
     await expect(page).toHaveURL(
       new RegExp(`/teams/${team}/builder/new\\?inviteAfter=1$`),
     );
+    await expect(
+      page.getByRole("heading", {
+        name: "A good week starts with a plan",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Balanced Week", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Your week at a glance", exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: "Customize this plan", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Customize this plan", exact: true })
+      .click();
+    await expect(page.getByLabel("Program name", { exact: true })).toHaveValue(
+      "Balanced Week",
+    );
+    await expect(
+      page.getByRole("button", {
+        name: "Publish & invite families",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Edit Monday", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByLabel("Activity 1", { exact: true })
+      .fill("A focused first activity");
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Save Day", exact: true })
+      .click();
+    await expect(page.getByText(/A focused first activity/)).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,

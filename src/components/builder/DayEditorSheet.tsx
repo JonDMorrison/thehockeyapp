@@ -1,3 +1,4 @@
+import { ProgramActivity } from "@/components/program/ProgramActivity";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
 import {
@@ -57,6 +58,7 @@ interface DayEditorSheetProps {
   day: DayData;
   dayLabel: string;
   onSave: (day: DayData) => void;
+  simple?: boolean;
 }
 
 const taskTypeIcons: Record<string, React.ReactNode> = {
@@ -74,6 +76,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   day,
   dayLabel,
   onSave,
+  simple = false,
 }) => {
   const { t } = useTranslation();
 
@@ -86,6 +89,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
     other: t('practice.taskTypeOther'),
   };
 
+  const [validationError, setValidationError] = useState("");
   const [title, setTitle] = useState(day.title);
   const [notes, setNotes] = useState(day.notes);
   const [tasks, setTasks] = useState<PlanTask[]>(day.tasks);
@@ -113,12 +117,14 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   };
 
   const updateTask = (index: number, updates: Partial<PlanTask>) => {
+    setValidationError("");
     setTasks((prev) =>
       prev.map((t, i) => (i === index ? { ...t, ...updates } : t))
     );
   };
 
   const removeTask = (index: number) => {
+    setValidationError("");
     setTasks((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -137,6 +143,8 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   };
 
   const handleSave = () => {
+    if (tasks.some(task => !task.label.trim())) { setValidationError("Give each activity a name before saving."); return; }
+    if (tasks.some(task => [task.shots_expected, task.target_value].some(value => value !== null && (!Number.isInteger(value) || value < 0)))) { setValidationError("Use whole numbers of zero or more for training targets."); return; }
     onSave({
       ...day,
       title,
@@ -157,8 +165,9 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
           {/* Day Settings */}
           <div className="space-y-4">
             <div>
-              <Label>{t('practice.dayTitleOptional')}</Label>
+              <Label htmlFor="day-title">{t('practice.dayTitleOptional')}</Label>
               <Input
+                id="day-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('practice.dayTitlePlaceholder')}
@@ -166,8 +175,9 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
               />
             </div>
             <div>
-              <Label>{t('practice.notesOptional')}</Label>
+              <Label htmlFor="day-notes">{t('practice.notesOptional')}</Label>
               <Textarea
+                id="day-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('practice.dayNotesPlaceholder')}
@@ -188,7 +198,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
             </div>
 
             <div className="space-y-3">
-              {tasks.map((task, index) => (
+              {tasks.map((task, index) => simple ? <ProgramActivity key={index} task={task} index={index} count={tasks.length} onChange={change => updateTask(index, change)} onMove={direction => moveTask(index, direction)} onRemove={() => removeTask(index)} /> : (
                 <AppCard key={index} className="p-3">
                   <div className="flex gap-2">
                     {/* Reorder */}
@@ -237,6 +247,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                         <Button
                           variant="ghost"
                           size="icon-sm"
+                          aria-label={`Remove activity ${index + 1}`}
                           onClick={() => removeTask(index)}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
@@ -244,6 +255,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                       </div>
 
                       <Input
+                        aria-label={`Activity ${index + 1}`}
                         value={task.label}
                         onChange={(e) => updateTask(index, { label: e.target.value })}
                         placeholder={t('practice.taskDescPlaceholder')}
@@ -268,6 +280,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                         {task.target_type !== "none" && (
                           <Input
                             type="number"
+                            aria-label={`Target for activity ${index + 1}`}
                             value={task.target_value || ""}
                             onChange={(e) =>
                               updateTask(index, {
@@ -299,6 +312,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                             </Select>
                             <Input
                               type="number"
+                              aria-label={`Shots for activity ${index + 1}`}
                               value={task.shots_expected || ""}
                               onChange={(e) =>
                                 updateTask(index, {
@@ -332,6 +346,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
             </div>
           </div>
 
+          {validationError && <p role="alert" className="text-sm text-destructive">{validationError}</p>}
           {/* Actions */}
           <div className="flex gap-3 pt-4">
             <Button

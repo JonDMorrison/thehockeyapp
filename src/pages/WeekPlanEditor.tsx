@@ -1,3 +1,4 @@
+import { ProgramProgress, ProgramWeek, ProgramAction } from "@/components/program/ProgramVisuals";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
@@ -75,6 +76,7 @@ const WeekPlanEditor: React.FC = () => {
   const { id: teamId, planId } = useParams<{ id: string; planId?: string }>();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const programSetup = searchParams.get("inviteAfter") === "1";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -339,10 +341,11 @@ const WeekPlanEditor: React.FC = () => {
         if (updateError) throw updateError;
 
         // Delete old days and tasks
-        await supabase
+        const { error: deleteDaysError } = await supabase
           .from("team_week_plan_days")
           .delete()
           .eq("team_week_plan_id", planId);
+        if (deleteDaysError) throw deleteDaysError;
       } else {
         // Create new plan
         const { data: newPlan, error: createError } = await supabase
@@ -410,7 +413,7 @@ const WeekPlanEditor: React.FC = () => {
       if (!result.publishing) toast.success(t('common.saved'), t('practice.weekPlanSavedAsDraft'));
       setIsDirty(false);
       // Navigate back to dashboard after saving
-      if (!result.publishing) navigate(`/teams/${teamId}`);
+      if (!result.publishing && !programSetup) navigate(`/teams/${teamId}`);
     },
     onError: (error: Error) => {
       toast.error(t('practice.failedToSave'), error.message);
@@ -614,23 +617,24 @@ const WeekPlanEditor: React.FC = () => {
       hideUserMenu={searchParams.get("inviteAfter") === "1"}
       hideNav
       header={
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <Button
               variant="ghost"
               size="icon-sm"
+              aria-label="Back to team plans"
               onClick={() => isDirty ? setShowLeaveDialog(true) : navigate(`/teams/${teamId}/builder`)}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <div className="min-w-0">
               <h1 className="text-lg font-bold truncate">
-                {isEditing ? t('practice.editPlan') : t('practice.newWeekPlan')}
+                {programSetup ? "Make it yours" : isEditing ? t('practice.editPlan') : t('practice.newWeekPlan')}
               </h1>
-              <p className="text-xs text-text-muted">{team?.name}</p>
+              <p className="truncate text-xs text-text-muted">{team?.name}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -638,8 +642,9 @@ const WeekPlanEditor: React.FC = () => {
               disabled={saveMutation.isPending || !name}
             >
               <Save className="w-4 h-4 mr-1" />
-              {t('common.save')}
+              {programSetup ? 'Save draft' : t('common.save')}
             </Button>
+            {!programSetup && (
             <Button
               size="sm"
               onClick={handlePublishClick}
@@ -648,11 +653,13 @@ const WeekPlanEditor: React.FC = () => {
               <Send className="w-4 h-4 mr-1" />
               {t('practice.publish')}
             </Button>
+            )}
           </div>
         </div>
       }
     >
-      <PageContainer>
+      <PageContainer className={programSetup ? "max-w-3xl pb-28" : undefined}>
+        {programSetup && <div className="space-y-5"><ProgramProgress step={2} /><div><p className="text-xs font-semibold uppercase tracking-widest text-primary">{team?.name}</p><h2 className="mt-2 font-display text-3xl font-black">A plan that fits your team</h2><p className="mt-2 text-sm text-muted-foreground">Tap any day to change the activities. Rest days count, too.</p><p className="mt-3 inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{daysWithTasks} training days · {7 - daysWithTasks} rest days</p></div></div>}
         {/* Status Badge */}
         {status === "published" && (
           <AppCard variant="muted" className="border-success/30 bg-success/5">
@@ -666,12 +673,13 @@ const WeekPlanEditor: React.FC = () => {
 
         {/* Basics */}
         <AppCard>
-          <AppCardTitle className="text-base mb-4">{t('practice.planSettings')}</AppCardTitle>
+          {!programSetup && <AppCardTitle className="text-base mb-4">{t('practice.planSettings')}</AppCardTitle>}
 
           <div className="space-y-4">
             <div>
-              <Label>{t('practice.planName')}</Label>
+              <Label htmlFor="program-name">{programSetup ? 'Program name' : t('practice.planName')}</Label>
               <Input
+                id="program-name"
                 value={name}
                 onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
                 placeholder={t('practice.planNamePlaceholder')}
@@ -693,6 +701,8 @@ const WeekPlanEditor: React.FC = () => {
               </div>
             )}
 
+            <details open={programSetup ? undefined : true}>
+              <summary className="cursor-pointer py-2 text-sm text-muted-foreground">Level & training targets</summary>
             <div className="flex gap-4">
               <div className="flex-1">
                 <Label>{t('practice.tier')}</Label>
@@ -713,6 +723,7 @@ const WeekPlanEditor: React.FC = () => {
               <div className="flex items-end pb-2">
                 <div className="flex items-center gap-2">
                   <Switch
+                    aria-label="Scale training targets for team level"
                     checked={useTierScaling}
                     onCheckedChange={(v) => { setUseTierScaling(v); setIsDirty(true); }}
                   />
@@ -720,9 +731,11 @@ const WeekPlanEditor: React.FC = () => {
                 </div>
               </div>
             </div>
+            </details>
           </div>
         </AppCard>
 
+        {programSetup ? <section className="space-y-3"><h2 className="text-sm font-semibold">Your week · {format(parseISO(startDate), "MMM d")} – {format(addDays(parseISO(startDate), 6), "MMM d")}</h2><ProgramWeek days={days} onEdit={index => openDayEditor(days[index], index)} /></section> : (<>
         {/* Week Grid */}
         <div>
           <h2 className="text-sm font-semibold text-text-secondary mb-3">
@@ -768,8 +781,10 @@ const WeekPlanEditor: React.FC = () => {
             })}
           </div>
         </div>
+        </>)}
       </PageContainer>
 
+      {programSetup && <ProgramAction label="Publish & invite families" onClick={handlePublishClick} disabled={!name.trim() || daysWithTasks === 0} busy={saveMutation.isPending || publishMutation.isPending} />}
       {/* Day Editor Sheet */}
       {editingDay && (
         <DayEditorSheet
@@ -778,6 +793,7 @@ const WeekPlanEditor: React.FC = () => {
           day={editingDay}
           dayLabel={editingDayLabel}
           onSave={handleDaySave}
+          simple={programSetup}
         />
       )}
 
