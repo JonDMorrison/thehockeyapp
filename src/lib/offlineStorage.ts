@@ -204,11 +204,11 @@ export async function getPendingEvents(): Promise<QueuedEvent[]> {
   return new Promise((resolve, reject) => {
     const tx = database.transaction('queuedEvents', 'readonly');
     const store = tx.objectStore('queuedEvents');
-    const index = store.index('status');
-    const request = index.getAll('pending');
+    const request = store.getAll();
     
     request.onsuccess = () => {
-      const events = (request.result as QueuedEvent[]).filter(event => event.userId === userId);
+      // Recover failed writes and writes interrupted while syncing. Never hide unsaved work.
+      const events = (request.result as QueuedEvent[]).filter(event => event.userId === userId && event.status !== 'succeeded');
       // Sort by createdAt ascending
       events.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
       resolve(events);

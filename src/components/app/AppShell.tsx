@@ -116,7 +116,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { status: offlineStatus } = useOffline();
+  const { status: offlineStatus, pendingCount, triggerSync } = useOffline();
   const workspaceNavigation = getWorkspaceNavigation(location.pathname, t);
   const navItems = workspaceNavigation.items;
   const currentLocation = `${location.pathname}${location.hash}`;
@@ -209,6 +209,12 @@ export const AppShell: React.FC<AppShellProps> = ({
         "flex-1 overflow-y-auto",
         !hideNav && "pb-20 lg:pb-0 lg:pl-60" // Mobile dock, desktop rail
       )}>
+        {pendingCount > 0 && (offlineStatus === 'pending' || offlineStatus === 'error') && (
+          <div role="status" className="mx-4 mt-16 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning/30 bg-warning-muted px-4 py-2 text-sm text-warning-foreground">
+            <span>Saved on this device. {pendingCount} {pendingCount === 1 ? 'update is' : 'updates are'} waiting to sync.</span>
+            <button type="button" onClick={() => void triggerSync()} className="min-h-11 px-2 font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2">Retry sync</button>
+          </div>
+        )}
         {children}
       </main>
 
