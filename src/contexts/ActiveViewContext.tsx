@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { UserRole } from "@/hooks/useUserRoles";
 
 interface ActiveViewContextType {
+  resetActiveView: () => void;
   /** Currently active view/role */
   activeView: UserRole | null;
   /** Set the active view */
@@ -46,6 +47,14 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
   const [activeAssociationId, setActiveAssociationIdState] = useState<string | null>(() => {
     return localStorage.getItem(ASSOCIATION_STORAGE_KEY);
   });
+
+  const resetActiveView = useCallback(() => {
+    setActiveViewState(null);
+    setActiveTeamIdState(null);
+    setActivePlayerIdState(null);
+    setActiveAssociationIdState(null);
+    for (const key of [STORAGE_KEY, TEAM_STORAGE_KEY, PLAYER_STORAGE_KEY, ASSOCIATION_STORAGE_KEY]) localStorage.removeItem(key);
+  }, []);
 
   const setActiveView = useCallback((view: UserRole) => {
     setActiveViewState(view);
@@ -94,6 +103,7 @@ export function ActiveViewProvider({ children }: { children: React.ReactNode }) 
   return (
     <ActiveViewContext.Provider
       value={{
+        resetActiveView,
         activeView,
         setActiveView,
         isViewActive,

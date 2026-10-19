@@ -10,56 +10,56 @@ Exercise real coach, family, player, solo and association journeys using fiction
 
 | # | Area / scenario | Evidence / result |
 |---|---|---|
-| 1 | Homepage first visit and primary actions | Pending |
-| 2 | Demo workout completion and reset | Pending |
-| 3 | Demo shooting challenge and signup handoff | Pending |
-| 4 | About / features / support / legal navigation | Pending |
-| 5 | Small phone layouts and no horizontal overflow | Pending |
-| 6 | Keyboard navigation and accessible control names | Pending |
-| 7 | Reduced motion and focus visibility | Pending |
-| 8 | Signup validation and password visibility | Pending |
-| 9 | Signin, signout, return destinations | Pending |
-| 10 | Recovery invalid/expired links and request errors | Pending |
-| 11 | Session expiry and protected routes | Pending |
-| 12 | Account/workspace lookup failure recovery | Pending |
-| 13 | Coach team creation and validation | Pending |
-| 14 | Program/challenge choice and skipping | Pending |
-| 15 | Visual program plans and date selection | Pending |
-| 16 | Program draft save, reload and retry | Pending |
-| 17 | Activity edit/add/remove/reorder/validation | Pending |
-| 18 | Publish, conflicts, duplicates and failure recovery | Pending |
-| 19 | Template browse/filter/import and partial failures | Pending |
-| 20 | Family invite generation/copy/expiry/reuse | Pending |
-| 21 | Parent signup via invitation | Pending |
-| 22 | Existing family joining and multiple players | Pending |
-| 23 | Guardian acknowledgement and profile preferences | Pending |
-| 24 | Invalid/revoked/wrong-account invitations | Pending |
-| 25 | Family/player sees correct published plan | Pending |
-| 26 | Required activity and session completion | Pending |
-| 27 | Shot logging validation and persistence | Pending |
-| 28 | Offline completion and reconnect exactly once | Pending |
-| 29 | Shooting challenge dates and timezone | Pending |
-| 30 | Challenge leaderboard/final result consistency | Pending |
-| 31 | Coach roster/progress versus saved player work | Pending |
-| 32 | Program edit/unpublish/delete lifecycle | Pending |
-| 33 | Quick assignment and schedule changes | Pending |
-| 34 | Team settings and staff roles | Pending |
-| 35 | Player profile edit/cancel/photos | Pending |
-| 36 | Parent/shared device player switching | Pending |
-| 37 | Goals/badges/history/reflections | Pending |
-| 38 | Solo setup, planning and workout completion | Pending |
+| 1 | Homepage first visit and primary actions | Verified — public journeys in the 136-pass run |
+| 2 | Demo workout completion and reset | Verified — interactive completion/reset |
+| 3 | Demo shooting challenge and signup handoff | Verified — real mobile handoff and saved shots |
+| 4 | About / features / support / legal navigation | Verified — public pages/navigation |
+| 5 | Small phone layouts and no horizontal overflow | 390px inventory passed; 320px welcome passed; full small-phone sweep pending |
+| 6 | Keyboard navigation and accessible control names | Keyboard workout/tabs and welcome focus/Escape passed; other controls under review |
+| 7 | Reduced motion and focus visibility | Code review passed; physical-device validation pending |
+| 8 | Signup validation and password visibility | Verified — signup normalization, six-character password and visibility |
+| 9 | Signin, signout, return destinations | Signin/return paths passed; account-switch cache repair passes locally |
+| 10 | Recovery invalid/expired links and request errors | Invalid-link/recovery UI passed; real mail receipt unverified |
+| 11 | Session expiry and protected routes | Route guards passed; dedicated expiry case pending |
+| 12 | Account/workspace lookup failure recovery | Verified — welcome and five workspace retry paths |
+| 13 | Coach team creation and validation | Verified — real coach signup/team setup |
+| 14 | Program/challenge choice and skipping | Program/challenge choices passed; skip path pending |
+| 15 | Visual program plans and date selection | Verified — visual plans and edited dates |
+| 16 | Program draft save, reload and retry | Verified — save/reload/retry plus atomic database gates |
+| 17 | Activity edit/add/remove/reorder/validation | Edit/remove passed; add/reorder cases pending |
+| 18 | Publish, conflicts, duplicates and failure recovery | Verified — atomic publication, failed-request retry and progress protection |
+| 19 | Template browse/filter/import and partial failures | Failed/partial import gates passed; catalog filtering still to exercise |
+| 20 | Family invite generation/copy/expiry/reuse | Generate/copy/reuse passed; expired/revoked cases pending |
+| 21 | Parent signup via invitation | Verified — real new parent signup and join |
+| 22 | Existing family joining and multiple players | Sibling switching passed; existing-player invite case pending |
+| 23 | Guardian acknowledgement and profile preferences | Adult acknowledgement/profile wizard passed; upload/privacy cases pending |
+| 24 | Invalid/revoked/wrong-account invitations | Malformed/private codes passed; invited-email staff cases pending |
+| 25 | Family/player sees correct published plan | Verified — published customized week and rest-day edit |
+| 26 | Required activity and session completion | Verified — persisted completion and reports on two local calendars |
+| 27 | Shot logging validation and persistence | Challenge shot gates passed; dedicated practice-shot gate pending |
+| 28 | Offline completion and reconnect exactly once | Loaded workout syncs exactly once; account-switch/offline recovery pending |
+| 29 | Shooting challenge dates and timezone | Verified — custom dates and daylight-saving boundaries |
+| 30 | Challenge leaderboard/final result consistency | Closed-window API guards passed; final-results browser fixture pending |
+| 31 | Coach roster/progress versus saved player work | Verified — persisted coach/player counts agree |
+| 32 | Program edit/unpublish/delete lifecycle | Rest-day edit passed; unpublish/delete lifecycle pending |
+| 33 | Quick assignment and schedule changes | Assignment API passed; full Quick Assign UI still to exercise |
+| 34 | Team settings and staff roles | Authorization review in progress; staff journeys pending |
+| 35 | Player profile edit/cancel/photos | Profile wizard passed; private-photo defect under repair |
+| 36 | Parent/shared device player switching | Verified — coach/parent switching and ten repeated phone cases |
+| 37 | Goals/badges/history/reflections | Routes passed; award/reflection write cases pending |
+| 38 | Solo setup, planning and workout completion | Routes passed; full solo setup/workout lifecycle pending |
 | 39 | Solo recurring programs and schedule | Pending |
 | 40 | Association setup/team linking/staff boundaries | Pending |
-| 41 | Anonymous and unrelated-account data denial | Pending |
-| 42 | Database function/storage permission review | Pending |
-| 43 | Error/empty/loading states across routes | Pending |
-| 44 | Notifications/preferences/unsubscribe | Pending |
-| 45 | AI/integration/payment failure states | Pending |
-| 46 | Runtime error/failed request monitoring | Pending |
-| 47 | Dependency audit/typecheck/lint/build | Pending |
+| 41 | Anonymous and unrelated-account data denial | Fresh read denial passed; cached-view isolation repair reproduced and locally verified |
+| 42 | Database function/storage permission review | All 75 public tables have RLS; targeted storage/function review in progress |
+| 43 | Error/empty/loading states across routes | Five workspace recovery paths and phone route health passed |
+| 44 | Notifications/preferences/unsubscribe | Preferences render; persistence/unsubscribe cases pending |
+| 45 | AI/integration/payment failure states | Routes render; external integration results unverified |
+| 46 | Runtime error/failed request monitoring | Error-capture code reviewed; operational alerting/restore checks pending |
+| 47 | Dependency audit/typecheck/lint/build | Verified — full quality check and zero known runtime dependency vulnerabilities |
 | 48 | Performance and asset/network review | Pending |
-| 49 | Complete regression run and CI | Pending |
-| 50 | Production release verification and fixture cleanup | Pending |
+| 49 | Complete regression run and CI | Batch 27: 136 passed, 6 explicit skips; CI passed |
+| 50 | Production release verification and fixture cleanup | PRs 26 and 27 live and verified; ongoing repairs and fixture cleanup pending |
 
 ## Findings
 
@@ -94,3 +94,12 @@ The additive atomic program-save function passed rollback-only checks against th
 - The longer release run exposed a genuine first-run readiness issue beyond the earlier selector repair: the welcome could appear before team preferences loaded, then disappear while the initial workout loaded. Player Home now waits for those reads; snapshot requests ignore stale responses after player changes. The welcome uses a proper modal with focus containment, Escape dismissal and a viewport limit. A deliberately delayed-read test passed at 320×568, and the two shared-workspace cases passed five repetitions (10 passes) after the final fix.
 - Test API clients now sign out their own session rather than globally revoking the shared browser account's sessions. The route inventory must be replayed with this isolation fix; the previous broad run's late 401s and signin redirects are not counted as product permission failures.
 - A rollback-only reproduction found another lifecycle issue: changing a published day to rest leaves its earlier unstarted workout visible. This remains an open repair; started/locked work must stay protected when clearing a day.
+
+
+## First-hour release record
+
+- [PR 26](https://github.com/JonDMorrison/thehockeyapp/pull/26): merged `1841fc4`; five production recovery cases passed.
+- [PR 27](https://github.com/JonDMorrison/thehockeyapp/pull/27): merged `048ef27`; frozen-build regression **136 passed, six explicit skips**, followed by **13 production passes**. The skipped legacy completion cases have independent real-fixture coverage; the finished-challenge browser case still needs its dedicated fixture.
+- Shared-device cache reproduction: an unrelated account could see the former family's fictional profile through browser history while fresh database reads were denied. Session-scoped UI/query/media cleanup fixes the reproduction. Offline read caches and queues are associated with their account, without discarding pending work. Twenty-eight targeted frozen-build cases passed, including the new privacy and published-rest-day journeys. This batch is not yet merged at this checkpoint.
+- Rest-day clearing passed both hosted-schema rollback checks and local PostgreSQL checks. The local fixture was corrected to match production's non-cascading workout foreign keys, so it catches incomplete deletion sequences.
+- Further navigation inspection found four account-menu links pointing to absent routes (notifications, billing, privacy and help). These are the next UX repairs. A static route guard now detects them; it will become a gate after the links are corrected.

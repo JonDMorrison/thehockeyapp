@@ -12,7 +12,6 @@ import {
   saveCompletionSnapshot,
   getCompletionSnapshot,
 } from "@/lib/offlineStorage";
-import { startSyncInterval, stopSyncInterval } from "@/lib/syncEngine";
 import { OfflineDot } from "@/components/app/OfflineIndicator";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { Button } from "@/components/ui/button";
@@ -90,10 +89,6 @@ const QuickCheckoff: React.FC = () => {
   const [localCompletions, setLocalCompletions] = useState<Record<string, LocalCompletion>>({});
   const [undoAction, setUndoAction] = useState<UndoAction | null>(null);
 
-  useEffect(() => {
-    startSyncInterval();
-    return () => stopSyncInterval();
-  }, []);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -216,14 +211,14 @@ const QuickCheckoff: React.FC = () => {
   useEffect(() => {
     const loadCached = async () => {
       if (practiceCard?.id && playerId) {
-        const snapshot = await getCompletionSnapshot(playerId, practiceCard.id);
+        const snapshot = await getCompletionSnapshot(playerId, practiceCard.id, user?.id);
         if (snapshot) {
           setLocalCompletions(snapshot.taskCompletionMap);
         }
       }
     };
     loadCached();
-  }, [practiceCard?.id, playerId]);
+  }, [practiceCard?.id, playerId, user?.id]);
 
   // Required tasks only
   const requiredTasks = practiceCard?.practice_tasks
@@ -239,9 +234,9 @@ const QuickCheckoff: React.FC = () => {
     if (practiceCard?.id && playerId) {
       const done = requiredTasks.filter((t) => completions[t.id]?.completed).length;
       const status = done === 0 ? 'none' : done === requiredTasks.length ? 'complete' : 'partial';
-      await saveCompletionSnapshot(playerId, practiceCard.id, completions, status);
+      await saveCompletionSnapshot(playerId, practiceCard.id, completions, status, user?.id);
     }
-  }, [practiceCard?.id, playerId, requiredTasks]);
+  }, [practiceCard?.id, playerId, requiredTasks, user?.id]);
 
   // Clear undo after 5 seconds
   useEffect(() => {

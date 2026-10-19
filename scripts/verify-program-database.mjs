@@ -57,11 +57,13 @@ try {
     "-c", "begin",
     "-f", resolve("tests/database/program-bootstrap.sql"),
     "-f", resolve("supabase/migrations/20261019052512_atomic_program_publication.sql"),
+    "-f", resolve("supabase/migrations/20261019055652_program_rest_day_publication.sql"),
     "-c", "select set_config('test.user_id','00000000-0000-0000-0000-000000000001',true)",
     "-f", resolve("tests/database/program-publication-release.sql"),
+    "-f", resolve("tests/database/program-rest-day-release.sql"),
     "-c", "rollback",
   ]);
-  console.log("PASS: Atomic program save/publication, scaled targets, preserved notes, rollback after insert failure, idempotent retry, player-progress protection, cross-account denial and anonymous denial");
+  console.log("PASS: Atomic program save/publication, scaled targets, preserved notes, rollback after insert failure, idempotent retry, player-progress protection, cross-account denial, anonymous denial and safe rest-day clearing");
 } catch (e) {
   process.stderr.write(e.stderr || e.message);
   process.exitCode = 1;

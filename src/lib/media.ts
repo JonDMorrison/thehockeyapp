@@ -70,3 +70,7 @@ export async function resolveMediaUrl(value?: string | null): Promise<string | n
   });
   return data.signedUrl;
 }
+
+export function clearSignedMediaCache(): void {
+  signedUrlCache.clear();
+}
