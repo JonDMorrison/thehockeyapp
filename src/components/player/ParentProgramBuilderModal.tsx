@@ -156,10 +156,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         focus_areas: focusLabels,
         keep_simple: false,
         // Extended fields for parent context
-        parent_goal: parentGoal,
         horizon_weeks: horizonWeeks,
-        player_age: playerAge,
-        player_shoots: playerShoots,
       };
 
       setSendingStep(1);
@@ -220,6 +217,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         return days.map((day) => ({
           ...day,
           date: format(addWeeks(parseISO(day.date), weekIndex), "yyyy-MM-dd"),
+          notes: [day.notes, parentGoal.trim() ? `Family goal: ${parentGoal.trim()}` : null].filter(Boolean).join("\n\n"),
           title: day.title || `${plan.name || "Home training"} – ${day.date}`,
           tasks: day.tasks.map((task, index) => ({
             ...task,
@@ -248,6 +246,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
 
       const result = data as { card_count?: number; task_count?: number } | null;
       return {
+        source:aiResult.source,
         cardCount: result?.card_count ?? days.length,
         taskCount: result?.task_count ?? privateDays.reduce((sum, day) => sum + day.tasks.length, 0),
       };
@@ -258,6 +257,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
       queryClient.invalidateQueries({ queryKey: ["parent-totals-panel", playerId] });
       queryClient.invalidateQueries({ queryKey: ["player-home"] });
       fireGoalConfetti();
+      if(result.source==="starter_template")toast.info("Starter plan saved", "AI is unavailable. Your plan uses a starter template you can edit.");
       toast.success(
         "Your custom training plan is ready! 🎉",
         `${result.cardCount} days with ${result.taskCount} tasks created.`
@@ -304,7 +304,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
     if (step === "focus") return selectedFocuses.length >= 1;
     if (step === "frequency") return !!frequency;
     if (step === "horizon") return !!horizon;
-    if (step === "goal") return parentGoal.trim().length > 0;
+    if (step === "goal") return parentGoal.length <= 500;
     return true;
   };
 
@@ -498,20 +498,22 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         </div>
         <h3 className="text-lg font-bold">Your Goal</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          What do you want to see improve in the next 30 days?
+          What would your family like to work toward?
         </p>
       </div>
 
       <div>
-        <Label className="text-sm font-medium">Parent Goal</Label>
+        <Label htmlFor="parent-training-goal" className="text-sm font-medium">Family goal (optional)</Label>
         <Textarea
+          id="parent-training-goal"
+          maxLength={500}
           className="mt-2 min-h-[120px]"
           placeholder="e.g., I want their wrist shot to be noticeably harder and more accurate by the end of the month. They also need to build better training discipline."
           value={parentGoal}
           onChange={(e) => setParentGoal(e.target.value)}
         />
         <p className="text-xs text-muted-foreground mt-2">
-          This helps the AI tailor the plan to your priorities.
+          Saved privately with your workouts so your family can revisit it.
         </p>
       </div>
     </motion.div>
@@ -582,7 +584,7 @@ export const ParentProgramBuilderModal: React.FC<ParentProgramBuilderModalProps>
         <SheetHeader className="sr-only">
           <SheetTitle>Build a Development Plan</SheetTitle>
           <SheetDescription>
-            Create a custom AI-powered training plan for your player
+            Create a private training plan for your player
           </SheetDescription>
         </SheetHeader>
 

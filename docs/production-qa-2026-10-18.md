@@ -198,3 +198,13 @@ Home-only players reached a team-only empty state from Today/Week and lost navig
 Invitation preview/list outages now offer retry instead of claiming an invite is invalid or the family has no children. Player selection uses keyboard-operable native buttons. Expired/revoked invites remain closed, and revoking an invite does not remove children who already joined.
 
 All six new journeys passed across three browsers (1.6 minutes), including 320×568 welcome → home workout → week → history, preference outage/retry, public preview outage, family list outage, existing-account sign-in, two-child joins by Space/Enter, expiry and revocation. Broader affected-flow regression is running before merge. The family history release also passed on the actual live deployment (12.6 seconds); an earlier live attempt loaded the pre-deployment page, so it was discarded as a deployment timing failure.
+
+## Starter drafts without a provider dependency
+
+AI drafts previously failed before authentication because the provider key is absent. Authorized coaches/families now receive an explicitly labeled editable starter template when AI is unavailable or disabled. Draft generation validates dates, frequency, time budget, supported activities and ownership; invalid/provider-failed drafts fall back safely. Templates preserve requested dates/frequency, respect activity preferences and lighter ice days, and support selected backhand/puck-control focus. No program is published by the draft endpoint.
+
+The family goal was required but unused. It is now optional, bounded and saved privately in workout notes rather than sent as unused AI context. Draft focus controls no longer toggle twice when clicking their checkboxes, and dialog controls have accessible names.
+
+Thirty handler/helper scenarios passed, including calendar rollover/leap dates, one-to-seven-day frequency, consented guardian authorization, malformed requests, provider failure and rejected negative AI targets. Six real 320×568 coach draft → review/edit → publication and parent → twelve private workouts over four weeks journeys passed across three browsers (22.0 seconds). The endpoint is deployed with JWT verification. Genuine provider-generated text remains unverified because the provider key is not configured.
+
+The affected-flow regression for the family navigation release passed all eighteen cases across three browsers (6.3 minutes). Sixty isolated Firefox editor → workout → immediate-tap transitions also passed; the earlier intermittent tap could not be reproduced in that isolated run and remains noted separately.

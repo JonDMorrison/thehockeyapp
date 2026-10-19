@@ -306,7 +306,7 @@ export const HomeDevelopmentSection: React.FC<HomeDevelopmentSectionProps> = ({
             <div>
               <h4 className="font-bold text-base">Build Your Development Plan</h4>
               <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-                Create a private, AI-powered training plan tailored to your player's goals.
+                Create a private home training plan you can customize around your player's goals.
               </p>
             </div>
             <Button onClick={onBuildPlan}>
