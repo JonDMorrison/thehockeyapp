@@ -116,6 +116,8 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
   const [keepSimple, setKeepSimple] = useState(true);
   const [generatedData, setGeneratedData] = useState<GeneratedDayCard | GeneratedWeekPlan | null>(null);
 
+  const [draftSource,setDraftSource]=useState<string|null>(null);
+
   const generateMutation = useMutation({
     mutationFn: async () => {
       // Verify session is valid before calling
@@ -153,10 +155,12 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
       }
       if (data?.error) throw new Error(data.error);
 
-      return data.data;
+      return {draft:data.data,source:data.source??"ai"};
     },
-    onSuccess: (data) => {
-      setGeneratedData(data);
+    onSuccess: ({draft,source}) => {
+      setGeneratedData(draft);
+      setDraftSource(source);
+      if(source==="starter_template"){toast.info("Starter draft ready", "AI is unavailable. Review and edit this starter template before applying it.");return;}
       toast.success(t('practice.draftGenerated'), t('practice.reviewAndApplyWhenReady'));
     },
     onError: (error: Error) => {
@@ -180,11 +184,13 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
       onApply(generatedData);
       onOpenChange(false);
       setGeneratedData(null);
+      setDraftSource(null);
     }
   };
 
   const handleReset = () => {
     setGeneratedData(null);
+    setDraftSource(null);
   };
 
   const renderPreview = () => {
@@ -281,6 +287,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
         </SheetHeader>
 
         <div className="py-6 space-y-6">
+          {generatedData && draftSource==="starter_template" && <p role="status" className="mb-4 rounded-xl border border-border bg-muted p-3 text-sm">This is an editable starter template. AI suggestions are unavailable.</p>}
           {/* Show preview if generated */}
           {generatedData ? (
             <>
@@ -316,7 +323,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
               <div>
                 <Label className="text-sm font-medium">{t('practice.trainingTier')}</Label>
                 <Select value={tier} onValueChange={(v: "rec" | "rep" | "elite") => setTier(v)}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger aria-label={t('practice.trainingTier')} className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -334,7 +341,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                   value={timeBudget.toString()}
                   onValueChange={(v) => setTimeBudget(parseInt(v))}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger aria-label="Time budget" className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -375,22 +382,23 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                   {focusOptions.map((option) => {
                     const isSelected = selectedFocus.includes(option.id);
                     return (
-                      <div
+                      <Label
                         key={option.id}
+                        htmlFor={`ai-focus-${option.id}`}
                         className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
                           isSelected
                             ? "border-primary bg-primary/5"
                             : "border-border hover:bg-surface-muted"
                         }`}
-                        onClick={() => toggleFocus(option.id)}
                       >
                         <Checkbox
+                          id={`ai-focus-${option.id}`}
                           checked={isSelected}
                           onCheckedChange={() => toggleFocus(option.id)}
                         />
                         <option.icon className="w-4 h-4 text-text-muted" />
                         <span className="text-sm">{option.label}</span>
-                      </div>
+                      </Label>
                     );
                   })}
                 </div>
@@ -402,7 +410,7 @@ export const AIAssistSheet: React.FC<AIAssistSheetProps> = ({
                   <p className="text-sm font-medium">{t('practice.keepItSimple')}</p>
                   <p className="text-xs text-text-muted">{t('practice.threeTo5TasksPerDay')}</p>
                 </div>
-                <Switch checked={keepSimple} onCheckedChange={setKeepSimple} />
+                <Switch aria-label={t('practice.keepItSimple')} checked={keepSimple} onCheckedChange={setKeepSimple} />
               </div>
 
               {/* Generate Button */}

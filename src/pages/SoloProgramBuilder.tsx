@@ -49,6 +49,7 @@ interface GeneratedDay {
 }
 
 interface GeneratedProgram {
+  source?: string;
   name: string;
   tier: string;
   weeks: Array<{
@@ -133,6 +134,7 @@ export default function SoloProgramBuilder() {
 
       // Generate each week using AI
       const weeks: GeneratedProgram["weeks"] = [];
+      let usedStarter=false;
 
       for (let weekNum = 0; weekNum < duration; weekNum++) {
         setGeneratingStep(Math.min(generatingSteps.length - 1, weekNum + 1));
@@ -153,6 +155,7 @@ export default function SoloProgramBuilder() {
 
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
+        if(data?.source==="starter_template")usedStarter=true;
 
         weeks.push({
           weekNumber: weekNum + 1,
@@ -164,10 +167,12 @@ export default function SoloProgramBuilder() {
       return {
         name: programName,
         tier,
+        source:usedStarter?"starter_template":"ai",
         weeks,
       };
     },
     onSuccess: (program) => {
+      if(program.source==="starter_template")toast.info("Starter program ready", {description:"AI is unavailable. This program uses an editable starter template."});
       setGeneratedProgram(program);
       setStep("preview");
       fireGoalConfetti();
@@ -479,6 +484,7 @@ export default function SoloProgramBuilder() {
 
       {/* Week Preview */}
       <div className="space-y-3">
+        {generatedProgram?.source==="starter_template"&&<p role="status" className="rounded-xl border border-border bg-muted p-3 text-sm">Starter template · review and customize before saving.</p>}
         {generatedProgram?.weeks.map((week) => (
           <div
             key={week.weekNumber}

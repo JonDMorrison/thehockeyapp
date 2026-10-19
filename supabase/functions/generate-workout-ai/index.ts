@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+import { starterWorkout } from "../_shared/starterWorkout.ts";
+import { validDateOnly } from "../_shared/summaryPrivacy.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -162,14 +165,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let fallback: (() => Response) | null = null;
   try {
     console.log("generate-workout-ai: Starting request processing");
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -201,10 +202,16 @@ serve(async (req) => {
     const body: GenerateRequest = await req.json();
     const { type, team_id, player_id, date, start_date, tier, time_budget, days_per_week, focus_areas, keep_simple, schedule_events } = body;
 
+    if(!["day_card","week_plan"].includes(type) || !["rec","rep","elite"].includes(tier) || !Number.isFinite(time_budget) || time_budget<5 || time_budget>60 || !validDateOnly(type==="day_card"?date:start_date)
+      || (type==="week_plan" && (!Number.isInteger(days_per_week??5) || (days_per_week??5)<1 || (days_per_week??5)>7)) || (!team_id&&!player_id) || (team_id&&player_id)
+      || (focus_areas!==undefined && (!Array.isArray(focus_areas)||focus_areas.length>10||focus_areas.some(value=>typeof value!=="string"||value.length>80)))
+      || (schedule_events!==undefined && (!Array.isArray(schedule_events)||schedule_events.length>31||schedule_events.some(event=>!validDateOnly(event.date)||!["game","practice"].includes(event.event_type)))))return new Response(JSON.stringify({error:"Choose a valid date, tier, 5–60 minute budget and 1–7 training days."}),{status:400,headers:{...corsHeaders,"Content-Type":"application/json"}});
+
     // For solo players without team_id, skip team role verification
-    let allowedTaskTypes = ["shooting", "mobility", "conditioning", "recovery", "prep"];
+    let allowedTaskTypes = ["shooting", "mobility", "conditioning", "recovery", "prep", "other"];
     let trainingMode = "balanced";
     let effectiveTier = tier;
+    let aiEnabled=true;
 
     if (team_id) {
       // Verify user is team adult
@@ -225,12 +232,14 @@ serve(async (req) => {
       console.log("generate-workout-ai: Team role verified:", teamRole.role);
 
       // Fetch team training preferences
-      const { data: preferences } = await supabase
+      const { data: preferences, error: preferencesError } = await supabase
         .from("team_training_preferences")
         .select("training_mode, allowed_task_types, default_tier, use_ai_assist")
         .eq("team_id", team_id)
         .maybeSingle();
 
+      if(preferencesError)throw preferencesError;
+      aiEnabled=preferences?.use_ai_assist!==false;
       // Use preferences if available
       effectiveTier = tier || preferences?.default_tier || "rep";
       allowedTaskTypes = preferences?.allowed_task_types || allowedTaskTypes;
@@ -241,16 +250,22 @@ serve(async (req) => {
         .from("players")
         .select("id, owner_user_id")
         .eq("id", player_id)
-        .eq("owner_user_id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (playerError || !playerData) {
+      const {data:guardian,error:guardianError}=await supabase.rpc("is_player_guardian",{player_uuid:player_id,user_uuid:user.id});
+      if (playerError || !playerData || guardianError || guardian!==true) {
         return new Response(JSON.stringify({ error: "Not authorized for this player" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
+
+    allowedTaskTypes=allowedTaskTypes.filter(value=>["shooting","mobility","conditioning","recovery","prep","other"].includes(value));
+    if(trainingMode==="shooting_only")allowedTaskTypes=allowedTaskTypes.filter(value=>value==="shooting");
+    if(!allowedTaskTypes.length)return new Response(JSON.stringify({error:"Choose at least one supported activity type in training preferences."}),{status:400,headers:{...corsHeaders,"Content-Type":"application/json"}});
+    fallback=()=>new Response(JSON.stringify({success:true,source:"starter_template",notice:"AI suggestions are unavailable. This is an editable starter template.",data:starterWorkout({type,date,start_date,tier:effectiveTier,time_budget,days_per_week,keep_simple,allowed_task_types:allowedTaskTypes,focus_areas,schedule_events})}),{headers:{...corsHeaders,"Content-Type":"application/json"}});
+    if(!LOVABLE_API_KEY || !aiEnabled)return fallback();
 
     // Build constraint hints based on training mode
     let modeHint = "";
@@ -315,6 +330,7 @@ ${JSON.stringify(schema, null, 2)}`;
     // Call AI Gateway
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
+      signal: AbortSignal.timeout(15000),
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
@@ -330,23 +346,8 @@ ${JSON.stringify(schema, null, 2)}`;
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
-      throw new Error("AI Gateway error");
+      console.error("AI service unavailable",aiResponse.status);
+      return fallback();
     }
 
     const aiData = await aiResponse.json();
@@ -374,10 +375,7 @@ ${JSON.stringify(schema, null, 2)}`;
         });
       }
       
-      return new Response(JSON.stringify({ error: "Couldn't generate a valid draft. Please try again." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return fallback();
     }
 
     // Normalize and validate output
@@ -385,7 +383,12 @@ ${JSON.stringify(schema, null, 2)}`;
       outputJson = normalizeWeekPlan(outputJson);
     }
     
-    const isValid = type === "day_card" ? validateDayCard(outputJson) : validateWeekPlan(outputJson);
+    const shapeValid = type === "day_card" ? validateDayCard(outputJson) : validateWeekPlan(outputJson);
+    const outputDays=type==="day_card"?[outputJson]:outputJson?.days;
+    const dayValid=(day:any)=>typeof day.title==="string"&&day.title.trim().length>0&&day.title.length<=160&&Number.isFinite(day.estimated_minutes)&&day.estimated_minutes>0&&day.estimated_minutes<=time_budget&&Array.isArray(day.tasks)&&day.tasks.length>0&&day.tasks.length<=12&&day.tasks.every((task:any)=>allowedTaskTypes.includes(task.task_type)&&typeof task.label==="string"&&task.label.length<=160&&[task.target_value,task.shots_expected].every(value=>value===null||Number.isSafeInteger(value)&&value>=0&&value<=10000));
+    const requestedStart=type==="week_plan"?Date.parse(start_date+"T12:00:00Z"):0;
+    const datesValid=type==="day_card"||(outputJson.start_date===start_date&&outputDays?.length===(days_per_week??5)&&new Set(outputDays.map((day:any)=>day.date)).size===outputDays.length&&outputDays.every((day:any)=>validDateOnly(day.date)&&Date.parse(day.date+"T12:00:00Z")>=requestedStart&&Date.parse(day.date+"T12:00:00Z")<requestedStart+7*86400000));
+    const isValid=shapeValid&&outputJson.tier===effectiveTier&&Array.isArray(outputDays)&&outputDays.every(dayValid)&&datesValid;
     
     if (!isValid) {
       console.error("Validation failed for AI output");
@@ -403,10 +406,7 @@ ${JSON.stringify(schema, null, 2)}`;
         });
       }
       
-      return new Response(JSON.stringify({ error: "Generated plan didn't meet requirements. Please try again." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return fallback();
     }
 
     // Store successful generation only if we have a team_id
@@ -433,7 +433,8 @@ ${JSON.stringify(schema, null, 2)}`;
     }
 
     return new Response(JSON.stringify({ 
-      success: true, 
+      success: true,
+      source: "ai",
       data: outputJson,
       generation_id: generationId 
     }), {
@@ -442,6 +443,7 @@ ${JSON.stringify(schema, null, 2)}`;
 
   } catch (error) {
     console.error("Error in generate-workout-ai:", error);
+    if(fallback)return fallback();
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : "Unknown error occurred" 
     }), {

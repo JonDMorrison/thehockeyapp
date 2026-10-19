@@ -70,6 +70,7 @@ interface GeneratedDay {
 }
 
 interface GeneratedProgram {
+  source?: string;
   name: string;
   tier: string;
   weeks: Array<{
@@ -138,6 +139,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
 
       // Generate each week
       const weeks: GeneratedProgram["weeks"] = [];
+      let usedStarter=false;
 
       for (let weekNum = 0; weekNum < duration; weekNum++) {
         setGeneratingStep(Math.min(generatingSteps.length - 1, weekNum + 1));
@@ -165,6 +167,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
           throw new Error(errorMessage);
         }
         if (data?.error) throw new Error(data.error);
+        if(data?.source==="starter_template")usedStarter=true;
 
         weeks.push({
           weekNumber: weekNum + 1,
@@ -176,10 +179,12 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
       return {
         name: programName,
         tier,
+        source:usedStarter?"starter_template":"ai",
         weeks,
       };
     },
     onSuccess: (program) => {
+      if(program.source==="starter_template")toast.info("Starter program ready", "AI is unavailable. This program uses an editable starter template.");
       setGeneratedProgram(program);
       setStep("preview");
       fireGoalConfetti();
@@ -493,6 +498,7 @@ export const ProgramBuilderWizard: React.FC<ProgramBuilderWizardProps> = ({
             </div>
           </div>
 
+          {generatedProgram.source==="starter_template"&&<p role="status" className="rounded-xl border border-border bg-muted p-3 text-sm">Starter template · review and customize before publishing.</p>}
           {/* Calendar Preview */}
           <ProgramPreviewCalendar
             weeks={generatedProgram.weeks}
