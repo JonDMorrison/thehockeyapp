@@ -24,3 +24,9 @@ Browser emulation is not physical-device certification. UI fixture tests use con
 Earlier test attempts identified duplicate fixture IDs, a missing test dismissal of the welcome dialog, and a missing other-team membership in the test seed. These fixture issues were corrected. The actual header layering and cache invalidation defects were fixed in the app.
 
 Screenshots, logs and production deployment verification are retained in `hockey-audit-output/roster-design-2026-10-19/`, outside the source tree.
+
+## Immediate Escape follow-up
+
+The first production run completed 20 checks and exposed one intermittent fast-Escape failure in Chromium; an unchanged rerun reproduced it at another viewport. Instrumenting focus added enough delay to avoid the failure, pointing to the opening-frame dismissal-listener timing. The menu now controls its open state and handles Escape on the trigger/content capture path immediately, while retaining normal selection and focus restoration. It also closes when navigating or reloading workspace roles. The roster test explicitly checks that focus returns to Switch. The original failed runs remain in the QA artifacts.
+
+A compiled production-build check was repeated ten times in Chromium, covering 30 immediate menu open/Escape/focus-return interactions across 320px, 390px and 1440px without diagnostic delays.

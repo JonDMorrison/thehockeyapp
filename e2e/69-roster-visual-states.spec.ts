@@ -174,6 +174,12 @@ test("visual roster fits mobile and desktop, shows factual progress and supports
     await expect(page.getByRole("menuitem", { name: /QA Hawks/ })).toHaveCount(
       0,
     );
+    await expect(
+      page.getByRole("button", {
+        name: "Switch workspace or role",
+        exact: true,
+      }),
+    ).toBeFocused();
     await page.screenshot({
       path: info.outputPath(`roster-${width}.png`),
       fullPage: true,
