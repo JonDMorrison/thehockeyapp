@@ -198,7 +198,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       {/* Legacy Header (for backward compatibility) */}
       {!useNavHeader && header && (
         <header className={cn("sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl", !hideNav && "lg:pl-60")}>
-          <div className="mx-auto max-w-7xl px-4 py-3 pr-28 sm:px-6 lg:px-8">
+          <div className={cn("mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8", !hideUserMenu && "pr-28")}>
             {header}
           </div>
         </header>

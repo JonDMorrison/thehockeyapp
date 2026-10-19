@@ -35,7 +35,7 @@ export function ProgramPlans({
           (a, b) => Number(b.id === "balanced") - Number(a.id === "balanced"),
         )
         .map((theme) => {
-          const schedule = THEME_SCHEDULES[theme.id];
+          const schedule = Array.from({ length: 7 }, (_, i) => THEME_SCHEDULES[theme.id][i] || "rest_day");
           const training = schedule.filter((id) => id !== "rest_day");
           const minutes = training.reduce(
             (sum, id) =>
