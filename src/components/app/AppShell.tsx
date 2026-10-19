@@ -167,7 +167,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   to={item.path}
                   className={cn(
                     "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-colors",
-                    isActive ? "bg-primary text-white" : "text-white/52 hover:bg-white/[0.06] hover:text-white",
+                    isActive ? "bg-white/[0.07] text-white ring-1 ring-white/[0.08]" : "text-white/52 hover:bg-white/[0.06] hover:text-white",
                   )}
                 >
                   <Icon className="h-4 w-4" strokeWidth={isActive ? 2.5 : 1.75} />

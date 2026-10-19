@@ -13,9 +13,9 @@ export const teamPalettes: TeamPalette[] = [
   {
     id: "brand",
     displayName: "Hockey App Red",
-    primary: "358 76% 54%",
+    primary: "358 46% 52%",
     secondary: "0 0% 100%",
-    tertiary: "358 72% 45%",
+    tertiary: "358 42% 43%",
   },
   {
     id: "toronto",

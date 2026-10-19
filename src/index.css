@@ -70,26 +70,26 @@
     --border: 222 12% 21%;
     --border-muted: 222 12% 15%;
     --input: 222 12% 22%;
-    --ring: 358 76% 54%;
+    --ring: 358 46% 52%;
     
     /* ========================================
        BRAND + TEAM IDENTITY
        Product controls always use brand red. Team colours are reserved for
        crests, identity details, and explicitly team-branded moments.
        ======================================== */
-    --team-primary: 358 82% 55%;
+    --team-primary: 358 46% 52%;
     --team-secondary: 0 0% 100%;
-    --team-tertiary: 358 72% 43%;
+    --team-tertiary: 358 42% 43%;
     
-    --primary: 358 82% 55%;              /* Hockey App red */
-    --brand-strong: 358 72% 43%;
+    --primary: 358 46% 52%;              /* Softer Hockey App red; white labels exceed 4.5:1 contrast */
+    --brand-strong: 358 42% 43%;
     --primary-foreground: 0 0% 100%;
     
     /* Legacy aliases kept red so older components remain on-brand */
     --brand-accent: var(--primary);
     
-    --gradient-start: 358 82% 55%;
-    --gradient-end: 358 72% 43%;
+    --gradient-start: 358 46% 52%;
+    --gradient-end: 358 42% 43%;
     
     --secondary: 222 14% 14%;
     --secondary-foreground: 0 0% 96%;
@@ -174,10 +174,10 @@
     --border: 222 12% 21%;
     --border-muted: 222 12% 15%;
     --input: 222 12% 22%;
-    --ring: 358 76% 54%;
+    --ring: 358 46% 52%;
     
-    --primary: 358 82% 55%;
-    --brand-strong: 358 72% 43%;
+    --primary: 358 46% 52%;
+    --brand-strong: 358 42% 43%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 222 14% 14%;
@@ -269,9 +269,9 @@
 
 @layer components {
   .marketing-performance {
-    --primary: 358 82% 55%;
-    --team-primary: 358 82% 55%;
-    --team-tertiary: 358 72% 43%;
+    --primary: 358 46% 52%;
+    --team-primary: 358 46% 52%;
+    --team-tertiary: 358 42% 43%;
   }
 
   .performance-grid {
@@ -356,4 +356,9 @@
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+@layer utilities {
+  /* A lighter companion keeps red text readable on our dark surfaces. */
+  .text-primary { color: hsl(358 58% 70%); }
 }

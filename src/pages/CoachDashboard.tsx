@@ -10,11 +10,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
-import { SkeletonStatBar, SkeletonHeroCard, SkeletonEventsList, SkeletonProgramCard } from "@/components/app/Skeleton";
+import {
+  SkeletonStatBar,
+  SkeletonHeroCard,
+  SkeletonEventsList,
+  SkeletonProgramCard,
+} from "@/components/app/Skeleton";
 import { AppCard } from "@/components/app/AppCard";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/app/Toast";
-import { AlertTriangle, CheckCircle2, ChevronLeft, Settings, RefreshCw, Users, Swords, BarChart3, ChevronRight } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  Settings,
+  RefreshCw,
+  Users,
+  Swords,
+  BarChart3,
+  ChevronRight,
+} from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { TodayHeader } from "@/components/dashboard/TodayHeader";
@@ -26,7 +41,12 @@ import { CoachCheersSection } from "@/components/dashboard/CoachCheersSection";
 import { InviteParentsModal } from "@/components/team/InviteParentsModal";
 import { GameDayModal } from "@/components/team/GameDayModal";
 import { TeamGoalCard } from "@/components/goals";
-import { PlanningHubCards, DatePickerSheet, ProgramBuilderWizard, ThirtyDayChallengeWizard } from "@/components/planning";
+import {
+  PlanningHubCards,
+  DatePickerSheet,
+  ProgramBuilderWizard,
+  ThirtyDayChallengeWizard,
+} from "@/components/planning";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import { Helmet } from "react-helmet-async";
 
@@ -40,8 +60,12 @@ const CoachDashboard: React.FC = () => {
   const { setActiveView, setActiveTeamId } = useActiveView();
   const { setTeamTheme } = useTeamTheme();
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [programReadyForTeam, setProgramReadyForTeam] = useState<string | null>(null);
-  const [inviteModalTab, setInviteModalTab] = useState<"invite" | "add-child">("invite");
+  const [programReadyForTeam, setProgramReadyForTeam] = useState<string | null>(
+    null,
+  );
+  const [inviteModalTab, setInviteModalTab] = useState<"invite" | "add-child">(
+    "invite",
+  );
   const [showGameDayModal, setShowGameDayModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showProgramWizard, setShowProgramWizard] = useState(false);
@@ -55,7 +79,15 @@ const CoachDashboard: React.FC = () => {
       setProgramReadyForTeam(search.get("programReady") === "1" ? id! : null);
       setInviteModalTab("invite");
       setShowInviteModal(true);
-      setSearch((current) => { const next = new URLSearchParams(current); next.delete("inviteFamilies"); next.delete("programReady"); return next; }, { replace: true });
+      setSearch(
+        (current) => {
+          const next = new URLSearchParams(current);
+          next.delete("inviteFamilies");
+          next.delete("programReady");
+          return next;
+        },
+        { replace: true },
+      );
     }
   }, [dashboard, search, setSearch, id]);
 
@@ -115,7 +147,7 @@ const CoachDashboard: React.FC = () => {
       toast.error("Failed to update team name");
     },
   });
-  
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate("/auth", { replace: true });
@@ -131,7 +163,13 @@ const CoachDashboard: React.FC = () => {
       setActiveView("coach");
       setActiveTeamId(id);
     }
-  }, [dashboard?.team?.palette_id, setTeamTheme, id, setActiveView, setActiveTeamId]);
+  }, [
+    dashboard?.team?.palette_id,
+    setTeamTheme,
+    id,
+    setActiveView,
+    setActiveTeamId,
+  ]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -160,11 +198,13 @@ const CoachDashboard: React.FC = () => {
   };
 
   const checklist = dashboard?.onboarding?.checklist ?? [];
-  const scheduleConnected = (dashboard?.upcoming && dashboard.upcoming.length > 0) || 
-    checklist.find(i => i.id === 'connect_schedule')?.done;
+  const scheduleConnected =
+    (dashboard?.upcoming && dashboard.upcoming.length > 0) ||
+    checklist.find((i) => i.id === "connect_schedule")?.done;
 
   const hasPlayers = (dashboard?.pulse?.players_count ?? 0) > 0;
-  const onboardingComplete = checklist.length > 0 && checklist.every(i => i.done);
+  const onboardingComplete =
+    checklist.length > 0 && checklist.every((i) => i.done);
 
   // Show loading state while auth or data is loading
   if (isLoading || authLoading) {
@@ -209,11 +249,19 @@ const CoachDashboard: React.FC = () => {
   const needsPlan = !todayPlan?.exists || !todayPlan?.published;
   const attention = !hasPlayers
     ? {
-        title: "Invite your roster",
-        description: "Add players first so the team can receive its weekly plan.",
-        action: "Invite families",
+        title: needsPlan
+          ? "Start your team’s training"
+          : "Ready to invite your team",
+        description: needsPlan
+          ? "Choose a program, make it yours, then invite your families."
+          : "Your training is set up. Invite families to bring your roster together.",
+        action: needsPlan ? "Start a program" : "Invite families",
         complete: false,
         onClick: () => {
+          if (needsPlan) {
+            setShowProgramWizard(true);
+            return;
+          }
           setInviteModalTab("invite");
           setShowInviteModal(true);
         },
@@ -221,7 +269,8 @@ const CoachDashboard: React.FC = () => {
     : needsPlan
       ? {
           title: "Start with 50 wrist shots",
-          description: "A simple shooting workout is ready. Review it, then publish it to your team.",
+          description:
+            "A simple shooting workout is ready. Review it, then publish it to your team.",
           action: "Review and assign",
           complete: false,
           onClick: () => {
@@ -230,8 +279,14 @@ const CoachDashboard: React.FC = () => {
           },
         }
       : {
-          title: "Today is moving",
-          description: `${dashboard.pulse.active_today_count} of ${dashboard.pulse.players_count} ${dashboard.pulse.players_count === 1 ? "player is" : "players are"} active.`,
+          title:
+            dashboard.pulse.active_today_count > 0
+              ? "Your team is getting after it"
+              : "A fresh start for your team",
+          description:
+            dashboard.pulse.active_today_count === 0
+              ? "Training is ready. Activity appears as players get started."
+              : `${dashboard.pulse.active_today_count} of ${dashboard.pulse.players_count} ${dashboard.pulse.players_count === 1 ? "player is" : "players are"} active.`,
           action: "View progress",
           complete: true,
           onClick: () => navigate(`/teams/${id}/progress`),
@@ -242,14 +297,17 @@ const CoachDashboard: React.FC = () => {
       header={
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button aria-label="Go back"
+            <Button
+              aria-label="Go back"
               variant="ghost"
               size="icon-sm"
               onClick={() => navigate("/teams")}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <p className="font-display text-base font-black uppercase">Coach home</p>
+            <p className="font-display text-base font-black uppercase">
+              Coach home
+            </p>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -275,7 +333,9 @@ const CoachDashboard: React.FC = () => {
         </div>
       }
     >
-      <Helmet><title>{`${dashboard.team?.name ?? "Dashboard"} | Hockey App`}</title></Helmet>
+      <Helmet>
+        <title>{`${dashboard.team?.name ?? "Dashboard"} | Hockey App`}</title>
+      </Helmet>
       <PageContainer className="space-y-6">
         <TodayHeader
           teamId={id}
@@ -284,78 +344,148 @@ const CoachDashboard: React.FC = () => {
           teamLogoUrl={dashboard.team?.logo_url}
           date={dashboard.today?.date ?? new Date().toISOString()}
           mode={dashboard.today?.mode}
-          gameDay={dashboard.today?.game_day ?? { enabled: false, event_time: "", opponent: "" }}
-          onUpdateTeamName={(newName) => updateTeamNameMutation.mutateAsync(newName)}
+          gameDay={
+            dashboard.today?.game_day ?? {
+              enabled: false,
+              event_time: "",
+              opponent: "",
+            }
+          }
+          onUpdateTeamName={(newName) =>
+            updateTeamNameMutation.mutateAsync(newName)
+          }
           isUpdating={updateTeamNameMutation.isPending}
         />
 
-        <ChallengeLinks teamId={id!} />
-
-        <section className="grid grid-cols-3 divide-x divide-border overflow-hidden rounded-lg border border-border bg-card">
-          {[
-            [dashboard.pulse.players_count, "Roster"],
-            [dashboard.pulse.active_today_count, "Active today"],
-            [dashboard.pulse.sessions_complete_today, "Complete"],
-          ].map(([value, label]) => (
-            <div key={label} className="px-3 py-4 text-center sm:px-5">
-              <p className="font-display text-2xl font-black tabular-nums sm:text-3xl">{value}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-muted-foreground sm:text-[10px]">{label}</p>
+        <div className="grid items-stretch gap-5 xl:grid-cols-[1.05fr_1fr]">
+          <section
+            aria-label="Team overview"
+            className="flex flex-col rounded-2xl border border-border bg-card p-5 sm:p-6"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                Your team today
+              </p>
+              <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+                {attention.complete ? "Training ready" : "Next step"}
+              </span>
             </div>
-          ))}
-        </section>
-
-        <section className={`relative overflow-hidden rounded-xl border p-5 sm:p-6 ${attention.complete ? "border-success/25 bg-success/[0.06]" : "border-primary/30 bg-primary/[0.07]"}`}>
-          <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${attention.complete ? "bg-success/12 text-success" : "bg-primary/12 text-primary"}`}>
-                {attention.complete ? <CheckCircle2 className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
-              </div>
+            <div className="mt-5 flex items-start gap-3">
+              <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                {attention.complete ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <AlertTriangle className="h-5 w-5" />
+                )}
+              </span>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
-                  {attention.complete ? "Team status" : "Needs attention"}
+                <h2 className="font-display text-2xl font-bold leading-tight">
+                  {attention.title}
+                </h2>
+                <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                  {attention.description}
                 </p>
-                <h2 className="mt-1 font-display text-2xl font-black uppercase">{attention.title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{attention.description}</p>
               </div>
             </div>
-            <Button className="min-h-11 shrink-0 font-bold" variant={attention.complete ? "outline" : "team"} onClick={attention.onClick}>
-              {attention.action} <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </section>
-
-        {hasPlayers && <section>
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Planning</p>
-              <h2 className="mt-1 font-display text-2xl font-black uppercase">Plan the week</h2>
+            <div className="my-6 grid grid-cols-3 gap-2">
+              {[
+                [dashboard.pulse.players_count, "Players"],
+                [dashboard.pulse.active_today_count, "Active today"],
+                [dashboard.pulse.sessions_complete_today, "Completed"],
+              ].map(([value, label]) => (
+                <div
+                  key={label}
+                  className="rounded-xl bg-background/60 px-2 py-4 text-center"
+                >
+                  <p className="font-display text-3xl font-bold tabular-nums">
+                    {value}
+                  </p>
+                  <p className="mt-1 text-[10px] font-semibold text-muted-foreground sm:text-xs">
+                    {label}
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
-          <PlanningHubCards
-            teamId={id!}
-            showQuickWorkout={!needsPlan}
-            onAddWorkout={() => setShowDatePicker(true)}
-            onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
-            onCreateProgram={() => setShowProgramWizard(true)}
-            onStartChallenge={() => setShowChallengeWizard(true)}
-          />
-        </section>}
+            <div className="mb-5">
+              <div className="mb-2 flex justify-between text-xs text-muted-foreground">
+                <span>Today’s completions</span>
+                <span>
+                  {dashboard.pulse.sessions_complete_today} /{" "}
+                  {dashboard.pulse.players_count} players
+                </span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label="Players completing today’s training"
+                aria-valuemin={0}
+                aria-valuemax={Math.max(1, dashboard.pulse.players_count)}
+                aria-valuenow={Math.min(
+                  dashboard.pulse.sessions_complete_today,
+                  dashboard.pulse.players_count,
+                )}
+                className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]"
+              >
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{
+                    width: `${Math.min(100, dashboard.pulse.players_count ? (dashboard.pulse.sessions_complete_today / dashboard.pulse.players_count) * 100 : 0)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <Button
+              className="mt-auto min-h-11 self-start"
+              variant={attention.complete ? "outline" : "default"}
+              onClick={attention.onClick}
+            >
+              {attention.action}
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </section>
+          <ChallengeLinks teamId={id!} coachOverview />
+        </div>
 
-        {hasPlayers && <section className="grid items-start gap-5 xl:grid-cols-2">
-          <ActiveProgramsSection teamId={id!} />
-          <AssignedWorkoutsSection teamId={id!} />
-        </section>}
-
-        {scheduleConnected && dashboard.upcoming && dashboard.upcoming.length > 0 && (
-          <UpcomingEvents
-            events={dashboard.upcoming}
-            scheduleConnected={!!scheduleConnected}
-            lastSyncedAt={scheduleSource?.last_synced_at}
-            isSyncing={syncScheduleMutation.isPending}
-            onSyncSchedule={() => syncScheduleMutation.mutate()}
-          />
+        {hasPlayers && (
+          <section>
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  Coach toolbox
+                </p>
+                <h2 className="mt-1 font-display text-2xl font-bold">
+                  Plan your next move
+                </h2>
+              </div>
+            </div>
+            <PlanningHubCards
+              teamId={id!}
+              compact
+              onAddWorkout={() => setShowDatePicker(true)}
+              onPlanWeek={() => navigate(`/teams/${id}/builder/new`)}
+              onCreateProgram={() => setShowProgramWizard(true)}
+              onStartChallenge={() => setShowChallengeWizard(true)}
+            />
+          </section>
         )}
+
+        {hasPlayers && (
+          <section className="grid items-start gap-5 xl:grid-cols-2">
+            <ActiveProgramsSection teamId={id!} />
+            <AssignedWorkoutsSection teamId={id!} />
+          </section>
+        )}
+
+        {scheduleConnected &&
+          dashboard.upcoming &&
+          dashboard.upcoming.length > 0 && (
+            <UpcomingEvents
+              events={dashboard.upcoming}
+              scheduleConnected={!!scheduleConnected}
+              lastSyncedAt={scheduleSource?.last_synced_at}
+              isSyncing={syncScheduleMutation.isPending}
+              onSyncSchedule={() => syncScheduleMutation.mutate()}
+            />
+          )}
 
         <details className="group overflow-hidden rounded-lg border border-border bg-card">
           <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 font-semibold [&::-webkit-details-marker]:hidden">
@@ -371,7 +501,10 @@ const CoachDashboard: React.FC = () => {
                 onAction={handleOnboardingAction}
               />
             )}
-            <TeamGoalCard teamId={id!} rosterCount={dashboard.pulse.players_count} />
+            <TeamGoalCard
+              teamId={id!}
+              rosterCount={dashboard.pulse.players_count}
+            />
             <button
               type="button"
               className="flex min-h-14 w-full items-center gap-3 rounded-lg border border-border px-4 text-left transition-colors hover:border-primary/35 hover:bg-primary/[0.04]"
@@ -380,7 +513,9 @@ const CoachDashboard: React.FC = () => {
               <Swords className="h-5 w-5 text-primary" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold">Game day</span>
-                <span className="block truncate text-xs text-muted-foreground">Adjust the team plan for an upcoming game.</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  Adjust the team plan for an upcoming game.
+                </span>
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -391,8 +526,12 @@ const CoachDashboard: React.FC = () => {
             >
               <BarChart3 className="h-5 w-5 text-primary" />
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold">{t("seasonReport.entry")}</span>
-                <span className="block truncate text-xs text-muted-foreground">{t("seasonReport.entryDescription")}</span>
+                <span className="block text-sm font-semibold">
+                  {t("seasonReport.entry")}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {t("seasonReport.entryDescription")}
+                </span>
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -438,7 +577,6 @@ const CoachDashboard: React.FC = () => {
         onOpenChange={setShowChallengeWizard}
         teamId={id!}
       />
-
     </AppShell>
   );
 };
