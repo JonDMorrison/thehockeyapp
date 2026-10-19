@@ -1,4 +1,5 @@
 import { challengeReturn } from "@/lib/shooting";
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useState, useEffect } from "react";
 import { logger } from "@/core";
 import { useNavigate, useParams } from "react-router-dom";
@@ -79,7 +80,7 @@ const JoinTeamPlayer: React.FC = () => {
   }, [token]);
 
   // Preview team by token
-  const { data: preview, isLoading: previewLoading } = useQuery({
+  const { data: preview, isLoading: previewLoading, isError: previewError, isFetching: previewFetching, refetch: retryPreview } = useQuery({
     queryKey: ["team-preview", token],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("preview_team_by_invite", {
@@ -93,7 +94,7 @@ const JoinTeamPlayer: React.FC = () => {
   });
 
   // Fetch parent's players
-  const { data: players, isLoading: playersLoading } = useQuery({
+  const { data: players, isLoading: playersLoading, isError: playersError, isFetching: playersFetching, refetch: retryPlayers } = useQuery({
     queryKey: ["players", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -214,6 +215,8 @@ const JoinTeamPlayer: React.FC = () => {
       </AppShell>
     );
   }
+
+  if (previewError || playersError) return <AppShell hideNav><PageContainer className="min-h-screen flex items-center justify-center"><div className="w-full max-w-sm"><DataLoadError title={previewError ? "Couldn’t load this invitation" : "Couldn’t load your players"} onRetry={() => previewError ? retryPreview() : retryPlayers()} retrying={previewFetching || playersFetching} /></div></PageContainer></AppShell>;
 
   // Invalid invite
   if (!preview?.success) {
@@ -351,14 +354,13 @@ const JoinTeamPlayer: React.FC = () => {
           {players && players.length > 0 ? (
             <div className="space-y-3">
               {players.map((player) => (
+                <button key={player.id} type="button" aria-pressed={selectedPlayerId === player.id} className="w-full rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" onClick={() => setSelectedPlayerId(player.id)}>
                 <AppCard
-                  key={player.id}
                   className={`cursor-pointer transition-all duration-200 ${
                     selectedPlayerId === player.id
                       ? "ring-2 ring-primary ring-offset-2"
                       : ""
                   }`}
-                  onClick={() => setSelectedPlayerId(player.id)}
                 >
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -387,7 +389,7 @@ const JoinTeamPlayer: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </AppCard>
+                </AppCard></button>
               ))}
             </div>
           ) : (

@@ -190,3 +190,11 @@ Ten actual-handler scenarios passed with mocked delivery, covering anonymous/ord
 The existing history page showed only the active team's last seven days. A real two-account reproduction displayed the team session but omitted the child's published home workout. The replacement combines published home and active-team history in 30-day windows, preserves only the family's own recorded team work after leaving, and does not grant continued access to future team workouts or other families' history. Load failures offer retry; older-window failures retain already loaded records.
 
 Local SQL gates passed for home/team totals, older-window pagination, leaving, future-work exclusion and unrelated-family denial. The actual 390px family → history → leave → preserved history → failed read/retry journey passed in all three browsers (34.7 seconds); a final 320×568 replay is running on the release build. The summary/shot/privileged boundary production replay passed all three journeys (25.4 seconds). PR 35 merged `2251f00`, PR 36 merged `b120d7d`, and PR 37 merged `b5abd00` after their quality checks passed.
+
+## Invitation recovery and home-only navigation
+
+Home-only players reached a team-only empty state from Today/Week and lost navigation inside a home workout. Those paths now open the existing private home workout/week views and retain player navigation. An active-team preference read failure stays a retryable error rather than sending the family into a different workspace. Coach-only empty-workout copy is hidden when no team exists.
+
+Invitation preview/list outages now offer retry instead of claiming an invite is invalid or the family has no children. Player selection uses keyboard-operable native buttons. Expired/revoked invites remain closed, and revoking an invite does not remove children who already joined.
+
+All six new journeys passed across three browsers (1.6 minutes), including 320×568 welcome → home workout → week → history, preference outage/retry, public preview outage, family list outage, existing-account sign-in, two-child joins by Space/Enter, expiry and revocation. Broader affected-flow regression is running before merge. The family history release also passed on the actual live deployment (12.6 seconds); an earlier live attempt loaded the pre-deployment page, so it was discarded as a deployment timing failure.

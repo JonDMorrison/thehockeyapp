@@ -1,6 +1,7 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -178,22 +179,23 @@ const PlayerToday: React.FC = () => {
   });
 
   // Fetch player's active team
-  const { data: teamData, isLoading: teamLoading } = useQuery({
+  const { data: teamData, isLoading: teamLoading, isError: teamError, isFetching: teamFetching, refetch: retryTeam } = useQuery({
     queryKey: ["player-active-team", playerId],
     queryFn: async () => {
-      const { data: pref } = await supabase
+      const { data: pref, error: prefError } = await supabase
         .from("player_team_preferences")
         .select("active_team_id")
         .eq("player_id", playerId!)
         .maybeSingle();
 
+      if (prefError) throw prefError;
       if (!pref?.active_team_id) return null;
 
       const { data: team, error } = await supabase
         .from("teams")
         .select("*")
         .eq("id", pref.active_team_id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return team;
@@ -735,6 +737,9 @@ const PlayerToday: React.FC = () => {
   if (!isAuthenticated) {
     return null;
   }
+
+  if (teamError) return <AppShell><PageContainer><DataLoadError title="Couldn’t load your workout" onRetry={() => retryTeam()} retrying={teamFetching} /></PageContainer></AppShell>;
+  if (!teamData) return <Navigate to={`/solo/today/${playerId}`} replace />;
 
   if (!practiceCard) {
     return (

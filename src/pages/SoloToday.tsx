@@ -258,7 +258,6 @@ const SoloToday: React.FC = () => {
 
   return (
     <AppShell
-      hideNav
       header={
         <div className="flex items-center justify-between w-full">
           <button aria-label="Go back"
