@@ -57,7 +57,8 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-admin-activity-email]
-verify_jwt = true
+# Database webhook authenticates with a private, dedicated dispatch secret.
+verify_jwt = false
 
 [functions.send-admin-daily-digest]
 verify_jwt = true

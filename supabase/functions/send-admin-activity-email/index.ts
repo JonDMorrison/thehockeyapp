@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+    "authorization, x-admin-alert-secret, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 function escapeHtml(value: unknown) {
@@ -21,15 +21,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const alertSecret=Deno.env.get("HOCKEY_ADMIN_ALERT_SECRET");
+  const serviceRequest=Boolean(serviceKey) && req.headers.get("Authorization")===`Bearer ${serviceKey}`;
+  const alertRequest=Boolean(alertSecret) && req.headers.get("x-admin-alert-secret")===alertSecret;
+  if(!serviceRequest && !alertRequest)return new Response(JSON.stringify({error:"Unauthorized"}),{status:401,headers:{...corsHeaders,"Content-Type":"application/json"}});
+
   const runId = crypto.randomUUID();
   const log = (msg: string, extra?: Record<string, unknown>) =>
     console.log(JSON.stringify({ run_id: runId, fn: "send-admin-activity-email", msg, ...extra }));
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
+
     const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL");
-    if (!ADMIN_EMAIL) throw new Error("ADMIN_EMAIL not configured");
+
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -49,8 +55,6 @@ serve(async (req) => {
       .select("*")
       .eq("id", event_id)
       .eq("severity", "urgent")
-      .is("emailed_at", null)
-      .gte("created_at", new Date(Date.now() - 5 * 60 * 1000).toISOString())
       .single();
 
     if (evtErr || !evt) {
@@ -67,6 +71,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    if(!RESEND_API_KEY || !ADMIN_EMAIL)return new Response(JSON.stringify({error:"Email delivery is not configured"}),{status:503,headers:{...corsHeaders,"Content-Type":"application/json"}});
 
     // Build email
     const severityEmoji = evt.severity === "urgent" ? "🚨" : evt.severity === "important" ? "⚠️" : "ℹ️";
@@ -95,9 +101,11 @@ serve(async (req) => {
 
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(15000),
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
+        "Idempotency-Key": `admin-activity-${event_id}`,
       },
       body: JSON.stringify({
         from: "Hockey App Admin <admin@hockeyapp.ca>",
@@ -118,11 +126,13 @@ serve(async (req) => {
     const resendData = await resendRes.json();
 
     // Mark as emailed
-    await supabase
+    const {error: markError}=await supabase
       .from("admin_activity_log")
       .update({ emailed_at: new Date().toISOString(), email_message_id: resendData.id })
       .eq("id", event_id)
       .is("emailed_at", null);
+
+    if(markError)throw markError;
 
     log("sent", { event_id, resend_id: resendData.id });
 
