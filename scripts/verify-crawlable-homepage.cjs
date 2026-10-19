@@ -29,6 +29,20 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+for (const route of ['about', 'features', 'demo', 'contact', 'privacy', 'terms']) {
+  const document = fs.readFileSync(path.join(__dirname, '..', 'dist', route, 'index.html'), 'utf8');
+  const main = document.match(/<main\b[\s\S]*?<\/main>/)?.[0] || '';
+  if (!/<h1\b/.test(main) || /<h1[^>]*>Off-ice training delivers on-ice results\.<\/h1>/.test(main)) {
+    console.error(`Crawlability check failed: /${route} has no distinct page content.`);
+    process.exit(1);
+  }
+  if ((route === 'privacy' && !main.includes('Access, Correction, Deletion, and Retention')) ||
+      (route === 'terms' && !main.includes('Limitation of Liability'))) {
+    console.error(`Crawlability check failed: /${route} is missing its legal document.`);
+    process.exit(1);
+  }
+}
+
 const privatePages = {
   'shooting.html': 'Shooting challenge — The Hockey App',
   'auth.html': 'Sign in or create an account — The Hockey App',
@@ -50,7 +64,8 @@ for (const [file, title] of Object.entries(privatePages)) {
   if (!privateHtml.includes(`<title>${title}</title>`)
     || !privateHtml.includes('name="robots" content="noindex, nofollow"')
     || privateHtml.includes('rel="canonical"')
-    || privateHtml.includes('property="og:url"')) {
+    || privateHtml.includes('property="og:url"')
+    || privateHtml.includes('Team Dashboard')) {
     console.error(`Crawlability check failed: ${file} exposes incorrect private-route metadata.`);
     process.exit(1);
   }

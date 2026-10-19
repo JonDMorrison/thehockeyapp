@@ -18,6 +18,9 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/pricing", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/auth", "destination": "/_private/auth.html" },
     { "source": "/join", "destination": "/_private/join.html" },
@@ -29,7 +32,6 @@
     { "source": "/shooting/:path*", "destination": "/_private/shooting.html" },
     { "source": "/unsubscribe/:path*", "destination": "/_private/unsubscribe.html" },
     { "source": "/features", "destination": "/features/index.html" },
-    { "source": "/pricing", "destination": "/pricing/index.html" },
     { "source": "/about", "destination": "/about/index.html" },
     { "source": "/privacy", "destination": "/privacy/index.html" },
     { "source": "/terms", "destination": "/terms/index.html" },
