@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -81,6 +82,7 @@ interface TeamMembership {
 
 const PlayerHome: React.FC = () => {
   const { t } = useTranslation();
+  useLocalCalendarDay();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

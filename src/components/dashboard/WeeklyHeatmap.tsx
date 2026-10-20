@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import React from "react";
 import {
   format,
@@ -17,11 +18,12 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({
   completions,
 }) => {
+  const calendar = useLocalCalendarDay();
   // Count completions by day of week (0 = Sunday, 1 = Monday, etc.)
   const dayCounts = React.useMemo(() => {
     const counts = [0, 0, 0, 0, 0, 0, 0]; // Sun through Sat
 
-    const now = new Date();
+    const now = new Date(`${calendar.split("|")[0]}T12:00:00`);
     const interval = {
       start: startOfWeek(now, { weekStartsOn: 1 }),
       end: endOfWeek(now, { weekStartsOn: 1 }),
@@ -38,7 +40,7 @@ export const WeeklyHeatmap: React.FC<WeeklyHeatmapProps> = ({
 
     // Reorder to Mon-Sun (shift Sunday to end)
     return [...counts.slice(1), counts[0]];
-  }, [completions]);
+  }, [completions, calendar]);
 
   const maxCount = Math.max(...dayCounts, 1);
   const totalCompletions = dayCounts.reduce((a, b) => a + b, 0);

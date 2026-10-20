@@ -1,12 +1,13 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 /** The same personal cards and completion records used by the home workout screen. */
 export function usePersonalToday(playerId?: string) {
   const { user } = useAuth();
-  const date = format(new Date(), "yyyy-MM-dd");
+  const calendar = useLocalCalendarDay();
+  const date = calendar.split("|")[0];
   return useQuery({
     queryKey: ["family-personal-today", user?.id, playerId, date],
     enabled: Boolean(user && playerId),

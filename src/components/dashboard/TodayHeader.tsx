@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,9 +49,12 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
   const isGameDay = mode === "game_day" || (gameDay?.enabled ?? false);
 
   // Format game time if available
-  const gameTime = gameDay.event_time 
-    ? format(new Date(gameDay.event_time), "h:mm a")
-    : null;
+  const rawGameTime = gameDay.event_time?.trim();
+  const eventInstant = rawGameTime ? parseISO(rawGameTime) : null;
+  // The snapshot returns a local display time; older callers may supply an ISO instant.
+  const gameTime = rawGameTime && /^(0?[1-9]|1[0-2]):[0-5]\d [AP]M$/i.test(rawGameTime)
+    ? rawGameTime.replace(/^0/, "")
+    : eventInstant && isValid(eventInstant) ? format(eventInstant, "h:mm a") : null;
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -100,7 +103,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,10,14,0.98)_0%,rgba(8,10,14,0.88)_52%,rgba(8,10,14,0.32)_100%)]" />
       <div className="relative space-y-2">
       {/* Date and Day Type */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold tracking-wider text-white/58">
             {t("common.today").toUpperCase()} — {formattedDate}
@@ -109,7 +112,7 @@ export const TodayHeader: React.FC<TodayHeaderProps> = ({
         
         {/* Day Type Pill */}
         {isGameDay ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
+          <span className="inline-flex max-w-full flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-destructive">
             <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
             {t("coach.todayHeader.gameDay")}
             {gameTime && <span className="text-destructive/70">· {gameTime}</span>}

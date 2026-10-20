@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Challenge } from "@/core";
@@ -131,6 +132,7 @@ interface DashboardData {
 
 export default function SoloDashboard() {
   const { t } = useTranslation();
+  const calendar = useLocalCalendarDay();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -146,7 +148,7 @@ export default function SoloDashboard() {
   }, [authLoading, isAuthenticated, navigate]);
 
   const { data: dashboard, isLoading } = useQuery({
-    queryKey: ["solo-dashboard", playerId],
+    queryKey: ["solo-dashboard", playerId, calendar],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_solo_dashboard", {
         p_player_id: playerId,
@@ -212,7 +214,7 @@ export default function SoloDashboard() {
               variant="outline"
               onClick={() =>
                 queryClient.invalidateQueries({
-                  queryKey: ["solo-dashboard", playerId],
+                  queryKey: ["solo-dashboard", playerId, calendar],
                 })
               }
             >
@@ -283,7 +285,7 @@ export default function SoloDashboard() {
                 onPhotoUploaded={() => {
                   // Refetch dashboard data to update avatar without full reload
                   queryClient.invalidateQueries({
-                    queryKey: ["solo-dashboard", playerId],
+                    queryKey: ["solo-dashboard", playerId, calendar],
                   });
                 }}
               />

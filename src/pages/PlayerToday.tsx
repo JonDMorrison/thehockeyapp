@@ -1,6 +1,7 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -125,6 +126,10 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
 const PlayerToday: React.FC = () => {
   const { t } = useTranslation();
   const { id: playerId } = useParams<{ id: string }>();
+  const calendar = useLocalCalendarDay();
+  const calendarActor = `${playerId}:${calendar}`;
+  const currentCalendarActor = useRef(calendarActor);
+  currentCalendarActor.current = calendarActor;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -204,7 +209,16 @@ const PlayerToday: React.FC = () => {
   });
 
   // Check if game day is enabled
-  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const todayStr = calendar.split("|")[0];
+  useEffect(() => {
+    setLocalCompletions({});
+    setLocalSessionStatus(null);
+    setCachedCardData(null);
+    setUsingCache(false);
+    setShowSuccess(false);
+    setShowShotsSheet(false);
+    setSelectedTaskId(null);
+  }, [calendar, playerId]);
   const { data: gameDayData } = useQuery({
     queryKey: ["team-game-day", teamData?.id, todayStr],
     queryFn: async () => {
@@ -247,7 +261,7 @@ const PlayerToday: React.FC = () => {
           
           if (gameDayCard) {
             await cachePracticeCard(teamData!.id, `${todayStr}_game_day`, gameDayCard, user?.id);
-            setUsingCache(false);
+            if (currentCalendarActor.current === calendarActor) setUsingCache(false);
             return gameDayCard as PracticeCard;
           }
         }
@@ -271,7 +285,7 @@ const PlayerToday: React.FC = () => {
         // Cache for offline use
         if (data) {
           await cachePracticeCard(teamData!.id, todayStr, data, user?.id);
-          setUsingCache(false);
+          if (currentCalendarActor.current === calendarActor) setUsingCache(false);
         }
 
         return data as PracticeCard | null;
@@ -281,18 +295,18 @@ const PlayerToday: React.FC = () => {
           // Try game day cache first
           const cachedGameDay = await getCachedCard(teamData!.id, `${todayStr}_game_day`, user?.id);
           if (cachedGameDay) {
-            setUsingCache(true);
+            if (currentCalendarActor.current === calendarActor) setUsingCache(true);
             const cardData = cachedGameDay as PracticeCard;
-            setCachedCardData(cardData);
+            if (currentCalendarActor.current === calendarActor) setCachedCardData(cardData);
             return cardData;
           }
           
           // Fall back to normal cache
           const cached = await getCachedCard(teamData!.id, todayStr, user?.id);
           if (cached) {
-            setUsingCache(true);
+            if (currentCalendarActor.current === calendarActor) setUsingCache(true);
             const cardData = cached as PracticeCard;
-            setCachedCardData(cardData);
+            if (currentCalendarActor.current === calendarActor) setCachedCardData(cardData);
             return cardData;
           }
         }
@@ -310,13 +324,13 @@ const PlayerToday: React.FC = () => {
       if (practiceCard?.id && playerId) {
         const snapshot = await getCompletionSnapshot(playerId, practiceCard.id, user?.id);
         if (snapshot) {
-          setLocalCompletions(snapshot.taskCompletionMap);
-          setLocalSessionStatus(snapshot.sessionStatus);
+          if (currentCalendarActor.current === calendarActor) setLocalCompletions(snapshot.taskCompletionMap);
+          if (currentCalendarActor.current === calendarActor) setLocalSessionStatus(snapshot.sessionStatus);
         }
       }
     };
     loadCachedCompletions();
-  }, [practiceCard?.id, playerId, user?.id]);
+  }, [practiceCard?.id, playerId, user?.id, calendarActor]);
 
   // Fetch task completions for this player (online only)
   const { data: taskCompletions, isLoading: completionsLoading } = useQuery({
@@ -340,7 +354,7 @@ const PlayerToday: React.FC = () => {
           shotsLogged: c.shots_logged,
         };
       });
-      setLocalCompletions((prev) => ({ ...prev, ...serverCompletions }));
+      if (currentCalendarActor.current === calendarActor) setLocalCompletions((prev) => ({ ...prev, ...serverCompletions }));
       
       return data as TaskCompletion[];
     },
@@ -363,10 +377,10 @@ const PlayerToday: React.FC = () => {
       
       // Always update localSessionStatus based on server data (or reset if no data)
       if (data) {
-        setLocalSessionStatus(data.status as 'none' | 'partial' | 'complete');
+        if (currentCalendarActor.current === calendarActor) setLocalSessionStatus(data.status as 'none' | 'partial' | 'complete');
       } else {
         // No session completion for this card yet - reset to 'none'
-        setLocalSessionStatus('none');
+        if (currentCalendarActor.current === calendarActor) setLocalSessionStatus('none');
       }
       
       return data as SessionCompletion | null;

@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { BadgeEarnedToast } from "@/components/player/BadgeEarnedToast";
@@ -76,6 +77,7 @@ interface PersonalTaskCompletion {
 
 const SoloToday: React.FC = () => {
   const { t } = useTranslation();
+  const calendar = useLocalCalendarDay();
   const { playerId } = useParams<{ playerId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -84,7 +86,7 @@ const SoloToday: React.FC = () => {
   const { evaluate: evaluateBadges, newBadges, dismissAllBadges } = useBadgeEvaluation(playerId);
 
   const [showWorkoutPicker, setShowWorkoutPicker] = useState(false);
-  const todayStr = format(startOfDay(new Date()), "yyyy-MM-dd");
+  const todayStr = calendar.split("|")[0];
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {

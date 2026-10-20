@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,8 +59,9 @@ interface TeamDashboardSnapshot {
 
 export function useTeamDashboard(teamId: string | undefined) {
   const { user } = useAuth();
+  const calendar = useLocalCalendarDay();
   return useQuery({
-    queryKey: ["team-dashboard", teamId, user?.id],
+    queryKey: ["team-dashboard", teamId, user?.id, calendar],
     queryFn: async () => {
       if (!teamId) return null;
 
