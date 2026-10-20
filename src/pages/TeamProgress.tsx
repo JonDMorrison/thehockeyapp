@@ -1,3 +1,4 @@
+import { TeamProgressOverview } from "@/components/team/TeamProgressOverview";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -98,7 +99,7 @@ const TeamProgress: React.FC = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerStats | null>(
     null,
   );
-  const [activeTab, setActiveTab] = useState("leaderboard");
+  const [activeTab, setActiveTab] = useState("week");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -164,26 +165,24 @@ const TeamProgress: React.FC = () => {
   } = useQuery({
     queryKey: ["team-completions", id, user?.id],
     queryFn: async () => {
-      const { data: cards, error: cardsError } = await supabase
-        .from("practice_cards")
-        .select("id")
-        .eq("team_id", id!)
-        .eq("program_source", "team");
-
-      if (cardsError) throw cardsError;
-      if (!cards || cards.length === 0) return [];
-
-      const cardIds = cards.map((c) => c.id);
-
-      const { data, error } = await supabase
-        .from("session_completions")
-        .select("player_id, completed_at, practice_card_id")
-        .in("practice_card_id", cardIds)
-        .eq("program_source", "team")
-        .eq("status", "complete");
-
-      if (error) throw error;
-      return data as CompletionData[];
+      const rows: CompletionData[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await supabase
+          .from("session_completions")
+          .select(
+            "player_id, completed_at, practice_card_id, practice_cards!inner(team_id, program_source)",
+          )
+          .eq("practice_cards.team_id", id!)
+          .eq("practice_cards.program_source", "team")
+          .eq("program_source", "team")
+          .eq("status", "complete")
+          .lte("completed_at", new Date().toISOString())
+          .order("id")
+          .range(offset, offset + 499);
+        if (error) throw error;
+        rows.push(...data);
+        if (data.length < 500) return rows;
+      }
     },
     enabled: !!user && !!id && !!team,
   });
@@ -264,19 +263,11 @@ const TeamProgress: React.FC = () => {
           .reverse();
 
         if (sortedDates.length > 0) {
-          let checkDate = format(now, "yyyy-MM-dd");
-          // If no completion today, start from yesterday
-          if (!sortedDates.includes(checkDate)) {
-            checkDate = format(subDays(now, 1), "yyyy-MM-dd");
-          }
-
-          for (let i = 0; i < 30; i++) {
-            const dateToCheck = format(subDays(now, i), "yyyy-MM-dd");
-            if (sortedDates.includes(dateToCheck)) {
-              streak++;
-            } else if (i > 0) {
+          const start = sortedDates.includes(format(now, "yyyy-MM-dd")) ? 0 : 1;
+          for (let i = start; i < start + 30; i++) {
+            if (!sortedDates.includes(format(subDays(now, i), "yyyy-MM-dd")))
               break;
-            }
+            streak++;
           }
         }
 
@@ -329,9 +320,6 @@ const TeamProgress: React.FC = () => {
     (sum, p) => sum + p.totalSessions,
     0,
   );
-  const activeThisWeek = playerStats.filter(
-    (p) => p.thisWeekSessions > 0,
-  ).length;
   const avgSessionsPerPlayer =
     playerStats.length > 0
       ? (totalSessions / playerStats.length).toFixed(1)
@@ -411,9 +399,10 @@ const TeamProgress: React.FC = () => {
             : Math.max(...playerStats.map((p) => p.thisWeekSessions), 1);
 
     return (
-      <div
+      <button
+        type="button"
         key={player.playerId}
-        className="flex items-center gap-3 p-3 rounded-xl bg-surface-card hover:bg-surface-muted/50 cursor-pointer transition-colors"
+        className="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-surface-card hover:bg-surface-muted/50 cursor-pointer transition-colors"
         onClick={() => setSelectedPlayer(player)}
       >
         <div className="w-6 text-center">
@@ -460,7 +449,7 @@ const TeamProgress: React.FC = () => {
           </p>
         </div>
         <ChevronRight className="w-4 h-4 text-text-muted" />
-      </div>
+      </button>
     );
   };
 
@@ -499,48 +488,34 @@ const TeamProgress: React.FC = () => {
         <title>Progress | Hockey App</title>
       </Helmet>
       <PageContainer>
-        {/* Summary Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
-              <Trophy className="w-6 h-6 text-primary" />
-            </div>
-            <p className="text-2xl font-bold">{totalBadges}</p>
-            <p className="text-xs text-text-muted">
-              {t("teams.progress.statTotalBadges")}
+        <div className="relative mb-5 overflow-hidden rounded-3xl border border-border bg-surface-card p-6 sm:p-8">
+          <img
+            src="/images/email/rink.jpg"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-15"
+          />
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-widest text-rose-300">
+              Team progress
             </p>
-          </AppCard>
-
-          <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-2">
-              <CheckCircle className="w-6 h-6 text-accent" />
-            </div>
-            <p className="text-2xl font-bold">{totalSessions}</p>
-            <p className="text-xs text-text-muted">
-              {t("teams.progress.statSessionsDone")}
+            <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
+              Small efforts. Big momentum.
+            </h1>
+            <p className="mt-3 max-w-xl text-text-muted">
+              See who’s getting moving, celebrate the work, and keep the next
+              step simple.
             </p>
-          </AppCard>
-
-          <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-foreground/10 flex items-center justify-center mx-auto mb-2">
-              <Flame className="w-6 h-6 text-foreground" />
-            </div>
-            <p className="text-2xl font-bold">{activeThisWeek}</p>
-            <p className="text-xs text-text-muted">
-              {t("teams.progress.statActiveThisWeek")}
-            </p>
-          </AppCard>
-
-          <AppCard className="text-center">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-6 h-6 text-primary" />
-            </div>
-            <p className="text-2xl font-bold">{avgSessionsPerPlayer}</p>
-            <p className="text-xs text-text-muted">
-              {t("teams.progress.statAvgPerPlayer")}
-            </p>
-          </AppCard>
+          </div>
         </div>
+        <TeamProgressOverview
+          teamId={id!}
+          userId={user!.id}
+          players={playerStats}
+        />
+        <p className="pt-5 text-sm text-text-muted">
+          All-time team workouts: {totalSessions} · Badges earned: {totalBadges}{" "}
+          · Average workouts per player: {avgSessionsPerPlayer}
+        </p>
 
         {/* Weekly Activity Heatmap */}
         <AppCard>
@@ -551,7 +526,11 @@ const TeamProgress: React.FC = () => {
           <AppCardDescription className="mb-4">
             Completed team workouts from Monday to Sunday.
           </AppCardDescription>
-          <WeeklyHeatmap completions={completions || []} />
+          <WeeklyHeatmap
+            completions={(completions || []).filter((c) =>
+              playerIds.includes(c.player_id),
+            )}
+          />
         </AppCard>
 
         {/* Leaderboards */}
