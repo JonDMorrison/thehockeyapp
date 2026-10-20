@@ -446,6 +446,9 @@ test("one team: coach, invited manager, parent and independent player share trut
       ).toBeTruthy();
       await a.page.goto(`/teams/${team}`);
       await expect(
+        a.page.getByText("Dashboard not available", { exact: true }),
+      ).toBeVisible({ timeout: 20000 });
+      await expect(
         a.page.getByRole("button", { name: "Invite team staff", exact: true }),
       ).toHaveCount(0);
       await a.page.goto("/today");
