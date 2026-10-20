@@ -5,7 +5,7 @@ import fs from "node:fs";
 
 test.use({
   storageState: { cookies: [], origins: [] },
-  timezoneId: "America/Vancouver",
+  timezoneId: "UTC",
 });
 test("one team: coach, invited manager, parent and independent player share truthful mobile progress", async ({
   browser,
@@ -38,7 +38,7 @@ test("one team: coach, invited manager, parent and independent player share trut
     return r.data;
   };
   const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Vancouver",
+    timeZone: "UTC",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -85,7 +85,7 @@ test("one team: coach, invited manager, parent and independent player share trut
           width: test.info().project.name === "webkit" ? 320 : 390,
           height: 844,
         },
-        timezoneId: "America/Vancouver",
+        timezoneId: "UTC",
       });
       contexts.push(c);
       actors.at(-1).page = await c.newPage();
@@ -163,7 +163,7 @@ test("one team: coach, invited manager, parent and independent player share trut
         p_name: "Everyone takes a shot",
         p_start: date,
         p_end: date,
-        p_timezone: "America/Vancouver",
+        p_timezone: "UTC",
       }),
     );
     ok(
@@ -178,6 +178,12 @@ test("one team: coach, invited manager, parent and independent player share trut
           },
         ],
       }),
+    );
+    ok(
+      await admin
+        .from("personal_practice_cards")
+        .update({ date })
+        .eq("player_id", child),
     );
     for (const [a, id] of [
       [parent, child],
