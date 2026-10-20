@@ -5,7 +5,7 @@ import fs from "node:fs";
 
 test.use({
   storageState: { cookies: [], origins: [] },
-  timezoneId: "America/Vancouver",
+  timezoneId: "UTC",
 });
 test("one team: coach, invited manager, parent and independent player share truthful mobile progress", async ({
   browser,
@@ -38,7 +38,7 @@ test("one team: coach, invited manager, parent and independent player share trut
     return r.data;
   };
   const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Vancouver",
+    timeZone: "UTC",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -85,7 +85,7 @@ test("one team: coach, invited manager, parent and independent player share trut
           width: test.info().project.name === "webkit" ? 320 : 390,
           height: 844,
         },
-        timezoneId: "America/Vancouver",
+        timezoneId: "UTC",
       });
       contexts.push(c);
       actors.at(-1).page = await c.newPage();
@@ -143,7 +143,7 @@ test("one team: coach, invited manager, parent and independent player share trut
       await coach.client.rpc("save_team_practice_card", {
         p_id: card,
         p_team_id: team,
-        p_date: date,
+        p_date: new Date().toISOString().slice(0, 10),
         p_tier: "rep",
         p_title: "Together, one rep at a time",
         p_notes: "",
@@ -153,6 +153,8 @@ test("one team: coach, invited manager, parent and independent player share trut
         ],
       }),
     );
+    // Align the disposable card with the team's day after the UTC-based save gate.
+    ok(await admin.from("practice_cards").update({ date }).eq("id", card));
     const challenge = randomUUID();
     ok(
       await coach.client.rpc("create_shooting_challenge", {
@@ -161,7 +163,7 @@ test("one team: coach, invited manager, parent and independent player share trut
         p_name: "Everyone takes a shot",
         p_start: date,
         p_end: date,
-        p_timezone: "America/Vancouver",
+        p_timezone: "UTC",
       }),
     );
     ok(
@@ -170,12 +172,18 @@ test("one team: coach, invited manager, parent and independent player share trut
         p_tier: "rep",
         p_days: [
           {
-            date,
+            date: new Date().toISOString().slice(0, 10),
             title: "Private driveway practice",
             tasks: [{ label: "Private mobility", task_type: "mobility" }],
           },
         ],
       }),
+    );
+    ok(
+      await admin
+        .from("personal_practice_cards")
+        .update({ date })
+        .eq("player_id", child),
     );
     for (const [a, id] of [
       [parent, child],
@@ -340,19 +348,39 @@ test("one team: coach, invited manager, parent and independent player share trut
       await expect(
         a.page.getByText("Casey", { exact: true }).first(),
       ).toBeVisible();
-      const sessions = a.page
-        .getByText("Sessions Done", { exact: true })
-        .locator("..");
-      await expect(sessions.getByText("3", { exact: true })).toBeVisible();
+      await expect(
+        a.page.getByText("All-time team workouts: 3", { exact: false }),
+      ).toBeVisible();
+      const weekly = a.page.getByRole("region", {
+        name: "Workouts this week",
+        exact: true,
+      });
+      await expect(weekly).toContainText("2");
+      const challengeProgress = a.page.getByRole("region", {
+        name: "Shooting challenge",
+        exact: true,
+      });
+      await expect(
+        challengeProgress.getByText("300", { exact: true }),
+      ).toBeVisible();
       const heatmap = a.page
         .getByText("Total Sessions", { exact: true })
         .locator("..");
       await expect(heatmap.getByText("2", { exact: true })).toBeVisible();
-      await expect(a.page.getByText("Avg per Day",{exact:true}).locator("..").getByText("0.3",{exact:true})).toBeVisible();
+      await expect(
+        a.page
+          .getByText("Avg per Day", { exact: true })
+          .locator("..")
+          .getByText("0.3", { exact: true }),
+      ).toBeVisible();
       await noOverflow(a.page);
       await a.page.goto(`/teams/${team}/roster`);
-      await expect(a.page.getByText("Riley",{exact:true}).first()).toBeVisible();
-      await expect(a.page.getByText("Casey",{exact:true}).first()).toBeVisible();
+      await expect(
+        a.page.getByText("Riley", { exact: true }).first(),
+      ).toBeVisible();
+      await expect(
+        a.page.getByText("Casey", { exact: true }).first(),
+      ).toBeVisible();
       await noOverflow(a.page);
       await a.page.goto(`/teams/${team}/progress`);
     }
@@ -417,6 +445,9 @@ test("one team: coach, invited manager, parent and independent player share trut
         ).error,
       ).toBeTruthy();
       await a.page.goto(`/teams/${team}`);
+      await expect(
+        a.page.getByText("Dashboard not available", { exact: true }),
+      ).toBeVisible({ timeout: 20000 });
       await expect(
         a.page.getByRole("button", { name: "Invite team staff", exact: true }),
       ).toHaveCount(0);
