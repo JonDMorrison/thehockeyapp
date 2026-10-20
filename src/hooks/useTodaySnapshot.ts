@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 /**
@@ -40,7 +41,8 @@ export function useTodaySnapshot(
 ) {
   const { user } = useAuth();
   const userId = user?.id;
-  const actorKey = `${userId ?? ""}:${playerId ?? ""}:${expectedTeamId ?? ""}`;
+  const calendar = useLocalCalendarDay();
+  const actorKey = `${userId ?? ""}:${playerId ?? ""}:${expectedTeamId ?? ""}:${calendar}`;
   const activePlayer = useRef(actorKey);
   activePlayer.current = actorKey;
   const requestSequence = useRef(0);
@@ -65,6 +67,7 @@ export function useTodaySnapshot(
         // Only use cache if it's from today
         if (
           parsed.date === format(new Date(), "yyyy-MM-dd") &&
+          parsed.calendar === calendar &&
           (!expectedTeamId || parsed.team_id === expectedTeamId)
         ) {
           snapshotActor.current = actorKey;
@@ -74,7 +77,7 @@ export function useTodaySnapshot(
     } catch {
       // Ignore cache errors
     }
-  }, [playerId, userId, expectedTeamId, actorKey]);
+  }, [playerId, userId, expectedTeamId, actorKey, calendar]);
 
   // Fetch fresh snapshot
   const refresh = useCallback(async () => {
@@ -110,7 +113,7 @@ export function useTodaySnapshot(
         try {
           localStorage.setItem(
             `${SNAPSHOT_CACHE_KEY}_${userId}_${playerId}`,
-            JSON.stringify(result),
+            JSON.stringify({ ...result, calendar }),
           );
         } catch {
           // Ignore storage errors
@@ -136,7 +139,7 @@ export function useTodaySnapshot(
       )
         setIsLoading(false);
     }
-  }, [playerId, userId, actorKey, expectedTeamId]);
+  }, [playerId, userId, actorKey, expectedTeamId, calendar]);
 
   // Initial fetch
   useEffect(() => {

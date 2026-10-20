@@ -1,3 +1,4 @@
+import { CalendarRefresh } from "@/components/app/CalendarRefresh";
 import { SessionBoundary } from "@/components/auth/SessionBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -249,6 +250,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <CalendarRefresh />
         <ActiveViewProvider>
           <TooltipProvider>
             <Toaster />

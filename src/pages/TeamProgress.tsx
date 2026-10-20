@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { TeamProgressOverview } from "@/components/team/TeamProgressOverview";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -92,6 +93,7 @@ const getBadgeIcon = (iconName: string) => {
 
 const TeamProgress: React.FC = () => {
   const { t } = useTranslation();
+  const calendar = useLocalCalendarDay();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -222,7 +224,7 @@ const TeamProgress: React.FC = () => {
   const playerStats: PlayerStats[] = React.useMemo(() => {
     if (!memberships || !completions) return [];
 
-    const now = new Date();
+    const now = new Date(`${calendar.split("|")[0]}T12:00:00`);
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
@@ -298,7 +300,7 @@ const TeamProgress: React.FC = () => {
         } as PlayerStats;
       })
       .filter(Boolean) as PlayerStats[];
-  }, [memberships, completions, allBadges]);
+  }, [memberships, completions, allBadges, calendar]);
 
   // Sort by different metrics
   const leaderboardBySession = [...playerStats].sort(

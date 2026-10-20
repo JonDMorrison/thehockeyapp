@@ -3,9 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 
+const timezone = process.env.ROLE_TIMEZONE || "America/Vancouver";
 test.use({
   storageState: { cookies: [], origins: [] },
-  timezoneId: "UTC",
+  timezoneId: timezone,
 });
 test("one team: coach, invited manager, parent and independent player share truthful mobile progress", async ({
   browser,
@@ -38,7 +39,7 @@ test("one team: coach, invited manager, parent and independent player share trut
     return r.data;
   };
   const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "UTC",
+    timeZone: timezone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -74,6 +75,7 @@ test("one team: coach, invited manager, parent and independent player share trut
       );
       const client = createClient(url, pub, {
         auth: { persistSession: false },
+        global: { headers: { Prefer: `timezone=${timezone}` } },
       });
       actors.push({ id: u.user.id, email, password, client });
       remember();
@@ -85,7 +87,7 @@ test("one team: coach, invited manager, parent and independent player share trut
           width: test.info().project.name === "webkit" ? 320 : 390,
           height: 844,
         },
-        timezoneId: "UTC",
+        timezoneId: timezone,
       });
       contexts.push(c);
       actors.at(-1).page = await c.newPage();
@@ -101,6 +103,27 @@ test("one team: coach, invited manager, parent and independent player share trut
     ).team_id;
     teams.push(team);
     remember();
+    const offset =
+      new Intl.DateTimeFormat("en", {
+        timeZone: timezone,
+        timeZoneName: "longOffset",
+      })
+        .formatToParts(new Date(`${date}T12:00:00Z`))
+        .find((p) => p.type === "timeZoneName")!
+        .value.replace("GMT", "") || "+00:00";
+    ok(
+      await admin
+        .from("team_events")
+        .insert({
+          team_id: team,
+          external_event_id: randomUUID(),
+          source_type: "teamsnap_ical",
+          event_type: "game",
+          title: "Late local game",
+          start_time: `${date}T23:30:00${offset}`,
+        }),
+    );
+
     const child = ok(
       await parent.client.rpc("create_managed_player", {
         p_first_name: "Riley",
@@ -143,7 +166,7 @@ test("one team: coach, invited manager, parent and independent player share trut
       await coach.client.rpc("save_team_practice_card", {
         p_id: card,
         p_team_id: team,
-        p_date: new Date().toISOString().slice(0, 10),
+        p_date: date,
         p_tier: "rep",
         p_title: "Together, one rep at a time",
         p_notes: "",
@@ -153,8 +176,6 @@ test("one team: coach, invited manager, parent and independent player share trut
         ],
       }),
     );
-    // Align the disposable card with the team's day after the UTC-based save gate.
-    ok(await admin.from("practice_cards").update({ date }).eq("id", card));
     const challenge = randomUUID();
     ok(
       await coach.client.rpc("create_shooting_challenge", {
@@ -163,7 +184,7 @@ test("one team: coach, invited manager, parent and independent player share trut
         p_name: "Everyone takes a shot",
         p_start: date,
         p_end: date,
-        p_timezone: "UTC",
+        p_timezone: timezone,
       }),
     );
     ok(
@@ -172,18 +193,12 @@ test("one team: coach, invited manager, parent and independent player share trut
         p_tier: "rep",
         p_days: [
           {
-            date: new Date().toISOString().slice(0, 10),
+            date,
             title: "Private driveway practice",
             tasks: [{ label: "Private mobility", task_type: "mobility" }],
           },
         ],
       }),
-    );
-    ok(
-      await admin
-        .from("personal_practice_cards")
-        .update({ date })
-        .eq("player_id", child),
     );
     for (const [a, id] of [
       [parent, child],
@@ -325,6 +340,8 @@ test("one team: coach, invited manager, parent and independent player share trut
       const s = ok(
         await a.client.rpc("get_team_dashboard_snapshot", { p_team_id: team }),
       );
+      expect(s.today.game_day.event_time).toBe("11:30 PM");
+      expect(s.today.game_day.opponent).toBe("Late local game");
       expect(s.pulse).toMatchObject({
         players_count: 2,
         active_today_count: 2,

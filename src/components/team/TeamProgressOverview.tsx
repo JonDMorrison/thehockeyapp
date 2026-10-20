@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -27,6 +28,7 @@ export function TeamProgressOverview({
     thisWeekSessions: number;
   }>;
 }) {
+  useLocalCalendarDay();
   const [chosen, setChosen] = useState("");
   const list = useQuery({
     queryKey: ["progress-challenges", teamId, userId],

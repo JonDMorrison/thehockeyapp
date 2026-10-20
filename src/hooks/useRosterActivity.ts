@@ -1,3 +1,4 @@
+import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { useQuery } from "@tanstack/react-query";
 import { addDays, startOfWeek } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +9,7 @@ export function useRosterActivity(
   enabled: boolean,
 ) {
   const { user } = useAuth();
+  const calendar = useLocalCalendarDay();
   const now = new Date();
   const weekStart = startOfWeek(now, { weekStartsOn: 1 });
   const weekEnd = addDays(weekStart, 7);
@@ -17,6 +19,7 @@ export function useRosterActivity(
       teamId,
       user?.id,
       weekStart.toISOString(),
+      calendar,
     ],
     queryFn: async () => {
       const rows: Array<{
