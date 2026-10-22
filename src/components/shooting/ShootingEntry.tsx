@@ -158,7 +158,9 @@ export function ShootingEntry({
       </div>
       <p className="text-sm text-muted-foreground">
         {date === snapshot.today
-          ? "Your shots today"
+          ? correction
+            ? "Shots logged today"
+            : "Your shots today"
           : `Total for ${displayShotDate(date)}`}{" "}
         · eligible from {displayShotDate(minDate)}
       </p>
@@ -294,7 +296,7 @@ export function ShootingEntry({
         {message}
       </p>
       <p className="text-sm">
-        Your challenge total:{" "}
+        {correction ? "Player’s challenge total:" : "Your challenge total:"}{" "}
         <strong className="tabular-nums">
           {player.total.toLocaleString()} shots
         </strong>
