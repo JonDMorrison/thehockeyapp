@@ -3,9 +3,9 @@ const challenge = "55555555-5555-4555-8555-555555555555",
   team = "22222222-2222-4222-8222-222222222222",
   eli = "11111111-1111-4111-8111-111111111111",
   grace = "33333333-3333-4333-8333-333333333333";
-async function fixture(
+export async function fixture(
   page: Page,
-  { staff = true, status = "Live", empty = false } = {},
+  { staff = true, status = "Live", empty = false, ownBoth = false } = {},
 ) {
   let saved = 500,
     fail = false;
@@ -58,7 +58,7 @@ async function fixture(
                 eligible_from: today,
                 total: saved,
                 rank: 1,
-                is_mine: false,
+                is_mine: ownBoth,
                 active_member: true,
               },
               {
@@ -95,6 +95,19 @@ async function fixture(
       saved = 600;
       data = { shots: 600, version: 2 };
     }
+    if (path === "players")
+      data = [
+        {
+          id: eli,
+          jersey_number: "9",
+          profile_photo_url: "/images/email/driveway.jpg",
+        },
+        {
+          id: grace,
+          jersey_number: "13",
+          profile_photo_url: "/images/does-not-exist.jpg",
+        },
+      ];
     if (path === "team_invites") data = { token: "fixture-only-invite" };
     await r.fulfill({ json: data });
   });
@@ -237,5 +250,92 @@ test("first-challenge invitations remain first on mobile", async ({ page }) => {
     .getByRole("region", { name: "Challenge standings" })
     .boundingBox();
   expect(invite!.y).toBeLessThan(standings!.y);
+  await fits(page);
+});
+
+test("visual standings show photos, jerseys, tied ranks and every own player on narrow mobile", async ({
+  page,
+}, info) => {
+  await fixture(page, { staff: false });
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto(`/shooting/${challenge}?player=${grace}#leaderboard`);
+  const spotlight = page
+    .getByRole("region", { name: "Challenge standings" })
+    .getByLabel("Your player rankings");
+  await expect(spotlight).toContainText("Rank #1");
+  await expect(spotlight).toContainText("Grace");
+  const leader = page.getByTestId(`standing-${eli}`);
+  await expect(leader.getByRole("img", { name: "Eli R" })).toBeVisible();
+  await expect(leader).toContainText("#9");
+  await expect(page.getByTestId(`standing-${grace}`)).toContainText("#13");
+  await expect(page.getByTestId(`standing-${grace}`)).toContainText("GP");
+  await expect(
+    page.getByTestId(`standing-${grace}`).getByLabel("Rank #1"),
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("standing-player-0").getByLabel("Not ranked yet"),
+  ).toBeVisible();
+  await spotlight.getByRole("link").click();
+  await expect(page.getByTestId(`standing-${grace}`)).toBeInViewport();
+  await fits(page);
+  await page.screenshot({
+    path: info.outputPath("visual-player-mobile.png"),
+    fullPage: true,
+  });
+});
+
+test("coach-parent Log shots context opens personal entry and can return to coach tools", async ({
+  page,
+}) => {
+  await fixture(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/shooting/${challenge}?player=${grace}#shot-tools`);
+  const entry = page.getByRole("complementary", { name: "Log your shots" });
+  await expect(entry).toBeInViewport();
+  await expect(entry.getByLabel("Daily shot total")).toHaveValue("500");
+  await expect(page.getByLabel("Reason for correction")).toHaveCount(0);
+  await expect(page.getByLabel("Logging for")).toHaveValue(grace);
+  await expect(page.getByLabel("Logging for").locator("option")).toHaveCount(1);
+  await page.getByRole("link", { name: "Open coach tools" }).click();
+  await expect(
+    page.getByRole("complementary", { name: "Coach challenge tools" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Reason for correction")).toBeVisible();
+  await page.getByLabel("Player to correct").selectOption(grace);
+  await expect(page.getByLabel("Reason for correction")).toBeVisible();
+  await fits(page);
+});
+
+test("identity failure keeps standings usable and retries; siblings each have a ranking shortcut", async ({
+  page,
+}) => {
+  await fixture(page, { staff: false, ownBoth: true });
+  let failed = true;
+  await page.route("**/rest/v1/players?**", (route) =>
+    route.fulfill(
+      failed
+        ? { status: 503, json: { message: "Controlled identity failure" } }
+        : {
+            json: [{ id: grace, jersey_number: "13", profile_photo_url: null }],
+          },
+    ),
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/shooting/${challenge}?player=${grace}#leaderboard`);
+  await expect(
+    page.getByRole("button", { name: "Retry player details" }),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId(`standing-${grace}`)).toContainText(
+    "500 shots",
+  );
+  await expect(
+    page.getByLabel("Your player rankings").getByRole("link"),
+  ).toHaveCount(2);
+  failed = false;
+  await page.getByRole("button", { name: "Retry player details" }).click();
+  await expect(page.getByTestId(`standing-${grace}`)).toContainText("#13");
+  await expect(
+    page.getByRole("button", { name: "Retry player details" }),
+  ).toHaveCount(0);
   await fits(page);
 });

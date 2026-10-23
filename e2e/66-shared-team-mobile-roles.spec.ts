@@ -112,16 +112,14 @@ test("one team: coach, invited manager, parent and independent player share trut
         .find((p) => p.type === "timeZoneName")!
         .value.replace("GMT", "") || "+00:00";
     ok(
-      await admin
-        .from("team_events")
-        .insert({
-          team_id: team,
-          external_event_id: randomUUID(),
-          source_type: "teamsnap_ical",
-          event_type: "game",
-          title: "Late local game",
-          start_time: `${date}T23:30:00${offset}`,
-        }),
+      await admin.from("team_events").insert({
+        team_id: team,
+        external_event_id: randomUUID(),
+        source_type: "teamsnap_ical",
+        event_type: "game",
+        title: "Late local game",
+        start_time: `${date}T23:30:00${offset}`,
+      }),
     );
 
     const child = ok(
@@ -250,7 +248,10 @@ test("one team: coach, invited manager, parent and independent player share trut
       ).toBeVisible();
       await expect(
         shooting(p).getByRole("link", { name: "Log shots" }),
-      ).toHaveAttribute("href", `/shooting/${challenge}?player=${id}`);
+      ).toHaveAttribute(
+        "href",
+        `/shooting/${challenge}?player=${id}&mode=player#shot-tools`,
+      );
       await expect(
         p.getByRole("button", { name: "Invite team staff", exact: true }),
       ).toHaveCount(0);

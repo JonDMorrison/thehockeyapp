@@ -145,7 +145,10 @@ for (const phase of ["Scheduled", "Finished"])
         name: phase === "Finished" ? "View results" : "View challenge",
         exact: true,
       }),
-    ).toHaveAttribute("href", `/shooting/${challenge}?player=${playerId}`);
+    ).toHaveAttribute(
+      "href",
+      `/shooting/${challenge}?player=${playerId}&mode=player#leaderboard`,
+    );
     await expect(section.getByRole("link", { name: "Log shots" })).toHaveCount(
       0,
     );

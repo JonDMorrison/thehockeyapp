@@ -15,6 +15,7 @@ import {
   shootingList,
   displayShotDate,
 } from "@/lib/shooting";
+import { ShootingStandings } from "@/components/shooting/ShootingStandings";
 import { ShootingEntry } from "@/components/shooting/ShootingEntry";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -29,7 +30,7 @@ export default function ShootingChallenge() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [selected, setSelected] = useState(search.get("player") || "");
+  const selected = search.get("player") || "";
   const [date, setDate] = useState("");
   const [inviteLink, setInviteLink] = useState("");
   const [inviteRequested, setInviteRequested] = useState(false);
@@ -63,15 +64,24 @@ export default function ShootingChallenge() {
   }, [challengeId]);
   const loadedChallengeId = data?.challenge.id;
   useEffect(() => {
-    if (loadedChallengeId && location.hash === "#leaderboard")
+    if (
+      loadedChallengeId &&
+      ["#leaderboard", "#shot-tools"].includes(location.hash)
+    )
       document
-        .getElementById("leaderboard")
+        .getElementById(location.hash.slice(1))
         ?.scrollIntoView({ block: "start" });
   }, [loadedChallengeId, location.hash]);
+  const familyView =
+    search.get("mode") === "player" ||
+    (!!data?.players.some(
+      (p) => p.player_id === search.get("player") && p.is_mine,
+    ) &&
+      search.get("mode") !== "coach");
+  const coachMode = !!data?.is_staff && !familyView;
   const choices =
-    data?.players.filter(
-      (p) => data.is_staff || (p.is_mine && p.active_member),
-    ) || [];
+    data?.players.filter((p) => coachMode || (p.is_mine && p.active_member)) ||
+    [];
   const player = choices.find((p) => p.player_id === selected) || choices[0];
   const contextPlayer = player?.player_id || search.get("player");
   const shotDate =
@@ -167,7 +177,6 @@ export default function ShootingChallenge() {
   const c = data.challenge;
   const total = data.players.reduce((sum, p) => sum + p.total, 0);
   const participants = data.players.filter((p) => p.total > 0).length;
-  const leadingTotal = Math.max(1, ...data.players.map((p) => p.total));
   const daysRemaining = Math.max(
     0,
     Math.round(
@@ -182,18 +191,26 @@ export default function ShootingChallenge() {
         <Button asChild variant="ghost">
           <Link
             to={
-              data.is_staff
+              coachMode
                 ? `/teams/${c.team_id}`
-                : player
-                  ? `/players/${player.player_id}/home`
+                : contextPlayer
+                  ? `/players/${encodeURIComponent(contextPlayer)}/home`
                   : "/today"
             }
           >
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-            {data.is_staff ? "Team home" : "Player home"}
+            {coachMode ? "Team home" : "Player home"}
           </Link>
         </Button>
-        {firstChallenge && data.is_staff && <FirstChallengeSteps step={3} />}
+        {data.is_staff && familyView && (
+          <Link
+            className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline"
+            to={`/shooting/${challengeId}?mode=coach#shot-tools`}
+          >
+            Open coach tools
+          </Link>
+        )}
+        {firstChallenge && coachMode && <FirstChallengeSteps step={3} />}
         {teamChallenges.isError && (
           <div role="alert" className="text-sm">
             <p>Couldn’t load other team leaderboards.</p>
@@ -211,7 +228,7 @@ export default function ShootingChallenge() {
               value={challengeId}
               onChange={(e) =>
                 navigate(
-                  `/shooting/${e.target.value}${contextPlayer ? `?player=${encodeURIComponent(contextPlayer)}` : ""}#leaderboard`,
+                  `/shooting/${e.target.value}${contextPlayer ? `?player=${encodeURIComponent(contextPlayer)}${familyView ? "&mode=player" : coachMode ? "&mode=coach" : ""}` : ""}#leaderboard`,
                 )
               }
             >
@@ -302,7 +319,7 @@ export default function ShootingChallenge() {
             </div>
           </div>
         </section>
-        {data.is_staff && !firstChallenge && (
+        {coachMode && !firstChallenge && (
           <a
             href="#shot-tools"
             className="inline-flex min-h-11 items-center text-sm font-medium text-rose-300 underline lg:hidden"
@@ -314,7 +331,7 @@ export default function ShootingChallenge() {
           <section
             id="leaderboard"
             aria-label="Challenge standings"
-            className={`min-w-0 scroll-mt-24 space-y-5 lg:order-1 ${data.is_staff && !firstChallenge ? "order-1" : "order-2"}`}
+            className={`min-w-0 scroll-mt-24 space-y-5 lg:order-1 ${coachMode && !firstChallenge ? "order-1" : "order-2"}`}
           >
             <AppCard className="rounded-2xl" contentClassName="p-5 sm:p-7">
               <div className="flex items-center gap-2">
@@ -330,57 +347,9 @@ export default function ShootingChallenge() {
                 Only visible inside your team. Bars compare totals, not a shot
                 target.
               </p>
-              {data.players.length === 0 ? (
-                <p className="mt-5 text-sm">
-                  Your challenge is ready. Invite families to get the first
-                  shots on the board.
-                </p>
-              ) : (
-                <ol className="mt-5 divide-y divide-border">
-                  {data.players.map((p) => (
-                    <li
-                      key={p.player_id}
-                      data-testid={`standing-${p.player_id}`}
-                      className={`grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 py-4 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] ${p.is_mine ? "font-bold" : ""}`}
-                    >
-                      <span
-                        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold tabular-nums ${p.rank === 1 ? "bg-primary/15 text-rose-300" : "bg-muted text-muted-foreground"}`}
-                      >
-                        {p.rank ?? "—"}
-                      </span>
-                      <span className="min-w-0 flex-1 break-words">
-                        {p.first_name} {p.last_initial || ""}
-                        {p.is_mine && (
-                          <span className="ml-2 text-xs text-primary">
-                            Your player
-                          </span>
-                        )}
-                        {!p.active_member && (
-                          <span className="block text-xs text-muted-foreground">
-                            Former team member
-                          </span>
-                        )}
-                      </span>
-                      <span className="shrink-0 text-sm tabular-nums">
-                        {p.total.toLocaleString()} shots
-                      </span>
-                      <div
-                        className="col-start-2 col-end-4 h-1.5 overflow-hidden rounded-full bg-muted"
-                        aria-hidden="true"
-                      >
-                        <div
-                          className="h-full rounded-full bg-primary/70 transition-[width] duration-300"
-                          style={{
-                            width: `${(p.total / leadingTotal) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
+              <ShootingStandings snapshot={data} viewerId={user!.id} />
             </AppCard>
-            {data.is_staff && data.audit.length > 0 && (
+            {coachMode && data.audit.length > 0 && (
               <details className="rounded-xl border border-border p-5">
                 <summary className="cursor-pointer font-bold">
                   Shot history and corrections
@@ -408,12 +377,10 @@ export default function ShootingChallenge() {
           </section>
           <aside
             id="shot-tools"
-            aria-label={
-              data.is_staff ? "Coach challenge tools" : "Log your shots"
-            }
-            className={`min-w-0 space-y-5 lg:order-2 ${data.is_staff && !firstChallenge ? "order-2" : "order-1"}`}
+            aria-label={coachMode ? "Coach challenge tools" : "Log your shots"}
+            className={`min-w-0 scroll-mt-24 space-y-5 lg:order-2 ${coachMode && !firstChallenge ? "order-2" : "order-1"}`}
           >
-            {data.is_staff && (
+            {coachMode && (
               <AppCard className="rounded-2xl" contentClassName="space-y-3 p-5">
                 {firstChallenge && (
                   <div>
@@ -484,17 +451,15 @@ export default function ShootingChallenge() {
             <section
               className="space-y-4"
               aria-label={
-                data.is_staff ? "Correct player shots" : "Daily shot entry"
+                coachMode ? "Correct player shots" : "Daily shot entry"
               }
             >
               <div>
                 <h2 className="text-xl font-bold">
-                  {data.is_staff
-                    ? "Manage shot totals"
-                    : "Make every shot count"}
+                  {coachMode ? "Manage shot totals" : "Make every shot count"}
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {data.is_staff
+                  {coachMode
                     ? "Need to fix a total? Choose the player and date. Every correction is recorded."
                     : "Log your daily total, then see how your team is doing."}
                 </p>
@@ -510,17 +475,19 @@ export default function ShootingChallenge() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <Label htmlFor="shot-player">
-                        {data.is_staff ? "Player to correct" : "Logging for"}
+                        {coachMode ? "Player to correct" : "Logging for"}
                       </Label>
                       <select
                         id="shot-player"
                         className="mt-2 min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
                         value={player?.player_id}
                         onChange={(e) => {
-                          setSelected(e.target.value);
                           setDate("");
                           setSearch(
-                            { player: e.target.value },
+                            {
+                              player: e.target.value,
+                              ...(coachMode ? { mode: "coach" } : {}),
+                            },
                             { replace: true },
                           );
                         }}
@@ -546,17 +513,17 @@ export default function ShootingChallenge() {
                   </div>
                   {player && (
                     <ShootingEntry
-                      key={`${c.id}:${player.player_id}:${shotDate}:${data.is_staff}`}
+                      key={`${c.id}:${player.player_id}:${shotDate}:${coachMode}`}
                       viewerId={user!.id}
                       snapshot={data}
                       player={player}
                       date={shotDate}
-                      correction={data.is_staff}
+                      correction={coachMode}
                     />
                   )}
                 </>
               )}
-              {!data.is_staff && !choices.length && (
+              {!coachMode && !choices.length && (
                 <p>
                   You can view this team’s leaderboard. Shot logging is
                   available only for players enrolled in this challenge.

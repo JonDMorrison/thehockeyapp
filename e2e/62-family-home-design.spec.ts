@@ -167,7 +167,10 @@ test("family mobile: choose a child, finish today, log shots, switch siblings, r
     ).toBeVisible();
     await expect(
       shooting.getByRole("link", { name: "Log shots" }),
-    ).toHaveAttribute("href", `/shooting/${challenge}?player=${players[0]}`);
+    ).toHaveAttribute(
+      "href",
+      `/shooting/${challenge}?player=${players[0]}&mode=player#shot-tools`,
+    );
     await overflow();
     await page.screenshot({
       path: `/tmp/hockey-family-${test.info().project.name}-320.png`,
@@ -235,7 +238,10 @@ test("family mobile: choose a child, finish today, log shots, switch siblings, r
     ).toBeVisible();
     await expect(
       shooting.getByRole("link", { name: "Log shots" }),
-    ).toHaveAttribute("href", `/shooting/${challenge}?player=${players[1]}`);
+    ).toHaveAttribute(
+      "href",
+      `/shooting/${challenge}?player=${players[1]}&mode=player#shot-tools`,
+    );
     await page.route("**/rest/v1/personal_practice_cards?*", (r) =>
       r.fulfill({
         status: 503,
