@@ -23,7 +23,7 @@ const routes = ['/', '/features', '/about', '/privacy', '/terms', '/contact', '/
 const routeMetadata = {
   '/features': {
     title: 'Features — The Hockey App',
-    description: 'Weekly plans, player workouts, Hockey Canada skill videos, team participation, and association-wide progress in one private hockey development app.',
+    description: 'Explore weekly plans, shooting challenges, daily workouts, and private progress for hockey coaches and parents.',
   },
   '/about': {
     title: 'About — The Hockey App',
