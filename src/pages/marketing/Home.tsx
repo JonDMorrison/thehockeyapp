@@ -261,7 +261,7 @@ export default function Home() {
 
       <main>
         {/* 1. Hero */}
-        <section className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
+        <section aria-label="Welcome to The Hockey App" className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
           <img
             src={heroHomeTraining}
             alt=""
@@ -275,37 +275,22 @@ export default function Home() {
           <div className="absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_72%_20%,hsl(var(--primary)/0.18),transparent_36%)]" />
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-8 lg:pb-28 lg:pt-24">
             <div>
-              <SectionEyebrow>Off-ice development for every team</SectionEyebrow>
-              <h1 className="max-w-3xl font-display text-5xl font-black uppercase leading-[0.94] tracking-[-0.035em] text-white sm:text-6xl lg:text-[72px]">
-                Off-ice training <span className="text-primary">delivers on-ice results.</span>
+              <h1 className="max-w-3xl font-display text-5xl font-black leading-[1.02] tracking-[-0.035em] text-white sm:text-6xl lg:text-[72px]">
+                Better hockey.<br /><span className="text-primary">Starts at home.</span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-7 text-white/68 sm:text-xl">
-                Give every coach a simple weekly plan and every player clear work at home. Parents can join a team or start a training routine for their child.
+              <p className="mt-6 max-w-md text-lg leading-7 text-white/70 sm:text-xl">
+                Workouts and shooting challenges that keep your team moving.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" className="h-12 rounded-md px-8 font-black uppercase tracking-wide shadow-[0_12px_34px_rgba(223,47,54,0.28)]" onClick={startCoachSetup}>
-                  Set up your team free
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button size="lg" className="min-h-12 rounded-md px-7 font-bold" onClick={startCoachSetup}>
+                  Set up your team
+                  <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-8 hover:bg-white/[0.07]" asChild>
-                  <Link to="/demo#sample-workout">Try a sample workout</Link>
+                <Button size="lg" variant="outline" className="min-h-12 rounded-md border-white/15 bg-white/[0.03] px-7 hover:bg-white/[0.07]" asChild>
+                  <Link to="/demo#sample-workout">Try the demo</Link>
                 </Button>
               </div>
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-                <Link to="/join" className="inline-flex min-h-11 items-center text-white underline underline-offset-4">Have a team code? Join your team</Link>
-                <button type="button" className="min-h-11 text-white underline underline-offset-4" onClick={() => { setSelectedRole("solo"); navigate("/auth?mode=signup"); }}>Start for my child</button>
-              </div>
-              <p className="mt-4 text-xs text-white/70">
-                Free for the hockey community · No credit card
-              </p>
-              <div className="mt-10 grid max-w-xl grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-4">
-                {[["One standard", "Every team"], ["Minutes", "To publish a week"], ["Private", "Role-based access"]].map(([value, label]) => (
-                  <div key={value} className="px-3 first:pl-0 sm:px-5 sm:first:pl-0">
-                    <p className="font-display text-sm font-black uppercase text-white sm:text-base">{value}</p>
-                    <p className="mt-1 text-[10px] text-white/40 sm:text-xs">{label}</p>
-                  </div>
-                ))}
-              </div>
+              <p className="mt-4 text-xs text-white/70">Free. No credit card.</p>
             </div>
 
             <div className="relative mx-auto w-full max-w-[330px] lg:mr-0">
@@ -426,6 +411,9 @@ export default function Home() {
                 <SectionEyebrow>{role.eyebrow}</SectionEyebrow>
                 <h3 className="font-display text-4xl font-black uppercase leading-[0.96] tracking-[-0.03em] text-white sm:text-5xl">{role.title}</h3>
                 <p className="mt-5 max-w-md text-lg leading-7 text-white/58">{role.description}</p>
+                {activeRole === "family" && (
+                  <Button className="mt-6 min-h-12" onClick={() => { setSelectedRole("solo"); navigate("/auth?mode=signup"); }}>Start for my child</Button>
+                )}
                 <div className="mt-7 flex items-center gap-2 text-sm font-semibold text-white/72">
                   <ShieldCheck className="h-4 w-4 text-primary" />
                   Privacy and permissions built into every view

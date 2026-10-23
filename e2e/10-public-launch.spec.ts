@@ -6,8 +6,8 @@ test.describe('Public launch experience', () => {
   test('coach and family offer is prominent and association support remains reachable', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /off-ice training delivers on-ice results/i })).toBeVisible();
-    await expect(page.getByText(/give every coach a simple weekly plan/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /better hockey. starts at home/i })).toBeVisible();
+    await expect(page.getByText(/workouts and shooting challenges that keep your team moving/i)).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Coach' })).toHaveAttribute('aria-selected', 'true');
     await page.getByRole('tab', { name: 'Association' }).click();
     await expect(page.getByRole('heading', { name: /see which teams need support/i })).toBeVisible();
@@ -38,7 +38,7 @@ test.describe('Public launch experience', () => {
   test('free team setup takes a coach directly to coach account creation', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /set up your team free/i }).first().click();
+    await page.getByRole('button', { name: 'Set up your team', exact: true }).first().click();
 
     await expect(page).toHaveURL(/\/auth\?mode=signup$/);
     await expect(page.getByRole('heading', { name: 'Create your coach account' })).toBeVisible();
