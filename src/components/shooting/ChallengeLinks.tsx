@@ -194,7 +194,13 @@ export function ChallengeLinks({
                     className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-2 text-sm hover:bg-muted"
                     to={`/shooting/${c.id}?player=${playerId}#leaderboard`}
                   >
-                    <span>{c.name}</span>
+                    <span className="min-w-0">
+                      <span className="block break-words">{c.name}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {displayShotDate(c.start_date)} –{" "}
+                        {displayShotDate(c.end_date)}
+                      </span>
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {c.status}
                     </span>

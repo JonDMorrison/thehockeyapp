@@ -217,7 +217,8 @@ export default function ShootingChallenge() {
             >
               {teamChallenges.data.map((challenge) => (
                 <option key={challenge.id} value={challenge.id}>
-                  {challenge.name} · {challenge.status}
+                  {challenge.name} · {displayShotDate(challenge.start_date)} –{" "}
+                  {displayShotDate(challenge.end_date)} · {challenge.status}
                 </option>
               ))}
             </select>
