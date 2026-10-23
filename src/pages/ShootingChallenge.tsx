@@ -5,11 +5,16 @@ import {
   useNavigate,
   useParams,
   useSearchParams,
+  useLocation,
 } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { shootingSnapshot, displayShotDate } from "@/lib/shooting";
+import {
+  shootingSnapshot,
+  shootingList,
+  displayShotDate,
+} from "@/lib/shooting";
 import { ShootingEntry } from "@/components/shooting/ShootingEntry";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -23,6 +28,7 @@ export default function ShootingChallenge() {
   const [search, setSearch] = useSearchParams();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selected, setSelected] = useState(search.get("player") || "");
   const [date, setDate] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -44,11 +50,30 @@ export default function ShootingChallenge() {
       );
   }, [loading, user, navigate, challengeId, search]);
   const data = query.isError ? undefined : query.data;
+  const teamChallenges = useQuery({
+    queryKey: ["shooting-list", data?.challenge.team_id, user?.id],
+    enabled: !!data && !!user,
+    queryFn: () => shootingList(data!.challenge.team_id),
+  });
+  useEffect(() => {
+    setDate("");
+    setInviteLink("");
+    setInviteRequested(false);
+    setCopyStatus("");
+  }, [challengeId]);
+  const loadedChallengeId = data?.challenge.id;
+  useEffect(() => {
+    if (loadedChallengeId && location.hash === "#leaderboard")
+      document
+        .getElementById("leaderboard")
+        ?.scrollIntoView({ block: "start" });
+  }, [loadedChallengeId, location.hash]);
   const choices =
     data?.players.filter(
       (p) => data.is_staff || (p.is_mine && p.active_member),
     ) || [];
   const player = choices.find((p) => p.player_id === selected) || choices[0];
+  const contextPlayer = player?.player_id || search.get("player");
   const shotDate =
     date ||
     (data && data.today > data.challenge.end_date
@@ -169,6 +194,35 @@ export default function ShootingChallenge() {
           </Link>
         </Button>
         {firstChallenge && data.is_staff && <FirstChallengeSteps step={3} />}
+        {teamChallenges.isError && (
+          <div role="alert" className="text-sm">
+            <p>Couldn’t load other team leaderboards.</p>
+            <Button variant="outline" onClick={() => teamChallenges.refetch()}>
+              Retry leaderboards
+            </Button>
+          </div>
+        )}
+        {teamChallenges.data && teamChallenges.data.length > 1 && (
+          <div className="max-w-xl">
+            <Label htmlFor="team-leaderboard">Team leaderboards</Label>
+            <select
+              id="team-leaderboard"
+              className="mt-2 h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-sm"
+              value={challengeId}
+              onChange={(e) =>
+                navigate(
+                  `/shooting/${e.target.value}${contextPlayer ? `?player=${encodeURIComponent(contextPlayer)}` : ""}#leaderboard`,
+                )
+              }
+            >
+              {teamChallenges.data.map((challenge) => (
+                <option key={challenge.id} value={challenge.id}>
+                  {challenge.name} · {challenge.status}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <section
           aria-label="Challenge overview"
           className="relative isolate overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-8"
@@ -257,8 +311,9 @@ export default function ShootingChallenge() {
         )}
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
           <section
+            id="leaderboard"
             aria-label="Challenge standings"
-            className={`min-w-0 space-y-5 lg:order-1 ${data.is_staff && !firstChallenge ? "order-1" : "order-2"}`}
+            className={`min-w-0 scroll-mt-24 space-y-5 lg:order-1 ${data.is_staff && !firstChallenge ? "order-1" : "order-2"}`}
           >
             <AppCard className="rounded-2xl" contentClassName="p-5 sm:p-7">
               <div className="flex items-center gap-2">
@@ -502,8 +557,8 @@ export default function ShootingChallenge() {
               )}
               {!data.is_staff && !choices.length && (
                 <p>
-                  No eligible child is linked to this account. Ask your coach to
-                  check your team membership.
+                  You can view this team’s leaderboard. Shot logging is
+                  available only for players enrolled in this challenge.
                 </p>
               )}
             </section>
