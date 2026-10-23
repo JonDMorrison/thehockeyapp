@@ -3,10 +3,10 @@ const path = require('path');
 
 const htmlPath = path.join(__dirname, '..', 'dist', 'index.html');
 const requiredSnippets = [
-  'Off-ice training',
-  'delivers on-ice results.',
-  'Give every coach a simple weekly plan',
-  'Parents can join a team or start a training routine for their child.',
+  'Better hockey.',
+  'Starts at home.',
+  'Workouts and shooting challenges that keep your team moving.',
+  'Free. No credit card.',
   'One weekly plan across every team.',
   'Set the standard once',
   'Set up your team free',

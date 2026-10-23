@@ -7,8 +7,11 @@ for (const width of [390, 1280]) {
   test.describe(`first visit at ${width}px`, () => {
     test.use({ viewport: { width, height: 844 } });
 
-    test('a parent can start from the home hero', async ({ page }) => {
+    test('a parent can start from the Family view', async ({ page }) => {
       await page.goto('/');
+      await expect(page.getByRole('heading', { level: 1, name: 'Better hockey. Starts at home.' })).toBeVisible();
+      if (process.env.AUDIT_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `home-hero-${width}.png`) });
+      await page.getByRole('tab', { name: 'Family', exact: true }).click();
       await page.getByRole('button', { name: 'Start for my child', exact: true }).click();
       await expect(page).toHaveURL(/auth\?mode=signup/);
       await expect(page.getByRole('heading', { name: 'Create your family account' })).toBeVisible();
@@ -16,7 +19,8 @@ for (const width of [390, 1280]) {
 
     test('a family with an invite can find the code entry', async ({ page }) => {
       await page.goto('/');
-      await page.getByRole('link', { name: /have a team code/i }).click();
+      if (width < 768) await page.getByRole('button', { name: 'Open navigation' }).click();
+      await page.getByRole('navigation').getByRole('link', { name: 'Join a team', exact: true }).click();
       await expect(page.getByLabel('Team invite code or link')).toBeVisible();
       await expect(page.getByRole('button', { name: /join with code/i })).toBeDisabled();
     });
@@ -27,7 +31,7 @@ for (const width of [390, 1280]) {
         if (request.method() === 'POST' && request.url().includes('.supabase.co')) writes.push(request.url());
       });
       await page.goto('/');
-      await page.getByRole('link', { name: 'Try a sample workout', exact: true }).click();
+      await page.getByRole('link', { name: 'Try the demo', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Your first small win starts here.' })).toBeVisible();
       const finish = page.getByRole('button', { name: 'Finish sample session' });
       await expect(finish).toBeDisabled();
