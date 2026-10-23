@@ -162,7 +162,9 @@ export function ChallengeLinks({
           }
           className="mt-auto min-h-12 w-full sm:w-auto sm:self-start"
         >
-          <Link to={`/shooting/${first.id}?player=${playerId}`}>
+          <Link
+            to={`/shooting/${first.id}?player=${playerId}&mode=player${phase === "Live" && mine && !snapshot.isError ? "#shot-tools" : "#leaderboard"}`}
+          >
             {phase === "Live" && mine && !snapshot.isError
               ? "Log shots"
               : phase === "Finished"
@@ -176,7 +178,9 @@ export function ChallengeLinks({
           variant="outline"
           className="mt-3 min-h-11 w-full sm:w-auto sm:self-start"
         >
-          <Link to={`/shooting/${first.id}?player=${playerId}#leaderboard`}>
+          <Link
+            to={`/shooting/${first.id}?player=${playerId}&mode=player#leaderboard`}
+          >
             View team leaderboard
           </Link>
         </Button>
@@ -192,7 +196,7 @@ export function ChallengeLinks({
                   <Link
                     key={c.id}
                     className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-2 text-sm hover:bg-muted"
-                    to={`/shooting/${c.id}?player=${playerId}#leaderboard`}
+                    to={`/shooting/${c.id}?player=${playerId}&mode=player#leaderboard`}
                   >
                     <span className="min-w-0">
                       <span className="block break-words">{c.name}</span>
@@ -424,7 +428,7 @@ export function ChallengeLinks({
         <Link
           className="flex min-h-14 items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-muted"
           key={c.id}
-          to={`/shooting/${c.id}${playerId ? `?player=${playerId}` : ""}#leaderboard`}
+          to={`/shooting/${c.id}${playerId ? `?player=${playerId}&mode=player` : ""}#leaderboard`}
         >
           <span>
             <strong className="block text-sm">{c.name}</strong>

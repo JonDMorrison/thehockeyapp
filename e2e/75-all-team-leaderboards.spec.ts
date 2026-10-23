@@ -159,6 +159,21 @@ test("late-joining family and independent player can browse all team leaderboard
           p_player_id: id,
         }),
       );
+    for (const [actor, id, jersey] of [
+      [coach, champion, "9"],
+      [parent, child, "13"],
+      [self, independent, "22"],
+    ]) {
+      ok(
+        await actor.client
+          .from("players")
+          .update({
+            jersey_number: jersey,
+            profile_photo_url: "/images/email/driveway.jpg",
+          })
+          .eq("id", id),
+      );
+    }
     const current = randomUUID();
     ok(
       await coach.client.rpc("create_shooting_challenge", {
@@ -248,6 +263,22 @@ test("late-joining family and independent player can browse all team leaderboard
       await page.getByLabel(/^email/i).fill(actor.email);
       await page.getByLabel(/^password/i).fill(actor.password);
       await page.getByRole("button", { name: "Sign In", exact: true }).click();
+      const logLink = page.getByRole("link", {
+        name: "Log shots",
+        exact: true,
+      });
+      await expect(logLink).toHaveAttribute(
+        "href",
+        `/shooting/${current}?player=${id}&mode=player#shot-tools`,
+      );
+      await logLink.click();
+      await expect(
+        page.getByRole("complementary", { name: "Log your shots" }),
+      ).toBeInViewport();
+      await expect(page.getByLabel("Daily shot total")).toHaveValue("75");
+      await page
+        .getByRole("link", { name: "Player home", exact: true })
+        .click();
       const leaderboardLink = page.getByRole("link", {
         name: "View team leaderboard",
         exact: true,
@@ -273,7 +304,21 @@ test("late-joining family and independent player can browse all team leaderboard
         page.getByRole("heading", { name: "Team standings", exact: true }),
       ).toBeVisible();
       await expect(page.getByLabel("Daily shot total")).toHaveValue("75");
-      await expect(page).toHaveURL(new RegExp(`player=${id}#leaderboard$`));
+      await expect(page.getByTestId(`standing-${champion}`)).toContainText(
+        "#9",
+      );
+      await expect(page.getByTestId(`standing-${id}`)).toContainText(
+        actor === parent ? "#13" : "#22",
+      );
+      await expect(
+        page.getByTestId(`standing-${id}`).getByRole("img"),
+      ).toBeVisible();
+      await expect(page.getByLabel("Your player rankings")).toContainText(
+        "Rank #1",
+      );
+      await expect(page).toHaveURL(
+        new RegExp(`player=${id}&mode=player#leaderboard$`),
+      );
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth + 1,
@@ -291,6 +336,29 @@ test("late-joining family and independent player can browse all team leaderboard
       await page.evaluate(() => localStorage.clear());
       await page.goto("/auth");
     }
+    await page.goto(
+      `/auth?mode=signin&redirect=${encodeURIComponent(`/shooting/${current}?player=${champion}#shot-tools`)}`,
+    );
+    await page.getByLabel(/^email/i).fill(coach.email);
+    await page.getByLabel(/^password/i).fill(coach.password);
+    await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    await expect(
+      page.getByRole("complementary", { name: "Log your shots" }),
+    ).toBeInViewport();
+    await expect(page.getByLabel("Logging for")).toHaveValue(champion);
+    await expect(page.getByLabel("Reason for correction")).toHaveCount(0);
+    await page.getByLabel("Daily shot total").fill("100");
+    await page
+      .getByRole("button", { name: "Save today’s total", exact: true })
+      .click();
+    await expect(
+      page.getByText("100 shots saved for today.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByTestId(`standing-${champion}`)).toContainText(
+      "100 shots",
+    );
+    await page.getByRole("link", { name: "Open coach tools" }).click();
+    await expect(page.getByLabel("Reason for correction")).toBeVisible();
   } finally {
     await page.close();
     for (const team of teams)
