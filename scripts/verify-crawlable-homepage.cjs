@@ -7,10 +7,12 @@ const requiredSnippets = [
   'Starts at home.',
   'Workouts and shooting challenges that keep your team moving.',
   'Free. No credit card.',
-  'One weekly plan across every team.',
-  'Set the standard once',
+  'Plan the week.',
+  'Know what’s next.',
+  'More shots.',
+  'Choose a plan',
   'Set up your team free',
-  'Free for the hockey community',
+  'Free for coaches and families.',
 ];
 
 if (!fs.existsSync(htmlPath)) {

@@ -20,7 +20,7 @@ for (const width of [390, 1280]) {
       page.on("pageerror", (e) => errors.push(e.message));
       await page.goto("/");
       const teaser = page.getByRole("region", {
-        name: "Extra shots. A little friendly competition.",
+        name: /More shots.\s*More fun./,
       });
       await expect(teaser).toBeVisible();
       if (process.env.AUDIT_SCREENSHOT_DIR)

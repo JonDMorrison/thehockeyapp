@@ -1,20 +1,12 @@
-import { ShootingChallengeTeaser } from "@/components/marketing/SampleShootingChallenge";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  BarChart3,
   CalendarCheck2,
   Check,
-  CheckCircle2,
   ClipboardCheck,
-  Dumbbell,
-  HeartPulse,
   ShieldCheck,
-  Sparkles,
-  Target,
-  Trophy,
   Users,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MarketingNav } from "@/components/marketing/MarketingNav";
@@ -22,246 +14,84 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
 import { setSelectedRole } from "@/components/marketing/GetStartedModal";
+import { ShootingChallengeTeaser } from "@/components/marketing/SampleShootingChallenge";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
-import founderCoaching from "@/assets/brand/founder-jon-coaching.jpg";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
-import drivewayPlayer from "@/assets/brand/driveway-wrist-shot-v2.jpg";
-import teamHuddle from "@/assets/brand/team-huddle-v2.jpg";
 import coachPlanning from "@/assets/brand/coach-planning.jpg";
-import toeDragDetail from "@/assets/brand/toe-drag-detail.jpg";
-import soloGarageTraining from "@/assets/brand/solo-garage-training-v2.jpg";
 import familyProgress from "@/assets/brand/family-progress.jpg";
+import founderCoaching from "@/assets/brand/founder-jon-coaching.jpg";
 import teamCelebration from "@/assets/brand/team-celebration.jpg";
 
-type RoleKey = "association" | "coach" | "player" | "family";
-
-const workflowSteps = [
-  {
-    number: "01",
-    icon: ClipboardCheck,
-    title: "Coach assigns",
-    description: "Publish a focused week from a template in minutes.",
-  },
-  {
-    number: "02",
-    icon: Target,
-    title: "Player trains",
-    description: "Open the app, see today’s work, and check it off.",
-  },
-  {
-    number: "03",
-    icon: BarChart3,
-    title: "Program improves",
-    description: "See adoption early and help the teams that need it.",
-  },
-] as const;
-
-const roleOptions: Array<{
-  key: RoleKey;
-  label: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  image: string;
-  imageAlt: string;
-}> = [
-  {
-    key: "association",
-    label: "Association",
-    eyebrow: "Association HQ",
-    title: "See which teams need support.",
-    description: "Track rollout, weekly-plan coverage, and participation without exposing private player detail.",
-    image: teamHuddle,
-    imageAlt: "Youth hockey players and coaches gathered in a team huddle",
-  },
-  {
-    key: "coach",
-    label: "Coach",
-    eyebrow: "Coach workspace",
-    title: "Run the week without chasing it.",
-    description: "Assign work once, then see what is live, what is complete, and what needs attention.",
-    image: coachPlanning,
-    imageAlt: "A hockey coach reviewing the weekly plan at rink-side",
-  },
-  {
-    key: "player",
-    label: "Player",
-    eyebrow: "Today’s session",
-    title: "Know exactly what to do next.",
-    description: "A fast daily checklist keeps training clear, rewarding, and easy to finish independently.",
-    image: toeDragDetail,
-    imageAlt: "A player practicing off-ice stickhandling with a puck",
-  },
-  {
-    key: "family",
-    label: "Family",
-    eyebrow: "Family view",
-    title: "Support progress without policing it.",
-    description: "See weekly consistency and celebrate the work while the player owns the routine.",
-    image: familyProgress,
-    imageAlt: "A parent and young player reviewing training progress together",
-  },
-];
-
-const developmentAreas = [
-  { icon: Target, label: "Shooting" },
-  { icon: Trophy, label: "Puck skills" },
-  { icon: Dumbbell, label: "Strength" },
-  { icon: HeartPulse, label: "Mobility & recovery" },
-] as const;
-
-function SectionEyebrow({ children }: { children: React.ReactNode }) {
+function WeekPreview({ family = false }: { family?: boolean }) {
   return (
-    <p className="mb-4 text-[11px] font-black uppercase tracking-[0.24em] text-primary">
-      {children}
-    </p>
-  );
-}
-
-function AssociationPreview() {
-  const teams = [
-    { name: "U13 A1", status: "Plan live", value: 82, tone: "text-success" },
-    { name: "U15 A2", status: "Plan live", value: 71, tone: "text-success" },
-    { name: "U11 C1", status: "Plan needed", value: 46, tone: "text-white/45" },
-  ];
-
-  return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#111319] shadow-[0_28px_80px_rgba(0,0,0,0.48)]">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Sample workspace</p>
-          <p className="mt-1 font-display text-lg font-black uppercase text-white">Abbotsford Hawks</p>
-        </div>
-        <span className="rounded-md bg-success/10 px-2 py-1 text-[9px] font-black uppercase text-success">
-          Season live
-        </span>
+    <div
+      aria-label={family ? "Sample player progress" : "Sample weekly plan"}
+      className="rounded-2xl border border-border bg-background/80 p-4 sm:p-5"
+    >
+      <div className="mb-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span>{family ? "Sample player progress" : "Sample weekly plan"}</span>
+        {family ? (
+          <span className="font-semibold text-rose-300">4 of 5 complete</span>
+        ) : (
+          <CalendarCheck2 aria-hidden="true" className="h-4 w-4 text-primary" />
+        )}
       </div>
-      <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10">
-        {[["12", "Teams"], ["74%", "Active"], ["10", "Weeks live"]].map(([value, label]) => (
-          <div key={label} className="px-3 py-4 text-center">
-            <p className="font-display text-2xl font-black text-white">{value}</p>
-            <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-white/40">{label}</p>
-          </div>
-        ))}
-      </div>
-      <div className="divide-y divide-white/10 px-5">
-        {teams.map((team) => (
-          <div key={team.name} className="py-4">
-            <div className="flex items-center justify-between">
-              <span className="font-display text-sm font-black uppercase text-white">{team.name}</span>
-              <span className={`text-[9px] font-black uppercase ${team.tone}`}>{team.status}</span>
+      {family ? (
+        <div className="grid grid-cols-5 gap-2" aria-hidden="true">
+          {["M", "T", "W", "T", "F"].map((day, i) => (
+            <div key={i} className="text-center">
+              <span
+                className={`flex aspect-square items-center justify-center rounded-xl ${i < 4 ? "bg-primary/15 text-rose-300" : "bg-muted text-muted-foreground"}`}
+              >
+                {i < 4 ? <Check className="h-5 w-5" /> : "—"}
+              </span>
+              <span className="mt-2 block text-[10px] text-muted-foreground">
+                {day}
+              </span>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full rounded-full bg-primary" style={{ width: `${team.value}%` }} />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {[
+            ["Mon", "Puck skills"],
+            ["Wed", "Shooting"],
+            ["Fri", "Strength & mobility"],
+          ].map(([day, activity]) => (
+            <div
+              key={day}
+              className="flex items-center gap-3 rounded-lg bg-muted/40 px-3 py-2"
+            >
+              <span className="w-8 text-xs text-muted-foreground">{day}</span>
+              <span className="flex-1 text-sm font-medium">{activity}</span>
+              <Check aria-hidden="true" className="h-4 w-4 text-rose-300" />
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-}
-
-function CoachPreview() {
-  return (
-    <div className="rounded-xl border border-white/10 bg-[#111319] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.48)]">
-      <div className="flex items-center justify-between border-b border-white/10 pb-4">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Monday · Practice day</p>
-          <p className="mt-1 font-display text-lg font-black uppercase text-white">This week</p>
-        </div>
-        <span className="text-xs font-bold text-white/55">18 players</span>
-      </div>
-      <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-wide text-primary">Needs attention</p>
-            <p className="mt-1 text-sm font-bold text-white">Thursday has no workout</p>
-          </div>
-          <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
-        </div>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-white/[0.04] p-4">
-          <p className="font-display text-3xl font-black text-white">14</p>
-          <p className="text-[10px] uppercase text-white/45">Active today</p>
-        </div>
-        <div className="rounded-lg bg-primary/10 p-4">
-          <p className="font-display text-3xl font-black text-primary">78%</p>
-          <p className="text-[10px] uppercase text-white/45">Week complete</p>
-        </div>
-      </div>
-      <div className="mt-3 flex h-12 items-center justify-center rounded-lg bg-primary text-sm font-black uppercase text-white">
-        Assign this week
-      </div>
-    </div>
-  );
-}
-
-function PlayerPreview() {
-  return (
-    <div className="mx-auto max-w-[280px]">
-      <PhoneMockup showGlow={false} className="w-full">
-        <MarketingAppPreview />
-      </PhoneMockup>
-    </div>
-  );
-}
-
-function FamilyPreview() {
-  return (
-    <div className="rounded-xl border border-white/10 bg-[#111319] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.48)]">
-      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Alex’s week</p>
-      <div className="mt-3 flex items-end justify-between">
-        <div>
-          <p className="font-display text-5xl font-black text-white">4/5</p>
-          <p className="mt-1 text-xs text-white/45">sessions complete</p>
-        </div>
-        <span className="rounded-md bg-success/10 px-2.5 py-1.5 text-xs font-bold text-success">On track</span>
-      </div>
-      <div className="mt-6 grid grid-cols-7 gap-2">
-        {[true, true, true, true, false, false, false].map((done, index) => (
-          <div key={index} className="text-center">
-            <div className={`mx-auto flex aspect-square items-center justify-center rounded-md ${done ? "bg-primary text-white" : "bg-white/[0.06] text-white/30"}`}>
-              {done ? <Check className="h-4 w-4" /> : index + 1}
-            </div>
-            <p className="mt-1.5 text-[9px] uppercase text-white/35">{"MTWTFSS"[index]}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-5 flex items-center gap-3 border-t border-white/10 pt-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">🔥</div>
-        <div>
-          <p className="text-sm font-bold text-white">7-day streak</p>
-          <p className="text-xs text-white/45">Best week this month</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RolePreview({ role }: { role: RoleKey }) {
-  if (role === "association") return <AssociationPreview />;
-  if (role === "coach") return <CoachPreview />;
-  if (role === "player") return <PlayerPreview />;
-  return <FamilyPreview />;
 }
 
 export default function Home() {
   const navigate = useNavigate();
-  const [activeRole, setActiveRole] = useState<RoleKey>("coach");
-  const role = roleOptions.find((option) => option.key === activeRole) ?? roleOptions[0];
   const startCoachSetup = () => {
     setSelectedRole("coach");
     navigate("/auth?mode=signup");
   };
-
+  const startFamilySetup = () => {
+    setSelectedRole("solo");
+    navigate("/auth?mode=signup");
+  };
   return (
     <div className="marketing-performance min-h-screen bg-background">
       <MarketingNav />
-
       <main>
         {/* 1. Hero */}
-        <section aria-label="Welcome to The Hockey App" className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16">
+        <section
+          aria-label="Welcome to The Hockey App"
+          className="performance-grid relative overflow-hidden border-b border-white/[0.06] pt-16"
+        >
           <img
             src={heroHomeTraining}
             alt=""
@@ -276,21 +106,34 @@ export default function Home() {
           <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 sm:pb-20 sm:pt-20 lg:grid-cols-[1.12fr_0.88fr] lg:gap-16 lg:px-8 lg:pb-28 lg:pt-24">
             <div>
               <h1 className="max-w-3xl font-display text-5xl font-black leading-[1.02] tracking-[-0.035em] text-white sm:text-6xl lg:text-[72px]">
-                Better hockey.<br /><span className="text-primary">Starts at home.</span>
+                Better hockey.
+                <br />
+                <span className="text-primary">Starts at home.</span>
               </h1>
               <p className="mt-6 max-w-md text-lg leading-7 text-white/70 sm:text-xl">
                 Workouts and shooting challenges that keep your team moving.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button size="lg" className="min-h-12 rounded-md px-7 font-bold" onClick={startCoachSetup}>
+                <Button
+                  size="lg"
+                  className="min-h-12 rounded-md px-7 font-bold"
+                  onClick={startCoachSetup}
+                >
                   Set up your team
                   <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
                 </Button>
-                <Button size="lg" variant="outline" className="min-h-12 rounded-md border-white/15 bg-white/[0.03] px-7 hover:bg-white/[0.07]" asChild>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="min-h-12 rounded-md border-white/15 bg-white/[0.03] px-7 hover:bg-white/[0.07]"
+                  asChild
+                >
                   <Link to="/demo#sample-workout">Try the demo</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-white/70">Free. No credit card.</p>
+              <p className="mt-4 text-xs text-white/70">
+                Free. No credit card.
+              </p>
             </div>
 
             <div className="relative mx-auto w-full max-w-[330px] lg:mr-0">
@@ -302,247 +145,219 @@ export default function Home() {
           </div>
         </section>
 
-        <ShootingChallengeTeaser />
-
-        {/* 2. Product loop */}
-        <section className="border-b border-white/[0.06] bg-[#0b0d11] py-16 sm:py-20 lg:py-24">
+        <section
+          aria-labelledby="home-people-heading"
+          className="border-b border-border py-14 sm:py-20"
+        >
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl">
-              <SectionEyebrow>The development loop</SectionEyebrow>
-              <h2 className="font-display text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-5xl">
-                Set the standard once. <span className="text-white/42">Keep every team moving.</span>
-              </h2>
-            </div>
-            <div className="mt-12 grid border-y border-white/10 md:grid-cols-3 md:divide-x md:divide-white/10">
-              {workflowSteps.map((step) => (
-                <article key={step.number} className="group relative border-b border-white/10 py-7 last:border-b-0 md:border-b-0 md:px-7 md:first:pl-0 md:last:pr-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-display text-xs font-black tracking-[0.22em] text-primary">{step.number}</span>
-                    <step.icon className="h-5 w-5 text-white/35 transition-colors group-hover:text-primary" />
+            <h2
+              id="home-people-heading"
+              className="mb-8 font-display text-3xl font-bold tracking-tight sm:text-4xl"
+            >
+              One team. Everyone involved.
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2">
+              {[
+                {
+                  label: "For coaches",
+                  title: "Plan the week.",
+                  text: "Pick workouts. Invite families. See who’s training.",
+                  image: coachPlanning,
+                  alt: "A hockey coach planning at the rink",
+                  family: false,
+                },
+                {
+                  label: "For parents",
+                  title: "Know what’s next.",
+                  text: "Today’s workout, shot totals, and small wins—all in one place.",
+                  image: familyProgress,
+                  alt: "A parent and player reviewing training progress",
+                  family: true,
+                },
+              ].map((card) => (
+                <article
+                  key={card.label}
+                  aria-label={card.label}
+                  className="flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border bg-card"
+                >
+                  <div className="relative">
+                    <img
+                      src={card.image}
+                      alt={card.alt}
+                      loading="lazy"
+                      className="aspect-[2/1] w-full object-cover"
+                    />
+                    <span className="absolute bottom-4 left-5 rounded-full border border-white/15 bg-black/75 px-3 py-1.5 text-xs font-semibold text-white">
+                      {card.label}
+                    </span>
                   </div>
-                  <h3 className="mt-8 font-display text-2xl font-black uppercase text-white">{step.title}</h3>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-white/52">{step.description}</p>
+                  <div className="flex flex-1 flex-col p-5 sm:p-7">
+                    <h3 className="font-display text-3xl font-bold tracking-tight">
+                      {card.title}
+                    </h3>
+                    <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
+                      {card.text}
+                    </p>
+                    <WeekPreview family={card.family} />
+                    <div className="mt-auto flex flex-wrap items-center gap-3 pt-5">
+                      <Button
+                        className="min-h-12"
+                        onClick={
+                          card.family ? startFamilySetup : startCoachSetup
+                        }
+                      >
+                        {card.family
+                          ? "Start for my child"
+                          : "Set up your team"}
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="ml-2 h-4 w-4"
+                        />
+                      </Button>
+                      {card.family && (
+                        <Link
+                          className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+                          to="/join"
+                        >
+                          Join your team
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 </article>
               ))}
             </div>
+            <ol
+              aria-label="Team setup in three steps"
+              className="mt-8 grid gap-3 sm:grid-cols-3"
+            >
+              {[
+                {
+                  icon: ClipboardCheck,
+                  title: "Choose a plan",
+                  detail: "A workout or a challenge.",
+                },
+                {
+                  icon: Users,
+                  title: "Invite families",
+                  detail: "One link brings everyone in.",
+                },
+                {
+                  icon: BarChart3,
+                  title: "Watch progress",
+                  detail: "Every workout. Every shot.",
+                },
+              ].map((step, i) => (
+                <li
+                  key={step.title}
+                  className="flex items-center gap-4 rounded-2xl border border-border bg-muted/20 p-4 sm:p-5"
+                >
+                  <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <step.icon aria-hidden="true" className="h-5 w-5" />
+                    <span className="absolute -right-1 -top-1 rounded-full bg-card px-1.5 text-[10px] font-bold text-muted-foreground">
+                      {i + 1}
+                    </span>
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-semibold">{step.title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {step.detail}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 
-        <MarketingSkillVideoShowcase />
+        <ShootingChallengeTeaser />
+        <MarketingSkillVideoShowcase compact />
 
-        {/* 3. Player development */}
-        <section className="border-b border-white/[0.06] bg-[#111319] py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:px-8">
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black">
-              <img
-                src={drivewayPlayer}
-                alt="A young hockey player practicing shots in the driveway"
-                className="aspect-[4/3] w-full object-cover opacity-90"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/82 via-black/10 to-transparent" />
-              <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4 rounded-xl border border-white/10 bg-black/65 p-4 backdrop-blur-md sm:inset-x-6 sm:bottom-6">
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Player progress</p>
-                  <p className="mt-1 font-display text-2xl font-black uppercase text-white">4 of 5 sessions</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-display text-2xl font-black text-white">7</p>
-                  <p className="text-[9px] uppercase text-white/45">day streak</p>
-                </div>
-              </div>
-            </div>
+        <section
+          aria-label="Built by a coach and parent"
+          className="border-b border-border py-14 sm:py-16"
+        >
+          <div className="mx-auto grid max-w-6xl items-center gap-7 px-4 sm:px-6 md:grid-cols-[0.7fr_1.3fr] lg:gap-12 lg:px-8">
+            <img
+              src={founderCoaching}
+              alt="Jon Morrison coaching youth hockey from the bench"
+              loading="lazy"
+              className="aspect-[3/2] w-full rounded-2xl object-cover"
+            />
             <div>
-              <SectionEyebrow>Player development</SectionEyebrow>
-              <h2 className="font-display text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-                Show families the work behind <span className="text-primary">better hockey.</span>
-              </h2>
-              <p className="mt-6 max-w-lg text-lg leading-7 text-white/62">
-                One weekly plan across every team. Players know what to do, and families can see progress between practices.
+              <blockquote className="font-display text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
+                “I built the system I needed as a coach—and the one I wanted as
+                a parent.”
+              </blockquote>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Jon Morrison · Coach, parent & founder
               </p>
-              <Link to="/features" className="mt-7 inline-flex min-h-11 items-center gap-2 text-sm font-black uppercase tracking-wide text-white hover:text-primary">
-                Explore the association experience <ArrowRight className="h-4 w-4" />
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck
+                    aria-hidden="true"
+                    className="h-4 w-4 text-primary"
+                  />
+                  Private teams
+                </span>
+                <span className="flex items-center gap-2">
+                  <Users aria-hidden="true" className="h-4 w-4 text-primary" />
+                  Family-managed profiles
+                </span>
+              </div>
+              <Link
+                to="/about"
+                className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"
+              >
+                Meet Jon
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
             </div>
           </div>
         </section>
 
-        {/* 4. Role-based tour */}
-        <section className="performance-grid border-b border-white/[0.06] py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl">
-              <SectionEyebrow>For associations, coaches, players & families</SectionEyebrow>
-              <h2 className="font-display text-4xl font-black uppercase leading-[0.95] tracking-[-0.035em] sm:text-5xl">
-                One shared program. <span className="text-white/42">A clear view for every role.</span>
-              </h2>
-            </div>
-
-            <div className="mt-10 flex gap-2 overflow-x-auto border-b border-white/10 pb-3" role="tablist" aria-label="Product views">
-              {roleOptions.map((option) => (
-                <button
-                  key={option.key}
-                  type="button"
-                  role="tab"
-                  id={`role-tab-${option.key}`}
-                  tabIndex={activeRole === option.key ? 0 : -1}
-                  onKeyDown={(event) => {
-                    const index = roleOptions.findIndex((item) => item.key === activeRole);
-                    const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? roleOptions.length - 1 : event.key === "ArrowRight" ? (index + 1) % roleOptions.length : event.key === "ArrowLeft" ? (index + roleOptions.length - 1) % roleOptions.length : null;
-                    if (nextIndex === null) return;
-                    event.preventDefault();
-                    const nextRole = roleOptions[nextIndex].key;
-                    setActiveRole(nextRole);
-                    document.getElementById(`role-tab-${nextRole}`)?.focus();
-                  }}
-                  aria-selected={activeRole === option.key}
-                  aria-controls="role-preview"
-                  onClick={() => setActiveRole(option.key)}
-                  className={`min-h-11 shrink-0 rounded-md px-4 text-xs font-black uppercase tracking-wide transition-colors ${
-                    activeRole === option.key ? "bg-primary text-white" : "bg-white/[0.04] text-white/50 hover:bg-white/[0.08] hover:text-white"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-
-            <div id="role-preview" role="tabpanel" aria-labelledby={`role-tab-${activeRole}`} className="mt-10 grid min-h-[430px] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-              <div>
-                <SectionEyebrow>{role.eyebrow}</SectionEyebrow>
-                <h3 className="font-display text-4xl font-black uppercase leading-[0.96] tracking-[-0.03em] text-white sm:text-5xl">{role.title}</h3>
-                <p className="mt-5 max-w-md text-lg leading-7 text-white/58">{role.description}</p>
-                {activeRole === "family" && (
-                  <Button className="mt-6 min-h-12" onClick={() => { setSelectedRole("solo"); navigate("/auth?mode=signup"); }}>Start for my child</Button>
-                )}
-                <div className="mt-7 flex items-center gap-2 text-sm font-semibold text-white/72">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Privacy and permissions built into every view
-                </div>
-              </div>
-              <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d11] shadow-[0_28px_80px_rgba(0,0,0,0.48)]">
-                <div className="grid md:grid-cols-[0.72fr_1.28fr]">
-                  <div className="relative min-h-[190px] overflow-hidden md:min-h-[430px]">
-                    <img
-                      key={role.key}
-                      src={role.image}
-                      alt={role.imageAlt}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/18 to-transparent md:bg-gradient-to-r md:from-transparent md:to-[#0b0d11]" />
-                    <div className="absolute bottom-4 left-4 rounded-md border border-white/12 bg-black/60 px-3 py-2 backdrop-blur-md">
-                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-white/70">Built for real hockey weeks</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center p-4 sm:p-6">
-                    <div className="w-full"><RolePreview role={activeRole} /></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Complete development */}
-        <section className="border-b border-white/[0.06] bg-[#0b0d11] py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:gap-20 lg:px-8">
-            <div className="relative min-h-[420px] overflow-hidden rounded-2xl border border-white/10 bg-black">
-              <img
-                src={soloGarageTraining}
-                alt="A young hockey player completing an off-ice stickhandling session at home"
-                className="absolute inset-0 h-full w-full object-cover object-[center_34%] opacity-85"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
-              <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-              <SectionEyebrow>Complete development</SectionEyebrow>
-              <h2 className="font-display text-4xl font-black uppercase leading-[0.94] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-                More than a <span className="text-primary">shot counter.</span>
-              </h2>
-              <p className="mt-6 max-w-md text-lg leading-7 text-white/60">
-                Keep the fast targets and satisfying check-offs. Add the rest of the player’s week.
-              </p>
-              </div>
-            </div>
-            <div className="border-t border-white/10">
-              {developmentAreas.map((area, index) => (
-                <div key={area.label} className="flex min-h-20 items-center gap-4 border-b border-white/10">
-                  <span className="font-display text-xs font-black text-white/25">0{index + 1}</span>
-                  <area.icon className="h-5 w-5 text-primary" />
-                  <span className="font-display text-xl font-black uppercase text-white sm:text-2xl">{area.label}</span>
-                  <CheckCircle2 className="ml-auto h-5 w-5 text-success" />
-                </div>
-              ))}
-              <div className="mt-5 flex items-center gap-3 text-sm text-white/52">
-                <CalendarCheck2 className="h-4 w-4 text-primary" />
-                Workload adapts around games and practices.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. Founder and trust */}
-        <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#111319] py-16 sm:py-20 lg:py-24">
-          <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-primary/8 blur-3xl" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 lg:px-8">
-            <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_28px_80px_rgba(0,0,0,0.42)]">
-              <img
-                src={founderCoaching}
-                alt="Founder Jon Morrison coaching from the bench during a youth hockey game"
-                className="aspect-[3/2] w-full object-cover object-[54%_center]"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 border-l-2 border-primary px-5 py-4">
-                <p className="font-display text-sm font-black uppercase tracking-[0.12em] text-white">Jon Morrison</p>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-white/60">Coach · Parent · Founder</p>
-              </div>
-            </div>
-            <div>
-              <SectionEyebrow>Built inside a hockey family</SectionEyebrow>
-              <blockquote className="max-w-3xl font-display text-3xl font-black uppercase leading-[1.03] tracking-[-0.025em] text-white sm:text-4xl lg:text-5xl">
-                “I built the system I needed as a coach—and the one I wanted as a parent.”
-              </blockquote>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-white/58">
-                The Hockey App gives players ownership, coaches visibility, and families a healthier way to support the work.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70">
-                <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Private by design</span>
-                <span className="flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Built for youth teams</span>
-                <span className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Simple enough to use daily</span>
-              </div>
-              <Button variant="outline" className="mt-8 min-h-11 rounded-md border-white/15 bg-transparent" asChild>
-                <Link to="/about">Meet the founder <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Final CTA */}
-        <section className="performance-grid relative overflow-hidden py-16 sm:py-20 lg:py-28">
-          <img src={teamCelebration} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[68%_center] opacity-55" loading="lazy" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,10,14,0.98)_0%,rgba(9,10,14,0.9)_45%,rgba(9,10,14,0.52)_100%)]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#090a0e] via-transparent to-[#090a0e]/60" />
-          <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <SectionEyebrow>Start with one team</SectionEyebrow>
-            <h2 className="font-display text-4xl font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-              Build the program players want to be part of.
+        <section
+          aria-labelledby="home-start-heading"
+          className="relative isolate overflow-hidden py-16 sm:py-20"
+        >
+          <img
+            src={teamCelebration}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 -z-20 h-full w-full object-cover object-[center_40%]"
+          />
+          <div className="absolute inset-0 -z-10 bg-black/80" />
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <h2
+              id="home-start-heading"
+              className="font-display text-4xl font-bold tracking-tight sm:text-5xl"
+            >
+              Bring your team.
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-lg leading-7 text-white/60">
-              Start with one team, then bring in the rest of your association when you're ready.
+            <p className="mt-3 text-base text-white/70">
+              Free for coaches and families.
             </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Button size="lg" className="h-12 rounded-md px-9 font-black uppercase tracking-wide" onClick={startCoachSetup}>
-                Set up your team free <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 rounded-md border-white/15 bg-white/[0.03] px-9" asChild>
-                <Link to="/contact">Plan an association rollout</Link>
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              className="mt-6 min-h-12 px-7 font-bold"
+              onClick={startCoachSetup}
+            >
+              Set up your team free
+              <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
+            </Button>
+            <p className="mt-6 text-sm text-white/60">
+              Run an association?{" "}
+              <Link
+                to="/contact"
+                className="inline-flex min-h-11 items-center text-white underline underline-offset-4"
+              >
+                Plan an association rollout
+              </Link>
+            </p>
           </div>
         </section>
       </main>
-
       <MarketingFooter />
     </div>
   );

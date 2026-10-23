@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  Check,
-  Clock3,
-  RotateCcw,
-  Target,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Check, RotateCcw, Target, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,53 +66,35 @@ export function ShootingChallengeTeaser() {
       <div className="relative mx-auto grid max-w-6xl items-center gap-9 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
-            A quick win for your team
+            Shooting challenges
           </p>
           <h2
             id="shooting-preview-heading"
-            className="mt-4 font-display text-4xl font-black uppercase leading-[0.98] tracking-tight sm:text-5xl"
+            className="mt-4 font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl"
           >
-            Extra shots.
+            More shots.
             <br />
-            <span className="text-primary">A little friendly competition.</span>
+            <span className="text-primary">More fun.</span>
           </h2>
           <p className="mt-5 max-w-md text-base leading-7 text-white/65">
-            Pick the dates. Invite your team. See who takes the most shots—with
-            private standings and a high-five for every player putting in the
-            work.
+            Choose dates. Log shots. Cheer for the whole team.
           </p>
-          <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/75">
-            <li className="flex items-center gap-2">
-              <Clock3 aria-hidden="true" className="h-4 w-4 text-primary" />
-              Your dates
-            </li>
-            <li className="flex items-center gap-2">
-              <Target aria-hidden="true" className="h-4 w-4 text-primary" />
-              Simple shot logging
-            </li>
-            <li className="flex items-center gap-2">
-              <Users aria-hidden="true" className="h-4 w-4 text-primary" />
-              Team-only standings
-            </li>
-          </ul>
           <Button asChild size="lg" className="mt-7 min-h-12 font-bold">
             <Link to="/demo#shooting-challenge">
               Try a shooting challenge
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </Button>
-          <p className="mt-3 text-xs text-white/55">
-            Interactive sample · No account or credit card needed
-          </p>
+          <p className="mt-3 text-xs text-white/55">No signup needed.</p>
         </div>
         <div className="rounded-2xl border border-white/15 bg-background p-5 shadow-2xl sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold text-muted-foreground">
-                Fictional team · 7-day sample
+                Sample leaderboard · Team-only in the app
               </p>
               <h3 className="mt-1 font-display text-2xl font-bold">
-                The extra-reps challenge
+                7-day challenge
               </h3>
             </div>
             <Trophy
@@ -130,7 +104,7 @@ export function ShootingChallengeTeaser() {
           </div>
           <Standings shots={100} />
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            Can your player catch Alex? Try it in the demo.
+            Your team. Your dates. Everyone can take part.
           </p>
         </div>
       </div>

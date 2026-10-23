@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
   Check,
@@ -13,7 +15,8 @@ import {
   Users,
 } from "lucide-react";
 
-const FEATURED_VIDEO_POSTER = "https://i.ytimg.com/vi/iHHmFJ17m58/maxresdefault.jpg";
+const FEATURED_VIDEO_POSTER =
+  "https://i.ytimg.com/vi/iHHmFJ17m58/maxresdefault.jpg";
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home },
@@ -21,7 +24,96 @@ const NAV_ITEMS = [
   { label: "Team", icon: Users },
 ];
 
-export function MarketingSkillVideoShowcase() {
+export function MarketingSkillVideoShowcase({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
+  if (compact)
+    return (
+      <section
+        aria-labelledby="home-workout-heading"
+        className="border-b border-border py-14 sm:py-20"
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+          <div>
+            <h2
+              id="home-workout-heading"
+              className="font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl"
+            >
+              See it. Try it.
+              <br />
+              <span className="text-primary">Check it off.</span>
+            </h2>
+            <p className="mt-4 max-w-sm text-base leading-7 text-muted-foreground">
+              Watch a tip. Try the drill. Build the habit.
+            </p>
+            <ul
+              aria-label="Workout skills"
+              className="mt-5 flex flex-wrap gap-2"
+            >
+              {["Shooting", "Puck skills", "Strength", "Mobility"].map(
+                (skill) => (
+                  <li
+                    key={skill}
+                    className="rounded-full border border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground"
+                  >
+                    {skill}
+                  </li>
+                ),
+              )}
+            </ul>
+            <Button asChild variant="outline" className="mt-6 min-h-12">
+              <Link to="/demo#sample-workout">
+                Try a workout
+                <ChevronRight aria-hidden="true" className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <figure className="overflow-hidden rounded-3xl border border-border bg-card">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-4 sm:p-5">
+              <h3 className="font-semibold">Today's workout</h3>
+              <span className="text-xs text-muted-foreground">
+                Sample preview
+              </span>
+            </div>
+            <div className="relative aspect-video overflow-hidden bg-black">
+              <img
+                src={FEATURED_VIDEO_POSTER}
+                alt="Hockey Canada quick release lesson shown inside a player's workout"
+                width="1280"
+                height="720"
+                loading="lazy"
+                className="h-full w-full object-cover opacity-80"
+              />
+              <span
+                data-testid="marketing-video-preview-play"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center"
+              >
+                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-primary/90">
+                  <Play className="ml-1 h-6 w-6 fill-current text-white" />
+                </span>
+              </span>
+              <span className="absolute bottom-3 left-3 rounded-full bg-black/80 px-3 py-1.5 text-xs font-medium text-white">
+                Inside the drill
+              </span>
+            </div>
+            <figcaption className="flex items-center justify-between gap-3 p-4 sm:p-5">
+              <span>
+                <span className="block font-semibold">Quick release</span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Hockey Canada · Video tip
+                </span>
+              </span>
+              <span className="shrink-0 rounded-xl bg-primary/10 px-3 py-2 text-sm font-semibold text-rose-300">
+                25 shots
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+    );
   return (
     <section className="relative overflow-hidden border-y border-white/[0.06] bg-[#0b0d11] py-16 sm:py-20 lg:py-24">
       <div className="absolute left-[62%] top-1/2 h-96 w-96 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" />
