@@ -53,20 +53,16 @@ test('signup submits normalized email and name without changing the password', a
 });
 
 for (const height of [568, 844]) {
-  test(`role picker is scrollable on a 390x${height} phone`, async ({ page }) => {
+  test(`Features signup actions work on a 390x${height} phone`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height });
-    await page.goto('/features');
-    await page.getByRole('button', { name: /set up your team free/i }).first().click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-    const bounds = await dialog.boundingBox();
-    expect(bounds!.y).toBeGreaterThanOrEqual(0);
-    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(height);
-    await dialog.getByRole('button', { name: /association/i }).click();
-    await expect(page).toHaveURL(/auth\?mode=signup/);
+    for (const [action, heading] of [['Set up your team free', 'Create your coach account'], ['Start for my child', 'Create your family account'], ['Set up an association', 'Start training smarter']]) {
+      await page.goto('/features');
+      await page.getByRole('button', { name: action, exact: true }).click();
+      await expect(page).toHaveURL(/auth\?mode=signup/);
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+    }
   });
 }
-
 
 test('deep-page links open the intended section rather than retaining the old scroll position', async ({ page }) => {
   await page.goto('/about');
