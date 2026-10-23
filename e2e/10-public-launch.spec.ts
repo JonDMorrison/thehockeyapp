@@ -8,9 +8,8 @@ test.describe('Public launch experience', () => {
 
     await expect(page.getByRole('heading', { name: /better hockey. starts at home/i })).toBeVisible();
     await expect(page.getByText(/workouts and shooting challenges that keep your team moving/i)).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Coach' })).toHaveAttribute('aria-selected', 'true');
-    await page.getByRole('tab', { name: 'Association' }).click();
-    await expect(page.getByRole('heading', { name: /see which teams need support/i })).toBeVisible();
+    await expect(page.getByRole('article', { name: 'For coaches', exact: true }).getByRole('heading', { name: 'Plan the week.' })).toBeVisible();
+    await expect(page.getByRole('article', { name: 'For parents', exact: true }).getByRole('heading', { name: 'Know what’s next.' })).toBeVisible();
 
     await page.getByRole('link', { name: /plan an association rollout/i }).click();
     await expect(page).toHaveURL(/\/contact$/);
@@ -38,7 +37,7 @@ test.describe('Public launch experience', () => {
   test('free team setup takes a coach directly to coach account creation', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: 'Set up your team', exact: true }).first().click();
+    await page.getByRole('article', { name: 'For coaches', exact: true }).getByRole('button', { name: 'Set up your team', exact: true }).click();
 
     await expect(page).toHaveURL(/\/auth\?mode=signup$/);
     await expect(page.getByRole('heading', { name: 'Create your coach account' })).toBeVisible();

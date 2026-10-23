@@ -7,11 +7,10 @@ for (const width of [390, 1280]) {
   test.describe(`first visit at ${width}px`, () => {
     test.use({ viewport: { width, height: 844 } });
 
-    test('a parent can start from the Family view', async ({ page }) => {
+    test('a parent can start from the parent card', async ({ page }) => {
       await page.goto('/');
       await expect(page.getByRole('heading', { level: 1, name: 'Better hockey. Starts at home.' })).toBeVisible();
       if (process.env.AUDIT_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `home-hero-${width}.png`) });
-      await page.getByRole('tab', { name: 'Family', exact: true }).click();
       await page.getByRole('button', { name: 'Start for my child', exact: true }).click();
       await expect(page).toHaveURL(/auth\?mode=signup/);
       await expect(page.getByRole('heading', { name: 'Create your family account' })).toBeVisible();
@@ -104,16 +103,13 @@ for (const width of [390, 1280]) {
       await expect(page).toHaveURL(/\/join\/AbC-123$/);
     });
 
-    test('home role tabs work with the keyboard', async ({ page }) => {
+    test('the parent action works with the keyboard', async ({ page }) => {
       await page.goto('/');
-      const coach = page.getByRole('tab', { name: 'Coach', exact: true });
-      await coach.focus();
-      await coach.press('ArrowRight');
-      await expect(page.getByRole('tab', { name: 'Player', exact: true })).toBeFocused();
-      await expect(page.getByRole('tab', { name: 'Player', exact: true })).toHaveAttribute('aria-selected', 'true');
-      await page.getByRole('tab', { name: 'Player', exact: true }).press('End');
-      await expect(page.getByRole('tab', { name: 'Family', exact: true })).toBeFocused();
-      await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'role-tab-family');
+      const start = page.getByRole('article', { name: 'For parents', exact: true }).getByRole('button', { name: 'Start for my child', exact: true });
+      await start.focus();
+      await expect(start).toBeFocused();
+      await start.press('Enter');
+      await expect(page.getByRole('heading', { name: 'Create your family account' })).toBeVisible();
     });
 
     test('public pages fit the viewport and avoid runtime errors', async ({ page }) => {
@@ -123,6 +119,10 @@ for (const width of [390, 1280]) {
         await page.goto(route);
         await expect(page.locator('h1').first()).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), route).toBe(true);
+        if (process.env.AUDIT_SCREENSHOT_DIR && route === '/') {
+          await page.getByRole('region', { name: 'One team. Everyone involved.' }).screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `home-people-${width}.png`), style: "nav { visibility: hidden; }" });
+          await page.screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `home-full-${width}.png`), fullPage: true, style: "nav { visibility: hidden; }" });
+        }
         if (process.env.AUDIT_SCREENSHOT_DIR && route === '/about') {
           await page.getByRole('region', { name: /practice ends/i }).screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `about-team-story-${width}.png`), style: "nav { visibility: hidden; }" });
           await page.screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, `about-full-${width}.png`), fullPage: true, style: "nav { visibility: hidden; }" });
@@ -139,3 +139,17 @@ for (const width of [390, 1280]) {
     });
   });
 }
+
+
+test('homepage cards and previews fit a narrow phone', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('/');
+  for (const section of [page.getByRole('region', { name: 'One team. Everyone involved.' }), page.getByRole('region', { name: /More shots.\s*More fun./ }), page.getByRole('region', { name: /See it. Try it. Check it off./ })]) {
+    await section.scrollIntoViewIfNeeded();
+    const box = await section.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(321);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  }
+  if (process.env.AUDIT_SCREENSHOT_DIR) await page.getByRole('region', { name: 'One team. Everyone involved.' }).screenshot({ path: path.join(process.env.AUDIT_SCREENSHOT_DIR, 'home-people-320.png'), style: "nav { visibility: hidden; }" });
+});
