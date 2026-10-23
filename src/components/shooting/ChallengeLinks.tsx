@@ -171,10 +171,19 @@ export function ChallengeLinks({
             <ArrowUpRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
+        <Button
+          asChild
+          variant="outline"
+          className="mt-3 min-h-11 w-full sm:w-auto sm:self-start"
+        >
+          <Link to={`/shooting/${first.id}?player=${playerId}#leaderboard`}>
+            View team leaderboard
+          </Link>
+        </Button>
         {(list.data?.length ?? 0) > 1 && (
           <details className="mt-4 border-t border-border pt-3">
             <summary className="cursor-pointer text-sm text-muted-foreground">
-              More challenges ({list.data!.length - 1})
+              More team leaderboards ({list.data!.length - 1})
             </summary>
             <div className="mt-2 space-y-1">
               {list
@@ -183,9 +192,15 @@ export function ChallengeLinks({
                   <Link
                     key={c.id}
                     className="flex min-h-11 items-center justify-between gap-2 rounded-lg px-2 text-sm hover:bg-muted"
-                    to={`/shooting/${c.id}?player=${playerId}`}
+                    to={`/shooting/${c.id}?player=${playerId}#leaderboard`}
                   >
-                    <span>{c.name}</span>
+                    <span className="min-w-0">
+                      <span className="block break-words">{c.name}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {displayShotDate(c.start_date)} –{" "}
+                        {displayShotDate(c.end_date)}
+                      </span>
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {c.status}
                     </span>
@@ -409,7 +424,7 @@ export function ChallengeLinks({
         <Link
           className="flex min-h-14 items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-muted"
           key={c.id}
-          to={`/shooting/${c.id}${playerId ? `?player=${playerId}` : ""}`}
+          to={`/shooting/${c.id}${playerId ? `?player=${playerId}` : ""}#leaderboard`}
         >
           <span>
             <strong className="block text-sm">{c.name}</strong>
