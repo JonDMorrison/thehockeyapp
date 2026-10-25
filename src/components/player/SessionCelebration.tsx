@@ -57,6 +57,7 @@ export function SessionCelebration({
       // Initial bursts from sides
       (function frame() {
         confetti({
+          disableForReducedMotion: true,
           particleCount: 3,
           angle: 60,
           spread: 55,
@@ -64,6 +65,7 @@ export function SessionCelebration({
           colors: BRAND_CONFETTI_COLORS,
         });
         confetti({
+          disableForReducedMotion: true,
           particleCount: 3,
           angle: 120,
           spread: 55,
@@ -79,6 +81,7 @@ export function SessionCelebration({
       // Big center burst
       setTimeout(() => {
         confetti({
+          disableForReducedMotion: true,
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 },
@@ -90,6 +93,7 @@ export function SessionCelebration({
       if (isFirstWorkout) {
         setTimeout(() => {
           confetti({
+          disableForReducedMotion: true,
             particleCount: 150,
             spread: 100,
             origin: { y: 0.5 },
