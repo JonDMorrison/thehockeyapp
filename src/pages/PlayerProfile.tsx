@@ -1,14 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { privateMediaReference, validateImageUpload } from "@/lib/media";
-import { getPlayerPositionLabel, NHL_TEAMS, PLAYER_POSITIONS } from "@/lib/playerProfile";
+import {
+  privateMediaReference,
+  parsePrivateMediaReference,
+  validateImageUpload,
+} from "@/lib/media";
+import {
+  getPlayerPositionLabel,
+  NHL_TEAMS,
+  PLAYER_POSITIONS,
+} from "@/lib/playerProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/core";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
-import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
+import {
+  AppCard,
+  AppCardTitle,
+  AppCardDescription,
+} from "@/components/app/AppCard";
 import { Tag } from "@/components/app/Tag";
 import { Avatar } from "@/components/app/Avatar";
 import { EmptyState } from "@/components/app/EmptyState";
@@ -79,14 +91,32 @@ const PlayerProfile: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const wantsEdit = search.get("edit") === "1";
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(null);
+  const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(
+    null,
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const uploadLock = useRef(false);
+  const [photoMessage, setPhotoMessage] = useState("");
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const refreshPlayerViews = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["player", id] }),
+      ...[
+        "players-with-teams",
+        "team-roster",
+        "roster-player",
+        "shooting-player-identities",
+        "teammates-with-badges",
+      ].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+    ]);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -109,8 +139,14 @@ const PlayerProfile: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch player with guardians
-  const { data: player, isLoading } = useQuery({
-    queryKey: ["player", id, "profile"],
+  const {
+    data: player,
+    isLoading,
+    isError: profileError,
+    refetch: retryProfile,
+  } = useQuery({
+    queryKey: ["player", id, "profile", user?.id],
+    retry: 1,
     queryFn: async () => {
       // Fetch player
       const { data: playerData, error: playerError } = await supabase
@@ -135,7 +171,8 @@ const PlayerProfile: React.FC = () => {
         .from("profiles")
         .select("user_id, display_name, email")
         .in("user_id", guardianUserIds);
-      if (profilesError) logger.error("Failed to fetch guardian profiles", { profilesError });
+      if (profilesError)
+        logger.error("Failed to fetch guardian profiles", { profilesError });
 
       // Combine guardian data with profiles
       const guardiansWithProfiles = guardiansData.map((g) => ({
@@ -154,7 +191,8 @@ const PlayerProfile: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_badges")
-        .select(`
+        .select(
+          `
           id,
           awarded_at,
           challenge:challenges (
@@ -162,7 +200,8 @@ const PlayerProfile: React.FC = () => {
             badge_icon,
             description
           )
-        `)
+        `,
+        )
         .eq("player_id", id)
         .order("awarded_at", { ascending: false });
 
@@ -174,7 +213,7 @@ const PlayerProfile: React.FC = () => {
 
   // Fetch pending invites
   const { data: pendingInvites } = useQuery({
-    queryKey: ["player-invites", id],
+    queryKey: ["player-invites", id, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_guardian_invites")
@@ -189,9 +228,11 @@ const PlayerProfile: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Initialize edit form when player data loads
+  const initializedPlayer = useRef<string | null>(null);
+  // Initialize once per player even when a direct edit link opens before data arrives.
   useEffect(() => {
-    if (player) {
+    if (player && (initializedPlayer.current !== player.id || !isEditing)) {
+      initializedPlayer.current = player.id;
       setEditForm({
         first_name: player.first_name || "",
         last_initial: player.last_initial || "",
@@ -204,16 +245,30 @@ const PlayerProfile: React.FC = () => {
         season_goals: player.season_goals || "",
       });
     }
-  }, [player]);
+  }, [player, isEditing]);
 
-  const isOwner = player?.owner_user_id === user?.id ||
-    player?.player_guardians?.some(
-      (g: Guardian) => g.user_id === user?.id && g.guardian_role === "owner"
-    );
-
-  const canEdit = isOwner || player?.player_guardians?.some(
-    (g: Guardian) => g.user_id === user?.id
+  const isOwner = Boolean(
+    user &&
+    player &&
+    (player.owner_user_id === user.id ||
+      player.player_guardians?.some(
+        (g: Guardian) => g.user_id === user.id && g.guardian_role === "owner",
+      )),
   );
+  const canEdit = Boolean(
+    user &&
+    player &&
+    (isOwner ||
+      player.player_guardians?.some((g: Guardian) => g.user_id === user.id)),
+  );
+
+  useEffect(() => {
+    setIsEditing(false);
+    setPhotoMessage("");
+  }, [id]);
+  useEffect(() => {
+    if (wantsEdit && canEdit) setIsEditing(true);
+  }, [wantsEdit, canEdit, id]);
 
   // Update player mutation
   const updatePlayer = useMutation({
@@ -231,13 +286,18 @@ const PlayerProfile: React.FC = () => {
           hockey_love: updates.hockey_love || null,
           season_goals: updates.season_goals || null,
         })
-        .eq("id", id);
+        .eq("id", id)
+        .select("id")
+        .single();
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success(t("players.profile.toastUpdatedTitle"), t("players.profile.toastUpdatedDescription"));
+      void refreshPlayerViews();
+      toast.success(
+        t("players.profile.toastUpdatedTitle"),
+        t("players.profile.toastUpdatedDescription"),
+      );
       setIsEditing(false);
     },
     onError: (error: Error) => {
@@ -245,51 +305,94 @@ const PlayerProfile: React.FC = () => {
     },
   });
 
-  // Photo upload handler
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // A new object path makes replacement photos visible immediately in cached views.
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
-    if (!file || !id) return;
-
+    if (!file || !id || !canEdit || uploadLock.current) return;
     const validationError = validateImageUpload(file);
+    setPhotoFailed(false);
+    setPhotoMessage("");
     if (validationError) {
-      toast.error(t("players.profile.toastInvalidFileTitle"), validationError);
+      setPhotoFailed(true);
+      setPhotoMessage(validationError);
+      event.target.value = "";
       return;
     }
-
+    uploadLock.current = true;
     setIsUploading(true);
-
+    setPhotoMessage("Uploading your player photo…");
+    const extensions: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/heic": "heic",
+      "image/heif": "heif",
+    };
+    const fileName = `${id}/profile-${crypto.randomUUID()}.${extensions[file.type]}`;
+    let uploaded = false;
+    let linked = false;
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${id}/profile.${fileExt}`;
-
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("player-photos")
-        .upload(fileName, file, { upsert: true });
-
+        .upload(fileName, file, { upsert: false });
       if (uploadError) throw uploadError;
-
-      // Update player record
+      uploaded = true;
       const { error: updateError } = await supabase
         .from("players")
-        .update({ profile_photo_url: privateMediaReference("player-photos", fileName) })
-        .eq("id", id);
-
+        .update({
+          profile_photo_url: privateMediaReference("player-photos", fileName),
+        })
+        .eq("id", id)
+        .select("id")
+        .single();
       if (updateError) throw updateError;
-
-      queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success(t("players.profile.toastPhotoUpdatedTitle"), t("players.profile.toastPhotoUpdatedDescription"));
-    } catch (error: unknown) {
-      const errMsg = error instanceof Error ? error.message : "";
-      const friendlyMsg = errMsg.toLowerCase().includes("too large")
-        ? t("players.profile.toastUploadTooLarge")
-        : t("players.profile.toastUploadFailedDescription");
-      toast.error(t("players.profile.toastUploadFailedTitle"), friendlyMsg);
+      linked = true;
+      await refreshPlayerViews();
+      setPhotoMessage(
+        "Player photo saved. Your coaches can see it on your player card.",
+      );
+      toast.success(
+        t("players.profile.toastPhotoUpdatedTitle"),
+        t("players.profile.toastPhotoUpdatedDescription"),
+      );
+      const previous = parsePrivateMediaReference(player?.profile_photo_url);
+      if (
+        previous?.bucket === "player-photos" &&
+        previous.path.startsWith(`${id}/`) &&
+        previous.path !== fileName
+      ) {
+        const { error } = await supabase.storage
+          .from("player-photos")
+          .remove([previous.path]);
+        if (error)
+          logger.error("Could not remove replaced player photo", { error });
+      }
+    } catch {
+      if (linked) {
+        setPhotoMessage(
+          "Player photo saved. Refresh the page if it has not appeared yet.",
+        );
+        return;
+      }
+      if (uploaded && !linked)
+        await supabase.storage
+          .from("player-photos")
+          .remove([fileName])
+          .catch((): undefined => undefined);
+      setPhotoFailed(true);
+      setPhotoMessage(
+        "Photo not saved. Your previous photo is unchanged. Choose the image again to retry (5 MB or smaller).",
+      );
+      toast.error(
+        t("players.profile.toastUploadFailedTitle"),
+        t("players.profile.toastUploadFailedDescription"),
+      );
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      uploadLock.current = false;
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -305,11 +408,17 @@ const PlayerProfile: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player", id] });
-      toast.success(t("players.profile.toastGuardianRemovedTitle"), t("players.profile.toastGuardianRemovedDescription"));
+      toast.success(
+        t("players.profile.toastGuardianRemovedTitle"),
+        t("players.profile.toastGuardianRemovedDescription"),
+      );
       setGuardianToRemove(null);
     },
     onError: (error: Error) => {
-      toast.error(t("players.profile.toastGuardianRemoveFailedTitle"), error.message);
+      toast.error(
+        t("players.profile.toastGuardianRemoveFailedTitle"),
+        error.message,
+      );
     },
   });
 
@@ -330,6 +439,27 @@ const PlayerProfile: React.FC = () => {
     return null;
   }
 
+  if (profileError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer>
+          <AppCard>
+            <div role="alert" className="space-y-3">
+              <h1 className="font-bold">Couldn’t load this player profile</h1>
+              <p className="text-sm text-muted-foreground">
+                Check your connection and try again. This profile may also be
+                unavailable to your account.
+              </p>
+              <Button onClick={() => void retryProfile()}>Try again</Button>
+              <Button variant="outline" onClick={() => navigate("/players")}>
+                Your players
+              </Button>
+            </div>
+          </AppCard>
+        </PageContainer>
+      </AppShell>
+    );
+  }
   if (!player) {
     return (
       <AppShell hideNav>
@@ -357,7 +487,8 @@ const PlayerProfile: React.FC = () => {
       hideNav
       header={
         <div className="flex items-center gap-3">
-          <Button aria-label="Go back"
+          <Button
+            aria-label="Go back"
             variant="ghost"
             size="icon-sm"
             onClick={() => navigate(-1)}
@@ -366,7 +497,8 @@ const PlayerProfile: React.FC = () => {
           </Button>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold truncate">
-              {player.first_name} {player.last_initial && `${player.last_initial}.`}
+              {player.first_name}{" "}
+              {player.last_initial && `${player.last_initial}.`}
             </h1>
           </div>
           {canEdit && !isEditing && (
@@ -382,256 +514,411 @@ const PlayerProfile: React.FC = () => {
         </div>
       }
     >
-      <PageContainer className="max-w-4xl">
+      <PageContainer className={`max-w-4xl ${isEditing ? "pb-28" : ""}`}>
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+          aria-label="Player photo file"
           onChange={handlePhotoUpload}
           className="hidden"
         />
 
+        <div id="photo" className="scroll-mt-24" />
         {!isEditing && (
           <PlayerCard
             player={player}
-            photoAction={canEdit ? (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                aria-label={t("players.uploadProfilePhoto")}
-                className="absolute bottom-0 right-0 flex h-11 w-11 items-center justify-center rounded-full border-4 border-card bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
-                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-              </button>
-            ) : undefined}
+            action={
+              canEdit ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="min-h-12"
+                  >
+                    <Camera aria-hidden="true" className="h-4 w-4" />
+                    {isUploading
+                      ? "Uploading…"
+                      : player.profile_photo_url
+                        ? "Change player photo"
+                        : "Add player photo"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="min-h-12"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit player details
+                  </Button>
+                </div>
+              ) : undefined
+            }
+            photoAction={
+              canEdit ? (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  aria-label={t("players.uploadProfilePhoto")}
+                  className="absolute inset-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 [&>svg]:absolute [&>svg]:bottom-0 [&>svg]:right-0 [&>svg]:rounded-full [&>svg]:bg-primary [&>svg]:p-2 [&>svg]:h-10 [&>svg]:w-10"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                </button>
+              ) : undefined
+            }
           />
         )}
-        {isEditing && <>
-        {/* Profile Header */}
-        <AppCard className="text-center">
-          <div className="relative inline-block mx-auto mb-4">
-            <Avatar
-              src={player.profile_photo_url}
-              fallback={`${player.first_name} ${player.last_initial || ""}`}
-              size="xl"
-            />
-            {canEdit && (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                aria-label={t("players.uploadProfilePhoto")}
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {isUploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Camera className="w-4 h-4" />
-                )}
-              </button>
-            )}
+        {canEdit && (
+          <div className="rounded-xl border border-border bg-card p-4 text-sm">
+            <p className="text-muted-foreground">
+              Choose a photo from your device. JPG, PNG, WebP, HEIC or HEIF · Up
+              to 5 MB. Your family and team coaches can see your player photo.
+            </p>
+            <p
+              role={photoFailed ? "alert" : "status"}
+              className="mt-2 font-medium"
+            >
+              {photoMessage}
+            </p>
           </div>
-
-          {isEditing ? (
-            <div className="space-y-3 text-left">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="first_name">{t("players.new.firstNameLabel")}</Label>
-                  <Input
-                    id="first_name"
-                    value={editForm.first_name}
-                    onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
-                    placeholder="First name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="last_initial">{t("players.new.lastInitialLabel")}</Label>
-                  <Input
-                    id="last_initial"
-                    value={editForm.last_initial}
-                    onChange={(e) => setEditForm({ ...editForm, last_initial: e.target.value.slice(0, 1).toUpperCase() })}
-                    placeholder="L"
-                    maxLength={1}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="position">Position</Label>
-                  <Select
-                    value={editForm.position}
-                    onValueChange={(value) => setEditForm({ ...editForm, position: value })}
+        )}
+        {isEditing && (
+          <>
+            {/* Profile Header */}
+            <AppCard className="text-center">
+              <div className="relative inline-block mx-auto mb-4">
+                <Avatar
+                  src={player.profile_photo_url}
+                  fallback={`${player.first_name} ${player.last_initial || ""}`}
+                  size="xl"
+                />
+                {canEdit && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    aria-label={t("players.uploadProfilePhoto")}
+                    className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    <SelectTrigger id="position">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PLAYER_POSITIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="jersey_number">{t("players.profile.jerseyLabel")}</Label>
-                  <Input
-                    id="jersey_number"
-                    value={editForm.jersey_number}
-                    onChange={(e) => setEditForm({ ...editForm, jersey_number: e.target.value })}
-                    placeholder="99"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="shoots">{t("players.new.shootsLabel")}</Label>
-                  <Select
-                    value={editForm.shoots}
-                    onValueChange={(value) => setEditForm({ ...editForm, shoots: value })}
-                  >
-                    <SelectTrigger id="shoots">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="left">{t("teams.addChild.shootsLeft")}</SelectItem>
-                      <SelectItem value="right">{t("teams.addChild.shootsRight")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold">
-                {player.first_name} {player.last_initial && `${player.last_initial}.`}
-              </h2>
-              <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
-                <Tag variant="neutral">{t("teams.addChild.bornYear", { year: player.birth_year })}</Tag>
-                {player.shoots && player.shoots !== "unknown" && (
-                  <Tag variant="accent">
-                    {t("players.profile.shootsSide", { side: player.shoots === "left" ? t("teams.addChild.shootsLeft") : t("teams.addChild.shootsRight") })}
-                  </Tag>
-                )}
-                {getPlayerPositionLabel(player.position) && (
-                  <Tag variant="neutral">{getPlayerPositionLabel(player.position)}</Tag>
-                )}
-                {player.jersey_number && (
-                  <Tag variant="tier">#{player.jersey_number}</Tag>
+                    {isUploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                  </button>
                 )}
               </div>
-            </>
-          )}
-        </AppCard>
 
-        {/* Favorites & Hockey Style */}
-        <AppCard>
-          <AppCardTitle className="text-base flex items-center gap-2 mb-4">
-            <Star className="w-4 h-4 text-primary" />
-            {t("players.profile.favoritesTitle")}
-          </AppCardTitle>
-
-          {isEditing ? (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="fav_nhl_city">{t("players.profile.favTeamLabel")}</Label>
-                <Select
-                  value={editForm.fav_nhl_city}
-                  onValueChange={(value) => setEditForm({ ...editForm, fav_nhl_city: value })}
+              {canEdit && (
+                <Button
+                  className="mb-5 min-h-12"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
                 >
-                  <SelectTrigger id="fav_nhl_city">
-                    <SelectValue placeholder={t("players.profile.selectTeamPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {NHL_TEAMS.map((team) => (
-                      <SelectItem key={team} value={team}>{team}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="fav_nhl_player">{t("players.profile.favPlayerLabel")}</Label>
-                <Input
-                  id="fav_nhl_player"
-                  value={editForm.fav_nhl_player}
-                  onChange={(e) => setEditForm({ ...editForm, fav_nhl_player: e.target.value })}
-                  placeholder="e.g., Connor McDavid"
-                />
-              </div>
-              <div>
-                <Label htmlFor="hockey_love">{t("players.profile.hockeyLoveLabel")}</Label>
+                  <Camera aria-hidden="true" className="h-4 w-4" />
+                  {isUploading
+                    ? "Uploading…"
+                    : player.profile_photo_url
+                      ? "Change player photo"
+                      : "Add player photo"}
+                </Button>
+              )}
+              {isEditing ? (
+                <div className="space-y-3 text-left">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="first_name">
+                        {t("players.new.firstNameLabel")}
+                      </Label>
+                      <Input
+                        id="first_name"
+                        value={editForm.first_name}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            first_name: e.target.value,
+                          })
+                        }
+                        placeholder="First name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="last_initial">
+                        {t("players.new.lastInitialLabel")}
+                      </Label>
+                      <Input
+                        id="last_initial"
+                        value={editForm.last_initial}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            last_initial: e.target.value
+                              .slice(0, 1)
+                              .toUpperCase(),
+                          })
+                        }
+                        placeholder="L"
+                        maxLength={1}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="position">Position</Label>
+                      <Select
+                        value={editForm.position}
+                        onValueChange={(value) =>
+                          setEditForm({ ...editForm, position: value })
+                        }
+                      >
+                        <SelectTrigger id="position">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PLAYER_POSITIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="jersey_number">
+                        {t("players.profile.jerseyLabel")}
+                      </Label>
+                      <Input
+                        id="jersey_number"
+                        value={editForm.jersey_number}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            jersey_number: e.target.value,
+                          })
+                        }
+                        placeholder="99"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="shoots">
+                        {t("players.new.shootsLabel")}
+                      </Label>
+                      <Select
+                        value={editForm.shoots}
+                        onValueChange={(value) =>
+                          setEditForm({ ...editForm, shoots: value })
+                        }
+                      >
+                        <SelectTrigger id="shoots">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="left">
+                            {t("teams.addChild.shootsLeft")}
+                          </SelectItem>
+                          <SelectItem value="right">
+                            {t("teams.addChild.shootsRight")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold">
+                    {player.first_name}{" "}
+                    {player.last_initial && `${player.last_initial}.`}
+                  </h2>
+                  <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
+                    <Tag variant="neutral">
+                      {t("teams.addChild.bornYear", {
+                        year: player.birth_year,
+                      })}
+                    </Tag>
+                    {player.shoots && player.shoots !== "unknown" && (
+                      <Tag variant="accent">
+                        {t("players.profile.shootsSide", {
+                          side:
+                            player.shoots === "left"
+                              ? t("teams.addChild.shootsLeft")
+                              : t("teams.addChild.shootsRight"),
+                        })}
+                      </Tag>
+                    )}
+                    {getPlayerPositionLabel(player.position) && (
+                      <Tag variant="neutral">
+                        {getPlayerPositionLabel(player.position)}
+                      </Tag>
+                    )}
+                    {player.jersey_number && (
+                      <Tag variant="tier">#{player.jersey_number}</Tag>
+                    )}
+                  </div>
+                </>
+              )}
+            </AppCard>
+
+            {/* Favorites & Hockey Style */}
+            <AppCard>
+              <AppCardTitle className="text-base flex items-center gap-2 mb-4">
+                <Star className="w-4 h-4 text-primary" />
+                {t("players.profile.favoritesTitle")}
+              </AppCardTitle>
+
+              {isEditing ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="fav_nhl_city">
+                      {t("players.profile.favTeamLabel")}
+                    </Label>
+                    <Select
+                      value={editForm.fav_nhl_city}
+                      onValueChange={(value) =>
+                        setEditForm({ ...editForm, fav_nhl_city: value })
+                      }
+                    >
+                      <SelectTrigger id="fav_nhl_city">
+                        <SelectValue
+                          placeholder={t(
+                            "players.profile.selectTeamPlaceholder",
+                          )}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {NHL_TEAMS.map((team) => (
+                          <SelectItem key={team} value={team}>
+                            {team}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="fav_nhl_player">
+                      {t("players.profile.favPlayerLabel")}
+                    </Label>
+                    <Input
+                      id="fav_nhl_player"
+                      value={editForm.fav_nhl_player}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          fav_nhl_player: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., Connor McDavid"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hockey_love">
+                      {t("players.profile.hockeyLoveLabel")}
+                    </Label>
+                    <Textarea
+                      id="hockey_love"
+                      value={editForm.hockey_love}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          hockey_love: e.target.value,
+                        })
+                      }
+                      placeholder="The speed, the teamwork, scoring goals..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-sm">
+                  {player.fav_nhl_city ? (
+                    <div className="flex items-start gap-3">
+                      <Trophy className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-muted-foreground">
+                          {t("players.profile.favTeamReadLabel")}
+                        </p>
+                        <p className="font-medium">{player.fav_nhl_city}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    canEdit && (
+                      <p className="text-muted-foreground text-sm">
+                        {t("players.profile.favTeamEmpty")}
+                      </p>
+                    )
+                  )}
+                  {player.fav_nhl_player && (
+                    <div className="flex items-start gap-3">
+                      <Star className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-muted-foreground">
+                          {t("players.profile.favPlayerReadLabel")}
+                        </p>
+                        <p className="font-medium">{player.fav_nhl_player}</p>
+                      </div>
+                    </div>
+                  )}
+                  {player.hockey_love && (
+                    <div className="flex items-start gap-3">
+                      <Heart className="w-4 h-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <p className="text-muted-foreground">
+                          {t("players.profile.hockeyLoveReadLabel")}
+                        </p>
+                        <p className="font-medium">{player.hockey_love}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </AppCard>
+
+            {/* Season Goals */}
+            <AppCard>
+              <AppCardTitle className="text-base flex items-center gap-2 mb-4">
+                <Target className="w-4 h-4 text-primary" />
+                {t("players.profile.seasonGoalsTitle")}
+              </AppCardTitle>
+
+              {isEditing ? (
                 <Textarea
-                  id="hockey_love"
-                  value={editForm.hockey_love}
-                  onChange={(e) => setEditForm({ ...editForm, hockey_love: e.target.value })}
-                  placeholder="The speed, the teamwork, scoring goals..."
-                  rows={2}
+                  id="season_goals"
+                  aria-label={t("players.profile.seasonGoalsTitle")}
+                  value={editForm.season_goals}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, season_goals: e.target.value })
+                  }
+                  placeholder={t("players.profile.seasonGoalsPlaceholder")}
+                  rows={3}
                 />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4 text-sm">
-              {player.fav_nhl_city ? (
-                <div className="flex items-start gap-3">
-                  <Trophy className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-muted-foreground">{t("players.profile.favTeamReadLabel")}</p>
-                    <p className="font-medium">{player.fav_nhl_city}</p>
-                  </div>
-                </div>
-              ) : canEdit && (
-                <p className="text-muted-foreground text-sm">{t("players.profile.favTeamEmpty")}</p>
+              ) : player.season_goals ? (
+                <p className="text-sm">{player.season_goals}</p>
+              ) : canEdit ? (
+                <p className="text-muted-foreground text-sm">
+                  {t("players.profile.seasonGoalsEmpty")}
+                </p>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  {t("players.profile.seasonGoalsNone")}
+                </p>
               )}
-              {player.fav_nhl_player && (
-                <div className="flex items-start gap-3">
-                  <Star className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-muted-foreground">{t("players.profile.favPlayerReadLabel")}</p>
-                    <p className="font-medium">{player.fav_nhl_player}</p>
-                  </div>
-                </div>
-              )}
-              {player.hockey_love && (
-                <div className="flex items-start gap-3">
-                  <Heart className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-muted-foreground">{t("players.profile.hockeyLoveReadLabel")}</p>
-                    <p className="font-medium">{player.hockey_love}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </AppCard>
-
-        {/* Season Goals */}
-        <AppCard>
-          <AppCardTitle className="text-base flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-primary" />
-            {t("players.profile.seasonGoalsTitle")}
-          </AppCardTitle>
-
-          {isEditing ? (
-            <Textarea
-              value={editForm.season_goals}
-              onChange={(e) => setEditForm({ ...editForm, season_goals: e.target.value })}
-              placeholder={t("players.profile.seasonGoalsPlaceholder")}
-              rows={3}
-            />
-          ) : player.season_goals ? (
-            <p className="text-sm">{player.season_goals}</p>
-          ) : canEdit ? (
-            <p className="text-muted-foreground text-sm">{t("players.profile.seasonGoalsEmpty")}</p>
-          ) : (
-            <p className="text-muted-foreground text-sm">{t("players.profile.seasonGoalsNone")}</p>
-          )}
-        </AppCard>
-
-        </>}
+            </AppCard>
+          </>
+        )}
         {!isEditing && (
           <PlayerPersonality
             player={player}
             title={t("players.profile.favoritesTitle")}
-            emptyAction={canEdit ? (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>{t("common.edit")}</Button>
-            ) : undefined}
+            emptyAction={
+              canEdit ? (
+                <Button variant="outline" onClick={() => setIsEditing(true)}>
+                  {t("common.edit")}
+                </Button>
+              ) : undefined
+            }
           />
         )}
 
@@ -649,8 +936,12 @@ const PlayerProfile: React.FC = () => {
                   key={badge.id}
                   className="flex flex-col items-center p-3 rounded-lg bg-muted/50 text-center"
                 >
-                  <span className="text-2xl mb-1">{badge.challenge.badge_icon}</span>
-                  <p className="text-xs font-medium line-clamp-2">{badge.challenge.name}</p>
+                  <span className="text-2xl mb-1">
+                    {badge.challenge.badge_icon}
+                  </span>
+                  <p className="text-xs font-medium line-clamp-2">
+                    {badge.challenge.name}
+                  </p>
                 </div>
               ))}
             </div>
@@ -738,9 +1029,13 @@ const PlayerProfile: React.FC = () => {
 
           <div className="space-y-3">
             {guardians.map((guardian) => {
-              const profile = guardian.profiles as { display_name: string | null; email: string | null } | null;
+              const profile = guardian.profiles as {
+                display_name: string | null;
+                email: string | null;
+              } | null;
               const isCurrentUser = guardian.user_id === user?.id;
-              const canRemove = isOwner && !isCurrentUser && guardian.guardian_role !== "owner";
+              const canRemove =
+                isOwner && !isCurrentUser && guardian.guardian_role !== "owner";
 
               return (
                 <div
@@ -753,7 +1048,9 @@ const PlayerProfile: React.FC = () => {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
-                      {profile?.display_name || profile?.email || t("players.profile.unknownGuardian")}
+                      {profile?.display_name ||
+                        profile?.email ||
+                        t("players.profile.unknownGuardian")}
                       {isCurrentUser && ` ${t("players.profile.youSuffix")}`}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize">
@@ -761,7 +1058,8 @@ const PlayerProfile: React.FC = () => {
                     </p>
                   </div>
                   {canRemove && (
-                    <Button aria-label="Remove guardian"
+                    <Button
+                      aria-label="Remove guardian"
                       variant="ghost"
                       size="icon-sm"
                       onClick={() => setGuardianToRemove(guardian)}
@@ -793,7 +1091,11 @@ const PlayerProfile: React.FC = () => {
                         {invite.invited_email}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("players.profile.inviteExpires", { date: new Date(invite.expires_at).toLocaleDateString() })}
+                        {t("players.profile.inviteExpires", {
+                          date: new Date(
+                            invite.expires_at,
+                          ).toLocaleDateString(),
+                        })}
                       </p>
                     </div>
                     <Tag variant="warning" size="sm">
@@ -865,18 +1167,26 @@ const PlayerProfile: React.FC = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("players.profile.removeGuardianTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("players.profile.removeGuardianTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t("players.profile.removeGuardianDescription", { name: player.first_name })}
+              {t("players.profile.removeGuardianDescription", {
+                name: player.first_name,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => guardianToRemove && removeGuardian.mutate(guardianToRemove)}
+              onClick={() =>
+                guardianToRemove && removeGuardian.mutate(guardianToRemove)
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {removeGuardian.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {removeGuardian.isPending && (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              )}
               {t("common.remove")}
             </AlertDialogAction>
           </AlertDialogFooter>

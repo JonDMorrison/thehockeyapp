@@ -83,6 +83,12 @@ export function RosterPlayerCard({
             .filter(Boolean)
             .join(" · ")}
         </p>
+        <p
+          aria-hidden="true"
+          className="mt-3 flex min-h-8 items-center gap-1 text-sm font-semibold text-primary"
+        >
+          View player profile <ArrowUpRight className="h-4 w-4" />
+        </p>
         <div className="mt-4 border-t border-border/70 pt-3">
           {activityState === "ready" ? (
             <>
