@@ -137,11 +137,11 @@ for (const width of [390, 1280]) {
       );
       await expect(
         sample.getByRole("listitem").filter({ hasText: "Your player" }),
-      ).toContainText("250 shots");
+      ).toContainText("300 shots");
       await expect(
         sample.getByText("Bonus Boss!", { exact: true }),
       ).toBeVisible();
-      await expect(sample.getByText(/9,750 bonus shots/)).toBeVisible();
+      await expect(sample.getByText(/9,700 bonus shots/)).toBeVisible();
       await input.fill("25");
       await save.click();
       await save.click();
