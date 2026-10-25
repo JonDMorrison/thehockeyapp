@@ -1,3 +1,4 @@
+import { fireSmallConfetti } from "@/lib/confetti";
 import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -80,7 +81,9 @@ export default function ShootingChallengeNew() {
   );
   const [dailyCap, setDailyCap] = useState(draft?.dailyCap ?? "300");
   const validCap =
-    /^\d+$/.test(dailyCap) && Number(dailyCap) >= 1 && Number(dailyCap) <= 300;
+    /^\d+$/.test(dailyCap) &&
+    Number(dailyCap) >= 0 &&
+    Number(dailyCap) <= 10000;
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
@@ -189,6 +192,7 @@ export default function ShootingChallengeNew() {
       } catch {
         /* Optional session draft. */
       }
+      fireSmallConfetti();
       if (firstChallenge)
         navigate(`/shooting/${data}?invite=1`, { replace: true });
       else navigate(`/shooting/${data}`);
@@ -324,15 +328,28 @@ export default function ShootingChallengeNew() {
               )}
               <details className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
                 <summary className="min-h-11 cursor-pointer font-semibold">
-                  Scoring rules · {dailyCap} daily points
+                  Scoring rules ·{" "}
+                  {dailyCap === "0"
+                    ? "No daily cap"
+                    : `${dailyCap} daily points`}
                 </summary>
+                <label className="flex min-h-11 items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={dailyCap === "0"}
+                    onChange={(e) =>
+                      setDailyCap(e.target.checked ? "0" : "300")
+                    }
+                  />
+                  No daily cap
+                </label>
                 <Label htmlFor="daily-cap">Daily leaderboard cap</Label>
                 <Input
                   id="daily-cap"
                   type="number"
                   inputMode="numeric"
-                  min={1}
-                  max={300}
+                  min={0}
+                  max={10000}
                   step={1}
                   required
                   value={dailyCap}
@@ -341,8 +358,8 @@ export default function ShootingChallengeNew() {
                   aria-describedby="cap-help"
                 />
                 <p id="cap-help" className="text-xs text-muted-foreground">
-                  Up to 300 leaderboard points per day. Extra practice stays
-                  private. The cap locks after the first shots are logged.
+                  Set 0 for no daily competition cap. Coaches can change the
+                  allowance later in Daily shot rules.
                 </p>
               </details>
               <p className="text-sm text-muted-foreground">

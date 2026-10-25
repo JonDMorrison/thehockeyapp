@@ -3209,6 +3209,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      shooting_rewards: { Args: { p_player: string; p_claim?: boolean }; Returns: Json }
       configure_shooting_rules: {
         Args: { p_id: string; p_cap: number; p_expected: number; p_threshold: number }
         Returns: Json

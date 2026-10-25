@@ -4,6 +4,7 @@ import { BRAND_CONFETTI_COLORS } from '@/lib/brand';
 export function fireGoalConfetti() {
   // First burst - center
   confetti({
+    disableForReducedMotion: true,
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
@@ -13,6 +14,7 @@ export function fireGoalConfetti() {
   // Side bursts after a short delay
   setTimeout(() => {
     confetti({
+    disableForReducedMotion: true,
       particleCount: 50,
       angle: 60,
       spread: 55,
@@ -20,6 +22,7 @@ export function fireGoalConfetti() {
       colors: BRAND_CONFETTI_COLORS,
     });
     confetti({
+    disableForReducedMotion: true,
       particleCount: 50,
       angle: 120,
       spread: 55,
@@ -31,6 +34,7 @@ export function fireGoalConfetti() {
   // Final celebration burst
   setTimeout(() => {
     confetti({
+    disableForReducedMotion: true,
       particleCount: 75,
       spread: 100,
       origin: { y: 0.7 },
@@ -41,6 +45,7 @@ export function fireGoalConfetti() {
 
 export function fireSmallConfetti() {
   confetti({
+    disableForReducedMotion: true,
     particleCount: 30,
     spread: 50,
     origin: { y: 0.7 },
@@ -55,6 +60,7 @@ export function fireStreakConfetti(milestone: number) {
   
   // Initial burst
   confetti({
+    disableForReducedMotion: true,
     particleCount: 50 * intensity,
     spread: 60 + (intensity * 10),
     origin: { y: 0.6 },
@@ -65,6 +71,7 @@ export function fireStreakConfetti(milestone: number) {
   if (intensity >= 2) {
     setTimeout(() => {
       confetti({
+    disableForReducedMotion: true,
         particleCount: 30 * intensity,
         angle: 60,
         spread: 45,
@@ -72,6 +79,7 @@ export function fireStreakConfetti(milestone: number) {
         colors: BRAND_CONFETTI_COLORS,
       });
       confetti({
+    disableForReducedMotion: true,
         particleCount: 30 * intensity,
         angle: 120,
         spread: 45,
@@ -85,6 +93,7 @@ export function fireStreakConfetti(milestone: number) {
   if (intensity >= 3) {
     setTimeout(() => {
       confetti({
+    disableForReducedMotion: true,
         particleCount: 100,
         spread: 120,
         origin: { y: 0.5 },

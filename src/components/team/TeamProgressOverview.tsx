@@ -224,7 +224,7 @@ export function TeamProgressOverview({
                   </div>
                   <p className="mb-3 text-xs text-text-muted">
                     Leaderboard totals · daily cap{" "}
-                    {data.challenge.daily_cap ?? 300} · bonus shots excluded
+                    {data.challenge.daily_cap === 0 ? "No cap" : data.challenge.daily_cap ?? 300} · bonus shots excluded
                   </p>
                   <div className="space-y-3">
                     {[...data.players]

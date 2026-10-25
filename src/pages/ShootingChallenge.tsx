@@ -69,7 +69,7 @@ export default function ShootingChallenge() {
   useEffect(() => {
     if (
       loadedChallengeId &&
-      ["#leaderboard", "#shot-tools"].includes(location.hash)
+      ["#leaderboard", "#shot-tools", "#challenge-rules"].includes(location.hash)
     )
       document
         .getElementById(location.hash.slice(1))
@@ -348,10 +348,11 @@ export default function ShootingChallenge() {
                 </h2>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Up to {(c.daily_cap ?? 300).toLocaleString()} shots per player,
-                per day count here. Extra practice stays in private history and
-                never changes rank. Ties share a place. Player/parent reported.
-                Only visible inside your team.
+                {c.daily_cap === 0
+                  ? "No daily competition cap. All logged shots count here."
+                  : `Up to ${(c.daily_cap ?? 300).toLocaleString()} shots per player per day count here. Extra practice stays in private history.`}{" "}
+                Ties share a place. Player/parent reported. Only visible inside
+                your team.
               </p>
               <ShootingStandings snapshot={data} viewerId={user!.id} />
             </AppCard>

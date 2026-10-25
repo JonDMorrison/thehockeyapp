@@ -358,6 +358,7 @@ export function ChallengeLinks({
                 <ArrowUpRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+            <Button asChild variant="ghost" className="mt-2 min-h-11 self-start"><Link to={`/shooting/${first.id}?mode=coach#challenge-rules`}>Edit daily shot rules</Link></Button>
             {(list.data?.length ?? 0) > 1 && (
               <details className="mt-4 border-t border-border pt-3">
                 <summary className="cursor-pointer text-sm text-muted-foreground">

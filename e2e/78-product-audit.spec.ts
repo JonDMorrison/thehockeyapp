@@ -253,8 +253,10 @@ test("locked scoring rules and private review keep approval separate from points
     return r.fulfill({ json: { reviewed: true } });
   });
   await page.goto("/e2e/fixtures/product-audit.html?case=rules");
-  await page.getByText("Daily cap settings", { exact: true }).click();
-  await expect(page.getByLabel("Daily leaderboard cap")).toBeDisabled();
+
+  await expect(page.getByLabel("Daily leaderboard cap")).toBeEnabled();
+  await page.getByRole("checkbox", { name: "No daily cap" }).check();
+  await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("0");
   await page.getByText("Coach review · 1 to review").click();
   await page.getByLabel("Private review note").fill("Confirmed with family");
   await page.getByRole("button", { name: "Mark reviewed" }).click();
@@ -349,4 +351,42 @@ test("training photos queue durably offline, retry without duplicates and requir
     page.getByRole("button", { name: "Delete training photo" }),
   ).toHaveCount(0);
   expect(operations.slice(-2)).toEqual(["unlink", "remove object"]);
+});
+
+test("earned shooting milestones reveal in order and remain in the collection", async ({
+  page,
+}) => {
+  await session(page);
+  let claimed = false;
+  await page.route("**/rest/v1/rpc/shooting_rewards", (r) => {
+    const claim = r.request().postDataJSON().p_claim;
+    const rows = [1, 100, 1000].map((threshold) => ({
+      threshold,
+      earned_at: "2026-10-25",
+      unveiled: claimed,
+    }));
+    if (claim) {
+      claimed = true;
+      return r.fulfill({ json: rows });
+    }
+    return r.fulfill({ json: rows });
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/e2e/fixtures/product-audit.html?case=entry");
+  await page.getByRole("button", { name: "Unveil your new badges" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("First Flight", { exact: true })).toBeVisible();
+  await dialog.getByRole("button", { name: "Reveal next badge" }).click();
+  await expect(
+    dialog.getByText("Century Sniper", { exact: true }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Reveal next badge" }).click();
+  await expect(
+    dialog.getByText("Thousand Shot Club", { exact: true }),
+  ).toBeVisible();
+  await dialog.getByRole("button", { name: "Let’s keep shooting" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "View your badges" }),
+  ).toBeVisible();
 });
