@@ -359,16 +359,14 @@ test("late-joining family and independent player can browse all team leaderboard
     );
     await page.getByRole("link", { name: "Open coach tools" }).click();
     await expect(page.getByLabel("Reason for correction")).toBeVisible();
-    // Daily cap controls are coach-only and recalculate raw effort for everyone.
+    // Rules are coach-only and the scoring cap locks after the first entry.
     await page.getByText("Daily cap settings", { exact: true }).click();
     await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
-    await page.getByLabel("Daily leaderboard cap").fill("300");
+    await expect(page.getByLabel("Daily leaderboard cap")).toBeDisabled();
     await page
       .getByRole("button", { name: "Save daily cap", exact: true })
       .click();
-    await expect(
-      page.getByText("Daily cap saved. All standings have been recalculated."),
-    ).toBeVisible();
+    await expect(page.getByText("Challenge rules saved.")).toBeVisible();
     await page.getByLabel("Daily shot total").fill("3000");
     await page
       .getByLabel("Reason for correction")
@@ -379,7 +377,7 @@ test("late-joining family and independent player can browse all team leaderboard
     await expect(page.getByTestId(`standing-${champion}`)).toContainText(
       "300 shots",
     );
-    await expect(page.getByTestId(`standing-${champion}`)).toContainText(
+    await expect(page.getByTestId(`standing-${champion}`)).not.toContainText(
       "Bonus Boss",
     );
     for (const [actor, id] of [
@@ -420,7 +418,7 @@ test("late-joining family and independent player can browse all team leaderboard
         page.getByLabel(
           `Log shots for ${actor === parent ? "Late QA" : "Independent QA"}`,
         ),
-      ).toContainText("Bonus Boss");
+      ).not.toContainText("Bonus Boss");
       ok(
         await actor.client.auth.signInWithPassword({
           email: actor.email,
@@ -434,7 +432,7 @@ test("late-joining family and independent player can browse all team leaderboard
         total: 300,
         raw_total: 3000,
         bonus_total: 2700,
-        bonus_boss: true,
+        bonus_boss: false,
         rank: 1,
       });
       expect(
@@ -468,6 +466,7 @@ test("late-joining family and independent player can browse all team leaderboard
     await page.getByLabel(/^email/i).fill(coach.email);
     await page.getByLabel(/^password/i).fill(coach.password);
     await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    await page.getByText("Scoring rules · 300 daily points", { exact: true }).click();
     await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
     await page.getByLabel("Daily leaderboard cap").fill("175");
     await page
