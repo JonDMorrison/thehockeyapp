@@ -1,0 +1,12 @@
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.configure_shooting_rules('30000000-0000-0000-0000-000000000004',0,300,1000);
+select public.test_assert((public.get_shooting_challenge('30000000-0000-0000-0000-000000000004')->'players'->0->>'total')::int>=2500,'No cap credits actual practice');
+select public.configure_shooting_rules('30000000-0000-0000-0000-000000000004',500,0,1000);
+select public.test_assert((public.get_shooting_challenge('30000000-0000-0000-0000-000000000004')->'challenge'->>'daily_cap')::int=500,'Coach edits a started challenge cap');
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000001',true))=3,'Saved practice unlocks all three milestones');
+select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000001',true))=0,'Badge reveal claim is idempotent');
+select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000001',false))=3,'Earned badges remain available');
+select public.test_denied($q$select public.shooting_rewards('20000000-0000-0000-0000-000000000002',true)$q$,'42501','Other families cannot claim badges');
+reset role;
