@@ -173,7 +173,7 @@ export const JoinAsPlayerSection: React.FC<JoinAsPlayerSectionProps> = ({
     onError: (error: Error) => {
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {};
-        error.errors.forEach((e) => {
+        error.issues.forEach((e) => {
           if (e.path[0]) {
             newErrors[e.path[0] as string] = e.message;
           }

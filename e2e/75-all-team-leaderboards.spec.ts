@@ -359,6 +359,131 @@ test("late-joining family and independent player can browse all team leaderboard
     );
     await page.getByRole("link", { name: "Open coach tools" }).click();
     await expect(page.getByLabel("Reason for correction")).toBeVisible();
+    // Daily cap controls are coach-only and recalculate raw effort for everyone.
+    await page.getByText("Daily cap settings", { exact: true }).click();
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    await page.getByLabel("Daily leaderboard cap").fill("300");
+    await page
+      .getByRole("button", { name: "Save daily cap", exact: true })
+      .click();
+    await expect(
+      page.getByText("Daily cap saved. All standings have been recalculated."),
+    ).toBeVisible();
+    await page.getByLabel("Daily shot total").fill("3000");
+    await page
+      .getByLabel("Reason for correction")
+      .fill("Confirmed total including bonus shots");
+    await page
+      .getByRole("button", { name: "Save correction", exact: true })
+      .click();
+    await expect(page.getByTestId(`standing-${champion}`)).toContainText(
+      "300 shots",
+    );
+    await expect(page.getByTestId(`standing-${champion}`)).toContainText(
+      "Bonus Boss",
+    );
+    for (const [actor, id] of [
+      [parent, child],
+      [self, independent],
+    ]) {
+      await page.evaluate(() => localStorage.clear());
+      await page.goto(
+        `/auth?mode=signin&redirect=${encodeURIComponent(`/shooting/${current}?player=${id}&mode=player#shot-tools`)}`,
+      );
+      await page.getByLabel(/^email/i).fill(actor.email);
+      await page.getByLabel(/^password/i).fill(actor.password);
+      await page.getByRole("button", { name: "Sign In", exact: true }).click();
+      await expect(
+        page.getByText("Daily cap settings", { exact: true }),
+      ).toHaveCount(0);
+      await expect(page.getByLabel("Daily shot total")).toHaveValue("75");
+      await page.getByLabel("Daily shot total").fill("3000");
+      await expect(page.getByLabel("Daily shot breakdown")).toContainText(
+        "2,700",
+      );
+      await page
+        .getByRole("button", { name: "Save today’s total", exact: true })
+        .click();
+      await expect(
+        page.getByText("3000 shots saved for today.", { exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByText("3,000 shots saved for today.", { exact: true }),
+      ).toBeVisible();
+      await expect(page.getByTestId(`standing-${id}`)).toContainText(
+        "300 shots",
+      );
+      await expect(page.getByLabel("Your player rankings")).toContainText(
+        "Rank #1",
+      );
+      await expect(
+        page.getByLabel(
+          `Log shots for ${actor === parent ? "Late QA" : "Independent QA"}`,
+        ),
+      ).toContainText("Bonus Boss");
+      ok(
+        await actor.client.auth.signInWithPassword({
+          email: actor.email,
+          password: actor.password,
+        }),
+      );
+      const score = ok(
+        await actor.client.rpc("get_shooting_challenge", { p_id: current }),
+      );
+      expect(score.players.find((p: any) => p.player_id === id)).toMatchObject({
+        total: 300,
+        raw_total: 3000,
+        bonus_total: 2700,
+        bonus_boss: true,
+        rank: 1,
+      });
+      expect(
+        (
+          await actor.client.rpc("set_shooting_challenge_cap", {
+            p_id: current,
+            p_daily_cap: 10000,
+            p_expected_cap: 300,
+          })
+        ).error,
+      ).toBeTruthy();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: test
+          .info()
+          .outputPath(
+            `${actor === parent ? "parent" : "player"}-bonus-cap.png`,
+          ),
+        fullPage: true,
+      });
+    }
+    // Publish a real custom-cap challenge from the mobile coach form.
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(
+      `/auth?mode=signin&redirect=${encodeURIComponent(`/teams/${teams[0]}/shooting/new`)}`,
+    );
+    await page.getByLabel(/^email/i).fill(coach.email);
+    await page.getByLabel(/^password/i).fill(coach.password);
+    await page.getByRole("button", { name: "Sign In", exact: true }).click();
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    await page.getByLabel("Daily leaderboard cap").fill("175");
+    await page
+      .getByRole("button", { name: "Publish challenge", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/shooting\/[0-9a-f-]+$/);
+    const publishedId = new URL(page.url()).pathname.split("/").at(-1);
+    const published = ok(
+      await coach.client.rpc("get_shooting_challenge", { p_id: publishedId }),
+    );
+    expect(published.challenge.daily_cap).toBe(175);
+    expect(
+      published.players.every(
+        (p: any) => p.total === 0 && p.rank === null && !p.bonus_boss,
+      ),
+    ).toBe(true);
   } finally {
     await page.close();
     for (const team of teams)

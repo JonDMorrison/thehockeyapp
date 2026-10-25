@@ -16,6 +16,7 @@ import {
   displayShotDate,
 } from "@/lib/shooting";
 import { ShootingStandings } from "@/components/shooting/ShootingStandings";
+import { ShootingCapSettings } from "@/components/shooting/ShootingCapSettings";
 import { ShootingEntry } from "@/components/shooting/ShootingEntry";
 import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard } from "@/components/app/AppCard";
@@ -298,7 +299,9 @@ export default function ShootingChallenge() {
                 >
                   {total.toLocaleString()}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">Team shots</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Leaderboard shots
+                </p>
               </div>
               <div>
                 <Users
@@ -343,9 +346,10 @@ export default function ShootingChallenge() {
                 </h2>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Most shots wins. Ties share a place. Player/parent reported.
-                Only visible inside your team. Bars compare totals, not a shot
-                target.
+                Up to {(c.daily_cap ?? 250).toLocaleString()} shots per player,
+                per day count here. Extra shots earn bonus recognition, never
+                rank. Ties share a place. Player/parent reported. Only visible
+                inside your team.
               </p>
               <ShootingStandings snapshot={data} viewerId={user!.id} />
             </AppCard>
@@ -447,6 +451,13 @@ export default function ShootingChallenge() {
                   {copyStatus}
                 </p>
               </AppCard>
+            )}
+            {coachMode && (
+              <ShootingCapSettings
+                key={c.id}
+                id={c.id}
+                cap={c.daily_cap ?? 250}
+              />
             )}
             <section
               className="space-y-4"

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Shirt, ArrowUpRight } from "lucide-react";
+import { Award, Trophy, Shirt, ArrowUpRight } from "lucide-react";
 import { Avatar } from "@/components/app/Avatar";
 import { supabase } from "@/integrations/supabase/client";
 import type { ShootingSnapshot } from "@/lib/shooting";
@@ -76,8 +76,8 @@ export function ShootingStandings({
                 {p.rank === null
                   ? "Your first shots will put you on the board."
                   : snapshot.status === "Finished"
-                    ? "Final result. Every shot counted."
-                    : "Keep shooting. Every shot counts!"}
+                    ? "Final result. Your effort made a difference."
+                    : "Build the habit. One day at a time!"}
               </p>
             </a>
           ))}
@@ -132,6 +132,15 @@ export function ShootingStandings({
                     {p.is_mine && (
                       <span className="rounded-full bg-primary/20 px-2 py-0.5 font-semibold text-rose-300">
                         Your player
+                      </span>
+                    )}
+                    {p.bonus_boss && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-rose-300"
+                        title="Logged bonus shots beyond the daily cap. Bonus shots do not affect rank."
+                      >
+                        <Award aria-hidden="true" className="h-3 w-3" />
+                        Bonus Boss
                       </span>
                     )}
                     {!p.active_member && (

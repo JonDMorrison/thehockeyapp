@@ -219,11 +219,12 @@ export function TeamProgressOverview({
                       {shots.toLocaleString()}
                     </p>
                     <p className="text-sm text-text-muted">
-                      shots logged · {shooters} players participating
+                      leaderboard shots · {shooters} players participating
                     </p>
                   </div>
                   <p className="mb-3 text-xs text-text-muted">
-                    Challenge totals · bars compare shots, not a target
+                    Leaderboard totals · daily cap{" "}
+                    {data.challenge.daily_cap ?? 250} · bonus shots excluded
                   </p>
                   <div className="space-y-3">
                     {[...data.players]

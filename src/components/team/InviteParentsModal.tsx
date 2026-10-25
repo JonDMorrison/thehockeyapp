@@ -266,7 +266,7 @@ export const InviteParentsModal: React.FC<InviteParentsModalProps> = ({
   const handleSendEmailInvite = () => {
     const result = inviteEmailSchema.safeParse(inviteEmail);
     if (!result.success) {
-      setInviteEmailError(result.error.errors[0]?.message || "Enter a valid email address");
+      setInviteEmailError(result.error.issues[0]?.message || "Enter a valid email address");
       focusFirstInvalidField({ email: "invalid" }, { email: "parentInviteEmail" });
       return;
     }

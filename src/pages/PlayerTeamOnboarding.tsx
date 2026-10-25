@@ -41,7 +41,7 @@ import {
 
 const profileSchema = z.object({
   position: z.enum(["forward", "defence", "goalie", "unsure"], {
-    required_error: "Choose a position or select Not sure yet",
+    error: "Choose a position or select Not sure yet",
   }),
   shoots: z.enum(["left", "right", "unknown"]),
   jersey_number: z.string().trim().max(3, "Jersey number must be 3 characters or fewer"),

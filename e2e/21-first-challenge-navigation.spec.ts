@@ -104,7 +104,7 @@ for (const width of [390, 1280]) {
         data = [
           { id: "role", team_id: team, user_id: user.id, role: "head_coach" },
         ];
-      else if (url.pathname.endsWith("/rpc/create_shooting_challenge")) {
+      else if (url.pathname.endsWith("/rpc/create_capped_shooting_challenge")) {
         publication = route.request().postDataJSON();
         data = challenge;
       } else if (url.pathname.endsWith("/rpc/get_shooting_challenge"))
@@ -169,6 +169,8 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByLabel("Challenge name", { exact: true }),
     ).not.toBeVisible();
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    if (width === 390) await page.getByLabel("Daily leaderboard cap").fill("150");
     await page
       .getByRole("button", { name: "Create challenge & invite families" })
       .click();
@@ -185,6 +187,7 @@ for (const width of [390, 1280]) {
       page.getByRole("button", { name: "Copy invitation", exact: true }),
     ).toBeVisible();
     expect(teamName).toBe("Ice Wolves");
+    expect(publication!.p_daily_cap).toBe(width === 390 ? 150 : 250);
     expect(
       (Date.parse(publication!.p_end) - Date.parse(publication!.p_start)) /
         86400000,

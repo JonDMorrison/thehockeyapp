@@ -135,6 +135,13 @@ for (const width of [390, 1280]) {
       await expect(sample.getByRole("status")).toContainText(
         "10,000 sample shots saved.",
       );
+      await expect(
+        sample.getByRole("listitem").filter({ hasText: "Your player" }),
+      ).toContainText("250 shots");
+      await expect(
+        sample.getByText("Bonus Boss!", { exact: true }),
+      ).toBeVisible();
+      await expect(sample.getByText(/9,750 bonus shots/)).toBeVisible();
       await input.fill("25");
       await save.click();
       await save.click();
@@ -142,6 +149,9 @@ for (const width of [390, 1280]) {
         .getByRole("listitem")
         .filter({ hasText: "Your player" });
       await expect(mine).toContainText("25 shots");
+      await expect(
+        sample.getByText("Bonus Boss!", { exact: true }),
+      ).toHaveCount(0);
       await input.fill("0");
       await save.click();
       await expect(mine).toContainText("—");

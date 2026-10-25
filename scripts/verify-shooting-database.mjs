@@ -90,10 +90,41 @@ try {
     ...args,
     "-c",
     `select shots from public.shooting_challenge_days where challenge_id='30000000-0000-0000-0000-000000000002';`,
-  ]).trim().split("\n").at(-1);
+  ])
+    .trim()
+    .split("\n")
+    .at(-1);
   assert(["100", "200"].includes(total));
   console.log(
     "PASS: Simultaneous device saves produce one write and one conflict, never a sum or lost update",
+  );
+  const caps = await asyncExec(join(bin, "psql"), [
+    ...args,
+    "-f",
+    resolve("supabase/migrations/20261025030602_shooting_daily_cap.sql"),
+    "-f",
+    resolve(
+      "supabase/migrations/20261025030929_shooting_cap_publication_lock.sql",
+    ),
+    "-f",
+    resolve("tests/database/shooting-cap-release.sql"),
+  ]);
+  process.stdout.write(caps.stderr.replace(/^.*NOTICE:  /gm, ""));
+  const changeCap = (cap) =>
+    asyncExec(join(bin, "psql"), [
+      ...args,
+      "-c",
+      `set role authenticated; select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false); select public.set_shooting_challenge_cap('30000000-0000-0000-0000-000000000003',${cap},400);`,
+    ]);
+  const capRace = await Promise.allSettled([changeCap(150), changeCap(175)]);
+  assert.equal(capRace.filter((r) => r.status === "fulfilled").length, 1);
+  assert(
+    capRace
+      .find((r) => r.status === "rejected")
+      .reason.stderr.includes("Another coach changed the cap"),
+  );
+  console.log(
+    "PASS: Simultaneous cap edits reject stale changes rather than silently overwriting",
   );
   const migration = readFileSync(
     "supabase/migrations/20261018151055_shooting_challenges.sql",
