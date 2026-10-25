@@ -88,9 +88,10 @@ export function ShootingEntry({
         });
       else localStorage.removeItem(storageKey);
     } catch {
-      setMessage(
-        "This device cannot keep a draft. Stay on this page and reconnect to save.",
-      );
+      if (dirty)
+        setMessage(
+          "This device cannot keep a draft. Stay on this page and reconnect to save.",
+        );
     }
   }, [
     dirty,
