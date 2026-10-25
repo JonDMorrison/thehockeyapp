@@ -1,5 +1,7 @@
+import { fireSmallConfetti } from "@/lib/confetti";
 import { readShotDraft, storeShotDraft } from "@/lib/shootingDrafts";
 import { useEffect, useRef, useState } from "react";
+import { ShootingMilestones } from "./ShootingMilestones";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -59,8 +61,9 @@ export function ShootingEntry({
     ? date <= snapshot.today
     : snapshot.status === "Live" && player.active_member;
   const cap = snapshot.challenge.daily_cap ?? 300;
-  const credited = Math.min(Number(value) || 0, cap);
-  const bonus = Math.max((Number(value) || 0) - cap, 0);
+  const effectiveCap = cap === 0 ? 10000 : cap;
+  const credited = Math.min(Number(value) || 0, effectiveCap);
+  const bonus = Math.max((Number(value) || 0) - effectiveCap, 0);
   const valid = /^\d+$/.test(value) && Number(value) <= 10000;
 
   useEffect(() => {
@@ -226,6 +229,8 @@ export function ShootingEntry({
         setFailed(true);
         return;
       }
+      if (!correction && !result.replayed && result.shots > (day?.shots ?? 0))
+        fireSmallConfetti();
       setVersion(result.version);
       setValue(String(result.shots));
       setDirty(false);
@@ -252,6 +257,12 @@ export function ShootingEntry({
       aria-label={`Log shots for ${player.first_name}`}
       className="space-y-4 rounded-xl border border-primary/25 bg-primary/[0.05] p-5"
     >
+      {player.is_mine && (
+        <ShootingMilestones
+          playerId={player.player_id}
+          savedVersion={version}
+        />
+      )}
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-primary">
           {correction ? "Coach correction" : "Your shooting challenge"}
@@ -294,7 +305,7 @@ export function ShootingEntry({
               {credited.toLocaleString()}
               <span className="text-xs font-normal text-muted-foreground">
                 {" "}
-                / {cap.toLocaleString()}
+                / {cap === 0 ? "No cap" : cap.toLocaleString()}
               </span>
             </p>
             <p className="text-xs text-muted-foreground">Leaderboard points</p>
@@ -311,7 +322,7 @@ export function ShootingEntry({
           >
             <div
               className="h-full bg-primary rounded-full"
-              style={{ width: `${(credited / cap) * 100}%` }}
+              style={{ width: `${(credited / effectiveCap) * 100}%` }}
             />
           </div>
         </div>
@@ -356,9 +367,12 @@ export function ShootingEntry({
       >
         Save the full daily total, not an additional amount. Workout shot logs
         are separate; include them in this total once. Whole numbers from 0 to
-        10,000. Up to {cap.toLocaleString()} per day count toward the
-        leaderboard; the rest are automatically kept in private practice
-        history.
+        10,000.{" "}
+        {cap === 0
+          ? "All logged shots"
+          : `Up to ${cap.toLocaleString()} per day`}{" "}
+        count toward the leaderboard; the rest are automatically kept in private
+        practice history.
       </p>
       {correction && (
         <div>
