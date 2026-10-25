@@ -139,8 +139,14 @@ const PlayerProfile: React.FC = () => {
   }, [authLoading, isAuthenticated, navigate]);
 
   // Fetch player with guardians
-  const { data: player, isLoading } = useQuery({
-    queryKey: ["player", id, "profile"],
+  const {
+    data: player,
+    isLoading,
+    isError: profileError,
+    refetch: retryProfile,
+  } = useQuery({
+    queryKey: ["player", id, "profile", user?.id],
+    retry: 1,
     queryFn: async () => {
       // Fetch player
       const { data: playerData, error: playerError } = await supabase
@@ -207,7 +213,7 @@ const PlayerProfile: React.FC = () => {
 
   // Fetch pending invites
   const { data: pendingInvites } = useQuery({
-    queryKey: ["player-invites", id],
+    queryKey: ["player-invites", id, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_guardian_invites")
@@ -273,7 +279,9 @@ const PlayerProfile: React.FC = () => {
           hockey_love: updates.hockey_love || null,
           season_goals: updates.season_goals || null,
         })
-        .eq("id", id);
+        .eq("id", id)
+        .select("id")
+        .single();
 
       if (error) throw error;
     },
@@ -365,7 +373,7 @@ const PlayerProfile: React.FC = () => {
         await supabase.storage
           .from("player-photos")
           .remove([fileName])
-          .catch(() => undefined);
+          .catch((): undefined => undefined);
       setPhotoFailed(true);
       setPhotoMessage(
         "Photo not saved. Your previous photo is unchanged. Choose the image again to retry (5 MB or smaller).",
@@ -424,6 +432,27 @@ const PlayerProfile: React.FC = () => {
     return null;
   }
 
+  if (profileError) {
+    return (
+      <AppShell hideNav>
+        <PageContainer>
+          <AppCard>
+            <div role="alert" className="space-y-3">
+              <h1 className="font-bold">Couldn’t load this player profile</h1>
+              <p className="text-sm text-muted-foreground">
+                Check your connection and try again. This profile may also be
+                unavailable to your account.
+              </p>
+              <Button onClick={() => void retryProfile()}>Try again</Button>
+              <Button variant="outline" onClick={() => navigate("/players")}>
+                Your players
+              </Button>
+            </div>
+          </AppCard>
+        </PageContainer>
+      </AppShell>
+    );
+  }
   if (!player) {
     return (
       <AppShell hideNav>

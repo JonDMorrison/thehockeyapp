@@ -668,7 +668,11 @@ const PlayerHome: React.FC = () => {
                 aria-hidden="true"
                 className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary"
               >
-                <Camera className="h-3 w-3" />
+                {canManageProfile ? (
+                  <Camera className="h-3 w-3" />
+                ) : (
+                  <User className="h-3 w-3" />
+                )}
               </span>
             </Link>
             <div className="min-w-0 flex-1">

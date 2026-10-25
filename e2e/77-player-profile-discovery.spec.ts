@@ -85,14 +85,12 @@ test("family discovers profile and photo upload, edits survive replacement, and 
     remember();
     const token = randomUUID().replaceAll("-", "");
     ok(
-      await coach.client
-        .from("team_invites")
-        .insert({
-          team_id: team,
-          token,
-          created_by_user_id: coach.id,
-          expires_at: new Date(Date.now() + 86400000).toISOString(),
-        }),
+      await coach.client.from("team_invites").insert({
+        team_id: team,
+        token,
+        created_by_user_id: coach.id,
+        expires_at: new Date(Date.now() + 86400000).toISOString(),
+      }),
     );
     ok(
       await parent.client.rpc("join_team_with_invite", {
@@ -111,9 +109,30 @@ test("family discovers profile and photo upload, edits survive replacement, and 
       exact: true,
     });
     await expect(prompt).toBeVisible();
+    await page.screenshot({
+      path: test.info().outputPath("family-profile-prompt.png"),
+      fullPage: true,
+    });
+    let profileReadFails = true;
+    await page.route("**/rest/v1/players?**", (r) =>
+      profileReadFails && r.request().method() === "GET"
+        ? r.fulfill({
+            status: 503,
+            json: { message: "Controlled profile read failure" },
+          })
+        : r.continue(),
+    );
     await prompt
       .getByRole("link", { name: "Add player photo", exact: true })
       .click();
+    await expect(
+      page.getByRole("heading", {
+        name: "Couldn’t load this player profile",
+        exact: true,
+      }),
+    ).toBeVisible();
+    profileReadFails = false;
+    await page.getByRole("button", { name: "Try again", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "Add player photo", exact: true }),
     ).toBeInViewport();
@@ -147,6 +166,15 @@ test("family discovers profile and photo upload, edits survive replacement, and 
           .evaluate((img: HTMLImageElement) => img.naturalWidth),
       )
       .toBeGreaterThan(0);
+    for (const width of [320, 390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
     let failUpload = true;
     await page.route("**/storage/v1/object/player-photos/**", (r) =>
       failUpload && r.request().method() === "POST"
@@ -171,8 +199,9 @@ test("family discovers profile and photo upload, edits survive replacement, and 
       ).profile_photo_url,
     ).toBe(firstReference);
     failUpload = false;
-    await page
-      .getByRole("button", { name: "Edit player details", exact: true })
+    await page.goto(`/players/${child}/home`);
+    await prompt
+      .getByRole("link", { name: "Complete player profile", exact: true })
       .click();
     await page.locator("#fav_nhl_player").fill("Quinn Hughes");
     await page.locator("#hockey_love").fill("Playing with my teammates");
