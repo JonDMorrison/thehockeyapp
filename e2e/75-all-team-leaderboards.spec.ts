@@ -361,7 +361,7 @@ test("late-joining family and independent player can browse all team leaderboard
     await expect(page.getByLabel("Reason for correction")).toBeVisible();
     // Daily cap controls are coach-only and recalculate raw effort for everyone.
     await page.getByText("Daily cap settings", { exact: true }).click();
-    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
     await page.getByLabel("Daily leaderboard cap").fill("300");
     await page
       .getByRole("button", { name: "Save daily cap", exact: true })
@@ -468,7 +468,7 @@ test("late-joining family and independent player can browse all team leaderboard
     await page.getByLabel(/^email/i).fill(coach.email);
     await page.getByLabel(/^password/i).fill(coach.password);
     await page.getByRole("button", { name: "Sign In", exact: true }).click();
-    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
     await page.getByLabel("Daily leaderboard cap").fill("175");
     await page
       .getByRole("button", { name: "Publish challenge", exact: true })
