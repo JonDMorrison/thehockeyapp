@@ -1,3 +1,7 @@
+reset role;
+create table public.practice_cards(id uuid primary key,date date);
+create table public.practice_tasks(id uuid primary key,practice_card_id uuid references public.practice_cards(id));
+create table public.task_completions(player_id uuid,practice_task_id uuid,shots_logged integer);
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 select public.configure_shooting_rules('30000000-0000-0000-0000-000000000004',0,300,1000);
@@ -9,4 +13,11 @@ select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0
 select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000001',true))=0,'Badge reveal claim is idempotent');
 select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000001',false))=3,'Earned badges remain available');
 select public.test_denied($q$select public.shooting_rewards('20000000-0000-0000-0000-000000000002',true)$q$,'42501','Other families cannot claim badges');
+reset role;
+insert into public.practice_cards values('60000000-0000-0000-0000-000000000001',current_date);
+insert into public.practice_tasks values('70000000-0000-0000-0000-000000000001','60000000-0000-0000-0000-000000000001');
+insert into public.task_completions values('20000000-0000-0000-0000-000000000003','70000000-0000-0000-0000-000000000001',100);
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
+select public.test_assert(jsonb_array_length(public.shooting_rewards('20000000-0000-0000-0000-000000000003',false))=2,'Workout-only practice earns first-shot and century milestones');
 reset role;
