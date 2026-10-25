@@ -228,9 +228,11 @@ const PlayerProfile: React.FC = () => {
     enabled: !!user && !!id,
   });
 
-  // Initialize edit form when player data loads
+  const initializedPlayer = useRef<string | null>(null);
+  // Initialize once per player even when a direct edit link opens before data arrives.
   useEffect(() => {
-    if (player && !isEditing) {
+    if (player && (initializedPlayer.current !== player.id || !isEditing)) {
+      initializedPlayer.current = player.id;
       setEditForm({
         first_name: player.first_name || "",
         last_initial: player.last_initial || "",
@@ -245,15 +247,20 @@ const PlayerProfile: React.FC = () => {
     }
   }, [player, isEditing]);
 
-  const isOwner =
-    player?.owner_user_id === user?.id ||
-    player?.player_guardians?.some(
-      (g: Guardian) => g.user_id === user?.id && g.guardian_role === "owner",
-    );
-
-  const canEdit =
-    isOwner ||
-    player?.player_guardians?.some((g: Guardian) => g.user_id === user?.id);
+  const isOwner = Boolean(
+    user &&
+    player &&
+    (player.owner_user_id === user.id ||
+      player.player_guardians?.some(
+        (g: Guardian) => g.user_id === user.id && g.guardian_role === "owner",
+      )),
+  );
+  const canEdit = Boolean(
+    user &&
+    player &&
+    (isOwner ||
+      player.player_guardians?.some((g: Guardian) => g.user_id === user.id)),
+  );
 
   useEffect(() => {
     setIsEditing(false);

@@ -5,6 +5,7 @@ import fs from "node:fs";
 test.use({
   storageState: { cookies: [], origins: [] },
   viewport: { width: 390, height: 844 },
+  actionTimeout: 15000,
 });
 test("family discovers profile and photo upload, edits survive replacement, and coach opens the updated player card", async ({
   page,
@@ -203,6 +204,7 @@ test("family discovers profile and photo upload, edits survive replacement, and 
     await prompt
       .getByRole("link", { name: "Complete player profile", exact: true })
       .click();
+    await expect(page.locator("#first_name")).toHaveValue("Portrait QA");
     await page.locator("#fav_nhl_player").fill("Quinn Hughes");
     await page.locator("#hockey_love").fill("Playing with my teammates");
     await page.locator("#season_goals").fill("Build a confident wrist shot");
