@@ -1807,6 +1807,7 @@ export type Database = {
       shooting_challenges: {
         Row: {
           created_at: string
+          daily_cap: number
           created_by: string
           end_date: string
           id: string
@@ -1816,6 +1817,7 @@ export type Database = {
           timezone: string
         }
         Insert: {
+          daily_cap?: number
           created_at?: string
           created_by: string
           end_date: string
@@ -1826,6 +1828,7 @@ export type Database = {
           timezone: string
         }
         Update: {
+          daily_cap?: number
           created_at?: string
           created_by?: string
           end_date?: string
@@ -3285,6 +3288,14 @@ export type Database = {
           p_season_goals?: string
           p_shoots?: string
         }
+        Returns: Json
+      }
+      create_capped_shooting_challenge: {
+        Args: { p_id: string; p_team: string; p_name: string; p_start: string; p_end: string; p_timezone: string; p_daily_cap: number }
+        Returns: string
+      }
+      set_shooting_challenge_cap: {
+        Args: { p_id: string; p_daily_cap: number; p_expected_cap: number }
         Returns: Json
       }
       create_shooting_challenge: {

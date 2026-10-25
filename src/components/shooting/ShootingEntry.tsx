@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Award, Loader2 } from "lucide-react";
 
 interface Props {
   snapshot: ShootingSnapshot;
@@ -67,6 +67,9 @@ export function ShootingEntry({
   const canSave = correction
     ? date <= snapshot.today
     : snapshot.status === "Live" && player.active_member;
+  const cap = snapshot.challenge.daily_cap ?? 250;
+  const credited = Math.min(Number(value) || 0, cap);
+  const bonus = Math.max((Number(value) || 0) - cap, 0);
   const valid = /^\d+$/.test(value) && Number(value) <= 10000;
 
   useEffect(() => {
@@ -180,6 +183,38 @@ export function ShootingEntry({
           aria-describedby={`shot-help-${player.player_id}`}
         />
       </div>
+      {valid && (
+        <div
+          aria-label="Daily shot breakdown"
+          className="grid grid-cols-2 gap-3 rounded-xl border border-border bg-background/50 p-4"
+        >
+          <div>
+            <p className="text-2xl font-bold tabular-nums">
+              {credited.toLocaleString()}
+              <span className="text-xs font-normal text-muted-foreground">
+                {" "}
+                / {cap.toLocaleString()}
+              </span>
+            </p>
+            <p className="text-xs text-muted-foreground">Leaderboard shots</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold tabular-nums text-rose-300">
+              +{bonus.toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground">Bonus shots</p>
+          </div>
+          <div
+            className="col-span-2 h-2 rounded-full bg-muted overflow-hidden"
+            aria-hidden="true"
+          >
+            <div
+              className="h-full bg-primary rounded-full"
+              style={{ width: `${(credited / cap) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
       <div className="flex gap-2">
         {[25, 50, 100].map((n) => (
           <Button
@@ -198,7 +233,8 @@ export function ShootingEntry({
         className="text-xs text-muted-foreground"
       >
         Save the full daily total, not an additional amount. Whole numbers from
-        0 to 10,000.
+        0 to 10,000. Up to {cap.toLocaleString()} per day count toward the
+        leaderboard; the rest are automatically saved as bonus shots.
       </p>
       {correction && (
         <div>
@@ -295,8 +331,23 @@ export function ShootingEntry({
       >
         {message}
       </p>
+      {player.bonus_boss && (
+        <div className="flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/10 p-4">
+          <Award
+            aria-hidden="true"
+            className="h-8 w-8 shrink-0 text-rose-300"
+          />
+          <div>
+            <p className="font-bold">Bonus Boss</p>
+            <p className="text-xs text-muted-foreground">
+              {(player.bonus_total ?? 0).toLocaleString()} bonus shots saved.
+              Extra effort, celebrated!
+            </p>
+          </div>
+        </div>
+      )}
       <p className="text-sm">
-        {correction ? "Player’s challenge total:" : "Your challenge total:"}{" "}
+        {correction ? "Player’s leaderboard total:" : "Your leaderboard total:"}{" "}
         <strong className="tabular-nums">
           {player.total.toLocaleString()} shots
         </strong>

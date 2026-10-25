@@ -116,7 +116,7 @@ test("fresh mobile coach and family go from demo to a shared challenge and saved
   let lost = false;
   const publications: string[] = [];
   await page.route(
-    "**/rest/v1/rpc/create_shooting_challenge",
+    "**/rest/v1/rpc/create_capped_shooting_challenge",
     async (route) => {
       publications.push(route.request().postDataJSON().p_id);
       if (!lost) {

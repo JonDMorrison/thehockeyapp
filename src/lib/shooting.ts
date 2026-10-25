@@ -7,6 +7,7 @@ export interface ShootingChallenge {
   start_date: string;
   end_date: string;
   timezone: string;
+  daily_cap?: number;
   status: "Scheduled" | "Live" | "Finished";
 }
 export interface ShootingPlayer {
@@ -15,6 +16,9 @@ export interface ShootingPlayer {
   last_initial: string | null;
   eligible_from: string;
   total: number;
+  raw_total?: number;
+  bonus_total?: number;
+  bonus_boss?: boolean;
   rank: number | null;
   is_mine: boolean;
   active_member: boolean;

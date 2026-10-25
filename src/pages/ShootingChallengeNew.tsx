@@ -50,6 +50,7 @@ export default function ShootingChallengeNew() {
         /^[0-9a-f-]{36}$/i.test(saved.publication?.id) &&
         typeof saved.publication?.payload === "string"
         ? (saved as {
+            dailyCap?: string;
             name: string;
             zone: string;
             start: string;
@@ -77,6 +78,11 @@ export default function ShootingChallengeNew() {
   const [customEnd, setCustomEnd] = useState(
     () => draft?.customEnd ?? addCalendarDays(dateInZone(zones[0]), 6),
   );
+  const [dailyCap, setDailyCap] = useState(draft?.dailyCap ?? "250");
+  const validCap =
+    /^\d+$/.test(dailyCap) &&
+    Number(dailyCap) >= 1 &&
+    Number(dailyCap) <= 10000;
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
@@ -93,6 +99,7 @@ export default function ShootingChallengeNew() {
           start,
           duration,
           customEnd,
+          dailyCap,
           publication: publication.current,
         }),
       );
@@ -110,13 +117,14 @@ export default function ShootingChallengeNew() {
           start,
           duration,
           customEnd,
+          dailyCap,
           publication: publication.current,
         }),
       );
     } catch {
       /* Optional session draft. */
     }
-  }, [draftKey, name, zone, start, duration, customEnd]);
+  }, [draftKey, name, zone, start, duration, customEnd, dailyCap]);
   const end =
     duration === "custom"
       ? customEnd
@@ -145,12 +153,19 @@ export default function ShootingChallengeNew() {
   }, [loading, user, navigate, teamId, search]);
   const publish = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (busyRef.current || !user || !teamId) return;
+    if (busyRef.current || !user || !teamId || !validCap) return;
     busyRef.current = true;
     setBusy(true);
     setError("");
     try {
-      const payload = JSON.stringify([teamId, name.trim(), start, end, zone]);
+      const payload = JSON.stringify([
+        teamId,
+        name.trim(),
+        start,
+        end,
+        zone,
+        dailyCap,
+      ]);
       if (
         publication.current.payload &&
         publication.current.payload !== payload
@@ -158,14 +173,18 @@ export default function ShootingChallengeNew() {
         publication.current.id = crypto.randomUUID();
       publication.current.payload = payload;
       rememberDraft();
-      const { data, error } = await supabase.rpc("create_shooting_challenge", {
-        p_id: publication.current.id,
-        p_team: teamId,
-        p_name: name.trim(),
-        p_start: start,
-        p_end: end,
-        p_timezone: zone,
-      });
+      const { data, error } = await supabase.rpc(
+        "create_capped_shooting_challenge",
+        {
+          p_id: publication.current.id,
+          p_team: teamId,
+          p_name: name.trim(),
+          p_start: start,
+          p_end: end,
+          p_timezone: zone,
+          p_daily_cap: Number(dailyCap),
+        },
+      );
       if (error) throw error;
       try {
         sessionStorage.removeItem(draftKey);
@@ -305,9 +324,30 @@ export default function ShootingChallengeNew() {
                   {zone.replace(/_/g, " ")}.
                 </p>
               )}
+              <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
+                <Label htmlFor="daily-cap">Daily leaderboard cap</Label>
+                <Input
+                  id="daily-cap"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={10000}
+                  step={1}
+                  required
+                  value={dailyCap}
+                  onChange={(e) => setDailyCap(e.target.value)}
+                  disabled={busy}
+                  aria-describedby="cap-help"
+                />
+                <p id="cap-help" className="text-xs text-muted-foreground">
+                  250 recommended. Extra shots become bonus effort and earn the
+                  Bonus Boss badge, without changing rankings.
+                </p>
+              </div>
               <p className="text-sm text-muted-foreground">
-                Most shots wins. Ties share a place. Results are visible only
-                inside your team. You can invite families after publishing.
+                Most leaderboard shots wins. Ties share a place. Results are
+                visible only inside your team. You can invite families after
+                publishing.
               </p>
               {error && (
                 <p role="alert" className="text-sm text-destructive">
@@ -317,7 +357,14 @@ export default function ShootingChallengeNew() {
               <Button
                 type="submit"
                 className="min-h-12 w-full font-bold"
-                disabled={busy || !name.trim() || !start || !end || end < start}
+                disabled={
+                  busy ||
+                  !validCap ||
+                  !name.trim() ||
+                  !start ||
+                  !end ||
+                  end < start
+                }
               >
                 {busy && (
                   <Loader2

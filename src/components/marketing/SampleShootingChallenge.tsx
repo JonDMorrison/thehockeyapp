@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setSelectedRole } from "./GetStartedModal";
 
-function Standings({ shots }: { shots: number }) {
+function Standings({ shots: rawShots }: { shots: number }) {
+  const shots = Math.min(rawShots, 250);
   const players = [
     { name: "Alex", shots: 200, mine: false },
     { name: "Sam", shots: 150, mine: false },
@@ -213,7 +214,8 @@ export function SampleShootingChallenge() {
               </div>
             </fieldset>
             <p className="mt-4 text-sm text-muted-foreground">
-              {days}-day sample · Most shots wins · Ties share a place
+              {days}-day sample · 250 shots/day leaderboard cap · Ties share a
+              place
             </p>
             {!started ? (
               <>
@@ -294,7 +296,8 @@ export function SampleShootingChallenge() {
                     >
                       Save the full daily total, not an additional amount. Whole
                       numbers from 0 to 10,000. Saving again replaces this
-                      sample total.
+                      sample total. Up to 250 count toward the leaderboard;
+                      extras are bonus shots.
                     </p>
                     <Button
                       className="mt-5 min-h-12 w-full font-bold"
@@ -316,7 +319,7 @@ export function SampleShootingChallenge() {
                     </h3>
                     <p className="mt-3 text-sm leading-6 text-muted-foreground">
                       {view === "coach"
-                        ? `Your player has ${saved.toLocaleString()} sample shots. The team has ${(350 + saved).toLocaleString()} shots altogether.`
+                        ? `Your player has ${Math.min(saved, 250).toLocaleString()} sample shots. The team has ${(350 + Math.min(saved, 250)).toLocaleString()} shots altogether.`
                         : `Your player put in ${saved.toLocaleString()} sample shots. ${saved > 0 ? "A little progress is worth a high-five." : "Their next small win starts with the first few reps."}`}
                     </p>
                     <Button
@@ -351,6 +354,12 @@ export function SampleShootingChallenge() {
                 </div>
               </div>
               <Standings shots={saved} />
+              {saved > 250 && (
+                <p className="mt-4 rounded-xl bg-primary/10 p-3 text-sm text-primary">
+                  <strong>Bonus Boss!</strong> +{(saved - 250).toLocaleString()}{" "}
+                  bonus shots. Extra effort, outside the rankings.
+                </p>
+              )}
               <p className="mt-4 text-xs leading-5 text-muted-foreground">
                 {rank === 1
                   ? "Your player is setting the pace. Keep cheering for the whole team."
