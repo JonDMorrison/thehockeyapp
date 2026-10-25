@@ -346,7 +346,7 @@ export default function ShootingChallenge() {
                 </h2>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Up to {(c.daily_cap ?? 250).toLocaleString()} shots per player,
+                Up to {(c.daily_cap ?? 300).toLocaleString()} shots per player,
                 per day count here. Extra shots earn bonus recognition, never
                 rank. Ties share a place. Player/parent reported. Only visible
                 inside your team.
@@ -456,7 +456,7 @@ export default function ShootingChallenge() {
               <ShootingCapSettings
                 key={c.id}
                 id={c.id}
-                cap={c.daily_cap ?? 250}
+                cap={c.daily_cap ?? 300}
               />
             )}
             <section
