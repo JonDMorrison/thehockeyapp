@@ -169,7 +169,7 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByLabel("Challenge name", { exact: true }),
     ).not.toBeVisible();
-    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("250");
+    await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
     if (width === 390) await page.getByLabel("Daily leaderboard cap").fill("150");
     await page
       .getByRole("button", { name: "Create challenge & invite families" })
@@ -187,7 +187,7 @@ for (const width of [390, 1280]) {
       page.getByRole("button", { name: "Copy invitation", exact: true }),
     ).toBeVisible();
     expect(teamName).toBe("Ice Wolves");
-    expect(publication!.p_daily_cap).toBe(width === 390 ? 150 : 250);
+    expect(publication!.p_daily_cap).toBe(width === 390 ? 150 : 300);
     expect(
       (Date.parse(publication!.p_end) - Date.parse(publication!.p_start)) /
         86400000,
