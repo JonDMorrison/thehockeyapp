@@ -348,10 +348,11 @@ export default function ShootingChallenge() {
                 </h2>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Up to {(c.daily_cap ?? 300).toLocaleString()} shots per player,
-                per day count here. Extra practice stays in private history and
-                never changes rank. Ties share a place. Player/parent reported.
-                Only visible inside your team.
+                {c.daily_cap === 0
+                  ? "No daily competition cap. All logged shots count here."
+                  : `Up to ${(c.daily_cap ?? 300).toLocaleString()} shots per player per day count here. Extra practice stays in private history.`}{" "}
+                Ties share a place. Player/parent reported. Only visible inside
+                your team.
               </p>
               <ShootingStandings snapshot={data} viewerId={user!.id} />
             </AppCard>
