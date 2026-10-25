@@ -126,23 +126,70 @@ try {
   console.log(
     "PASS: Simultaneous cap edits reject stale changes rather than silently overwriting",
   );
-  const beforeUpgrade = run("psql", [...args, "-c",
+  const beforeUpgrade = run("psql", [
+    ...args,
+    "-c",
     "select coalesce(jsonb_agg(to_jsonb(d) order by challenge_id,player_id,shot_date),'[]'::jsonb) from public.shooting_challenge_days d;",
   ]);
-  const customCap = run("psql", [...args, "-c",
+  const customCap = run("psql", [
+    ...args,
+    "-c",
     "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000003';",
   ]);
-  run("psql", [...args, "-f", resolve("supabase/migrations/20261025181152_shooting_daily_cap_300.sql")]);
-  assert.equal(run("psql", [...args, "-c",
-    "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000001';",
-  ]).trim().split("\n").at(-1), "300");
-  assert.equal(run("psql", [...args, "-c",
-    "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000003';",
-  ]), customCap);
-  assert.equal(run("psql", [...args, "-c",
-    "select coalesce(jsonb_agg(to_jsonb(d) order by challenge_id,player_id,shot_date),'[]'::jsonb) from public.shooting_challenge_days d;",
-  ]), beforeUpgrade);
-  console.log("PASS: Standard caps upgrade to 300, custom caps and every raw entry remain unchanged");
+  run("psql", [
+    ...args,
+    "-f",
+    resolve("supabase/migrations/20261025181152_shooting_daily_cap_300.sql"),
+  ]);
+  assert.equal(
+    run("psql", [
+      ...args,
+      "-c",
+      "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000001';",
+    ])
+      .trim()
+      .split("\n")
+      .at(-1),
+    "300",
+  );
+  assert.equal(
+    run("psql", [
+      ...args,
+      "-c",
+      "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000003';",
+    ]),
+    customCap,
+  );
+  assert.equal(
+    run("psql", [
+      ...args,
+      "-c",
+      "select coalesce(jsonb_agg(to_jsonb(d) order by challenge_id,player_id,shot_date),'[]'::jsonb) from public.shooting_challenge_days d;",
+    ]),
+    beforeUpgrade,
+  );
+  console.log(
+    "PASS: Standard caps upgrade to 300, custom caps and every raw entry remain unchanged",
+  );
+  run("psql", [
+    ...args,
+    "-c",
+    "create function public.is_player_guardian(p uuid,u uuid) returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.player_guardians where player_id=p and user_id=u)$$;",
+  ]);
+  const audit = await asyncExec(join(bin, "psql"), [
+    ...args,
+    "-f",
+    resolve(
+      "supabase/migrations/20261025190319_product_audit_photo_and_fairness.sql",
+    ),
+    "-f",
+    resolve(
+      "supabase/migrations/20261025190418_preserve_shooting_daily_upsert_key.sql",
+    ),
+    "-f",
+    resolve("tests/database/product-audit-release.sql"),
+  ]);
+  process.stdout.write(audit.stderr.replace(/^.*NOTICE:  /gm, ""));
   const migration = readFileSync(
     "supabase/migrations/20261018151055_shooting_challenges.sql",
     "utf8",
