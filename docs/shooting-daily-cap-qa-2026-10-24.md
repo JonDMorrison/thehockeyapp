@@ -18,3 +18,5 @@ Existing challenges receive 250 automatically. For example, an existing 3,000-sh
 - Two reviewed migrations applied independently; no unrelated migration-history repair. Security-advisor counts unchanged, no additional exposed SECURITY DEFINER endpoints.
 
 Publication retries lock the challenge row before comparing caps, preventing an old publication request from racing with a coach cap change. Both new public RPCs are invokers; private implementations enforce staff access with an empty search path.
+
+The CI dependency audit also surfaced GHSA-mrhx-c7xc-m3w5 in the existing Zod 3 dependency. Updated runtime Zod to the patched 4.6.7 line, with a compatible form resolver and the documented `issues`/enum-error API changes. Runtime dependency audit reports zero vulnerabilities; form/auth browser regression checks remain part of the release gates.

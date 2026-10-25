@@ -165,7 +165,7 @@ const Auth: React.FC = () => {
   const handleForgotPassword = async () => {
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
-      setErrors({ email: emailResult.error.errors[0]?.message || "Please enter a valid email address" });
+      setErrors({ email: emailResult.error.issues[0]?.message || "Please enter a valid email address" });
       focusFirstInvalidField({ email: "invalid" }, { email: "email" });
       return;
     }

@@ -76,7 +76,7 @@ const SoloSetup: React.FC = () => {
       // Validate
       const validation = playerSchema.safeParse({ first_name: firstName, birth_year: birthYear });
       if (!validation.success) {
-        throw new Error(validation.error.errors[0].message);
+        throw new Error(validation.error.issues[0].message);
       }
 
       if (!adultAcknowledged) throw new Error("An adult must confirm responsibility for this profile.");
