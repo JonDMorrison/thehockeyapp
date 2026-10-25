@@ -360,11 +360,11 @@ test("late-joining family and independent player can browse all team leaderboard
     await page.getByRole("link", { name: "Open coach tools" }).click();
     await expect(page.getByLabel("Reason for correction")).toBeVisible();
     // Rules are coach-only and the scoring cap locks after the first entry.
-    await page.getByText("Daily cap settings", { exact: true }).click();
+
     await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
-    await expect(page.getByLabel("Daily leaderboard cap")).toBeDisabled();
+    await expect(page.getByLabel("Daily leaderboard cap")).toBeEnabled();
     await page
-      .getByRole("button", { name: "Save daily cap", exact: true })
+      .getByRole("button", { name: "Save shot rules", exact: true })
       .click();
     await expect(page.getByText("Challenge rules saved.")).toBeVisible();
     await page.getByLabel("Daily shot total").fill("3000");
@@ -392,7 +392,7 @@ test("late-joining family and independent player can browse all team leaderboard
       await page.getByLabel(/^password/i).fill(actor.password);
       await page.getByRole("button", { name: "Sign In", exact: true }).click();
       await expect(
-        page.getByText("Daily cap settings", { exact: true }),
+        page.getByText("Daily shot rules", { exact: true }),
       ).toHaveCount(0);
       await expect(page.getByLabel("Daily shot total")).toHaveValue("75");
       await page.getByLabel("Daily shot total").fill("3000");
