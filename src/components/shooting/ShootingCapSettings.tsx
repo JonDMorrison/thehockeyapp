@@ -71,7 +71,7 @@ export function ShootingCapSettings({ id, cap }: { id: string; cap: number }) {
         <p id="edit-cap-help" className="text-xs text-muted-foreground">
           Applies to every player and every day in this challenge, including
           past entries. Extra shots stay saved as bonus effort. Rankings and
-          Bonus Boss badges update to match. 250 recommended.
+          Bonus Boss badges update to match. 300 recommended.
         </p>
         <Button type="submit" disabled={busy || !valid}>
           {busy ? "Saving…" : "Save daily cap"}

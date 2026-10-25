@@ -67,7 +67,7 @@ export function ShootingEntry({
   const canSave = correction
     ? date <= snapshot.today
     : snapshot.status === "Live" && player.active_member;
-  const cap = snapshot.challenge.daily_cap ?? 250;
+  const cap = snapshot.challenge.daily_cap ?? 300;
   const credited = Math.min(Number(value) || 0, cap);
   const bonus = Math.max((Number(value) || 0) - cap, 0);
   const valid = /^\d+$/.test(value) && Number(value) <= 10000;

@@ -78,7 +78,7 @@ export default function ShootingChallengeNew() {
   const [customEnd, setCustomEnd] = useState(
     () => draft?.customEnd ?? addCalendarDays(dateInZone(zones[0]), 6),
   );
-  const [dailyCap, setDailyCap] = useState(draft?.dailyCap ?? "250");
+  const [dailyCap, setDailyCap] = useState(draft?.dailyCap ?? "300");
   const validCap =
     /^\d+$/.test(dailyCap) &&
     Number(dailyCap) >= 1 &&
@@ -340,7 +340,7 @@ export default function ShootingChallengeNew() {
                   aria-describedby="cap-help"
                 />
                 <p id="cap-help" className="text-xs text-muted-foreground">
-                  250 recommended. Extra shots become bonus effort and earn the
+                  300 recommended. Extra shots become bonus effort and earn the
                   Bonus Boss badge, without changing rankings.
                 </p>
               </div>
