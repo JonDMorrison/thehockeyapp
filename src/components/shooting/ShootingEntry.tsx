@@ -1,5 +1,6 @@
+import { readShotDraft, storeShotDraft } from "@/lib/shootingDrafts";
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   type ShotSave,
@@ -10,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Award, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   snapshot: ShootingSnapshot;
@@ -32,27 +33,7 @@ export function ShootingEntry({
     (d) => d.player_id === player.player_id && d.shot_date === date,
   );
   const storageKey = `shot-draft:${viewerId}:${id}:${player.player_id}:${date}:${correction}`;
-  const [draft] = useState(() => {
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(storageKey) || "null");
-      return saved &&
-        typeof saved.value === "string" &&
-        Number.isInteger(saved.version) &&
-        saved.version >= 0 &&
-        typeof saved.request === "string" &&
-        /^[0-9a-f-]{36}$/i.test(saved.request) &&
-        typeof saved.reason === "string"
-        ? (saved as {
-            value: string;
-            version: number;
-            request: string;
-            reason: string;
-          })
-        : null;
-    } catch {
-      return null;
-    }
-  });
+  const [draft] = useState(() => readShotDraft(storageKey));
   const [value, setValue] = useState(draft?.value ?? String(day?.shots ?? 0));
   const [version, setVersion] = useState(draft?.version ?? day?.version ?? 0);
   const [reason, setReason] = useState(draft?.reason ?? "");
@@ -60,8 +41,18 @@ export function ShootingEntry({
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
   const request = useRef(draft?.request || crypto.randomUUID());
-  const [message, setMessage] = useState("");
-  const [conflict, setConflict] = useState<ShotSave | null>(null);
+  const [message, setMessage] = useState(
+    draft?.problem ||
+      (draft?.queued
+        ? "Waiting to sync. Saved on this device."
+        : draft
+          ? "Unsaved draft restored from this device."
+          : ""),
+  );
+  const [queued, setQueued] = useState(!!draft?.queued);
+  const [conflict, setConflict] = useState<ShotSave | null>(
+    draft?.conflict || null,
+  );
   const [failed, setFailed] = useState(false);
   const minDate = player.eligible_from;
   const canSave = correction
@@ -81,21 +72,95 @@ export function ShootingEntry({
   useEffect(() => {
     try {
       if (dirty)
-        sessionStorage.setItem(
-          storageKey,
-          JSON.stringify({ value, version, request: request.current, reason }),
-        );
-      else sessionStorage.removeItem(storageKey);
+        storeShotDraft(storageKey, {
+          value,
+          version,
+          request: request.current,
+          reason,
+          userId: viewerId,
+          challengeId: id,
+          playerId: player.player_id,
+          date,
+          correction,
+          queued,
+          conflict: conflict || undefined,
+          problem: failed ? message : undefined,
+        });
+      else localStorage.removeItem(storageKey);
     } catch {
-      /* Storage may be disabled; the entered value still remains in memory. */
+      setMessage(
+        "This device cannot keep a draft. Stay on this page and reconnect to save.",
+      );
     }
-  }, [dirty, value, version, reason, storageKey]);
+  }, [
+    dirty,
+    value,
+    version,
+    reason,
+    storageKey,
+    viewerId,
+    id,
+    player.player_id,
+    date,
+    correction,
+    queued,
+    conflict,
+    failed,
+    message,
+  ]);
+  useEffect(() => {
+    const receive = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail.key !== storageKey || detail.request !== request.current)
+        return;
+      if (detail.result) {
+        setValue(String(detail.result.shots));
+        setVersion(detail.result.version);
+        setDirty(false);
+        setQueued(false);
+        setFailed(false);
+        setMessage("Shots saved after reconnecting.");
+        void queryClient.invalidateQueries({
+          queryKey: ["shooting-snapshot", id],
+        });
+      } else {
+        setMessage(detail.problem);
+        setFailed(true);
+        setConflict(detail.conflict || null);
+        setQueued(!!readShotDraft(storageKey)?.queued);
+      }
+    };
+    window.addEventListener("shooting-draft-result", receive);
+    return () => window.removeEventListener("shooting-draft-result", receive);
+  }, [storageKey, queryClient, id]);
 
+  const workoutShots = useQuery({
+    queryKey: ["workout-shot-suggestion", viewerId, player.player_id, date],
+    enabled: player.is_mine && !correction,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("task_completions")
+        .select(
+          "shots_logged, practice_tasks!inner(practice_cards!inner(date))",
+        )
+        .eq("player_id", player.player_id)
+        .eq("practice_tasks.practice_cards.date", date);
+      if (error) throw error;
+      return Math.min(
+        10000,
+        (data || []).reduce(
+          (sum, row) => sum + Math.max(0, row.shots_logged || 0),
+          0,
+        ),
+      );
+    },
+  });
   const edit = (next: string) => {
     request.current = crypto.randomUUID();
     setValue(next);
     setDirty(true);
-    setMessage("");
+    setQueued(false);
+    setMessage("Draft · not saved yet");
     setFailed(false);
   };
   const save = async () => {
@@ -105,8 +170,42 @@ export function ShootingEntry({
     setMessage("");
     setFailed(false);
     try {
-      if (!navigator.onLine)
-        throw new Error("You’re offline. Reconnect, then retry.");
+      if (!navigator.onLine) {
+        storeShotDraft(storageKey, {
+          value,
+          version,
+          request: request.current,
+          reason,
+          userId: viewerId,
+          challengeId: id,
+          playerId: player.player_id,
+          date,
+          correction,
+          queued: true,
+        });
+        setQueued(true);
+        setDirty(true);
+        setMessage("Waiting to sync. Saved on this device for this date.");
+        return;
+      }
+      // Prevent an already queued draft racing a manual online save.
+      try {
+        storeShotDraft(storageKey, {
+          value,
+          version,
+          request: request.current,
+          reason,
+          userId: viewerId,
+          challengeId: id,
+          playerId: player.player_id,
+          date,
+          correction,
+          queued: false,
+        });
+      } catch {
+        /* Online saves remain available without draft storage. */
+      }
+      setQueued(false);
       const { data, error } = await supabase.rpc(
         "save_shooting_challenge_day",
         {
@@ -129,6 +228,7 @@ export function ShootingEntry({
       setVersion(result.version);
       setValue(String(result.shots));
       setDirty(false);
+      setQueued(false);
       setMessage(
         `${result.shots.toLocaleString()} shots saved for ${date === snapshot.today ? "today" : displayShotDate(date)}.`,
       );
@@ -196,13 +296,13 @@ export function ShootingEntry({
                 / {cap.toLocaleString()}
               </span>
             </p>
-            <p className="text-xs text-muted-foreground">Leaderboard shots</p>
+            <p className="text-xs text-muted-foreground">Leaderboard points</p>
           </div>
           <div>
-            <p className="text-2xl font-bold tabular-nums text-rose-300">
+            <p className="text-2xl font-bold tabular-nums">
               +{bonus.toLocaleString()}
             </p>
-            <p className="text-xs text-muted-foreground">Bonus shots</p>
+            <p className="text-xs text-muted-foreground">Additional practice</p>
           </div>
           <div
             className="col-span-2 h-2 rounded-full bg-muted overflow-hidden"
@@ -228,13 +328,36 @@ export function ShootingEntry({
           </Button>
         ))}
       </div>
+      {!correction && Number(workoutShots.data) > 0 && (
+        <Button
+          variant="outline"
+          disabled={saving || queued || !canSave}
+          onClick={() => {
+            if (
+              window.confirm(
+                `Replace this challenge total with ${workoutShots.data} logged team workout shots for this date? Add any other practice manually before saving.`,
+              )
+            )
+              edit(String(workoutShots.data));
+          }}
+        >
+          Use {workoutShots.data} logged team workout shots
+        </Button>
+      )}
+      {workoutShots.isError && (
+        <Button variant="ghost" onClick={() => void workoutShots.refetch()}>
+          Retry workout shot suggestion
+        </Button>
+      )}
       <p
         id={`shot-help-${player.player_id}`}
         className="text-xs text-muted-foreground"
       >
-        Save the full daily total, not an additional amount. Whole numbers from
-        0 to 10,000. Up to {cap.toLocaleString()} per day count toward the
-        leaderboard; the rest are automatically saved as bonus shots.
+        Save the full daily total, not an additional amount. Workout shot logs
+        are separate; include them in this total once. Whole numbers from 0 to
+        10,000. Up to {cap.toLocaleString()} per day count toward the
+        leaderboard; the rest are automatically kept in private practice
+        history.
       </p>
       {correction && (
         <div>
@@ -270,6 +393,7 @@ export function ShootingEntry({
                 setVersion(conflict.version);
                 setConflict(null);
                 setDirty(false);
+                setQueued(false);
                 setFailed(false);
               }}
             >
@@ -296,6 +420,7 @@ export function ShootingEntry({
           saving ||
           !valid ||
           !!conflict ||
+          queued ||
           !canSave ||
           (correction && reason.trim().length < 3)
         }
@@ -306,13 +431,15 @@ export function ShootingEntry({
         )}
         {saving
           ? "Saving…"
-          : failed
-            ? "Retry save"
-            : correction
-              ? "Save correction"
-              : date === snapshot.today
-                ? "Save today’s total"
-                : "Save daily total"}
+          : queued
+            ? "Waiting to sync"
+            : failed
+              ? "Retry save"
+              : correction
+                ? "Save correction"
+                : date === snapshot.today
+                  ? "Save today’s total"
+                  : "Save daily total"}
       </Button>
       {!canSave && (
         <p className="text-sm text-muted-foreground">
@@ -331,21 +458,6 @@ export function ShootingEntry({
       >
         {message}
       </p>
-      {player.bonus_boss && (
-        <div className="flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/10 p-4">
-          <Award
-            aria-hidden="true"
-            className="h-8 w-8 shrink-0 text-rose-300"
-          />
-          <div>
-            <p className="font-bold">Bonus Boss</p>
-            <p className="text-xs text-muted-foreground">
-              {(player.bonus_total ?? 0).toLocaleString()} bonus shots saved.
-              Extra effort, celebrated!
-            </p>
-          </div>
-        </div>
-      )}
       <p className="text-sm">
         {correction ? "Player’s leaderboard total:" : "Your leaderboard total:"}{" "}
         <strong className="tabular-nums">
