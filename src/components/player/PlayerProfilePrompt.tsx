@@ -37,7 +37,7 @@ export function PlayerProfilePrompt({
           <p className="text-xs font-semibold text-primary">
             Your player card · Optional
           </p>
-          <h2 className="mt-1 text-lg font-bold">
+          <h2 className="mt-1 break-words text-lg font-bold">
             Let the team meet {player.first_name}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
