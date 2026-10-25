@@ -240,6 +240,11 @@ const PlayerProfile: React.FC = () => {
         );
         if (
           draft &&
+          (player.owner_user_id === user?.id ||
+            player.player_guardians?.some(
+              (g: Guardian) =>
+                g.user_id === user?.id && g.guardian_role === "owner",
+            )) &&
           Object.keys(savedForm).every((key) => typeof draft[key] === "string")
         ) {
           setEditForm(draft);
@@ -254,7 +259,7 @@ const PlayerProfile: React.FC = () => {
       }
       if (!recovered) setEditForm(savedForm);
     }
-  }, [player, isEditing, profileDraftKey]);
+  }, [player, isEditing, profileDraftKey, user?.id]);
 
   const isOwner = Boolean(
     user &&
@@ -348,7 +353,11 @@ const PlayerProfile: React.FC = () => {
         t("players.profile.toastUpdatedTitle"),
         t("players.profile.toastUpdatedDescription"),
       );
-      localStorage.removeItem(profileDraftKey);
+      try {
+        localStorage.removeItem(profileDraftKey);
+      } catch {
+        /* Saving online does not require draft storage. */
+      }
       setDraftNotice("");
       setIsEditing(false);
     },
