@@ -139,7 +139,7 @@ export function ChallengeLinks({
                 {mine.total.toLocaleString()}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Leaderboard shots
+                Leaderboard points
               </p>
             </div>
             <p className="max-w-[12rem] border-l border-border pl-4 text-sm leading-6 text-muted-foreground">
@@ -155,9 +155,10 @@ export function ChallengeLinks({
             Open the challenge to see your team’s progress.
           </p>
         )}
-        {mine?.bonus_boss && (
-          <p className="mb-4 text-sm font-semibold text-primary">
-            Bonus Boss · +{(mine.bonus_total ?? 0).toLocaleString()} bonus shots
+        {mine && (mine.raw_total ?? mine.total) > mine.total && (
+          <p className="mb-4 text-sm text-muted-foreground">
+            Actual practice: {(mine.raw_total ?? mine.total).toLocaleString()}{" "}
+            shots. Additional practice is private and does not affect rank.
           </p>
         )}
         <Button
@@ -312,7 +313,7 @@ export function ChallengeLinks({
                     {shots.toLocaleString()}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Leaderboard shots
+                    Leaderboard points
                   </p>
                 </div>
                 <div className="border-l border-border pl-5">
