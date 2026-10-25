@@ -1,4 +1,5 @@
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
+import { PlayerProfilePrompt } from "@/components/player/PlayerProfilePrompt";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -47,6 +48,7 @@ import {
   Target,
   CalendarDays,
   Settings,
+  Camera,
 } from "lucide-react";
 import { WeeklySummaryCard } from "@/components/summary/WeeklySummaryCard";
 import { NotificationBell } from "@/components/app/NotificationBell";
@@ -124,6 +126,22 @@ const PlayerHome: React.FC = () => {
     },
     enabled: !!user && !!id,
   });
+
+  const profileAccess = useQuery({
+    queryKey: ["player-edit-access", id, user?.id],
+    enabled: !!user && !!player && player.owner_user_id !== user.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("player_guardians")
+        .select("user_id")
+        .eq("player_id", id!)
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return Boolean(data?.length);
+    },
+  });
+  const canManageProfile =
+    player?.owner_user_id === user?.id || profileAccess.data === true;
 
   // Fetch player's team memberships
   const {
@@ -628,11 +646,31 @@ const PlayerHome: React.FC = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/20" />
           <div className="relative flex items-center gap-4">
-            <Avatar
-              src={player.profile_photo_url}
-              fallback={`${player.first_name} ${player.last_initial ?? ""}`}
-              size="lg"
-            />
+            <Link
+              to={
+                !canManageProfile && activeTeam
+                  ? `/teams/${activeTeam.id}/roster/${id}`
+                  : `/players/${id}#photo`
+              }
+              aria-label={
+                canManageProfile
+                  ? `${player.profile_photo_url ? "Change" : "Add"} ${player.first_name}’s player photo`
+                  : `View ${player.first_name}’s player profile`
+              }
+              className="relative shrink-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <Avatar
+                src={player.profile_photo_url}
+                fallback={`${player.first_name} ${player.last_initial ?? ""}`}
+                size="lg"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary"
+              >
+                <Camera className="h-3 w-3" />
+              </span>
+            </Link>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-white/65">
                 Your next small win starts here
@@ -660,6 +698,7 @@ const PlayerHome: React.FC = () => {
             </Link>
           </div>
         </section>
+        {canManageProfile && <PlayerProfilePrompt player={player} />}
         <nav
           aria-label="Today’s shortcuts"
           className="grid grid-cols-2 gap-2 sm:flex"
