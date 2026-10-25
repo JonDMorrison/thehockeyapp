@@ -126,6 +126,23 @@ try {
   console.log(
     "PASS: Simultaneous cap edits reject stale changes rather than silently overwriting",
   );
+  const beforeUpgrade = run("psql", [...args, "-c",
+    "select coalesce(jsonb_agg(to_jsonb(d) order by challenge_id,player_id,shot_date),'[]'::jsonb) from public.shooting_challenge_days d;",
+  ]);
+  const customCap = run("psql", [...args, "-c",
+    "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000003';",
+  ]);
+  run("psql", [...args, "-f", resolve("supabase/migrations/20261025181152_shooting_daily_cap_300.sql")]);
+  assert.equal(run("psql", [...args, "-c",
+    "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000001';",
+  ]).trim().split("\n").at(-1), "300");
+  assert.equal(run("psql", [...args, "-c",
+    "select daily_cap from public.shooting_challenges where id='30000000-0000-0000-0000-000000000003';",
+  ]), customCap);
+  assert.equal(run("psql", [...args, "-c",
+    "select coalesce(jsonb_agg(to_jsonb(d) order by challenge_id,player_id,shot_date),'[]'::jsonb) from public.shooting_challenge_days d;",
+  ]), beforeUpgrade);
+  console.log("PASS: Standard caps upgrade to 300, custom caps and every raw entry remain unchanged");
   const migration = readFileSync(
     "supabase/migrations/20261018151055_shooting_challenges.sql",
     "utf8",
