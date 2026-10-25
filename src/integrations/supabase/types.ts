@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 27469)
-Total output lines: 3760
-
 export type Json =
   | string
   | number
@@ -1763,7 +1760,336 @@ export type Database = {
           shots?: number
           updated_at?: string
           version?: number
-       …2469 tokens truncated… string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenge_days_challenge_id_player_id_fkey"
+            columns: ["challenge_id", "player_id"]
+            isOneToOne: false
+            referencedRelation: "shooting_challenge_players"
+            referencedColumns: ["challenge_id", "player_id"]
+          },
+        ]
+      }
+      shooting_challenge_players: {
+        Row: {
+          challenge_id: string
+          enrolled_at: string
+          first_name: string
+          last_initial: string | null
+          player_id: string
+        }
+        Insert: {
+          challenge_id: string
+          enrolled_at?: string
+          first_name: string
+          last_initial?: string | null
+          player_id: string
+        }
+        Update: {
+          challenge_id?: string
+          enrolled_at?: string
+          first_name?: string
+          last_initial?: string | null
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenge_players_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "shooting_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shooting_challenge_players_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shooting_challenges: {
+        Row: {
+          created_at: string
+          daily_cap: number
+          review_threshold: number
+          created_by: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          team_id: string
+          timezone: string
+        }
+        Insert: {
+          daily_cap?: number
+          review_threshold?: number
+          created_at?: string
+          created_by: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          team_id: string
+          timezone: string
+        }
+        Update: {
+          daily_cap?: number
+          review_threshold?: number
+          created_at?: string
+          created_by?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          team_id?: string
+          timezone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooting_challenges_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solo_events: {
+        Row: {
+          created_at: string | null
+          end_time: string | null
+          event_type: string
+          external_event_id: string
+          id: string
+          is_cancelled: boolean | null
+          location: string | null
+          player_id: string
+          source_type: string
+          start_time: string
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type: string
+          external_event_id: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          player_id: string
+          source_type: string
+          start_time: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string | null
+          event_type?: string
+          external_event_id?: string
+          id?: string
+          is_cancelled?: boolean | null
+          location?: string | null
+          player_id?: string
+          source_type?: string
+          start_time?: string
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_events_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solo_referral_invites: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          plan_id: string | null
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          referrer_player_id: string
+          share_type: string
+          status: string | null
+          token: string
+          trial_ends_at: string | null
+          workout_card_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          plan_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          referrer_player_id: string
+          share_type: string
+          status?: string | null
+          token: string
+          trial_ends_at?: string | null
+          workout_card_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          plan_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          referrer_player_id?: string
+          share_type?: string
+          status?: string | null
+          token?: string
+          trial_ends_at?: string | null
+          workout_card_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_referral_invites_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "personal_training_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solo_referral_invites_referrer_player_id_fkey"
+            columns: ["referrer_player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solo_schedule_sources: {
+        Row: {
+          auto_game_day: boolean | null
+          created_at: string | null
+          created_by_user_id: string
+          ical_url: string
+          id: string
+          include_practices: boolean | null
+          last_synced_at: string | null
+          player_id: string
+          source_type: string
+          sync_error: string | null
+          sync_status: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id: string
+          ical_url: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          player_id: string
+          source_type?: string
+          sync_error?: string | null
+          sync_status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_game_day?: boolean | null
+          created_at?: string | null
+          created_by_user_id?: string
+          ical_url?: string
+          id?: string
+          include_practices?: boolean | null
+          last_synced_at?: string | null
+          player_id?: string
+          source_type?: string
+          sync_error?: string | null
+          sync_status?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_schedule_sources_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          comp_granted_at: string | null
+          comp_granted_by: string | null
+          comp_reason: string | null
+          comp_tag: string | null
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string
+          revoked_at: string | null
+          revoked_by: string | null
+          source: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comp_granted_at?: string | null
+          comp_granted_by?: string | null
+          comp_reason?: string | null
+          comp_tag?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comp_granted_at?: string | null
+          comp_granted_by?: string | null
+          comp_reason?: string | null
+          comp_tag?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      task_completions: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          local_event_id: string | null
           player_id: string
           practice_task_id: string
           shots_logged: number | null
