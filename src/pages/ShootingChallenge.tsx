@@ -69,7 +69,7 @@ export default function ShootingChallenge() {
   useEffect(() => {
     if (
       loadedChallengeId &&
-      ["#leaderboard", "#shot-tools"].includes(location.hash)
+      ["#leaderboard", "#shot-tools", "#challenge-rules"].includes(location.hash)
     )
       document
         .getElementById(location.hash.slice(1))
