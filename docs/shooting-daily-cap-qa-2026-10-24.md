@@ -1,10 +1,10 @@
 # Daily shooting cap and bonus effort
 
-Each challenge defaults to 250 leaderboard shots per player per challenge-local calendar day. Coaches can choose 1–10,000 at publication or change the cap later. A change applies to the whole challenge, including earlier days, and is disclosed in the settings.
+Each challenge defaults to 300 leaderboard shots per player per challenge-local calendar day. Coaches can choose 1–10,000 at publication or change the cap later. A change applies to the whole challenge, including earlier days, and is disclosed in the settings.
 
 The raw ledger and correction history are preserved. Standings sum `least(daily shots, daily cap)` across dates; bonus effort sums the remainder. An unlogged player remains at zero and unranked. A saved positive bonus balance earns the challenge-specific Bonus Boss badge; correcting that balance to zero removes the badge. It is shown on the challenge, standings, and family dashboard. Bonus counts never determine rank or comparison-bar lengths.
 
-Existing challenges receive 250 automatically. For example, an existing 3,000-shot day becomes 250 leaderboard shots and 2,750 bonus shots without rewriting the entry. Workout totals and weekly effort summaries retain actual effort rather than being treated as competition scores.
+Existing challenges receive 300 automatically. For example, an existing 3,000-shot day becomes 300 leaderboard shots and 2,700 bonus shots without rewriting the entry. Workout totals and weekly effort summaries retain actual effort rather than being treated as competition scores.
 
 ## Validation
 
