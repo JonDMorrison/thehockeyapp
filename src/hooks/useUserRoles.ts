@@ -44,6 +44,8 @@ export interface UserRoleInfo {
   availableRoles: UserRole[];
   /** Loading state */
   isLoading: boolean;
+  error: Error | null;
+  retry: () => void;
 }
 
 /**
@@ -58,19 +60,26 @@ export function useUserRoles(): UserRoleInfo {
   const { user, loading: authLoading } = useAuth();
 
   // Fetch coach roles
-  const { data: coachRoles, isLoading: coachLoading } = useQuery({
+  const {
+    data: coachRoles,
+    isLoading: coachLoading,
+    error: coachError,
+    refetch: retryCoach,
+  } = useQuery({
     queryKey: ["user-coach-roles", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_roles")
-        .select(`
+        .select(
+          `
           role,
           team_id,
           teams (
             id,
             name
           )
-        `)
+        `,
+        )
         .eq("user_id", user!.id);
 
       if (error) throw error;
@@ -79,19 +88,26 @@ export function useUserRoles(): UserRoleInfo {
     enabled: !!user,
   });
 
-  const { data: associationRoles, isLoading: associationLoading } = useQuery({
+  const {
+    data: associationRoles,
+    isLoading: associationLoading,
+    error: associationError,
+    refetch: retryAssociation,
+  } = useQuery({
     queryKey: ["user-association-roles", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("association_roles")
-        .select(`
+        .select(
+          `
           role,
           association_id,
           associations (
             id,
             name
           )
-        `)
+        `,
+        )
         .eq("user_id", user!.id);
 
       if (error) throw error;
@@ -101,12 +117,18 @@ export function useUserRoles(): UserRoleInfo {
   });
 
   // Fetch guardian relationships
-  const { data: guardianRoles, isLoading: guardianLoading } = useQuery({
+  const {
+    data: guardianRoles,
+    isLoading: guardianLoading,
+    error: guardianError,
+    refetch: retryGuardian,
+  } = useQuery({
     queryKey: ["user-guardian-roles", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("player_guardians")
-        .select(`
+        .select(
+          `
           guardian_role,
           player_id,
           players (
@@ -114,7 +136,8 @@ export function useUserRoles(): UserRoleInfo {
             first_name,
             last_initial
           )
-        `)
+        `,
+        )
         .eq("user_id", user!.id);
 
       if (error) throw error;
@@ -124,7 +147,12 @@ export function useUserRoles(): UserRoleInfo {
   });
 
   // Fetch the account holder's own adult player profile.
-  const { data: ownPlayerData, isLoading: ownPlayerLoading } = useQuery({
+  const {
+    data: ownPlayerData,
+    isLoading: ownPlayerLoading,
+    error: ownPlayerError,
+    refetch: retryOwnplayer,
+  } = useQuery({
     queryKey: ["user-own-player", user?.id],
     queryFn: async () => {
       const adultBirthYear = new Date().getFullYear() - 18;
@@ -135,45 +163,99 @@ export function useUserRoles(): UserRoleInfo {
         .lte("birth_year", adultBirthYear);
 
       if (error) throw error;
-      
+
       // Return the first adult player profile owned by this user
       return data?.[0] || null;
     },
     enabled: !!user,
   });
 
-  const isLoading = authLoading || associationLoading || coachLoading || guardianLoading || ownPlayerLoading;
+  const error = (coachError ||
+    associationError ||
+    guardianError ||
+    ownPlayerError) as Error | null;
+  const retry = () => {
+    void retryCoach();
+    void retryAssociation();
+    void retryGuardian();
+    void retryOwnplayer();
+  };
+  const isLoading =
+    authLoading ||
+    associationLoading ||
+    coachLoading ||
+    guardianLoading ||
+    ownPlayerLoading;
 
-  const associationWorkspaces = useMemo(() => (associationRoles || []).map((r: { association_id: string; role: string; associations: { id: string; name: string } | null }) => ({
-    associationId: r.association_id,
-    associationName: r.associations?.name || "Unknown Association",
-    role: r.role,
-  })), [associationRoles]);
+  const associationWorkspaces = useMemo(
+    () =>
+      (associationRoles || []).map(
+        (r: {
+          association_id: string;
+          role: string;
+          associations: { id: string; name: string } | null;
+        }) => ({
+          associationId: r.association_id,
+          associationName: r.associations?.name || "Unknown Association",
+          role: r.role,
+        }),
+      ),
+    [associationRoles],
+  );
 
-  const coachTeams = useMemo(() => (coachRoles || []).map((r: { team_id: string; role: string; teams: { id: string; name: string } | null }) => ({
-    teamId: r.team_id,
-    teamName: r.teams?.name || "Unknown Team",
-    role: r.role,
-  })), [coachRoles]);
+  const coachTeams = useMemo(
+    () =>
+      (coachRoles || []).map(
+        (r: {
+          team_id: string;
+          role: string;
+          teams: { id: string; name: string } | null;
+        }) => ({
+          teamId: r.team_id,
+          teamName: r.teams?.name || "Unknown Team",
+          role: r.role,
+        }),
+      ),
+    [coachRoles],
+  );
 
-  const guardedPlayers = useMemo(() => (guardianRoles || []).map((r: { player_id: string; guardian_role: string; players: { id: string; first_name: string; last_initial: string | null } | null }) => ({
-    playerId: r.player_id,
-    playerName: `${r.players?.first_name || "Unknown"} ${r.players?.last_initial || ""}`.trim(),
-    guardianRole: r.guardian_role,
-  })), [guardianRoles]);
+  const guardedPlayers = useMemo(
+    () =>
+      (guardianRoles || []).map(
+        (r: {
+          player_id: string;
+          guardian_role: string;
+          players: {
+            id: string;
+            first_name: string;
+            last_initial: string | null;
+          } | null;
+        }) => ({
+          playerId: r.player_id,
+          playerName:
+            `${r.players?.first_name || "Unknown"} ${r.players?.last_initial || ""}`.trim(),
+          guardianRole: r.guardian_role,
+        }),
+      ),
+    [guardianRoles],
+  );
 
   const isCoach = coachTeams.length > 0;
   const isAssociation = associationWorkspaces.length > 0;
   const isParent = guardedPlayers.length > 0;
   const hasOwnPlayerProfile = !!ownPlayerData;
 
-  const ownPlayer = useMemo(() => ownPlayerData
-    ? {
-        id: ownPlayerData.id,
-        firstName: ownPlayerData.first_name,
-        lastName: ownPlayerData.last_initial,
-      }
-    : null, [ownPlayerData]);
+  const ownPlayer = useMemo(
+    () =>
+      ownPlayerData
+        ? {
+            id: ownPlayerData.id,
+            firstName: ownPlayerData.first_name,
+            lastName: ownPlayerData.last_initial,
+          }
+        : null,
+    [ownPlayerData],
+  );
 
   const availableRoles = useMemo(() => {
     const roles: UserRole[] = [];
@@ -196,5 +278,7 @@ export function useUserRoles(): UserRoleInfo {
     ownPlayer,
     availableRoles,
     isLoading,
+    error,
+    retry,
   };
 }
