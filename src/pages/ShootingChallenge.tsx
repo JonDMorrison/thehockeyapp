@@ -1,3 +1,4 @@
+import { ShootingReviewQueue } from "@/components/shooting/ShootingReviewQueue";
 import { FirstChallengeSteps } from "@/components/shooting/FirstChallengeSteps";
 import { useEffect, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   shootingSnapshot,
   shootingList,
   displayShotDate,
+  addCalendarDays,
 } from "@/lib/shooting";
 import { ShootingStandings } from "@/components/shooting/ShootingStandings";
 import { ShootingCapSettings } from "@/components/shooting/ShootingCapSettings";
@@ -347,9 +349,9 @@ export default function ShootingChallenge() {
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 Up to {(c.daily_cap ?? 300).toLocaleString()} shots per player,
-                per day count here. Extra shots earn bonus recognition, never
-                rank. Ties share a place. Player/parent reported. Only visible
-                inside your team.
+                per day count here. Extra practice stays in private history and
+                never changes rank. Ties share a place. Player/parent reported.
+                Only visible inside your team.
               </p>
               <ShootingStandings snapshot={data} viewerId={user!.id} />
             </AppCard>
@@ -456,9 +458,12 @@ export default function ShootingChallenge() {
               <ShootingCapSettings
                 key={c.id}
                 id={c.id}
+                locked={data.cap_locked}
+                threshold={c.review_threshold}
                 cap={c.daily_cap ?? 300}
               />
             )}
+            {coachMode && <ShootingReviewQueue snapshot={data} />}
             <section
               className="space-y-4"
               aria-label={
@@ -516,7 +521,16 @@ export default function ShootingChallenge() {
                         id="shot-date"
                         type="date"
                         value={shotDate}
-                        min={player?.eligible_from}
+                        min={
+                          coachMode
+                            ? player?.eligible_from
+                            : [
+                                player?.eligible_from || "",
+                                addCalendarDays(data.today, -2),
+                              ]
+                                .sort()
+                                .at(-1)
+                        }
                         max={data.today < c.end_date ? data.today : c.end_date}
                         onChange={(e) => setDate(e.target.value)}
                       />
