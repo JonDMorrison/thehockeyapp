@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  privateMediaReference,
-  parsePrivateMediaReference,
-  validateImageUpload,
-} from "@/lib/media";
+import { PlayerPhotoEditor } from "@/components/player/PlayerPhotoEditor";
 import {
   getPlayerPositionLabel,
   NHL_TEAMS,
@@ -91,32 +92,18 @@ const PlayerProfile: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [search] = useSearchParams();
   const wantsEdit = search.get("edit") === "1";
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(
     null,
   );
   const [isEditing, setIsEditing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const uploadLock = useRef(false);
-  const [photoMessage, setPhotoMessage] = useState("");
-  const [photoFailed, setPhotoFailed] = useState(false);
-  const refreshPlayerViews = () =>
-    Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["player", id] }),
-      ...[
-        "players-with-teams",
-        "team-roster",
-        "roster-player",
-        "shooting-player-identities",
-        "teammates-with-badges",
-      ].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
-    ]);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const refreshPlayerViews = () => queryClient.invalidateQueries();
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -228,12 +215,14 @@ const PlayerProfile: React.FC = () => {
     enabled: !!user && !!id,
   });
 
+  const profileDraftKey = `player-profile-draft:${user?.id}:${id}`;
+  const [draftNotice, setDraftNotice] = useState("");
   const initializedPlayer = useRef<string | null>(null);
   // Initialize once per player even when a direct edit link opens before data arrives.
   useEffect(() => {
     if (player && (initializedPlayer.current !== player.id || !isEditing)) {
       initializedPlayer.current = player.id;
-      setEditForm({
+      const savedForm = {
         first_name: player.first_name || "",
         last_initial: player.last_initial || "",
         jersey_number: player.jersey_number || "",
@@ -243,9 +232,34 @@ const PlayerProfile: React.FC = () => {
         fav_nhl_player: player.fav_nhl_player || "",
         hockey_love: player.hockey_love || "",
         season_goals: player.season_goals || "",
-      });
+      };
+      let recovered = false;
+      try {
+        const draft = JSON.parse(
+          localStorage.getItem(profileDraftKey) || "null",
+        );
+        if (
+          draft &&
+          (player.owner_user_id === user?.id ||
+            player.player_guardians?.some(
+              (g: Guardian) =>
+                g.user_id === user?.id && g.guardian_role === "owner",
+            )) &&
+          Object.keys(savedForm).every((key) => typeof draft[key] === "string")
+        ) {
+          setEditForm(draft);
+          setIsEditing(true);
+          setDraftNotice(
+            "Your unsaved player details were restored from this device.",
+          );
+          recovered = true;
+        }
+      } catch {
+        /* Optional local recovery. */
+      }
+      if (!recovered) setEditForm(savedForm);
     }
-  }, [player, isEditing]);
+  }, [player, isEditing, profileDraftKey, user?.id]);
 
   const isOwner = Boolean(
     user &&
@@ -255,20 +269,61 @@ const PlayerProfile: React.FC = () => {
         (g: Guardian) => g.user_id === user.id && g.guardian_role === "owner",
       )),
   );
-  const canEdit = Boolean(
-    user &&
-    player &&
-    (isOwner ||
-      player.player_guardians?.some((g: Guardian) => g.user_id === user.id)),
-  );
+  const canEdit = isOwner;
 
   useEffect(() => {
     setIsEditing(false);
-    setPhotoMessage("");
+    setPhotoOpen(false);
   }, [id]);
+  useEffect(() => {
+    if (location.hash === "#photo" && canEdit) setPhotoOpen(true);
+  }, [location.hash, canEdit, id]);
   useEffect(() => {
     if (wantsEdit && canEdit) setIsEditing(true);
   }, [wantsEdit, canEdit, id]);
+
+  useEffect(() => {
+    if (!isEditing || !canEdit || !player) return;
+    const dirty = Object.entries(editForm).some(
+      ([key, value]) => value !== (player[key as keyof typeof player] || ""),
+    );
+    try {
+      if (dirty)
+        localStorage.setItem(profileDraftKey, JSON.stringify(editForm));
+      else localStorage.removeItem(profileDraftKey);
+    } catch {
+      setDraftNotice(
+        "Draft storage is unavailable. Save your changes before leaving.",
+      );
+    }
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const guard = (event: MouseEvent) => {
+      if (
+        !(event.target instanceof Element) ||
+        !event.target.closest("a[href]") ||
+        event.defaultPrevented
+      )
+        return;
+      if (
+        !window.confirm(
+          "Leave these unsaved player details? A draft will stay on this device.",
+        )
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    document.addEventListener("click", guard, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", guard, true);
+    };
+  }, [isEditing, canEdit, player, editForm, profileDraftKey]);
 
   // Update player mutation
   const updatePlayer = useMutation({
@@ -298,103 +353,18 @@ const PlayerProfile: React.FC = () => {
         t("players.profile.toastUpdatedTitle"),
         t("players.profile.toastUpdatedDescription"),
       );
+      try {
+        localStorage.removeItem(profileDraftKey);
+      } catch {
+        /* Saving online does not require draft storage. */
+      }
+      setDraftNotice("");
       setIsEditing(false);
     },
     onError: (error: Error) => {
       toast.error(t("players.profile.toastUpdateFailedTitle"), error.message);
     },
   });
-
-  // A new object path makes replacement photos visible immediately in cached views.
-  const handlePhotoUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file || !id || !canEdit || uploadLock.current) return;
-    const validationError = validateImageUpload(file);
-    setPhotoFailed(false);
-    setPhotoMessage("");
-    if (validationError) {
-      setPhotoFailed(true);
-      setPhotoMessage(validationError);
-      event.target.value = "";
-      return;
-    }
-    uploadLock.current = true;
-    setIsUploading(true);
-    setPhotoMessage("Uploading your player photo…");
-    const extensions: Record<string, string> = {
-      "image/jpeg": "jpg",
-      "image/png": "png",
-      "image/webp": "webp",
-      "image/heic": "heic",
-      "image/heif": "heif",
-    };
-    const fileName = `${id}/profile-${crypto.randomUUID()}.${extensions[file.type]}`;
-    let uploaded = false;
-    let linked = false;
-    try {
-      const { error: uploadError } = await supabase.storage
-        .from("player-photos")
-        .upload(fileName, file, { upsert: false });
-      if (uploadError) throw uploadError;
-      uploaded = true;
-      const { error: updateError } = await supabase
-        .from("players")
-        .update({
-          profile_photo_url: privateMediaReference("player-photos", fileName),
-        })
-        .eq("id", id)
-        .select("id")
-        .single();
-      if (updateError) throw updateError;
-      linked = true;
-      await refreshPlayerViews();
-      setPhotoMessage(
-        "Player photo saved. Your coaches can see it on your player card.",
-      );
-      toast.success(
-        t("players.profile.toastPhotoUpdatedTitle"),
-        t("players.profile.toastPhotoUpdatedDescription"),
-      );
-      const previous = parsePrivateMediaReference(player?.profile_photo_url);
-      if (
-        previous?.bucket === "player-photos" &&
-        previous.path.startsWith(`${id}/`) &&
-        previous.path !== fileName
-      ) {
-        const { error } = await supabase.storage
-          .from("player-photos")
-          .remove([previous.path]);
-        if (error)
-          logger.error("Could not remove replaced player photo", { error });
-      }
-    } catch {
-      if (linked) {
-        setPhotoMessage(
-          "Player photo saved. Refresh the page if it has not appeared yet.",
-        );
-        return;
-      }
-      if (uploaded && !linked)
-        await supabase.storage
-          .from("player-photos")
-          .remove([fileName])
-          .catch((): undefined => undefined);
-      setPhotoFailed(true);
-      setPhotoMessage(
-        "Photo not saved. Your previous photo is unchanged. Choose the image again to retry (5 MB or smaller).",
-      );
-      toast.error(
-        t("players.profile.toastUploadFailedTitle"),
-        t("players.profile.toastUploadFailedDescription"),
-      );
-    } finally {
-      setIsUploading(false);
-      uploadLock.current = false;
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
 
   const removeGuardian = useMutation({
     mutationFn: async (guardian: Guardian) => {
@@ -515,16 +485,19 @@ const PlayerProfile: React.FC = () => {
       }
     >
       <PageContainer className={`max-w-4xl ${isEditing ? "pb-28" : ""}`}>
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-          aria-label="Player photo file"
-          onChange={handlePhotoUpload}
-          className="hidden"
-        />
-
+        {canEdit && (
+          <PlayerPhotoEditor
+            key={player.id}
+            player={player}
+            open={photoOpen}
+            onOpenChange={setPhotoOpen}
+          />
+        )}
+        {draftNotice && (
+          <p role="status" className="text-sm">
+            {draftNotice}
+          </p>
+        )}
         <div id="photo" className="scroll-mt-24" />
         {!isEditing && (
           <PlayerCard
@@ -533,16 +506,14 @@ const PlayerProfile: React.FC = () => {
               canEdit ? (
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
+                    onClick={() => setPhotoOpen(true)}
+                    disabled={false}
                     className="min-h-12"
                   >
                     <Camera aria-hidden="true" className="h-4 w-4" />
-                    {isUploading
-                      ? "Uploading…"
-                      : player.profile_photo_url
-                        ? "Change player photo"
-                        : "Add player photo"}
+                    {player.profile_photo_url
+                      ? "Adjust player photo"
+                      : "Add player photo"}
                   </Button>
                   <Button
                     variant="outline"
@@ -557,34 +528,22 @@ const PlayerProfile: React.FC = () => {
             photoAction={
               canEdit ? (
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
+                  onClick={() => setPhotoOpen(true)}
+                  disabled={false}
                   aria-label={t("players.uploadProfilePhoto")}
                   className="absolute inset-0 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50 [&>svg]:absolute [&>svg]:bottom-0 [&>svg]:right-0 [&>svg]:rounded-full [&>svg]:bg-primary [&>svg]:p-2 [&>svg]:h-10 [&>svg]:w-10"
                 >
-                  {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Camera className="h-4 w-4" />
-                  )}
+                  <Camera className="h-4 w-4" />
                 </button>
               ) : undefined
             }
           />
         )}
         {canEdit && (
-          <div className="rounded-xl border border-border bg-card p-4 text-sm">
-            <p className="text-muted-foreground">
-              Choose a photo from your device. JPG, PNG, WebP, HEIC or HEIF · Up
-              to 5 MB. Your family and team coaches can see your player photo.
-            </p>
-            <p
-              role={photoFailed ? "alert" : "status"}
-              className="mt-2 font-medium"
-            >
-              {photoMessage}
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Photo changes save separately. Use Adjust player photo to move,
+            zoom, replace or remove the image.
+          </p>
         )}
         {isEditing && (
           <>
@@ -598,16 +557,12 @@ const PlayerProfile: React.FC = () => {
                 />
                 {canEdit && (
                   <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
+                    onClick={() => setPhotoOpen(true)}
+                    disabled={false}
                     aria-label={t("players.uploadProfilePhoto")}
                     className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {isUploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Camera className="w-4 h-4" />
-                    )}
+                    <Camera className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -615,15 +570,13 @@ const PlayerProfile: React.FC = () => {
               {canEdit && (
                 <Button
                   className="mb-5 min-h-12"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
+                  onClick={() => setPhotoOpen(true)}
+                  disabled={false}
                 >
                   <Camera aria-hidden="true" className="h-4 w-4" />
-                  {isUploading
-                    ? "Uploading…"
-                    : player.profile_photo_url
-                      ? "Change player photo"
-                      : "Add player photo"}
+                  {player.profile_photo_url
+                    ? "Adjust player photo"
+                    : "Add player photo"}
                 </Button>
               )}
               {isEditing ? (
@@ -965,148 +918,6 @@ const PlayerProfile: React.FC = () => {
             </Button>
           )}
         </AppCard>
-
-        {/* Edit Actions */}
-        {isEditing && (
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                setIsEditing(false);
-                // Reset form
-                if (player) {
-                  setEditForm({
-                    first_name: player.first_name || "",
-                    last_initial: player.last_initial || "",
-                    jersey_number: player.jersey_number || "",
-                    position: player.position || "",
-                    shoots: player.shoots || "",
-                    fav_nhl_city: player.fav_nhl_city || "",
-                    fav_nhl_player: player.fav_nhl_player || "",
-                    hockey_love: player.hockey_love || "",
-                    season_goals: player.season_goals || "",
-                  });
-                }
-              }}
-            >
-              <X className="w-4 h-4 mr-1" />
-              {t("common.cancel")}
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={() => updatePlayer.mutate(editForm)}
-              disabled={updatePlayer.isPending || !editForm.first_name}
-            >
-              {updatePlayer.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-1" />
-              ) : (
-                <Save className="w-4 h-4 mr-1" />
-              )}
-              {t("common.save")}
-            </Button>
-          </div>
-        )}
-
-        {/* Guardians */}
-        <AppCard>
-          <div className="flex items-center justify-between mb-4">
-            <AppCardTitle className="text-base flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" />
-              {t("players.profile.guardiansTitle")}
-            </AppCardTitle>
-            {isOwner && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowInviteModal(true)}
-              >
-                <UserPlus className="w-4 h-4" />
-                {t("players.profile.inviteButton")}
-              </Button>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {guardians.map((guardian) => {
-              const profile = guardian.profiles as {
-                display_name: string | null;
-                email: string | null;
-              } | null;
-              const isCurrentUser = guardian.user_id === user?.id;
-              const canRemove =
-                isOwner && !isCurrentUser && guardian.guardian_role !== "owner";
-
-              return (
-                <div
-                  key={guardian.user_id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
-                >
-                  <Avatar
-                    fallback={profile?.display_name || profile?.email || "?"}
-                    size="sm"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      {profile?.display_name ||
-                        profile?.email ||
-                        t("players.profile.unknownGuardian")}
-                      {isCurrentUser && ` ${t("players.profile.youSuffix")}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {guardian.guardian_role}
-                    </p>
-                  </div>
-                  {canRemove && (
-                    <Button
-                      aria-label="Remove guardian"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setGuardianToRemove(guardian)}
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Pending Invites */}
-            {isOwner && pendingInvites && pendingInvites.length > 0 && (
-              <>
-                <AppCardDescription className="mt-4 mb-2">
-                  {t("players.profile.pendingInvites")}
-                </AppCardDescription>
-                {pendingInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-warning/10 border border-warning/20"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center">
-                      <UserPlus className="w-4 h-4 text-warning" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {invite.invited_email}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("players.profile.inviteExpires", {
-                          date: new Date(
-                            invite.expires_at,
-                          ).toLocaleDateString(),
-                        })}
-                      </p>
-                    </div>
-                    <Tag variant="warning" size="sm">
-                      {t("players.profile.pendingTag")}
-                    </Tag>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </AppCard>
       </PageContainer>
 
       {/* Sticky Save/Cancel bar when editing */}
@@ -1117,6 +928,12 @@ const PlayerProfile: React.FC = () => {
               variant="outline"
               className="flex-1"
               onClick={() => {
+                try {
+                  localStorage.removeItem(profileDraftKey);
+                } catch {
+                  /* Optional draft. */
+                }
+                setDraftNotice("");
                 setIsEditing(false);
                 if (player) {
                   setEditForm({

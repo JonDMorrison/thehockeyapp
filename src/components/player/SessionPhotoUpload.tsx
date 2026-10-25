@@ -1,3 +1,7 @@
+import { queuePhoto, discardQueuedPhoto } from "@/lib/offlineStorage";
+import { photoDataUrl, pendingPhotosFor } from "@/lib/sessionPhotoSync";
+import { syncPendingEvents } from "@/lib/syncEngine";
+import { preparePhoto } from "@/lib/playerPhoto";
 import { validateImageUpload } from "@/lib/media";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { usePlayerPhotoConsent } from "@/hooks/usePlayerPhotoConsent";
@@ -39,9 +43,10 @@ interface SessionPhotoUploadProps {
 interface QueuedPhoto {
   id: string;
   localUri: string;
+  lastError?: string;
   caption: string;
-  visibility: 'parent_only' | 'team_adults';
-  status: 'pending' | 'uploading' | 'succeeded' | 'failed';
+  visibility: "parent_only" | "team_adults";
+  status: "pending" | "uploading" | "succeeded" | "failed";
 }
 
 export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
@@ -63,10 +68,48 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   const [shareWithCoaches, setShareWithCoaches] = useState(false);
   const [localQueuedPhotos, setLocalQueuedPhotos] = useState<QueuedPhoto[]>([]);
 
-  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
+
+  useEffect(() => {
+    let active = true;
+    const reload = () => {
+      void pendingPhotosFor(playerId, practiceCardId).then((rows) => {
+        if (active)
+          setLocalQueuedPhotos(
+            rows.map((p) => ({
+              id: p.localPhotoId,
+              localUri: p.localUri,
+              caption: p.caption,
+              visibility: p.visibility,
+              status: p.status,
+              lastError: p.lastError,
+            })),
+          );
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["session-photos", practiceCardId, playerId],
+      });
+    };
+    reload();
+    window.addEventListener("session-photo-sync", reload);
+    return () => {
+      active = false;
+      window.removeEventListener("session-photo-sync", reload);
+    };
+  }, [playerId, practiceCardId, queryClient]);
 
   // Fetch existing photos
-  const { data: photos, isError: photosError, isFetching: photosFetching, refetch: refetchPhotos } = useQuery({
+  const {
+    data: photos,
+    isError: photosError,
+    isFetching: photosFetching,
+    refetch: refetchPhotos,
+  } = useQuery({
     queryKey: ["session-photos", practiceCardId, playerId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -82,9 +125,13 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           const { data: signed, error: signedError } = await supabase.storage
             .from("session-photos")
             .createSignedUrl(photo.storage_path, 3600);
-          if (signedError && !/not found|does not exist/i.test(signedError.message)) throw signedError;
+          if (
+            signedError &&
+            !/not found|does not exist/i.test(signedError.message)
+          )
+            throw signedError;
           return { ...photo, signed_url: signed?.signedUrl ?? null };
-        })
+        }),
       );
 
       return photosWithUrls as SessionPhoto[];
@@ -94,6 +141,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
 
   // Upload photo mutation
   const uploadPhoto = useMutation({
+    networkMode: "always",
     mutationFn: async ({
       file,
       caption,
@@ -101,72 +149,80 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
     }: {
       file: File;
       caption: string;
-      visibility: 'parent_only' | 'team_adults';
+      visibility: "parent_only" | "team_adults";
     }) => {
-      if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-        throw new Error("Choose a JPEG, PNG, WebP, HEIC, or HEIF image under 5 MB.");
-      }
-
-      const validation = validateImageUpload(file);
-      if (validation) throw new Error(validation);
-      const fileExt = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `sessions/${practiceCardId}/${playerId}/${fileName}`;
-
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from("session-photos")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Create session_photos record
-      const { error: insertError } = await supabase
-        .from("session_photos")
-        .insert({
-          practice_card_id: practiceCardId,
-          player_id: playerId,
-          uploaded_by_user_id: user!.id,
-          storage_path: filePath,
+      if (!user) throw new Error("Sign in to save a photo.");
+      const blob = await preparePhoto(file);
+      const localPhotoId = crypto.randomUUID();
+      await queuePhoto(
+        {
+          localPhotoId,
+          playerId,
+          practiceCardId,
+          localUri: await photoDataUrl(blob),
           visibility,
-          caption: caption || null,
-        });
-
-      if (insertError) {
-        await supabase.storage.from("session-photos").remove([filePath]);
-        throw insertError;
-      }
-
-      return filePath;
+          caption,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        },
+        user.id,
+      );
+      // Queue first, then sync. A failed network request never discards the chosen photo.
+      if (navigator.onLine) await syncPendingEvents();
+      const pending = await pendingPhotosFor(playerId, practiceCardId);
+      setLocalQueuedPhotos(
+        pending.map((p) => ({
+          id: p.localPhotoId,
+          localUri: p.localUri,
+          caption: p.caption,
+          visibility: p.visibility,
+          status: p.status,
+          lastError: p.lastError,
+        })),
+      );
+      return pending.some((p) => p.localPhotoId === localPhotoId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session-photos", practiceCardId, playerId] });
-      toast.success("Photo saved", "Your training moment is saved.");
+    onSuccess: (pending) => {
+      queryClient.invalidateQueries({
+        queryKey: ["session-photos", practiceCardId, playerId],
+      });
+      if (pending)
+        toast.info(
+          "Photo waiting to sync",
+          "Kept on this device. Reconnect or retry to finish saving.",
+        );
+      else toast.success("Photo saved", "Your training moment is saved.");
       resetUploadState();
     },
     onError: (error: Error) => {
       toast.error("Upload failed", error.message);
-      // Could add to local queue here for offline retry
+      // The selected file remains available for another attempt.
     },
   });
 
   // Delete photo mutation
   const deletePhoto = useMutation({
     mutationFn: async (photo: SessionPhoto) => {
-      // Delete from storage
-      const { error: removeError } = await supabase.storage.from("session-photos").remove([photo.storage_path]);
-      if (removeError) throw removeError;
-      
-      // Delete record
+      if (!window.confirm("Delete this training photo? This cannot be undone."))
+        return false;
+      // Unlink first: a failed storage cleanup must not leave a broken visible record.
       const { error } = await supabase
         .from("session_photos")
         .delete()
-        .eq("id", photo.id);
-
+        .eq("id", photo.id)
+        .select("id")
+        .single();
       if (error) throw error;
+      await supabase.storage
+        .from("session-photos")
+        .remove([photo.storage_path]);
+      return true;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session-photos", practiceCardId, playerId] });
+    onSuccess: (deleted) => {
+      if (!deleted) return;
+      queryClient.invalidateQueries({
+        queryKey: ["session-photos", practiceCardId, playerId],
+      });
       toast.success("Photo deleted");
     },
     onError: (error: Error) => {
@@ -179,7 +235,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
     e.target.value = "";
     if (file) {
       const validation = validateImageUpload(file);
-      if (validation) { toast.error("Choose a supported photo", validation); return; }
+      if (validation) {
+        toast.error("Choose a supported photo", validation);
+        return;
+      }
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -190,12 +249,15 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   };
 
   const handleUpload = () => {
-    if (!selectedFile) return;
-    
+    if (!selectedFile || uploadPhoto.isPending) return;
+
     uploadPhoto.mutate({
       file: selectedFile,
       caption,
-      visibility: shareWithCoaches && photoConsent.data?.photo_sharing_allowed ? "team_adults" : "parent_only",
+      visibility:
+        shareWithCoaches && photoConsent.data?.photo_sharing_allowed
+          ? "team_adults"
+          : "parent_only",
     });
   };
 
@@ -212,11 +274,19 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-sm text-text-muted">Training photos (optional)</Label>
+        <Label className="text-sm text-text-muted">
+          Training photos (optional)
+        </Label>
         <span className="text-xs text-text-muted">{photoCount}/3</span>
       </div>
 
-      {photosError && <DataLoadError title="Couldn’t load training photos" onRetry={() => refetchPhotos()} retrying={photosFetching} />}
+      {photosError && (
+        <DataLoadError
+          title="Couldn’t load training photos"
+          onRetry={() => refetchPhotos()}
+          retrying={photosFetching}
+        />
+      )}
       {/* Photo thumbnails */}
       <div className="flex items-center gap-2 flex-wrap">
         {photos?.slice(0, 3).map((photo) => (
@@ -224,7 +294,21 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
             key={photo.id}
             className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted group"
           >
-            {photo.signed_url ? <img src={photo.signed_url} alt="Session proof" className="w-full h-full object-cover" /> : <span role="img" aria-label="Photo unavailable" className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Photo unavailable</span>}
+            {photo.signed_url ? (
+              <img
+                src={photo.signed_url}
+                alt="Session proof"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span
+                role="img"
+                aria-label="Photo unavailable"
+                className="flex h-full items-center justify-center text-[10px] text-muted-foreground"
+              >
+                Photo unavailable
+              </span>
+            )}
             {photo.visibility === "team_adults" && (
               <div className="absolute top-1 right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
                 <Share2 className="w-2.5 h-2.5 text-white" />
@@ -234,7 +318,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
               aria-label="Delete training photo"
               onClick={() => deletePhoto.mutate(photo)}
               disabled={deletePhoto.isPending}
-              className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              className="absolute inset-0 bg-black/50 opacity-100 transition-opacity flex items-center justify-center"
             >
               {deletePhoto.isPending ? (
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -245,6 +329,30 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           </div>
         ))}
 
+        {localQueuedPhotos.map(
+          (queued) =>
+            queued.status !== "uploading" && (
+              <Button
+                key={`discard-${queued.id}`}
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (
+                    !window.confirm(
+                      "Discard this unsent photo from this device?",
+                    )
+                  )
+                    return;
+                  await discardQueuedPhoto(queued.id);
+                  setLocalQueuedPhotos((rows) =>
+                    rows.filter((row) => row.id !== queued.id),
+                  );
+                }}
+              >
+                Discard pending photo
+              </Button>
+            ),
+        )}
         {/* Queued photos */}
         {localQueuedPhotos.map((queued) => (
           <div
@@ -256,7 +364,7 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
               alt="Pending upload"
               className="w-full h-full object-cover opacity-50"
             />
-            {queued.status === "pending" && (
+            {queued.status !== "succeeded" && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
@@ -264,9 +372,32 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           </div>
         ))}
 
+        {localQueuedPhotos.length > 0 && (
+          <div className="w-full text-sm">
+            <p role="status">
+              {localQueuedPhotos.length} photo(s) kept on this device, waiting
+              to save.
+            </p>
+            {localQueuedPhotos
+              .filter((p) => p.lastError)
+              .map((p) => (
+                <p role="alert" key={p.id}>
+                  {p.lastError}
+                </p>
+              ))}
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={() => void syncPendingEvents()}
+            >
+              Retry photo uploads
+            </Button>
+          </div>
+        )}
         {/* Add photo button */}
         {photoCount < 3 && !disabled && !photosError && photos && (
-          <button aria-label="Choose a photo"
+          <button
+            aria-label="Choose a photo"
             onClick={() => fileInputRef.current?.click()}
             className="w-16 h-16 rounded-lg border-2 border-dashed border-border flex items-center justify-center hover:bg-surface-muted transition-colors"
           >
@@ -286,7 +417,10 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
 
       {/* Upload Sheet */}
       <Sheet open={showUploadSheet} onOpenChange={setShowUploadSheet}>
-        <SheetContent side="bottom" className="h-auto max-h-[90dvh] overflow-y-auto">
+        <SheetContent
+          side="bottom"
+          className="h-auto max-h-[90dvh] overflow-y-auto"
+        >
           <SheetHeader>
             <SheetTitle>Add Photo</SheetTitle>
             <SheetDescription>
@@ -303,7 +437,8 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
                   alt="Preview"
                   className="w-full h-full object-contain"
                 />
-                <button aria-label="Remove selected photo"
+                <button
+                  aria-label="Remove selected photo"
                   onClick={resetUploadState}
                   className="absolute top-2 right-2 p-1 bg-black/50 rounded-full"
                 >
@@ -336,16 +471,32 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
               </div>
               <Switch
                 id="share"
-                checked={shareWithCoaches && Boolean(photoConsent.data?.photo_sharing_allowed)}
-                disabled={!photoConsent.data?.photo_sharing_allowed || photoConsent.isLoading || photoConsent.isError}
+                checked={
+                  shareWithCoaches &&
+                  Boolean(photoConsent.data?.photo_sharing_allowed)
+                }
+                disabled={
+                  !photoConsent.data?.photo_sharing_allowed ||
+                  photoConsent.isLoading ||
+                  photoConsent.isError
+                }
                 onCheckedChange={setShareWithCoaches}
               />
             </div>
 
             {!photoConsent.data?.photo_sharing_allowed && (
               <div className="rounded-xl border border-border p-3 text-sm">
-                <p className="text-muted-foreground">Coach photo sharing is off. Your photo will stay with your family.</p>
-                <Button variant="link" className="mt-1 px-0" onClick={() => setShowPrivacySettings(true)}>Review photo permissions</Button>
+                <p className="text-muted-foreground">
+                  Coach photo sharing is off. Your photo will stay with your
+                  family.
+                </p>
+                <Button
+                  variant="link"
+                  className="mt-1 px-0"
+                  onClick={() => setShowPrivacySettings(true)}
+                >
+                  Review photo permissions
+                </Button>
               </div>
             )}
             {/* Actions */}
@@ -371,7 +522,13 @@ export const SessionPhotoUpload: React.FC<SessionPhotoUploadProps> = ({
           </div>
         </SheetContent>
       </Sheet>
-      <PlayerSettingsSheet layer={90} open={showPrivacySettings} onOpenChange={setShowPrivacySettings} playerId={playerId} playerName={playerName} />
+      <PlayerSettingsSheet
+        layer={90}
+        open={showPrivacySettings}
+        onOpenChange={setShowPrivacySettings}
+        playerId={playerId}
+        playerName={playerName}
+      />
     </div>
   );
 };

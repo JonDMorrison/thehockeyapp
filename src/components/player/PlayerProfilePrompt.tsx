@@ -1,5 +1,7 @@
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
-import { Camera, ArrowRight, Sparkles } from "lucide-react";
+import { Camera, ArrowRight, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function PlayerProfilePrompt({
@@ -15,6 +17,23 @@ export function PlayerProfilePrompt({
     season_goals?: string | null;
   };
 }) {
+  const { user } = useAuth();
+  const key = `profile-prompt:v1:${user?.id}:${player.id}`;
+  const [dismissedKey, setDismissedKey] = useState("");
+  const dismiss = () => {
+    setDismissedKey(key);
+    try {
+      localStorage.setItem(key, "dismissed");
+    } catch {
+      /* Optional preference. */
+    }
+  };
+  let remembered = false;
+  try {
+    remembered = localStorage.getItem(key) === "dismissed";
+  } catch {
+    /* Optional preference. */
+  }
   const missing = [
     !player.profile_photo_url && "Player photo",
     !player.position && "Position",
@@ -22,13 +41,23 @@ export function PlayerProfilePrompt({
     !player.hockey_love && "Why I love hockey",
     !player.season_goals && "Hockey dream",
   ].filter(Boolean);
-  if (!missing.length) return null;
+  if (!user || !missing.length || remembered || dismissedKey === key)
+    return null;
   return (
     <section
       aria-label="Complete your player profile"
       className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-card p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="order-last shrink-0 min-h-11 min-w-11"
+          aria-label="Dismiss profile reminder"
+          onClick={dismiss}
+        >
+          <X className="h-4 w-4" />
+        </Button>
         <Sparkles
           aria-hidden="true"
           className="mt-1 h-6 w-6 shrink-0 text-primary"
@@ -52,6 +81,7 @@ export function PlayerProfilePrompt({
                 className="min-h-11 px-3 text-xs"
               >
                 <Link
+                  onClick={dismiss}
                   aria-label="Add player photo"
                   to={`/players/${player.id}#photo`}
                 >
@@ -62,6 +92,7 @@ export function PlayerProfilePrompt({
             )}
             <Button asChild size="sm" className="min-h-11 px-3 text-xs">
               <Link
+                onClick={dismiss}
                 aria-label="Complete player profile"
                 to={`/players/${player.id}?edit=1`}
               >

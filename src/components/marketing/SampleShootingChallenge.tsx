@@ -297,7 +297,7 @@ export function SampleShootingChallenge() {
                       Save the full daily total, not an additional amount. Whole
                       numbers from 0 to 10,000. Saving again replaces this
                       sample total. Up to 300 count toward the leaderboard;
-                      extras are bonus shots.
+                      extra practice earns no extra leaderboard points.
                     </p>
                     <Button
                       className="mt-5 min-h-12 w-full font-bold"
@@ -355,9 +355,9 @@ export function SampleShootingChallenge() {
               </div>
               <Standings shots={saved} />
               {saved > 300 && (
-                <p className="mt-4 rounded-xl bg-primary/10 p-3 text-sm text-primary">
-                  <strong>Bonus Boss!</strong> +{(saved - 300).toLocaleString()}{" "}
-                  bonus shots. Extra effort, outside the rankings.
+                <p className="mt-4 rounded-xl border border-border p-3 text-sm">
+                  {(saved - 300).toLocaleString()} additional practice shots
+                  saved privately. They earn no extra leaderboard points.
                 </p>
               )}
               <p className="mt-4 text-xs leading-5 text-muted-foreground">

@@ -1,9 +1,10 @@
+import { queuedShotCount } from "./shootingDrafts";
 /**
  * Offline Storage Layer using IndexedDB
  * Handles caching practice cards and queueing offline events
  */
 
-const DB_NAME = 'hockey-training-offline';
+const DB_NAME = "hockey-training-offline";
 const DB_VERSION = 1;
 
 export interface CachedCard {
@@ -22,9 +23,10 @@ export interface QueuedEvent {
   playerId: string;
   teamId: string;
   practiceCardId: string;
-  eventType: 'task_toggle' | 'shots_update' | 'session_complete' | 'session_partial';
+  eventType:
+    "task_toggle" | "shots_update" | "session_complete" | "session_partial";
   payload: Record<string, unknown>;
-  status: 'pending' | 'syncing' | 'succeeded' | 'failed';
+  status: "pending" | "syncing" | "succeeded" | "failed";
   lastError?: string;
   retryCount: number;
 }
@@ -32,12 +34,13 @@ export interface QueuedEvent {
 export interface QueuedPhoto {
   userId: string;
   localPhotoId: string;
+  lastError?: string;
   playerId: string;
   practiceCardId: string;
   localUri: string; // blob URL or data URI
-  visibility: 'parent_only' | 'team_adults';
+  visibility: "parent_only" | "team_adults";
   caption: string;
-  status: 'pending' | 'uploading' | 'succeeded' | 'failed';
+  status: "pending" | "uploading" | "succeeded" | "failed";
   createdAt: string;
   retryCount: number;
 }
@@ -47,8 +50,11 @@ export interface CompletionSnapshot {
   key: string; // player_id + practice_card_id
   playerId: string;
   practiceCardId: string;
-  taskCompletionMap: Record<string, { completed: boolean; shotsLogged: number }>;
-  sessionStatus: 'none' | 'partial' | 'complete';
+  taskCompletionMap: Record<
+    string,
+    { completed: boolean; shotsLogged: number }
+  >;
+  sessionStatus: "none" | "partial" | "complete";
   updatedAt: string;
 }
 
@@ -61,7 +67,7 @@ export async function initOfflineDB(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => reject(request.error);
-    
+
     request.onsuccess = () => {
       db = request.result;
       resolve(db);
@@ -71,31 +77,35 @@ export async function initOfflineDB(): Promise<IDBDatabase> {
       const database = (event.target as IDBOpenDBRequest).result;
 
       // Cached practice cards store
-      if (!database.objectStoreNames.contains('cachedCards')) {
-        database.createObjectStore('cachedCards', { keyPath: 'key' });
+      if (!database.objectStoreNames.contains("cachedCards")) {
+        database.createObjectStore("cachedCards", { keyPath: "key" });
       }
 
       // Queued events store
-      if (!database.objectStoreNames.contains('queuedEvents')) {
-        const eventStore = database.createObjectStore('queuedEvents', { keyPath: 'localEventId' });
-        eventStore.createIndex('status', 'status', { unique: false });
-        eventStore.createIndex('createdAt', 'createdAt', { unique: false });
+      if (!database.objectStoreNames.contains("queuedEvents")) {
+        const eventStore = database.createObjectStore("queuedEvents", {
+          keyPath: "localEventId",
+        });
+        eventStore.createIndex("status", "status", { unique: false });
+        eventStore.createIndex("createdAt", "createdAt", { unique: false });
       }
 
       // Completion snapshots store
-      if (!database.objectStoreNames.contains('completionSnapshots')) {
-        database.createObjectStore('completionSnapshots', { keyPath: 'key' });
+      if (!database.objectStoreNames.contains("completionSnapshots")) {
+        database.createObjectStore("completionSnapshots", { keyPath: "key" });
       }
 
       // Sync metadata store
-      if (!database.objectStoreNames.contains('syncMeta')) {
-        database.createObjectStore('syncMeta', { keyPath: 'key' });
+      if (!database.objectStoreNames.contains("syncMeta")) {
+        database.createObjectStore("syncMeta", { keyPath: "key" });
       }
 
       // Queued photos store (for offline photo uploads)
-      if (!database.objectStoreNames.contains('queuedPhotos')) {
-        const photoStore = database.createObjectStore('queuedPhotos', { keyPath: 'localPhotoId' });
-        photoStore.createIndex('status', 'status', { unique: false });
+      if (!database.objectStoreNames.contains("queuedPhotos")) {
+        const photoStore = database.createObjectStore("queuedPhotos", {
+          keyPath: "localPhotoId",
+        });
+        photoStore.createIndex("status", "status", { unique: false });
       }
     };
   });
@@ -111,26 +121,32 @@ async function getDB(): Promise<IDBDatabase> {
 
 let offlineAccountOwner: string | null = null;
 
-export function setOfflineAccountOwner(userId: string | null): void { offlineAccountOwner = userId; }
-export function getOfflineAccountOwner(): string | null { return offlineAccountOwner; }
-function currentAccountId(): string | null { return offlineAccountOwner; }
+export function setOfflineAccountOwner(userId: string | null): void {
+  offlineAccountOwner = userId;
+}
+export function getOfflineAccountOwner(): string | null {
+  return offlineAccountOwner;
+}
+function currentAccountId(): string | null {
+  return offlineAccountOwner;
+}
 
 // Cached Cards
 export async function cachePracticeCard(
   teamId: string,
   date: string,
   cardData: unknown,
-  actorId: string | null = currentAccountId()
+  actorId: string | null = currentAccountId(),
 ): Promise<void> {
   const database = await getDB();
   const userId = actorId;
   if (!userId) return;
   const key = `${userId}_${teamId}_${date}`;
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('cachedCards', 'readwrite');
-    const store = tx.objectStore('cachedCards');
-    
+    const tx = database.transaction("cachedCards", "readwrite");
+    const store = tx.objectStore("cachedCards");
+
     const data: CachedCard = {
       userId,
       key,
@@ -139,9 +155,11 @@ export async function cachePracticeCard(
       practiceCardJson: JSON.stringify(cardData),
       cachedAt: new Date().toISOString(),
     };
-    
+
     const request = store.put(data);
-    request.onsuccess = () => resolve();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -149,18 +167,18 @@ export async function cachePracticeCard(
 export async function getCachedCard(
   teamId: string,
   date: string,
-  actorId: string | null = currentAccountId()
+  actorId: string | null = currentAccountId(),
 ): Promise<unknown | null> {
   const database = await getDB();
   const userId = actorId;
   if (!userId) return null;
   const key = `${userId}_${teamId}_${date}`;
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('cachedCards', 'readonly');
-    const store = tx.objectStore('cachedCards');
+    const tx = database.transaction("cachedCards", "readonly");
+    const store = tx.objectStore("cachedCards");
     const request = store.get(key);
-    
+
     request.onsuccess = () => {
       const result = request.result as CachedCard | undefined;
       if (result) {
@@ -178,20 +196,24 @@ export async function getCachedCard(
 }
 
 // Queued Events
-export async function queueOfflineEvent(event: Omit<QueuedEvent, 'retryCount'>): Promise<void> {
+export async function queueOfflineEvent(
+  event: Omit<QueuedEvent, "retryCount">,
+): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedEvents', 'readwrite');
-    const store = tx.objectStore('queuedEvents');
-    
+    const tx = database.transaction("queuedEvents", "readwrite");
+    const store = tx.objectStore("queuedEvents");
+
     const data: QueuedEvent = {
       ...event,
       retryCount: 0,
     };
-    
+
     const request = store.put(data);
-    request.onsuccess = () => resolve();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -200,15 +222,17 @@ export async function getPendingEvents(): Promise<QueuedEvent[]> {
   const userId = currentAccountId();
   if (!userId) return [];
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedEvents', 'readonly');
-    const store = tx.objectStore('queuedEvents');
+    const tx = database.transaction("queuedEvents", "readonly");
+    const store = tx.objectStore("queuedEvents");
     const request = store.getAll();
-    
+
     request.onsuccess = () => {
       // Recover failed writes and writes interrupted while syncing. Never hide unsaved work.
-      const events = (request.result as QueuedEvent[]).filter(event => event.userId === userId && event.status !== 'succeeded');
+      const events = (request.result as QueuedEvent[]).filter(
+        (event) => event.userId === userId && event.status !== "succeeded",
+      );
       // Sort by createdAt ascending
       events.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
       resolve(events);
@@ -219,23 +243,23 @@ export async function getPendingEvents(): Promise<QueuedEvent[]> {
 
 export async function updateEventStatus(
   localEventId: string,
-  status: QueuedEvent['status'],
-  lastError?: string
+  status: QueuedEvent["status"],
+  lastError?: string,
 ): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedEvents', 'readwrite');
-    const store = tx.objectStore('queuedEvents');
+    const tx = database.transaction("queuedEvents", "readwrite");
+    const store = tx.objectStore("queuedEvents");
     const getRequest = store.get(localEventId);
-    
+
     getRequest.onsuccess = () => {
       const event = getRequest.result as QueuedEvent | undefined;
       if (event) {
         event.status = status;
         if (lastError) event.lastError = lastError;
-        if (status === 'failed') event.retryCount++;
-        
+        if (status === "failed") event.retryCount++;
+
         const putRequest = store.put(event);
         putRequest.onsuccess = () => resolve();
         putRequest.onerror = () => reject(putRequest.error);
@@ -249,19 +273,19 @@ export async function updateEventStatus(
 
 export async function markEventsSyncing(eventIds: string[]): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedEvents', 'readwrite');
-    const store = tx.objectStore('queuedEvents');
-    
+    const tx = database.transaction("queuedEvents", "readwrite");
+    const store = tx.objectStore("queuedEvents");
+
     let completed = 0;
-    
+
     eventIds.forEach((id) => {
       const getRequest = store.get(id);
       getRequest.onsuccess = () => {
         const event = getRequest.result as QueuedEvent | undefined;
         if (event) {
-          event.status = 'syncing';
+          event.status = "syncing";
           store.put(event);
         }
         completed++;
@@ -269,20 +293,20 @@ export async function markEventsSyncing(eventIds: string[]): Promise<void> {
       };
       getRequest.onerror = () => reject(getRequest.error);
     });
-    
+
     if (eventIds.length === 0) resolve();
   });
 }
 
 export async function removeSucceededEvents(): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedEvents', 'readwrite');
-    const store = tx.objectStore('queuedEvents');
-    const index = store.index('status');
-    const request = index.openCursor('succeeded');
-    
+    const tx = database.transaction("queuedEvents", "readwrite");
+    const store = tx.objectStore("queuedEvents");
+    const index = store.index("status");
+    const request = index.openCursor("succeeded");
+
     request.onsuccess = () => {
       const cursor = request.result;
       if (cursor) {
@@ -298,26 +322,34 @@ export async function removeSucceededEvents(): Promise<void> {
 
 export async function getPendingEventCount(): Promise<number> {
   const events = await getPendingEvents();
-  return events.length;
+  const photos = await getPendingPhotos();
+  return (
+    events.length +
+    photos.length +
+    (currentAccountId() ? queuedShotCount(currentAccountId()!) : 0)
+  );
 }
 
 // Completion Snapshots
 export async function saveCompletionSnapshot(
   playerId: string,
   practiceCardId: string,
-  taskCompletionMap: Record<string, { completed: boolean; shotsLogged: number }>,
-  sessionStatus: 'none' | 'partial' | 'complete',
-  actorId: string | null = currentAccountId()
+  taskCompletionMap: Record<
+    string,
+    { completed: boolean; shotsLogged: number }
+  >,
+  sessionStatus: "none" | "partial" | "complete",
+  actorId: string | null = currentAccountId(),
 ): Promise<void> {
   const database = await getDB();
   const userId = actorId;
   if (!userId) return;
   const key = `${userId}_${playerId}_${practiceCardId}`;
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('completionSnapshots', 'readwrite');
-    const store = tx.objectStore('completionSnapshots');
-    
+    const tx = database.transaction("completionSnapshots", "readwrite");
+    const store = tx.objectStore("completionSnapshots");
+
     const data: CompletionSnapshot = {
       userId,
       key,
@@ -327,9 +359,11 @@ export async function saveCompletionSnapshot(
       sessionStatus,
       updatedAt: new Date().toISOString(),
     };
-    
+
     const request = store.put(data);
-    request.onsuccess = () => resolve();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -337,18 +371,18 @@ export async function saveCompletionSnapshot(
 export async function getCompletionSnapshot(
   playerId: string,
   practiceCardId: string,
-  actorId: string | null = currentAccountId()
+  actorId: string | null = currentAccountId(),
 ): Promise<CompletionSnapshot | null> {
   const database = await getDB();
   const userId = actorId;
   if (!userId) return null;
   const key = `${userId}_${playerId}_${practiceCardId}`;
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('completionSnapshots', 'readonly');
-    const store = tx.objectStore('completionSnapshots');
+    const tx = database.transaction("completionSnapshots", "readonly");
+    const store = tx.objectStore("completionSnapshots");
     const request = store.get(key);
-    
+
     request.onsuccess = () => {
       resolve(request.result as CompletionSnapshot | null);
     };
@@ -361,14 +395,15 @@ export async function getLastSyncTime(): Promise<string | null> {
   const userId = currentAccountId();
   if (!userId) return null;
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('syncMeta', 'readonly');
-    const store = tx.objectStore('syncMeta');
+    const tx = database.transaction("syncMeta", "readonly");
+    const store = tx.objectStore("syncMeta");
     const request = store.get(`${userId}_lastSync`);
-    
+
     request.onsuccess = () => {
-      const result = request.result as { key: string; value: string } | undefined;
+      const result = request.result as
+        { key: string; value: string } | undefined;
       resolve(result?.value || null);
     };
     request.onerror = () => reject(request.error);
@@ -379,13 +414,15 @@ export async function setLastSyncTime(time: string): Promise<void> {
   const userId = currentAccountId();
   if (!userId) return;
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('syncMeta', 'readwrite');
-    const store = tx.objectStore('syncMeta');
+    const tx = database.transaction("syncMeta", "readwrite");
+    const store = tx.objectStore("syncMeta");
     const request = store.put({ key: `${userId}_lastSync`, value: time });
-    
-    request.onsuccess = () => resolve();
+
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -396,23 +433,31 @@ export function generateLocalEventId(): string {
 }
 
 // Queued Photos for offline upload
-export async function queuePhoto(photo: Omit<QueuedPhoto, 'retryCount' | 'userId'>): Promise<void> {
-  const userId = currentAccountId();
-  if (!userId) throw new Error("Sign in before saving a photo offline.");
+export async function queuePhoto(
+  photo: Omit<QueuedPhoto, "retryCount" | "userId">,
+  actorId: string | null = currentAccountId(),
+): Promise<void> {
+  const userId = actorId;
+  if (!userId || userId !== currentAccountId())
+    throw new Error(
+      "Your account changed. Choose the photo again after signing in.",
+    );
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedPhotos', 'readwrite');
-    const store = tx.objectStore('queuedPhotos');
-    
+    const tx = database.transaction("queuedPhotos", "readwrite");
+    const store = tx.objectStore("queuedPhotos");
+
     const data: QueuedPhoto = {
       ...photo,
       userId,
       retryCount: 0,
     };
-    
+
     const request = store.put(data);
-    request.onsuccess = () => resolve();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -421,15 +466,18 @@ export async function getPendingPhotos(): Promise<QueuedPhoto[]> {
   const userId = currentAccountId();
   if (!userId) return [];
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedPhotos', 'readonly');
-    const store = tx.objectStore('queuedPhotos');
-    const index = store.index('status');
-    const request = index.getAll('pending');
-    
+    const tx = database.transaction("queuedPhotos", "readonly");
+    const store = tx.objectStore("queuedPhotos");
+    const request = store.getAll();
+
     request.onsuccess = () => {
-      resolve((request.result as QueuedPhoto[]).filter(photo => photo.userId === userId));
+      resolve(
+        (request.result as QueuedPhoto[]).filter(
+          (photo) => photo.userId === userId && photo.status !== "succeeded",
+        ),
+      );
     };
     request.onerror = () => reject(request.error);
   });
@@ -437,21 +485,24 @@ export async function getPendingPhotos(): Promise<QueuedPhoto[]> {
 
 export async function updatePhotoStatus(
   localPhotoId: string,
-  status: QueuedPhoto['status']
+  status: QueuedPhoto["status"],
+  lastError?: string,
 ): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedPhotos', 'readwrite');
-    const store = tx.objectStore('queuedPhotos');
+    const tx = database.transaction("queuedPhotos", "readwrite");
+    const store = tx.objectStore("queuedPhotos");
     const getRequest = store.get(localPhotoId);
-    
+
     getRequest.onsuccess = () => {
       const photo = getRequest.result as QueuedPhoto | undefined;
       if (photo) {
         photo.status = status;
-        if (status === 'failed') photo.retryCount++;
-        
+        photo.lastError = lastError;
+        if (status === "succeeded") photo.localUri = "";
+        if (status === "failed") photo.retryCount++;
+
         const putRequest = store.put(photo);
         putRequest.onsuccess = () => resolve();
         putRequest.onerror = () => reject(putRequest.error);
@@ -465,13 +516,13 @@ export async function updatePhotoStatus(
 
 export async function removeSucceededPhotos(): Promise<void> {
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedPhotos', 'readwrite');
-    const store = tx.objectStore('queuedPhotos');
-    const index = store.index('status');
-    const request = index.openCursor('succeeded');
-    
+    const tx = database.transaction("queuedPhotos", "readwrite");
+    const store = tx.objectStore("queuedPhotos");
+    const index = store.index("status");
+    const request = index.openCursor("succeeded");
+
     request.onsuccess = () => {
       const cursor = request.result;
       if (cursor) {
@@ -487,24 +538,47 @@ export async function removeSucceededPhotos(): Promise<void> {
 
 export async function getQueuedPhotosForSession(
   playerId: string,
-  practiceCardId: string
+  practiceCardId: string,
 ): Promise<QueuedPhoto[]> {
   const userId = currentAccountId();
   if (!userId) return [];
   const database = await getDB();
-  
+
   return new Promise((resolve, reject) => {
-    const tx = database.transaction('queuedPhotos', 'readonly');
-    const store = tx.objectStore('queuedPhotos');
+    const tx = database.transaction("queuedPhotos", "readonly");
+    const store = tx.objectStore("queuedPhotos");
     const request = store.getAll();
-    
+
     request.onsuccess = () => {
       const all = request.result as QueuedPhoto[];
       const filtered = all.filter(
-        (p) => p.userId === userId && p.playerId === playerId && p.practiceCardId === practiceCardId
+        (p) =>
+          p.userId === userId &&
+          p.playerId === playerId &&
+          p.practiceCardId === practiceCardId,
       );
       resolve(filtered);
     };
     request.onerror = () => reject(request.error);
+  });
+}
+
+/** Remove only this account's unsent photo draft. An in-flight upload must finish first. */
+export async function discardQueuedPhoto(localPhotoId: string): Promise<void> {
+  const actor = currentAccountId();
+  if (!actor) return;
+  const database = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction("queuedPhotos", "readwrite");
+    const store = tx.objectStore("queuedPhotos");
+    const request = store.get(localPhotoId);
+    request.onsuccess = () => {
+      const photo = request.result as QueuedPhoto | undefined;
+      if (photo?.userId === actor && photo.status !== "uploading")
+        store.delete(localPhotoId);
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
   });
 }

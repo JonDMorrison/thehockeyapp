@@ -1320,6 +1320,8 @@ export type Database = {
           last_initial: string | null
           owner_user_id: string
           position: string | null
+          profile_photo_original_url: string | null
+          profile_photo_frame: Json | null
           profile_photo_url: string | null
           season_goals: string | null
           shoots: string | null
@@ -1336,6 +1338,8 @@ export type Database = {
           last_initial?: string | null
           owner_user_id: string
           position?: string | null
+          profile_photo_original_url?: string | null
+          profile_photo_frame?: Json | null
           profile_photo_url?: string | null
           season_goals?: string | null
           shoots?: string | null
@@ -1352,6 +1356,8 @@ export type Database = {
           last_initial?: string | null
           owner_user_id?: string
           position?: string | null
+          profile_photo_original_url?: string | null
+          profile_photo_frame?: Json | null
           profile_photo_url?: string | null
           season_goals?: string | null
           shoots?: string | null
@@ -1808,6 +1814,7 @@ export type Database = {
         Row: {
           created_at: string
           daily_cap: number
+          review_threshold: number
           created_by: string
           end_date: string
           id: string
@@ -1818,6 +1825,7 @@ export type Database = {
         }
         Insert: {
           daily_cap?: number
+          review_threshold?: number
           created_at?: string
           created_by: string
           end_date: string
@@ -1829,6 +1837,7 @@ export type Database = {
         }
         Update: {
           daily_cap?: number
+          review_threshold?: number
           created_at?: string
           created_by?: string
           end_date?: string
@@ -3200,6 +3209,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      configure_shooting_rules: {
+        Args: { p_id: string; p_cap: number; p_expected: number; p_threshold: number }
+        Returns: Json
+      }
+      review_shooting_entry: {
+        Args: { p_id: string; p_player: string; p_date: string; p_version: number; p_note: string }
+        Returns: Json
+      }
       get_player_training_history: {
         Args: { p_player_id: string; p_before?: string; p_days?: number }
         Returns: Json

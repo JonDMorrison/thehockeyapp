@@ -47,4 +47,4 @@ jobs:
           # Network-dependent failure scenarios are intercepted in the tests.
           VITE_SUPABASE_URL: https://public-journey-test.invalid
           VITE_SUPABASE_PUBLISHABLE_KEY: public-journey-test-key
-        run: npx playwright test e2e/10-public-launch.spec.ts e2e/12-first-visit.spec.ts e2e/14-recovery-and-accessibility.spec.ts e2e/17-public-shooting-demo.spec.ts e2e/19-password-entry.spec.ts e2e/21-first-challenge-navigation.spec.ts e2e/76-visual-features.spec.ts --reporter=line
+        run: npx playwright test e2e/10-public-launch.spec.ts e2e/12-first-visit.spec.ts e2e/14-recovery-and-accessibility.spec.ts e2e/17-public-shooting-demo.spec.ts e2e/19-password-entry.spec.ts e2e/21-first-challenge-navigation.spec.ts e2e/76-visual-features.spec.ts e2e/78-product-audit.spec.ts --reporter=line

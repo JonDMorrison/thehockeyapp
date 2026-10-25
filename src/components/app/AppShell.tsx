@@ -49,7 +49,10 @@ interface WorkspaceNavigation {
   items: NavItem[];
 }
 
-function getWorkspaceNavigation(pathname: string, t: (key: string) => string): WorkspaceNavigation {
+function getWorkspaceNavigation(
+  pathname: string,
+  t: (key: string) => string,
+): WorkspaceNavigation {
   const teamMatch = pathname.match(/^\/teams\/([^/]+)/);
   if (teamMatch && teamMatch[1] !== "new") {
     const teamRoot = `/teams/${teamMatch[1]}`;
@@ -64,15 +67,32 @@ function getWorkspaceNavigation(pathname: string, t: (key: string) => string): W
     };
   }
 
-  const soloMatch = pathname.match(/^\/solo\/(?:dashboard|today|badges|planning|workout|week-planner|program|settings)\/([^/]+)/);
+  const soloMatch = pathname.match(
+    /^\/solo\/(?:dashboard|today|badges|planning|workout|week-planner|program|settings)\/([^/]+)/,
+  );
   if (soloMatch) {
-    const playerId=soloMatch[1];
-    return {eyebrow:"Home training",items:[
-      {icon:Home,label:"Home",path:`/players/${playerId}/home`},
-      {icon:ClipboardCheck,label:"Today",path:`/solo/today/${playerId}`},
-      {icon:CalendarDays,label:"Week",path:`/solo/dashboard/${playerId}`},
-      {icon:History,label:"History",path:`/players/${playerId}/history`},
-    ]};
+    const playerId = soloMatch[1];
+    return {
+      eyebrow: "Home training",
+      items: [
+        { icon: Home, label: "Home", path: `/players/${playerId}/home` },
+        {
+          icon: ClipboardCheck,
+          label: "Today",
+          path: `/solo/today/${playerId}`,
+        },
+        {
+          icon: CalendarDays,
+          label: "Week",
+          path: `/solo/dashboard/${playerId}`,
+        },
+        {
+          icon: History,
+          label: "History",
+          path: `/players/${playerId}/history`,
+        },
+      ],
+    };
   }
 
   const playerMatch = pathname.match(/^\/players\/([^/]+)/);
@@ -96,8 +116,16 @@ function getWorkspaceNavigation(pathname: string, t: (key: string) => string): W
       eyebrow: "Association HQ",
       items: [
         { icon: Building2, label: "Overview", path: associationRoot },
-        { icon: Users, label: "Teams", path: `${associationRoot}#association-teams` },
-        { icon: User, label: "Access", path: `${associationRoot}#association-access` },
+        {
+          icon: Users,
+          label: "Teams",
+          path: `${associationRoot}#association-teams`,
+        },
+        {
+          icon: User,
+          label: "Access",
+          path: `${associationRoot}#association-access`,
+        },
         { icon: Settings, label: "Settings", path: "/settings" },
       ],
     };
@@ -135,28 +163,44 @@ export const AppShell: React.FC<AppShellProps> = ({
     .filter((item) => {
       if (item.path.includes("#")) return currentLocation === item.path;
       if (location.hash) return false;
-      return location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+      return (
+        location.pathname === item.path ||
+        location.pathname.startsWith(`${item.path}/`)
+      );
     })
     .sort((a, b) => b.path.length - a.path.length)[0]?.path;
 
   // Determine if this is a root tab
-  const isRootTab = navItems.some(item => item.path === `${location.pathname}${location.hash}` || item.path === location.pathname);
+  const isRootTab = navItems.some(
+    (item) =>
+      item.path === `${location.pathname}${location.hash}` ||
+      item.path === location.pathname,
+  );
 
   const isItemActive = (item: NavItem) => item.path === activeNavPath;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-
       {!hideNav && (
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col border-r border-white/[0.07] bg-[#090b0f] lg:flex">
-          <Link to="/welcome" className="flex h-20 items-center gap-3 border-b border-white/[0.07] px-5">
+          <Link
+            to="/welcome"
+            className="flex h-20 items-center gap-3 border-b border-white/[0.07] px-5"
+          >
             <HockeyAppLogo size={34} alt="" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-white">The Hockey App</p>
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">{workspaceNavigation.eyebrow}</p>
+              <p className="font-display text-base font-black uppercase tracking-tight text-white">
+                The Hockey App
+              </p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary">
+                {workspaceNavigation.eyebrow}
+              </p>
             </div>
           </Link>
-          <nav className="flex-1 space-y-1 p-3" aria-label={`${workspaceNavigation.eyebrow} navigation`}>
+          <nav
+            className="flex-1 space-y-1 p-3"
+            aria-label={`${workspaceNavigation.eyebrow} navigation`}
+          >
             {navItems.map((item) => {
               const isActive = isItemActive(item);
               const Icon = item.icon;
@@ -164,13 +208,19 @@ export const AppShell: React.FC<AppShellProps> = ({
               return (
                 <Link
                   key={item.path}
+                  aria-current={isActive ? "page" : undefined}
                   to={item.path}
                   className={cn(
                     "flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-colors",
-                    isActive ? "bg-white/[0.07] text-white ring-1 ring-white/[0.08]" : "text-white/52 hover:bg-white/[0.06] hover:text-white",
+                    isActive
+                      ? "bg-white/[0.07] text-white ring-1 ring-white/[0.08]"
+                      : "text-white/52 hover:bg-white/[0.06] hover:text-white",
                   )}
                 >
-                  <Icon className="h-4 w-4" strokeWidth={isActive ? 2.5 : 1.75} />
+                  <Icon
+                    className="h-4 w-4"
+                    strokeWidth={isActive ? 2.5 : 1.75}
+                  />
                   {item.label}
                 </Link>
               );
@@ -193,7 +243,12 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Smart Navigation Header */}
       {useNavHeader && (
-        <header className={cn("sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl", !hideNav && "lg:pl-60")}>
+        <header
+          className={cn(
+            "sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl",
+            !hideNav && "lg:pl-60",
+          )}
+        >
           <div className="mx-auto max-w-7xl px-4 py-2 pr-36 sm:px-6 sm:pr-36 lg:px-8 lg:pr-36">
             <NavigationHeader
               title={navTitle}
@@ -208,24 +263,53 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Legacy Header (for backward compatibility) */}
       {!useNavHeader && header && (
-        <header className={cn("sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl", !hideNav && "lg:pl-60")}>
-          <div className={cn("mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8", !hideUserMenu && "pr-36 sm:pr-36 lg:pr-36 [&>div]:flex-wrap [&>div]:gap-y-2")}>
+        <header
+          className={cn(
+            "sticky top-0 z-40 safe-top border-b border-border/80 border-t-2 border-t-primary bg-background/92 backdrop-blur-xl",
+            !hideNav && "lg:pl-60",
+          )}
+        >
+          <div
+            className={cn(
+              "mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8",
+              !hideUserMenu &&
+                "pr-36 sm:pr-36 lg:pr-36 [&>div]:flex-wrap [&>div]:gap-y-2",
+            )}
+          >
             {header}
           </div>
         </header>
       )}
 
       {/* Main content area */}
-      <main className={cn(
-        "flex-1 overflow-y-auto",
-        !hideNav && "pb-20 lg:pb-0 lg:pl-60" // Mobile dock, desktop rail
-      )}>
-        {pendingCount > 0 && (offlineStatus === 'pending' || offlineStatus === 'error') && (
-          <div role="status" className="mx-4 mt-16 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning/30 bg-warning-muted px-4 py-2 text-sm text-warning-foreground">
-            <span>Saved on this device. {pendingCount} {pendingCount === 1 ? 'update is' : 'updates are'} waiting to sync.</span>
-            <button type="button" onClick={() => void triggerSync()} className="min-h-11 px-2 font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2">Retry sync</button>
-          </div>
+      <main
+        className={cn(
+          "flex-1 overflow-y-auto",
+          !hideNav && "pb-20 lg:pb-0 lg:pl-60", // Mobile dock, desktop rail
         )}
+      >
+        {pendingCount > 0 &&
+          (offlineStatus === "pending" ||
+            offlineStatus === "error" ||
+            offlineStatus === "offline") && (
+            <div
+              role="status"
+              className="mx-4 mt-16 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-warning/30 bg-warning-muted px-4 py-2 text-sm text-warning-foreground"
+            >
+              <span>
+                Saved on this device. {pendingCount}{" "}
+                {pendingCount === 1 ? "update is" : "updates are"} waiting to
+                sync.
+              </span>
+              <button
+                type="button"
+                onClick={() => void triggerSync()}
+                className="min-h-11 px-2 font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2"
+              >
+                Retry sync
+              </button>
+            </div>
+          )}
         {children}
       </main>
 
@@ -240,11 +324,14 @@ export const AppShell: React.FC<AppShellProps> = ({
               return (
                 <Link
                   key={item.path}
+                  aria-current={isActive ? "page" : undefined}
                   to={item.path}
                   className={cn(
                     "relative flex flex-col items-center justify-center gap-1 py-2 px-5 transition-all duration-200 tap-target",
                     "active:scale-95",
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {/* Animated background pill */}
@@ -256,21 +343,23 @@ export const AppShell: React.FC<AppShellProps> = ({
                       transition={{
                         type: "spring",
                         stiffness: 500,
-                        damping: 35
+                        damping: 35,
                       }}
                     />
                   )}
                   <Icon
                     className={cn(
                       "w-5 h-5 relative z-10 transition-transform duration-200",
-                      isActive && "scale-110"
+                      isActive && "scale-110",
                     )}
                     strokeWidth={isActive ? 2.5 : 1.75}
                   />
-                  <span className={cn(
-                    "text-[10px] font-medium relative z-10 transition-all duration-200",
-                    isActive && "font-semibold"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-xs font-medium relative z-10 transition-all duration-200",
+                      isActive && "font-semibold",
+                    )}
+                  >
                     {item.label}
                   </span>
                 </Link>
@@ -294,7 +383,13 @@ export const PageContainer: React.FC<PageContainerProps> = ({
   ...props
 }) => {
   return (
-    <div className={cn("mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8", className)} {...props}>
+    <div
+      className={cn(
+        "mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -307,13 +402,21 @@ interface PageHeaderProps {
   action?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  subtitle,
+  action,
+}) => {
   return (
     <div className="flex min-w-0 items-start justify-between gap-3">
       <div className="min-w-0">
-        <h1 className="break-words text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="break-words text-2xl font-bold tracking-tight">
+          {title}
+        </h1>
         {subtitle && (
-          <p className="break-words text-sm text-text-secondary mt-0.5">{subtitle}</p>
+          <p className="break-words text-sm text-text-secondary mt-0.5">
+            {subtitle}
+          </p>
         )}
       </div>
       {action && <div>{action}</div>}

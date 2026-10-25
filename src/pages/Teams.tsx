@@ -1,3 +1,4 @@
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -17,6 +18,7 @@ import { Plus, ChevronRight, Users, Shield, Building2 } from "lucide-react";
 
 const Teams: React.FC = () => {
   const { t } = useTranslation();
+  const { isAssociation } = useUserRoles();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, loading: authLoading, isAuthenticated } = useAuth();
@@ -37,12 +39,20 @@ const Teams: React.FC = () => {
     await queryClient.invalidateQueries({ queryKey: ["teams", user?.id] });
   }, [queryClient, user?.id]);
 
-  const { data: teams, isLoading, isFetched, isError, refetch, isFetching } = useQuery({
+  const {
+    data: teams,
+    isLoading,
+    isFetched,
+    isError,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["teams", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_roles")
-        .select(`
+        .select(
+          `
           role,
           teams (
             id,
@@ -52,7 +62,8 @@ const Teams: React.FC = () => {
             team_logo_url,
             palette_id
           )
-        `)
+        `,
+        )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
 
@@ -85,7 +96,6 @@ const Teams: React.FC = () => {
     return null;
   }
 
-
   return (
     <AppShell
       header={
@@ -109,26 +119,40 @@ const Teams: React.FC = () => {
     >
       <PullToRefresh onRefresh={handleRefresh} isRefreshing={isLoading}>
         <PageContainer>
-          <button
-            type="button"
-            onClick={() => navigate("/associations")}
-            className="group relative w-full overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-card via-card to-primary/10 p-5 text-left transition hover:border-primary/45"
-          >
-            <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
-            <div className="relative flex items-center gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Building2 className="h-5 w-5" />
+          {isAssociation && (
+            <button
+              type="button"
+              onClick={() => navigate("/associations")}
+              className="group relative w-full overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-card via-card to-primary/10 p-5 text-left transition hover:border-primary/45"
+            >
+              <div className="absolute -right-8 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
+              <div className="relative flex items-center gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+                    Association HQ
+                  </p>
+                  <p className="mt-1 font-black uppercase tracking-tight">
+                    Manage every team in one view
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Rollout, adoption, plans, and staff access.
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">Association HQ</p>
-                <p className="mt-1 font-black uppercase tracking-tight">Manage every team in one view</p>
-                <p className="mt-1 text-xs text-muted-foreground">Rollout, adoption, plans, and staff access.</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-            </div>
-          </button>
+            </button>
+          )}
 
-          {isError ? <DataLoadError title="Couldn’t load your teams" onRetry={() => refetch()} retrying={isFetching} /> : isLoading ? (
+          {isError ? (
+            <DataLoadError
+              title="Couldn’t load your teams"
+              onRetry={() => refetch()}
+              retrying={isFetching}
+            />
+          ) : isLoading ? (
             <div className="space-y-3">
               <SkeletonTeamCard />
               <SkeletonTeamCard />
@@ -148,31 +172,35 @@ const Teams: React.FC = () => {
                 if (!team) return null;
 
                 return (
-                  <Link key={team.id} to={`/teams/${team.id}`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                  <AppCard className="hover:shadow-medium transition-shadow">
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={team.team_logo_url || team.team_photo_url}
-                        fallback={team.name}
-                        size="lg"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold truncate">{team.name}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          {team.season_label && (
-                            <Tag variant="neutral" size="sm">
-                              {team.season_label}
+                  <Link
+                    key={team.id}
+                    to={`/teams/${team.id}`}
+                    className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  >
+                    <AppCard className="hover:shadow-medium transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          src={team.team_logo_url || team.team_photo_url}
+                          fallback={team.name}
+                          size="lg"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{team.name}</p>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {team.season_label && (
+                              <Tag variant="neutral" size="sm">
+                                {team.season_label}
+                              </Tag>
+                            )}
+                            <Tag variant="accent" size="sm">
+                              <Shield className="w-3 h-3" />
+                              {roleLabels[teamRole.role] || teamRole.role}
                             </Tag>
-                          )}
-                          <Tag variant="accent" size="sm">
-                            <Shield className="w-3 h-3" />
-                            {roleLabels[teamRole.role] || teamRole.role}
-                          </Tag>
+                          </div>
                         </div>
+                        <ChevronRight className="w-5 h-5 text-text-muted" />
                       </div>
-                      <ChevronRight className="w-5 h-5 text-text-muted" />
-                    </div>
-                  </AppCard>
+                    </AppCard>
                   </Link>
                 );
               })}

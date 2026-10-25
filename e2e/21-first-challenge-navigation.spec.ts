@@ -61,13 +61,27 @@ for (const width of [390, 1280]) {
       let data: unknown = [];
       if (url.pathname.endsWith("/rpc/save_team_week_plan")) {
         const payload = route.request().postDataJSON();
-        mockPlan = { id: payload.p_id, team_id: payload.p_team_id, name: payload.p_name,
-          start_date: payload.p_start_date, tier: payload.p_tier, use_tier_scaling: payload.p_use_tier_scaling,
-          status: payload.p_publish ? "published" : "draft" };
-        mockDays = payload.p_days.map((day: Record<string, unknown>, index: number) => ({
-          ...day, id: `day-${index}`, team_week_plan_tasks: day.tasks,
-        }));
-        data = { success: true, plan_id: payload.p_id, published: payload.p_publish };
+        mockPlan = {
+          id: payload.p_id,
+          team_id: payload.p_team_id,
+          name: payload.p_name,
+          start_date: payload.p_start_date,
+          tier: payload.p_tier,
+          use_tier_scaling: payload.p_use_tier_scaling,
+          status: payload.p_publish ? "published" : "draft",
+        };
+        mockDays = payload.p_days.map(
+          (day: Record<string, unknown>, index: number) => ({
+            ...day,
+            id: `day-${index}`,
+            team_week_plan_tasks: day.tasks,
+          }),
+        );
+        data = {
+          success: true,
+          plan_id: payload.p_id,
+          published: payload.p_publish,
+        };
       } else if (url.pathname.endsWith("/rpc/create_team_with_owner")) {
         teamName = route.request().postDataJSON().p_name;
         data = { success: true, team_id: team };
@@ -169,8 +183,12 @@ for (const width of [390, 1280]) {
     await expect(
       page.getByLabel("Challenge name", { exact: true }),
     ).not.toBeVisible();
+    await page
+      .getByText("Scoring rules · 300 daily points", { exact: true })
+      .click();
     await expect(page.getByLabel("Daily leaderboard cap")).toHaveValue("300");
-    if (width === 390) await page.getByLabel("Daily leaderboard cap").fill("150");
+    if (width === 390)
+      await page.getByLabel("Daily leaderboard cap").fill("150");
     await page
       .getByRole("button", { name: "Create challenge & invite families" })
       .click();

@@ -1,3 +1,4 @@
+import { DataLoadError } from "@/components/app/DataLoadError";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,18 +14,16 @@ import { Loader2 } from "lucide-react";
 const Today: React.FC = () => {
   const navigate = useNavigate();
   const { loading: authLoading, isAuthenticated } = useAuth();
-  const {
-    activeView,
-    activeAssociationId,
-    activeTeamId,
-    activePlayerId,
-  } = useActiveView();
+  const { activeView, activeAssociationId, activeTeamId, activePlayerId } =
+    useActiveView();
   const {
     associationWorkspaces,
     coachTeams,
     guardedPlayers,
     ownPlayer,
     isLoading: rolesLoading,
+    error: rolesError,
+    retry,
   } = useUserRoles();
 
   useEffect(() => {
@@ -32,21 +31,35 @@ const Today: React.FC = () => {
       navigate("/auth", { replace: true });
       return;
     }
-    if (authLoading || rolesLoading || !isAuthenticated) return;
+    if (authLoading || rolesLoading || rolesError || !isAuthenticated) return;
 
-    const associationIds = associationWorkspaces.map(({ associationId }) => associationId);
+    const associationIds = associationWorkspaces.map(
+      ({ associationId }) => associationId,
+    );
     const teamIds = coachTeams.map(({ teamId }) => teamId);
     const playerIds = guardedPlayers.map(({ playerId }) => playerId);
 
-    if (activeView === "association" && activeAssociationId && associationIds.includes(activeAssociationId)) {
+    if (
+      activeView === "association" &&
+      activeAssociationId &&
+      associationIds.includes(activeAssociationId)
+    ) {
       navigate(`/associations/${activeAssociationId}`, { replace: true });
       return;
     }
-    if (activeView === "coach" && activeTeamId && teamIds.includes(activeTeamId)) {
+    if (
+      activeView === "coach" &&
+      activeTeamId &&
+      teamIds.includes(activeTeamId)
+    ) {
       navigate(`/teams/${activeTeamId}`, { replace: true });
       return;
     }
-    if (activeView === "parent" && activePlayerId && playerIds.includes(activePlayerId)) {
+    if (
+      activeView === "parent" &&
+      activePlayerId &&
+      playerIds.includes(activePlayerId)
+    ) {
       navigate(`/players/${activePlayerId}/home`, { replace: true });
       return;
     }
@@ -58,10 +71,16 @@ const Today: React.FC = () => {
     const firstAssociation = associationWorkspaces[0];
     const firstTeam = coachTeams[0];
     const firstPlayer = guardedPlayers[0];
-    if (firstAssociation) navigate(`/associations/${firstAssociation.associationId}`, { replace: true });
-    else if (firstTeam) navigate(`/teams/${firstTeam.teamId}`, { replace: true });
-    else if (firstPlayer) navigate(`/players/${firstPlayer.playerId}/home`, { replace: true });
-    else if (ownPlayer) navigate(`/players/${ownPlayer.id}/home`, { replace: true });
+    if (firstAssociation)
+      navigate(`/associations/${firstAssociation.associationId}`, {
+        replace: true,
+      });
+    else if (firstTeam)
+      navigate(`/teams/${firstTeam.teamId}`, { replace: true });
+    else if (firstPlayer)
+      navigate(`/players/${firstPlayer.playerId}/home`, { replace: true });
+    else if (ownPlayer)
+      navigate(`/players/${ownPlayer.id}/home`, { replace: true });
     else navigate("/welcome", { replace: true });
   }, [
     activeAssociationId,
@@ -76,8 +95,15 @@ const Today: React.FC = () => {
     navigate,
     ownPlayer,
     rolesLoading,
+    rolesError,
   ]);
 
+  if (rolesError)
+    return (
+      <main className="mx-auto max-w-lg p-6">
+        <DataLoadError title="Couldn’t load your workspaces" onRetry={retry} />
+      </main>
+    );
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="w-8 h-8 animate-spin text-primary" />

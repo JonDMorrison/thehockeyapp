@@ -134,6 +134,7 @@ const PlayerHome: React.FC = () => {
       const { data, error } = await supabase
         .from("player_guardians")
         .select("user_id")
+        .eq("guardian_role", "owner")
         .eq("player_id", id!)
         .eq("user_id", user!.id);
       if (error) throw error;
@@ -702,7 +703,7 @@ const PlayerHome: React.FC = () => {
             </Link>
           </div>
         </section>
-        {canManageProfile && <PlayerProfilePrompt player={player} />}
+
         <nav
           aria-label="Today’s shortcuts"
           className="grid grid-cols-2 gap-2 sm:flex"
@@ -749,6 +750,7 @@ const PlayerHome: React.FC = () => {
             <ChallengeLinks playerId={id} familyOverview />
           </div>
         </div>
+        {canManageProfile && <PlayerProfilePrompt player={player} />}
         <section
           aria-label="Your next wins"
           className="grid grid-cols-3 gap-2 sm:gap-3"

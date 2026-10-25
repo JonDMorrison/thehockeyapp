@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { privateMediaReference, resolveMediaUrl, validateImageUpload } from "@/lib/media";
+import { resolveMediaUrl } from "@/lib/media";
 import { useTranslation } from "react-i18next";
 
 interface UserMenuProps {
@@ -60,8 +60,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = React.useState(false);
+  const isUploading = false;
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -93,15 +92,23 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     return email.slice(0, 2).toUpperCase();
   };
 
-  const displayName = customDisplayName || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User";
+  const displayName =
+    customDisplayName ||
+    user?.user_metadata?.display_name ||
+    user?.email?.split("@")[0] ||
+    "User";
   const email = user?.email || "";
   const avatarReference = avatarUrl ?? user?.user_metadata?.avatar_url;
   const [avatarSrc, setAvatarSrc] = React.useState<string | null>(null);
   React.useEffect(() => {
     let active = true;
     setAvatarSrc(null);
-    void resolveMediaUrl(avatarReference).then(url => { if (active) setAvatarSrc(url); });
-    return () => { active = false; };
+    void resolveMediaUrl(avatarReference).then((url) => {
+      if (active) setAvatarSrc(url);
+    });
+    return () => {
+      active = false;
+    };
   }, [avatarReference]);
 
   const sizeClasses = {
@@ -110,82 +117,18 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     lg: "h-14 w-14",
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !playerId) return;
-
-    // Validate file
-    const validation = validateImageUpload(file);
-    if (validation) {
-      toast({ title: t("common.invalidFile"), description: validation, variant: "destructive" });
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      // Upload to Supabase Storage
-      const fileExt = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
-      const fileName = `${playerId}/profile-${crypto.randomUUID()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('player-photos')
-        .upload(fileName, file, { upsert: false });
-
-      if (uploadError) throw uploadError;
-
-      const reference = privateMediaReference("player-photos", fileName);
-
-      // Update player profile
-      const { error: updateError } = await supabase
-        .from('players')
-        .update({ profile_photo_url: reference })
-        .eq('id', playerId);
-
-      if (updateError) {
-        await supabase.storage.from("player-photos").remove([fileName]);
-        throw updateError;
-      }
-      setAvatarSrc(await resolveMediaUrl(reference));
-
-      toast({
-        title: t("common.photoUpdated"),
-        description: t("common.profilePhotoUpdated"),
-      });
-
-      onPhotoUploaded?.(reference);
-    } catch (error: unknown) {
-      logger.error('Photo upload error', { error });
-      toast({
-        title: t("common.uploadFailed"),
-        description: error instanceof Error ? error.message : t("common.couldNotUploadPhoto"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handlePhotoUpload}
-      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            aria-label={playerId ? `Player options for ${displayName}` : "Account menu"}
+            aria-label={
+              playerId ? `Player options for ${displayName}` : "Account menu"
+            }
             className={cn(
               "relative flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2",
               isUploading && "opacity-50 pointer-events-none",
-              className
+              className,
             )}
           >
             <Avatar className={cn(sizeClasses[size], "border-2 border-border")}>
@@ -204,7 +147,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">{displayName}</p>
-              <p className="text-xs leading-none text-muted-foreground">{email}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {email}
+              </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -213,7 +158,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           {playerId && (
             <>
               <DropdownMenuItem
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => navigate(`/players/${playerId}#photo`)}
                 className="cursor-pointer"
               >
                 <Camera className="mr-2 h-4 w-4" />
@@ -231,13 +176,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to={settingsPath || "/settings"} className="flex items-center cursor-pointer">
+              <Link
+                to={settingsPath || "/settings"}
+                className="flex items-center cursor-pointer"
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>{t("nav.settings")}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings#notifications" className="flex items-center cursor-pointer">
+              <Link
+                to="/settings#notifications"
+                className="flex items-center cursor-pointer"
+              >
                 <Bell className="mr-2 h-4 w-4" />
                 <span>{t("settings.settings.notifications")}</span>
               </Link>

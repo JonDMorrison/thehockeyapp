@@ -80,9 +80,7 @@ export default function ShootingChallengeNew() {
   );
   const [dailyCap, setDailyCap] = useState(draft?.dailyCap ?? "300");
   const validCap =
-    /^\d+$/.test(dailyCap) &&
-    Number(dailyCap) >= 1 &&
-    Number(dailyCap) <= 10000;
+    /^\d+$/.test(dailyCap) && Number(dailyCap) >= 1 && Number(dailyCap) <= 300;
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
@@ -324,14 +322,17 @@ export default function ShootingChallengeNew() {
                   {zone.replace(/_/g, " ")}.
                 </p>
               )}
-              <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
+              <details className="rounded-xl border border-primary/25 bg-primary/5 p-4 space-y-2">
+                <summary className="min-h-11 cursor-pointer font-semibold">
+                  Scoring rules · {dailyCap} daily points
+                </summary>
                 <Label htmlFor="daily-cap">Daily leaderboard cap</Label>
                 <Input
                   id="daily-cap"
                   type="number"
                   inputMode="numeric"
                   min={1}
-                  max={10000}
+                  max={300}
                   step={1}
                   required
                   value={dailyCap}
@@ -340,10 +341,10 @@ export default function ShootingChallengeNew() {
                   aria-describedby="cap-help"
                 />
                 <p id="cap-help" className="text-xs text-muted-foreground">
-                  300 recommended. Extra shots become bonus effort and earn the
-                  Bonus Boss badge, without changing rankings.
+                  Up to 300 leaderboard points per day. Extra practice stays
+                  private. The cap locks after the first shots are logged.
                 </p>
-              </div>
+              </details>
               <p className="text-sm text-muted-foreground">
                 Most leaderboard shots wins. Ties share a place. Results are
                 visible only inside your team. You can invite families after

@@ -1,0 +1,19 @@
+# Product audit implementation
+
+Families can dismiss the optional player-profile reminder permanently for each child, and opening either profile action dismisses it. Daily workout/challenge actions appear first. The workspace switcher identifies the active team/player, offers only existing association memberships, and recovers from failed role reads without offering replacement setup. Active navigation links expose aria-current.
+
+Player photos have one editing flow: choose → circular preview → drag or keyboard-adjust position and zoom → Save photo. Originals remain private and framing can be changed later. Saved avatars are 512px JPEGs; originals are normalized to a maximum 2048px dimension. Unsupported HEIC decoding gives an actionable JPG/PNG fallback. Replace, reset, cancel and remove are explicit. The account menu opens this same editor. Profile text has a single save bar, account/player-scoped durable drafts and navigation/refresh protection. Photo saves are explicitly separate from text saves. Editing controls follow the existing owner permissions.
+
+Challenge competition allows at most 300 points per player per challenge-local day. The cap locks after the first positive entry; changing the private review threshold never changes points. Extra practice remains in family/staff history, without a public Bonus Boss badge or disclosure to other families. Coaches privately review totals at or above a configurable threshold (default 1,000); review never grants extra points. Reviews are version-bound, and changed entries need fresh review. Families can edit today and the previous two days; staff can make older corrections with a recorded reason. Multiple challenges remain separate competitions; this is not an association-wide aggregate leaderboard.
+
+Challenge drafts persist locally and queued saves preserve the original date, request id and version across reconnects. Conflicts and rule rejections require review rather than silently overwriting totals. Team workout totals can explicitly replace the entered challenge total after confirmation; they are never added automatically. Training photos queue durably before upload, retry with stable IDs, expose errors/discard controls and clear successful draft image bytes. Deletion confirms, unlinks the record first, then cleans up storage.
+
+## Verification
+
+- Existing public release suite plus six new product-audit browser cases: 60 passing Chromium cases at phone/desktop sizes. The new cases exercise real components, request contracts, JPEG generation and repeated crop edits, offline shot replay, role errors, profile reminder isolation, private review, and offline training-photo upload/deletion.
+- PostgreSQL-compatible local execution of legacy shooting suites and 16 new audit assertions: passes. CI also runs the repository's native PostgreSQL runner, including its concurrency tests.
+- `npm run check`: typecheck, lint, public-link/privacy/function checks, build and crawlable-shell verification. Existing lint warnings remain. Local prerender may use the documented static fallback where its bundled browser is absent.
+- Live schema verification confirms private review-table RLS, invoker-only new public RPCs, no anonymous execution, and no additional security-advisor findings.
+- Migration filenames match applied database versions: `20261025190319_product_audit_photo_and_fairness` and `20261025190418_preserve_shooting_daily_upsert_key`. The second forward migration retains the existing three-column daily-entry upsert key. No real player shot entries are rewritten.
+
+This is self-reported practice tracking, not proof of honesty or prize verification. Physical iPhone/Android and authenticated production-family journeys are not claimed by the controlled browser fixtures. Pending requests may require reconnecting or coach correction after the family editing window expires.
