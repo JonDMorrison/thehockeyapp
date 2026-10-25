@@ -197,7 +197,7 @@ try {
       "supabase/migrations/20261025223456_coach_caps_and_shooting_milestones.sql",
     ),
     "-f",
-    resolve("tests/database/shooting-rewards-release.sql"),
+    resolve("supabase/migrations/20261025224127_include_workout_shooting_milestones.sql"), "-f", resolve("tests/database/shooting-rewards-release.sql"),
   ]);
   process.stdout.write(rewards.stderr.replace(/^.*NOTICE:  /gm, ""));
   const migration = readFileSync(
