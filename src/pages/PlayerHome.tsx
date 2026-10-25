@@ -1,3 +1,4 @@
+import { ShootingMilestones } from "@/components/shooting/ShootingMilestones";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { PlayerProfilePrompt } from "@/components/player/PlayerProfilePrompt";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
@@ -750,6 +751,7 @@ const PlayerHome: React.FC = () => {
             <ChallengeLinks playerId={id} familyOverview />
           </div>
         </div>
+        {canManageProfile && <ShootingMilestones playerId={player.id} savedVersion={0} />}
         {canManageProfile && <PlayerProfilePrompt player={player} />}
         <section
           aria-label="Your next wins"
