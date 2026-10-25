@@ -8,6 +8,7 @@ export interface ShootingChallenge {
   end_date: string;
   timezone: string;
   daily_cap?: number;
+  review_threshold?: number;
   status: "Scheduled" | "Live" | "Finished";
 }
 export interface ShootingPlayer {
@@ -41,6 +42,16 @@ export interface ShootingSnapshot {
   players: ShootingPlayer[];
   days: ShootingDay[];
   corrected: boolean;
+  cap_locked?: boolean;
+  review_entries?: {
+    player_id: string;
+    shot_date: string;
+    shots: number;
+    version: number;
+    reviewed: boolean;
+    note: string | null;
+    reviewed_at: string | null;
+  }[];
   audit: {
     player_id: string;
     shot_date: string;
