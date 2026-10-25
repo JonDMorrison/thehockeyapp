@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 export function ShootingCapSettings({
   id,
   cap,
-  locked = false,
+
   threshold = 1000,
 }: {
   id: string;
@@ -26,8 +26,8 @@ export function ShootingCapSettings({
   const [failed, setFailed] = useState(false);
   const valid =
     /^\d+$/.test(value) &&
-    Number(value) >= 1 &&
-    Number(value) <= 300 &&
+    Number(value) >= 0 &&
+    Number(value) <= 10000 &&
     /^\d+$/.test(reviewThreshold) &&
     Number(reviewThreshold) >= 301 &&
     Number(reviewThreshold) <= 10000;
@@ -39,6 +39,13 @@ export function ShootingCapSettings({
     setMessage("");
     setFailed(false);
     try {
+      if (
+        Number(value) !== expected &&
+        !window.confirm(
+          "Recalculate this challenge’s standings using the new daily shot rule, including earlier days?",
+        )
+      )
+        return;
       const { error } = await supabase.rpc("configure_shooting_rules", {
         p_id: id,
         p_cap: Number(value),
@@ -66,35 +73,43 @@ export function ShootingCapSettings({
     }
   }
   return (
-    <details className="rounded-xl border border-border p-5">
+    <details
+      open
+      id="challenge-rules"
+      className="rounded-xl border border-border p-5"
+    >
       <summary className="min-h-11 cursor-pointer font-bold">
-        Daily cap settings
+        Daily shot rules
       </summary>
       <form onSubmit={save} className="mt-4 space-y-3">
+        <label className="flex min-h-11 items-center gap-3">
+          <input
+            type="checkbox"
+            checked={value === "0"}
+            disabled={busy}
+            onChange={(e) => setValue(e.target.checked ? "0" : "300")}
+          />
+          No daily cap
+        </label>
         <Label htmlFor="edit-daily-cap">Daily leaderboard cap</Label>
         <Input
           id="edit-daily-cap"
           type="number"
           inputMode="numeric"
-          min={1}
-          max={300}
+          min={0}
+          max={10000}
           step={1}
           required
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          disabled={busy || locked}
+          disabled={busy}
           aria-describedby="edit-cap-help"
         />
         <p id="edit-cap-help" className="text-xs text-muted-foreground">
-          Maximum 300 leaderboard points per player per day. Once shots have
-          been logged, the cap is locked. Additional practice stays in private
-          history and earns no extra leaderboard points.
+          Set 0 for no daily competition cap, or choose a daily allowance. You
+          can edit this anytime. Changes recalculate the entire challenge,
+          including earlier days.
         </p>
-        {locked && (
-          <p className="text-sm">
-            The cap is locked. Start a new challenge to use different rules.
-          </p>
-        )}
         <Label htmlFor="review-threshold">Private coach review threshold</Label>
         <Input
           id="review-threshold"
@@ -110,7 +125,7 @@ export function ShootingCapSettings({
           This does not change scoring or accuse a player of cheating.
         </p>
         <Button type="submit" disabled={busy || !valid}>
-          {busy ? "Saving…" : "Save daily cap"}
+          {busy ? "Saving…" : "Save shot rules"}
         </Button>
         {failed && (
           <Button
