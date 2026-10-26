@@ -205,7 +205,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             <DropdownMenuItem asChild>
               <Link to="/contact" className="flex items-center cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
-                <span>{t("common.helpAndSupport")}</span>
+                <span>Contact</span>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
