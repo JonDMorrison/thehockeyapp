@@ -70,7 +70,7 @@ test('deep-page links open the intended section rather than retaining the old sc
   await sampleLink.scrollIntoViewIfNeeded();
   await sampleLink.click();
   await expect(page.locator('#sample-workout-heading')).toBeInViewport();
-  const contactLink = page.getByRole('link', { name: 'Contact', exact: true });
+  const contactLink = page.locator('footer').getByRole('link', { name: 'Contact support', exact: true });
   await contactLink.scrollIntoViewIfNeeded();
   await contactLink.click();
   await expect(page.getByRole('heading', { name: /talk to a real person/i })).toBeInViewport();
