@@ -12,13 +12,30 @@ import { z } from "zod";
 import { RequiredMark } from "@/components/ui/required-mark";
 import { focusFirstInvalidField, getZodFieldErrors } from "@/lib/formValidation";
 
+const topics = [
+  ["App help", "Tell us what you’re trying to do and where you got stuck."],
+  ["Account or sign-in", "Describe the sign-in or account problem. Never include passwords or access codes."],
+  ["Team or association setup", "Include your team or association name and what you need help setting up."],
+  ["Shooting totals or badges", "Include the practice date, expected total or badge, and what the app shows."],
+  ["Billing or subscription", "Describe the charge or subscription question. Don’t include card details."],
+  ["Report a bug", "What happened? What did you expect? Include steps to reproduce it and your device/browser."],
+  ["Feature request", "What would you like to do? Tell us how it would help your team or family."],
+  ["Sponsorship", "Tell us about your organization, who you’d like to support, and your sponsorship idea."],
+  ["Partnership", "Tell us about your organization and how we could work together."],
+  ["Privacy or data request", "Tell us whether you need access, a correction, deletion, or other privacy help. Avoid sensitive player details."],
+  ["Safety or inappropriate content", "Describe the concern and where it appears. This form is not monitored for emergencies."],
+  ["General enquiry", "Share your question, feedback, or media enquiry."],
+] as const;
+
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Enter your name").max(100, "Name must be 100 characters or less"),
   email: z.string().trim().min(1, "Enter your email address").email("Enter a valid email address").max(255, "Email must be 255 characters or less"),
-  message: z.string().trim().min(1, "Tell us how we can help").max(4000, "Message must be 4,000 characters or less"),
+  message: z.string().trim().min(1, "Tell us how we can help").max(3800, "Message must be 3,800 characters or less"),
 });
 
 const Contact: React.FC = () => {
+  const [topic, setTopic] = useState<string>(topics[0][0]);
+  const topicHelp = topics.find(([label]) => label === topic)?.[1];
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -47,7 +64,7 @@ const Contact: React.FC = () => {
     const { error } = await supabase.from("contact_submissions").insert({
       name: result.data.name,
       email: result.data.email,
-      message: result.data.message,
+      message: `[${topic}]\n\n${result.data.message}`,
     });
     setSubmitting(false);
 
@@ -66,7 +83,7 @@ const Contact: React.FC = () => {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">Support</p>
           <h1 className="text-4xl font-bold mb-4">Talk to a real person.</h1>
           <p className="text-muted-foreground mb-8">
-            Ask a product question, report a problem, get help with your association, or submit a privacy request.
+            Get help, share an idea, or talk to us about sponsoring or partnering with The Hockey App.
           </p>
 
           {submitted ? (
@@ -77,6 +94,13 @@ const Contact: React.FC = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-6 sm:p-8 space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="contact-topic">What brings you here?</Label>
+                <select id="contact-topic" value={topic} onChange={(e) => setTopic(e.target.value)} className="flex min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base" aria-describedby="contact-topic-help">
+                  {topics.map(([label]) => <option key={label} value={label}>{label}</option>)}
+                </select>
+                <p id="contact-topic-help" className="text-sm text-muted-foreground">{topicHelp}</p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-name">Name<RequiredMark /></Label>
                 <Input
@@ -119,7 +143,7 @@ const Contact: React.FC = () => {
                     setMessage(e.target.value);
                     setErrors((current) => ({ ...current, message: "" }));
                   }}
-                  maxLength={4000}
+                  maxLength={3800}
                   rows={7}
                   aria-invalid={Boolean(errors.message)}
                   aria-describedby={errors.message ? "contact-message-error" : undefined}
