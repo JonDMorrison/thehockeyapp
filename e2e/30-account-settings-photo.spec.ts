@@ -38,7 +38,7 @@ test('mobile account links, preferences, and private player photo survive reload
   await page.reload(); await expect(page.getByRole('button', { name: /try again/i })).toBeVisible({ timeout: 20000 });
   await expect(product).toHaveCount(0);
   await page.unroute('**/rest/v1/email_preferences*'); await page.getByRole('button', { name: /try again/i }).click(); await expect(product).toBeEnabled();
-  for (const [name, path] of [[/notifications/i, '/settings#notifications'], [/privacy/i, '/privacy'], [/help.*support/i, '/contact']] as const) {
+  for (const [name, path] of [[/notifications/i, '/settings#notifications'], [/privacy/i, '/privacy'], [/^contact$/i, '/contact']] as const) {
     await page.goto('/settings'); await page.getByRole('button', { name: 'Account menu', exact: true }).click();
     await expect(page.getByRole('menuitem', { name: /billing/i })).toHaveCount(0);
     await page.getByRole('menuitem', { name }).click(); await expect(page).toHaveURL(new RegExp(path.replace('#', '\\#')+'$'));
