@@ -73,18 +73,26 @@ serve(async (req) => {
       });
     }
 
-    if(!RESEND_API_KEY || !ADMIN_EMAIL)return new Response(JSON.stringify({error:"Email delivery is not configured"}),{status:503,headers:{...corsHeaders,"Content-Type":"application/json"}});
+    if(!RESEND_API_KEY || (!ADMIN_EMAIL && evt.event_type !== "contact_submission"))return new Response(JSON.stringify({error:"Email delivery is not configured"}),{status:503,headers:{...corsHeaders,"Content-Type":"application/json"}});
 
+    // Contact notifications use the saved submission, never caller-supplied recipients or content.
+    let contact: { name: string; email: string; message: string } | null = null;
+    if (evt.event_type === "contact_submission") {
+      const { data, error } = await supabase.from("contact_submissions")
+        .select("name,email,message").eq("id", evt.metadata?.submission_id).single();
+      if (error || !data) throw new Error("Saved contact submission not found");
+      contact = data;
+    }
     // Build email
     const severityEmoji = evt.severity === "urgent" ? "🚨" : evt.severity === "important" ? "⚠️" : "ℹ️";
     const eventType = escapeHtml(evt.event_type.replace(/_/g, " "));
-    const subject = `${severityEmoji} [Hockey App] ${evt.event_type.replace(/_/g, " ").toUpperCase()}`;
+    const subject = contact ? `[Hockey App] Contact: ${contact.message.match(/^\[([^\]\r\n]+)\]/)?.[1]?.slice(0, 80) || "General enquiry"}` : `${severityEmoji} [Hockey App] ${evt.event_type.replace(/_/g, " ").toUpperCase()}`;
 
     const metaRows = Object.entries(evt.metadata || {})
       .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#888;font-size:13px;">${escapeHtml(k)}</td><td style="font-size:13px;">${escapeHtml(v)}</td></tr>`)
       .join("");
 
-    const html = emailFrame(`
+    const html = contact ? emailFrame(`<h1 style="font-size:28px;">New contact request</h1><p>From: ${escapeHtml(contact.name)} (${escapeHtml(contact.email)})</p><div style="white-space:pre-wrap;font-size:16px;line-height:1.6;">${escapeHtml(contact.message)}</div>`, subject, {eyebrow: "Contact · reply directly to the sender"}) : emailFrame(`
   <p style="font-size:12px;color:#596671;text-transform:uppercase;letter-spacing:0.5px;margin:0 0 8px;">Admin Alert</p>
   <h1 style="font-size:28px;line-height:1.2;margin:0 0 20px;">${severityEmoji} ${eventType}</h1>
   <table role="presentation" style="margin:0 0 16px;width:100%;">
@@ -108,8 +116,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "Hockey App Admin <admin@hockeyapp.ca>",
-        reply_to: Deno.env.get("EMAIL_REPLY_TO") || undefined,
-        to: [ADMIN_EMAIL],
+        reply_to: contact?.email || Deno.env.get("EMAIL_REPLY_TO") || undefined,
+        to: [contact ? "jon@getclear.ca" : ADMIN_EMAIL],
         subject,
         html,
         text: emailPlainText(html),
