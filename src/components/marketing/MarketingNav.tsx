@@ -17,6 +17,7 @@ export const MarketingNav: React.FC = () => {
     { href: "/features", label: t('marketing.nav_features') },
     { href: "/demo", label: t('marketing.nav_how_it_works') },
     { href: "/join", label: "Join a team" },
+    { href: "/contact", label: "Contact" },
     { href: "/about", label: t('marketing.nav_about') },
   ];
 
@@ -41,7 +42,7 @@ export const MarketingNav: React.FC = () => {
           </Link>
 
           {/* Desktop Nav + CTA aligned right */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden xl:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -75,7 +76,7 @@ export const MarketingNav: React.FC = () => {
 
           {/* Mobile menu button */}
           <button
-            className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-muted md:hidden"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-md transition-colors hover:bg-muted xl:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
             aria-expanded={mobileMenuOpen}
@@ -92,7 +93,7 @@ export const MarketingNav: React.FC = () => {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div id="mobile-navigation" className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
+        <div id="mobile-navigation" className="xl:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
           <div className="px-4 py-4 space-y-3">
             {navLinks.map((link) => (
               <Link

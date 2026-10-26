@@ -84,3 +84,20 @@ test.describe('Public launch experience', () => {
     }
   });
 });
+
+ test('contact topics are included in saved requests', async ({ page }) => {
+   let saved: Record<string, string> = {};
+   await page.route('**/rest/v1/contact_submissions*', async route => {
+     saved = route.request().postDataJSON();
+     await route.fulfill({status: 201, contentType: 'application/json', body: '{}'});
+   });
+   await page.goto('/contact');
+   await page.getByLabel('What brings you here?').selectOption('Sponsorship');
+   await expect(page.locator('#contact-topic-help')).toContainText('sponsorship idea');
+   await page.getByLabel('Name', {exact: false}).first().fill('Test Coach');
+   await page.locator('#contact-email').fill('coach@example.com');
+   await page.locator('#contact-message').fill('We would like to sponsor a team.');
+   await page.getByRole('button', {name: 'Send message'}).click();
+   await expect(page.getByRole('heading', {name: 'Message received'})).toBeVisible();
+   expect(saved.message).toBe('[Sponsorship]\n\nWe would like to sponsor a team.');
+ });

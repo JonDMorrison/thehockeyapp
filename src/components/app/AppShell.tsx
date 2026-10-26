@@ -225,6 +225,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 </Link>
               );
             })}
+            <Link to="/contact" className="flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-white/70 hover:text-white">Contact</Link>
           </nav>
           <div className="border-t border-white/[0.07] p-4 text-[10px] leading-4 text-white/30">
             Plan the week. Build the habit. See the progress.
@@ -311,6 +312,9 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
           )}
         {children}
+        <footer className="px-4 py-6 text-center text-sm text-muted-foreground">
+          <Link to="/contact" className="inline-flex min-h-11 items-center underline underline-offset-4">Contact support</Link>
+        </footer>
       </main>
 
       {/* Bottom Navigation with animated indicator */}

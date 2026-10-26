@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import {webcrypto} from 'node:crypto';
-function harness({configured=true,emailed=false,providerStatus=200,markError=false}={}){
+function harness({configured=true,emailed=false,providerStatus=200,markError=false,contact=false}={}){
  let handler,reads=0,writes=0,calls=[];
- const event={id:'event-id',severity:'urgent',event_type:'qa_event',metadata:{detail:'<script>bad</script>'},created_at:'2026-10-19T00:00:00Z',emailed_at:emailed?'2026-10-19T00:00:00Z':null};
- const query={select(){reads++;return query;},eq(){return query;},is(){return query;},single:async()=>({data:event,error:null}),update(){writes++;return query;},then(resolve,reject){return Promise.resolve({error:markError?{message:'database update unavailable'}:null}).then(resolve,reject);}};
+ const event={id:'event-id',severity:'urgent',event_type:contact?'contact_submission':'qa_event',metadata:{submission_id:'submission-id',detail:'<script>bad</script>'},created_at:'2026-10-19T00:00:00Z',emailed_at:emailed?'2026-10-19T00:00:00Z':null};
+ const query={select(){reads++;return query;},eq(){return query;},is(){return query;},single:async()=>({data:reads>1&&contact?{name:"Test Sender",email:"sender@example.com",message:"[Feature request]\n<script>unsafe</script>"}:event,error:null}),update(){writes++;return query;},then(resolve,reject){return Promise.resolve({error:markError?{message:'database update unavailable'}:null}).then(resolve,reject);}};
  const js=ts.transpileModule(fs.readFileSync('supabase/functions/send-admin-activity-email/index.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  vm.runInNewContext(js,{exports:{},require:name=>name.includes('emailDesign')?emailDesign:name.includes('supabase-js')?{createClient:()=>({from:()=>query})}:{serve:fn=>{handler=fn;}},Response,Request,crypto:webcrypto,AbortSignal,console:{log(){}},Deno:{env:{get:key=>({SUPABASE_SERVICE_ROLE_KEY:'service-key',HOCKEY_ADMIN_ALERT_SECRET:'private-alert-key',SUPABASE_URL:'https://qa.invalid',RESEND_API_KEY:configured?'qa-email-key':undefined,ADMIN_EMAIL:configured?'qa@example.com':undefined})[key]}},fetch:async(url,options)=>{calls.push({url,options});return new Response(JSON.stringify({id:'message-id'}),{status:providerStatus});}});
  return {calls,get reads(){return reads;},get writes(){return writes;},request:async(headers={},body={event_id:'event-id'})=>{const response=await handler(new Request('https://qa.invalid/alert',{method:'POST',headers,body:JSON.stringify(body)}));return {status:response.status,body:await response.json()};}};
@@ -19,4 +19,6 @@ const missing=harness({configured:false});assert.equal((await missing.request({'
 const duplicate=harness({emailed:true});assert.equal((await duplicate.request({'x-admin-alert-secret':'private-alert-key'})).body.already_sent,true);assert.equal(duplicate.calls.length,0);checks++;
 const outage=harness({providerStatus:503});assert.equal((await outage.request({'x-admin-alert-secret':'private-alert-key'})).status,500);assert.equal(outage.writes,0);checks++;
 const partial=harness({markError:true});assert.equal((await partial.request({'x-admin-alert-secret':'private-alert-key'})).status,500);assert.equal(partial.calls[0].options.headers['Idempotency-Key'],'admin-activity-event-id');checks++;
+const support=harness({contact:true});assert.equal((await support.request({'x-admin-alert-secret':'private-alert-key'})).status,200);
+const mail=JSON.parse(support.calls[0].options.body);assert.deepEqual(mail.to,['jon@getclear.ca']);assert.equal(mail.reply_to,'sender@example.com');assert.equal(mail.subject,'[Hockey App] Contact: Feature request');assert(mail.html.includes('&lt;script&gt;'));assert(!mail.html.includes('<script>'));checks++;
 console.log(`PASS: ${checks} privileged alert authorization, duplicate prevention and failure scenarios; all email delivery mocked.`);
