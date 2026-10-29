@@ -9,9 +9,11 @@ test('an unusable password reset link explains how to recover', async ({ page })
   await expect(page.getByRole('button', { name: /sign in/i, exact: true })).toBeVisible();
 });
 
-test('header team setup opens coach signup directly', async ({ page }) => {
+test('header account action offers roles before coach signup', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('navigation').getByRole('link', { name: /set up your team/i }).click();
+  await page.getByRole('navigation').getByRole('button', { name: 'Start an account' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', {name: /Start Coaching/}).click();
   await expect(page.getByRole('heading', { name: 'Create your coach account' })).toBeVisible();
 });
 
@@ -75,3 +77,15 @@ test('deep-page links open the intended section rather than retaining the old sc
   await contactLink.click();
   await expect(page.getByRole('heading', { name: /talk to a real person/i })).toBeInViewport();
 });
+
+for (const [choice, destination] of [['Get Started Free', /auth\?mode=signup/], ['Join My Team', /\/join$/]] as const) {
+  test(`homepage account action supports ${choice}`, async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('main').getByRole('button', { name: 'Start an account', exact: true }).first().click();
+    await page.getByRole('dialog').getByRole('button', { name: choice, exact: true }).click();
+    await expect(page).toHaveURL(destination);
+    if (choice === 'Get Started Free') {
+      await expect(page.getByRole('heading', {name: 'Create your family account'})).toBeVisible();
+    }
+  });
+}
