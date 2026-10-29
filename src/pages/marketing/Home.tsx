@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -13,7 +14,7 @@ import { MarketingNav } from "@/components/marketing/MarketingNav";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PhoneMockup } from "@/components/marketing/PhoneMockup";
 import { MarketingAppPreview } from "@/components/marketing/MarketingAppPreview";
-import { setSelectedRole } from "@/components/marketing/GetStartedModal";
+import { GetStartedModal, setSelectedRole } from "@/components/marketing/GetStartedModal";
 import { ShootingChallengeTeaser } from "@/components/marketing/SampleShootingChallenge";
 import { MarketingSkillVideoShowcase } from "@/components/marketing/MarketingSkillVideoShowcase";
 import heroHomeTraining from "@/assets/brand/hero-vancouver-home-training.jpg";
@@ -75,6 +76,7 @@ function WeekPreview({ family = false }: { family?: boolean }) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const [showGetStarted, setShowGetStarted] = useState(false);
   const startCoachSetup = () => {
     setSelectedRole("coach");
     navigate("/auth?mode=signup");
@@ -117,9 +119,9 @@ export default function Home() {
                 <Button
                   size="lg"
                   className="min-h-12 rounded-md px-7 font-bold"
-                  onClick={startCoachSetup}
+                  onClick={() => setShowGetStarted(true)}
                 >
-                  Set up your team
+                  Start an account
                   <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
                 </Button>
                 <Button
@@ -132,7 +134,7 @@ export default function Home() {
                 </Button>
               </div>
               <p className="mt-4 text-xs text-white/70">
-                Free. No credit card.
+                For parents, coaches, and players joining a team. No credit card.
               </p>
             </div>
 
@@ -341,9 +343,9 @@ export default function Home() {
             <Button
               size="lg"
               className="mt-6 min-h-12 px-7 font-bold"
-              onClick={startCoachSetup}
+              onClick={() => setShowGetStarted(true)}
             >
-              Set up your team free
+              Start an account
               <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
             </Button>
             <p className="mt-6 text-sm text-white/60">
@@ -359,6 +361,7 @@ export default function Home() {
         </section>
       </main>
       <MarketingFooter />
+      <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
     </div>
   );
 }

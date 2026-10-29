@@ -1,4 +1,4 @@
-import { setSelectedRole } from "./GetStartedModal";
+import { GetStartedModal } from "./GetStartedModal";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ export const MarketingNav: React.FC = () => {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const [showGetStarted, setShowGetStarted] = useState(false);
 
   const navLinks = [
     { href: "/", label: t('marketing.nav_home') },
@@ -25,6 +26,7 @@ export const MarketingNav: React.FC = () => {
   const isAuthPage = location.pathname === "/auth";
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/80 shadow-[0_8px_30px_rgba(0,0,0,0.22)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -66,9 +68,9 @@ export const MarketingNav: React.FC = () => {
                 </Button>
                 <Button
                   className="text-sm bg-primary hover:bg-primary/90 transition-colors shadow-soft"
-                  asChild
+                  onClick={() => { setShowGetStarted(true); setMobileMenuOpen(false); }}
                 >
-                  <Link to="/auth?mode=signup" onClick={() => { setSelectedRole("coach"); setMobileMenuOpen(false); }}>{t('marketing.nav_get_started')}</Link>
+                  {t('marketing.nav_get_started')}
                 </Button>
               </>
             )}
@@ -117,9 +119,9 @@ export const MarketingNav: React.FC = () => {
                 </Button>
                 <Button
                   className="w-full bg-primary hover:bg-primary/90"
-                  asChild
+                  onClick={() => { setShowGetStarted(true); setMobileMenuOpen(false); }}
                 >
-                  <Link to="/auth?mode=signup" onClick={() => { setSelectedRole("coach"); setMobileMenuOpen(false); }}>{t('marketing.nav_get_started')}</Link>
+                  {t('marketing.nav_get_started')}
                 </Button>
               </div>
             )}
@@ -127,5 +129,7 @@ export const MarketingNav: React.FC = () => {
         </div>
       )}
     </nav>
+    <GetStartedModal open={showGetStarted} onOpenChange={setShowGetStarted} />
+    </>
   );
 };
