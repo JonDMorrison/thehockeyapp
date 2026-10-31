@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 
 const SITE_URL = "https://www.hockeyapp.ca";
-const SOCIAL_IMAGE = `${SITE_URL}/SitePreview.png`;
+const SOCIAL_IMAGE = `${SITE_URL}/share-home-2026-10.jpg`;
 
 interface RouteMeta {
   title: string;
