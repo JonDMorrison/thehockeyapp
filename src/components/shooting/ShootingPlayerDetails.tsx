@@ -66,7 +66,16 @@ export function ShootingPlayerDetails({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-xl">
+      <DialogContent
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          document
+            .getElementById(`standing-${playerId}`)
+            ?.querySelector("button")
+            ?.focus();
+        }}
+        className="max-h-[85dvh] overflow-y-auto sm:max-w-xl"
+      >
         <DialogHeader>
           <DialogTitle>
             {player.first_name} {player.last_initial || ""}
