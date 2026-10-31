@@ -1,3 +1,4 @@
+import { CoachTrainingReview } from "@/components/team/CoachTrainingReview";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { TeamProgressOverview } from "@/components/team/TeamProgressOverview";
 import React, { useEffect, useState } from "react";
@@ -509,6 +510,7 @@ const TeamProgress: React.FC = () => {
             </p>
           </div>
         </div>
+        <CoachTrainingReview teamId={id!} userId={user!.id} players={playerStats} />
         <TeamProgressOverview
           teamId={id!}
           userId={user!.id}
@@ -535,7 +537,8 @@ const TeamProgress: React.FC = () => {
           />
         </AppCard>
 
-        {/* Leaderboards */}
+        {/* Historical rankings are optional; weekly review is alphabetical. */}
+        <details><summary className="min-h-11 cursor-pointer py-3 text-sm text-muted-foreground">View historical milestones and rankings</summary>
         <AppCard>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4 mb-4">
@@ -634,6 +637,7 @@ const TeamProgress: React.FC = () => {
           </Tabs>
         </AppCard>
 
+        </details>
         {/* All Players Quick View */}
         <AppCard>
           <AppCardTitle className="text-base flex items-center gap-2 mb-1">
