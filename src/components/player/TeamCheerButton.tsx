@@ -20,7 +20,7 @@ interface TeamCheerButtonProps {
   variant?: "icon" | "full";
 }
 
-const QUICK_EMOJIS = ["🔥", "💪", "⭐", "🏒", "👏", "🎯", "🙌", "💯"];
+const QUICK_EMOJIS = ["👍", "💪", "⭐", "🏒", "👏", "🎯", "🙌", "💯"];
 
 export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
   fromPlayerId,
@@ -35,7 +35,13 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
   const queryClient = useQueryClient();
 
   const sendCheer = useMutation({
-    mutationFn: async ({ content, type }: { content: string; type: "emoji" | "message" }) => {
+    mutationFn: async ({
+      content,
+      type,
+    }: {
+      content: string;
+      type: "emoji" | "message";
+    }) => {
       const { error } = await supabase.from("team_cheers").insert({
         team_id: teamId,
         from_player_id: fromPlayerId,
@@ -49,7 +55,9 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
     onSuccess: (_, variables) => {
       toast.success(
         t("players.teamCheerButton.toast.cheerSent"),
-        t("players.teamCheerButton.toast.willSeeEncouragement", { name: toPlayerName })
+        t("players.teamCheerButton.toast.willSeeEncouragement", {
+          name: toPlayerName,
+        }),
       );
       setIsOpen(false);
       setCustomMessage("");
@@ -57,7 +65,10 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
       queryClient.invalidateQueries({ queryKey: ["received-cheers"] });
     },
     onError: (error: Error) => {
-      toast.error(t("players.teamCheerButton.toast.failedToSend"), error.message);
+      toast.error(
+        t("players.teamCheerButton.toast.failedToSend"),
+        error.message,
+      );
     },
   });
 
@@ -75,7 +86,8 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         {variant === "icon" ? (
-          <Button aria-label="Send a cheer"
+          <Button
+            aria-label="Send a cheer"
             variant="ghost"
             size="icon-sm"
             className="text-primary hover:text-primary hover:bg-primary/10"
@@ -125,7 +137,8 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
               className="text-sm"
               maxLength={100}
             />
-            <Button aria-label="Send message"
+            <Button
+              aria-label="Send message"
               size="icon-sm"
               onClick={handleSendMessage}
               disabled={!customMessage.trim() || sendCheer.isPending}
@@ -135,7 +148,9 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            {t("players.teamCheerButton.charactersLeft", { n: 100 - customMessage.length })}
+            {t("players.teamCheerButton.charactersLeft", {
+              n: 100 - customMessage.length,
+            })}
           </p>
         </div>
       </PopoverContent>

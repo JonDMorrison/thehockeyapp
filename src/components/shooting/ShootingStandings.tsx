@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ShootingPlayerDetails } from "./ShootingPlayerDetails";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy, Shirt, ArrowUpRight } from "lucide-react";
 import { Avatar } from "@/components/app/Avatar";
@@ -13,6 +15,7 @@ export function ShootingStandings({
   viewerId: string;
 }) {
   const { players, challenge } = snapshot;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const ids = players.map((p) => p.player_id).sort();
   const identities = useQuery({
     queryKey: ["shooting-player-identities", challenge.team_id, viewerId, ids],
@@ -105,7 +108,12 @@ export function ShootingStandings({
               data-testid={`standing-${p.player_id}`}
               className={`scroll-mt-24 rounded-2xl border p-3 sm:p-4 ${p.is_mine ? "border-primary/50 bg-primary/10 ring-1 ring-primary/10" : "border-border bg-background/40"}`}
             >
-              <div className="grid grid-cols-[1.75rem_2.5rem_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[2.25rem_3rem_minmax(0,1fr)_auto] sm:gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedId(p.player_id)}
+                aria-label={`View ${p.first_name} ${p.last_initial || ""}: daily shots and profile`}
+                className="w-full text-left rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary grid grid-cols-[1.75rem_2.5rem_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[2.25rem_3rem_minmax(0,1fr)_auto] sm:gap-3"
+              >
                 <div
                   className={`flex flex-col items-center gap-1 text-sm font-bold tabular-nums ${medal ? (p.rank === 1 ? "text-rose-300" : p.rank === 2 ? "text-slate-300" : "text-zinc-400") : "text-muted-foreground"}`}
                 >
@@ -153,11 +161,23 @@ export function ShootingStandings({
                     style={{ width: `${(p.total / leadingTotal) * 100}%` }}
                   />
                 </div>
-              </div>
+                <span className="col-start-3 text-xs text-rose-300">
+                  Daily shots & profile →
+                </span>
+              </button>
             </li>
           );
         })}
       </ol>
+      {selectedId && (
+        <ShootingPlayerDetails
+          key={`${challenge.id}:${selectedId}`}
+          snapshot={snapshot}
+          playerId={selectedId}
+          viewerId={viewerId}
+          onClose={() => setSelectedId(null)}
+        />
+      )}
     </div>
   );
 }
