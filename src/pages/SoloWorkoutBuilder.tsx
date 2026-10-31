@@ -1,3 +1,4 @@
+import { ExerciseDetailsEditor, type ExerciseDetails } from "@/components/builder/ExerciseDetailsEditor";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { TimedTargetPresets } from "@/components/builder/TimedTargetPresets";
 import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
@@ -36,7 +37,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DAY_TEMPLATES, getTasksForDay } from "@/lib/weekTemplates";
 import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
 
-interface Task {
+interface Task extends ExerciseDetails {
   id: string;
   sort_order: number;
   task_type: string;
@@ -334,6 +335,7 @@ export default function SoloWorkoutBuilder() {
                             />
                           )}
 
+                          <ExerciseDetailsEditor value={task} timed={["minutes", "seconds"].includes(task.target_type)} onChange={change => updateTask(task.id, change)} />
                           <TimedTargetPresets type={task.target_type} value={task.target_value} onChange={(change) => updateTask(task.id, change)} />
                           {task.task_type !== 'shooting' && (
                             <div className="flex gap-2">

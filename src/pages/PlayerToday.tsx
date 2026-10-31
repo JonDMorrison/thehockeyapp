@@ -1,3 +1,4 @@
+import type { ExerciseDetails } from "@/components/builder/ExerciseDetailsEditor";
 import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
@@ -66,7 +67,7 @@ import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
 import { PlayerGoalWidget } from "@/components/goals";
 import { SessionCelebration } from "@/components/player/SessionCelebration";
 
-interface PracticeTask {
+interface PracticeTask extends ExerciseDetails {
   id: string;
   sort_order: number;
   task_type: string;
@@ -884,13 +885,14 @@ const PlayerToday: React.FC = () => {
             </p>
           )}
 
-          <GuidedWorkout steps={tasks.map(task => ({ id: task.id, completed: !!completionMap[task.id]?.completed }))}>
+          <GuidedWorkout shotsLogged={totalShots} steps={tasks.map(task => ({ id: task.id, completed: !!completionMap[task.id]?.completed }))}>
             {tasks.map((task: PracticeTask) => {
               const completion = completionMap[task.id];
               const isShooting = task.task_type === "shooting" || task.shots_expected;
               return <WorkoutCheckItem
                 key={task.id}
                 id={task.id}
+                sets_count={task.sets_count} rest_seconds={task.rest_seconds} equipment={task.equipment} instructions={task.instructions}
                 timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
                 timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
                 label={task.label}

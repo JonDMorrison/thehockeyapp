@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { newIntervals, nextInterval } from '../../src/lib/exerciseIntervals.ts';
+import { remainingSeconds } from '../../src/lib/exerciseTimer.ts';
+let s = newIntervals();
+assert.equal(s.phase,'ready'); assert.equal(s.remaining,5); assert.equal(s.endsAt,null);
+s = nextInterval(s,30,3,30,5000);
+assert.equal(s.phase,'work'); assert.equal(s.round,1); assert.equal(s.endsAt,35000);
+s = nextInterval(s,30,3,30,35000);
+assert.equal(s.phase,'rest'); assert.equal(s.round,1); assert.equal(s.endsAt,65000);
+s = nextInterval(s,30,3,30,65000);
+assert.equal(s.phase,'work'); assert.equal(s.round,2);
+s = nextInterval(s,30,3,30,95000); assert.equal(s.phase,'rest');
+s = nextInterval(s,30,3,30,125000); assert.equal(s.round,3);
+s = nextInterval(s,30,3,30,155000); assert.equal(s.phase,'done'); assert.equal(s.endsAt,null); assert.equal(s.remaining,0);
+assert.deepEqual(nextInterval(s,30,3,30,200000),s);
+let single=nextInterval(newIntervals(),60,1,30,5000);
+assert.equal(nextInterval(single,60,1,30,65000).phase,'done');
+let noRest=nextInterval(newIntervals(),30,2,0,5000);
+noRest=nextInterval(noRest,30,2,0,35000); assert.equal(noRest.phase,'work'); assert.equal(noRest.round,2);
+// A long background gap advances only the expired phase. Fresh work starts on return.
+const resumed=nextInterval(JSON.parse(JSON.stringify(newIntervals())),30,3,30,999999);
+assert.equal(resumed.round,1); assert.equal(remainingSeconds(resumed,999999),30);
+console.log('Ready countdown, three-set/rest sequence, single set, zero rest, final completion and background recovery passed.');
+
+const { validateExerciseDetails } = await import('../../src/lib/validateExerciseDetails.ts');
+validateExerciseDetails([{}, { sets_count: 3, rest_seconds: 30, equipment: 'Wall' }]);
+for (const sets_count of [0, -1, 21, 1.5, NaN]) assert.throws(() => validateExerciseDetails([{ sets_count }]));
+for (const rest_seconds of [-1, 601, 2.5, NaN]) assert.throws(() => validateExerciseDetails([{ rest_seconds }]));
+assert.throws(() => validateExerciseDetails([{ equipment: 'x'.repeat(201) }]));
+assert.throws(() => validateExerciseDetails([{ instructions: 'x'.repeat(1001) }]));
+console.log('Prescription boundaries and validation passed.');

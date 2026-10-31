@@ -1,3 +1,4 @@
+import { ExerciseDetailsEditor } from "./ExerciseDetailsEditor";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { TimedTargetPresets } from "./TimedTargetPresets";
 import { ProgramActivity } from "@/components/program/ProgramActivity";
@@ -36,6 +37,10 @@ import {
 } from "lucide-react";
 
 export interface PlanTask {
+  sets_count?: number;
+  rest_seconds?: number;
+  equipment?: string;
+  instructions?: string;
   id?: string;
   sort_order: number;
   task_type: string;
@@ -266,6 +271,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                         placeholder={t('practice.taskDescPlaceholder')}
                       />
 
+                      <ExerciseDetailsEditor value={task} timed={["minutes", "seconds"].includes(task.target_type)} onChange={change => updateTask(index, change)} />
                       <TimedTargetPresets type={task.target_type} value={task.target_value} onChange={(change) => updateTask(index, change)} />
                       <div className="flex gap-2 flex-wrap">
                         <Select

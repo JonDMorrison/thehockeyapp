@@ -1,3 +1,4 @@
+import { validateExerciseDetails } from "@/lib/validateExerciseDetails";
 import { supabase } from "@/integrations/supabase/client";
 import type { DayData } from "@/components/builder/DayEditorSheet";
 import { getRecommendedCoachingVideoUrl } from "@/lib/coachingVideos";
@@ -13,6 +14,7 @@ export async function saveTeamWeekPlan(options: {
   days: DayData[];
   publish?: boolean;
 }) {
+  validateExerciseDetails(options.days.flatMap(day => day.tasks));
   const { data, error } = await supabase.rpc("save_team_week_plan", {
     p_id: options.id,
     p_team_id: options.teamId,
@@ -31,6 +33,10 @@ export async function saveTeamWeekPlan(options: {
         label: task.label,
         target_type: task.target_type,
         target_value: task.target_value,
+        sets_count: ["minutes", "seconds"].includes(task.target_type) ? task.sets_count ?? 1 : 1,
+        rest_seconds: task.rest_seconds ?? 0,
+        equipment: task.equipment ?? "",
+        instructions: task.instructions ?? "",
         shot_type: task.shot_type,
         shots_expected: task.shots_expected,
         is_required: task.is_required,

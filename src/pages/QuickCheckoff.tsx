@@ -1,3 +1,5 @@
+import { SkillVideo } from "@/components/player/SkillVideo";
+import type { ExerciseDetails } from "@/components/builder/ExerciseDetailsEditor";
 import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useTranslation } from 'react-i18next';
@@ -34,7 +36,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PracticeTask {
+interface PracticeTask extends ExerciseDetails {
+  video_url?: string | null;
   id: string;
   sort_order: number;
   task_type: string;
@@ -452,7 +455,7 @@ const QuickCheckoff: React.FC = () => {
 
       {/* Task list */}
       <main className="flex-1 overflow-y-auto p-4 space-y-3">
-        <GuidedWorkout steps={requiredTasks.map(task => ({ id: task.id, completed: !!localCompletions[task.id]?.completed }))}>
+        <GuidedWorkout shotsLogged={Object.values(localCompletions).reduce((sum, task) => sum + (task.shotsLogged || 0), 0)} steps={requiredTasks.map(task => ({ id: task.id, completed: !!localCompletions[task.id]?.completed }))}>
         {requiredTasks.map((task) => {
           const isCompleted = localCompletions[task.id]?.completed ?? false;
           const target = task.target_type === 'reps' && task.target_value
@@ -467,6 +470,7 @@ const QuickCheckoff: React.FC = () => {
             <WorkoutCheckItem
               key={task.id}
               id={task.id}
+                sets_count={task.sets_count} rest_seconds={task.rest_seconds} equipment={task.equipment} instructions={task.instructions}
               timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
               timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
               label={task.label}
@@ -474,7 +478,7 @@ const QuickCheckoff: React.FC = () => {
               icon={taskTypeIcons[task.task_type]}
               completed={isCompleted}
               onToggle={(id) => handleToggle(id)}
-            />
+            >{task.video_url && <SkillVideo url={task.video_url} taskTitle={task.label} />}</WorkoutCheckItem>
           );
         })}
         </GuidedWorkout>

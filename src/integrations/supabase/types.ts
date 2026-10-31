@@ -817,6 +817,10 @@ export type Database = {
       }
       personal_practice_tasks: {
         Row: {
+          sets_count: number
+          rest_seconds: number
+          equipment: string
+          instructions: string
           created_at: string | null
           id: string
           is_required: boolean | null
@@ -831,6 +835,10 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           created_at?: string | null
           id?: string
           is_required?: boolean | null
@@ -845,6 +853,10 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           created_at?: string | null
           id?: string
           is_required?: boolean | null
@@ -1422,6 +1434,10 @@ export type Database = {
       }
       practice_tasks: {
         Row: {
+          sets_count: number
+          rest_seconds: number
+          equipment: string
+          instructions: string
           coach_notes: string | null
           created_at: string | null
           id: string
@@ -1439,6 +1455,10 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           coach_notes?: string | null
           created_at?: string | null
           id?: string
@@ -1456,6 +1476,10 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           coach_notes?: string | null
           created_at?: string | null
           id?: string
@@ -2800,6 +2824,10 @@ export type Database = {
       }
       team_week_plan_tasks: {
         Row: {
+          sets_count: number
+          rest_seconds: number
+          equipment: string
+          instructions: string
           created_at: string | null
           id: string
           is_required: boolean | null
@@ -2814,6 +2842,10 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           created_at?: string | null
           id?: string
           is_required?: boolean | null
@@ -2828,6 +2860,10 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          sets_count?: number
+          rest_seconds?: number
+          equipment?: string
+          instructions?: string
           created_at?: string | null
           id?: string
           is_required?: boolean | null

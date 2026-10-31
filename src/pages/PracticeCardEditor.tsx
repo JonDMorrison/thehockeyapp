@@ -1,3 +1,6 @@
+import { validateExerciseDetails } from "@/lib/validateExerciseDetails";
+import { ExerciseDetailsEditor, type ExerciseDetails } from "@/components/builder/ExerciseDetailsEditor";
+import { TimedTargetPresets } from "@/components/builder/TimedTargetPresets";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
@@ -49,7 +52,7 @@ import { AIAssistSheet } from "@/components/builder/AIAssistSheet";
 import { VideoAttachmentEditor } from "@/components/practice/VideoAttachmentEditor";
 import { isValidVideoUrl } from "@/lib/videoEmbed";
 
-interface PracticeTask {
+interface PracticeTask extends ExerciseDetails {
   id?: string;
   sort_order: number;
   task_type: string;
@@ -170,13 +173,14 @@ const PracticeCardEditor: React.FC = () => {
       setIsPublished(!!existingCard.published_at);
       setIsLocked(!!existingCard.locked);
       setTasks(
-        existingCard.tasks.map((t: { id: string; sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean; coach_notes: string | null; video_url: string | null }) => ({
+        existingCard.tasks.map((t: ExerciseDetails & { id: string; sort_order: number; task_type: string; label: string; target_type: string; target_value: number | null; shot_type: string; shots_expected: number | null; is_required: boolean; coach_notes: string | null; video_url: string | null }) => ({
           id: t.id,
           sort_order: t.sort_order,
           task_type: t.task_type,
           label: t.label,
           target_type: t.target_type,
           target_value: t.target_value,
+          sets_count: t.sets_count, rest_seconds: t.rest_seconds, equipment: t.equipment, instructions: t.instructions,
           shot_type: t.shot_type,
           shots_expected: t.shots_expected,
           is_required: t.is_required,
@@ -214,6 +218,7 @@ const PracticeCardEditor: React.FC = () => {
       }
 
       const practiceCardId = cardId || draftId;
+      validateExerciseDetails(tasks);
       const { data, error } = await supabase.rpc("save_team_practice_card", {
         p_id: practiceCardId,
         p_team_id: id!,
@@ -223,7 +228,7 @@ const PracticeCardEditor: React.FC = () => {
         p_notes: notes,
         p_publish: publish,
         p_mode: existingCard?.mode || "normal",
-        p_tasks: tasks.map((task, index) => ({ ...task, sort_order: index })),
+        p_tasks: tasks.map((task, index) => ({ ...task, sets_count: ["minutes", "seconds"].includes(task.target_type) ? task.sets_count ?? 1 : 1, sort_order: index })),
       });
       if (error) throw error;
       if (!data || typeof data !== 'object' || Array.isArray(data) || data.success !== true) throw new Error("The workout could not be saved. Please try again.");
@@ -565,6 +570,7 @@ const PracticeCardEditor: React.FC = () => {
                         disabled={isLocked}
                       />
 
+                      {!isLocked && <><TimedTargetPresets type={task.target_type} value={task.target_value} onChange={change => updateTask(index, change)} /><ExerciseDetailsEditor value={task} timed={["minutes", "seconds"].includes(task.target_type)} onChange={change => updateTask(index, change)} /></>}
                       <div className="flex gap-2">
                         <Select
                           value={task.target_type}

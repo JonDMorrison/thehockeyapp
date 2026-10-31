@@ -52,3 +52,33 @@ focus and scrolls into view, respecting reduced-motion preferences.
 Navigation tests cover skipped completed tasks, wrapping, final task, empty
 workouts, and reviewing completed exercises. Physical device visual QA remains
 necessary; local Chromium cannot launch under this environment's socket limits.
+
+## Ready, sets, rest and instructions
+
+Timers now use a five-second ready phase, then the prescribed work and rest
+intervals. Coaches can choose 1–20 timed sets and 0–600 seconds of rest in the
+weekly day editor, single practice editor, and solo workout builder. Equipment
+and coaching cues are stored on each assignment. The three save RPCs preserve
+these fields for drafts, team publication, and personal workouts. Existing
+assignments default to one set with no rest.
+
+The v2 device timer record contains phase, round, remaining time and deadline,
+scoped to the user, player, assignment and prescription. A backgrounded phase
+can expire, but the next phase starts only on visible return. It never loops
+through several unseen sets to award completion. Final completion remains an
+explicit player action. Timers from the older single-phase version start fresh.
+
+Coaching cues appear with equipment, and library descriptions supply cues
+where the assignment has none. The workout overview shows a completion summary
+with exercise counts. Team and quick mode show actual logged shots; solo mode
+does not invent shot totals from assigned targets. The existing finish-session
+action remains the final save action where the screen requires it.
+
+Database verification used rollback-only transactions to test all three save
+RPCs, draft/publication/personal round-trips, invalid set-count rejection, and
+unauthenticated rejection. Existing RLS and function authorization are retained.
+
+Mobile review increased overview/volume touch targets, bounded the focus dialog
+to the viewport, enabled vertical scrolling, and scaled long countdowns to fit
+small screens. Physical iPhone Safari sound, lock-screen and visual testing
+remains unverified because no real iPhone is available in this environment.

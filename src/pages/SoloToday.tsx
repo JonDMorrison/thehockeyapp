@@ -1,3 +1,4 @@
+import type { ExerciseDetails } from "@/components/builder/ExerciseDetailsEditor";
 import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
@@ -52,7 +53,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
-interface PersonalTask {
+interface PersonalTask extends ExerciseDetails {
   target_type: string;
   target_value: number | null;
   id: string;
@@ -371,8 +372,8 @@ const SoloToday: React.FC = () => {
                 );
 
                 // Look up description from task library
-                const taskTemplate = TASK_LIBRARY.find(t => t.label === task.label);
-                const description = taskTemplate?.description;
+
+
 
                 // Map task type to icon
                 const taskTypeIcons: Record<string, React.ReactNode> = {
@@ -396,6 +397,7 @@ const SoloToday: React.FC = () => {
                     <WorkoutCheckItem
                       key={task.id}
                       id={task.id}
+                sets_count={task.sets_count} rest_seconds={task.rest_seconds} equipment={task.equipment} instructions={task.instructions}
                       timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
                       timerKey={`${user?.id}:${playerId}:${todayCard?.id}:${task.id}`}
                       label={task.label}
@@ -405,7 +407,6 @@ const SoloToday: React.FC = () => {
                       disabled={toggleTask.isPending || createWorkout.isPending}
                       onToggle={(id, completed) => toggleTask.mutate({ taskId: id, completed })}
                     >
-                    {description && <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>}
                     {task.video_url ? (
                       <SkillVideo
                         key={task.video_url}
