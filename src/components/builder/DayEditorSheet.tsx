@@ -1,3 +1,5 @@
+import { exerciseSeconds } from "@/lib/exerciseTimer";
+import { TimedTargetPresets } from "./TimedTargetPresets";
 import { ProgramActivity } from "@/components/program/ProgramActivity";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from "react";
@@ -143,6 +145,9 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
   };
 
   const handleSave = () => {
+    if (tasks.some(task => ["minutes", "seconds"].includes(task.target_type) && !exerciseSeconds(task.target_type, task.target_value))) {
+      setValidationError("Set a timer duration greater than zero and no longer than 24 hours."); return;
+    }
     if (tasks.some(task => !task.label.trim())) { setValidationError("Give each activity a name before saving."); return; }
     if (tasks.some(task => [task.shots_expected, task.target_value].some(value => value !== null && (!Number.isInteger(value) || value < 0)))) { setValidationError("Use whole numbers of zero or more for training targets."); return; }
     onSave({
@@ -261,6 +266,7 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                         placeholder={t('practice.taskDescPlaceholder')}
                       />
 
+                      <TimedTargetPresets type={task.target_type} value={task.target_value} onChange={(change) => updateTask(index, change)} />
                       <div className="flex gap-2 flex-wrap">
                         <Select
                           value={task.target_type}
@@ -280,6 +286,8 @@ export const DayEditorSheet: React.FC<DayEditorSheetProps> = ({
                         {task.target_type !== "none" && (
                           <Input
                             type="number"
+                            min={1}
+                            step={1}
                             aria-label={`Target for activity ${index + 1}`}
                             value={task.target_value || ""}
                             onChange={(e) =>

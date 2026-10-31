@@ -114,6 +114,14 @@ export const TASK_LIBRARY: TaskTemplate[] = [
   },
   
   // Prep (stickhandling, skating, etc.)
+  {
+    id: "stickhandling",
+    label: "Stickhandling",
+    type: "prep",
+    icon: "🏒",
+    minutes: 2,
+    description: "Use a puck or ball. Keep your head up and move it from side to side with soft hands for the assigned time."
+  },
   { 
     id: "toe_drags", 
     label: "Toe drags", 
@@ -145,8 +153,8 @@ export const TASK_LIBRARY: TaskTemplate[] = [
     label: "Wall sits", 
     type: "conditioning", 
     icon: "🏋️", 
-    reps: 3,
-    description: "Back flat against wall, thighs parallel to floor. Hold for 30-60 seconds each rep. Builds skating endurance."
+    minutes: 1,
+    description: "Back flat against wall, thighs parallel to floor. Hold for the assigned time. Rest between holds; your coach can adjust the duration."
   },
   { 
     id: "squats", 

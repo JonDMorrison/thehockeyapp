@@ -1,3 +1,4 @@
+import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { useBadgeEvaluation } from "@/hooks/useBadgeEvaluation";
@@ -52,6 +53,8 @@ import {
 } from "lucide-react";
 
 interface PersonalTask {
+  target_type: string;
+  target_value: number | null;
   id: string;
   label: string;
   task_type: string;
@@ -386,7 +389,9 @@ const SoloToday: React.FC = () => {
                   other: <MoreHorizontal className="w-6 h-6" />,
                 };
 
-                const target = task.shots_expected
+                const target = exerciseSeconds(task.target_type, task.target_value)
+                  ? `${task.target_value} ${task.target_type}`
+                  : task.shots_expected
                   ? `${task.shots_expected} shots`
                   : task.is_required
                     ? t('solo.required')
@@ -396,6 +401,8 @@ const SoloToday: React.FC = () => {
                   <div key={task.id} className="space-y-2">
                     <WorkoutCheckItem
                       id={task.id}
+                      timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
+                      timerKey={`${user?.id}:${playerId}:${todayCard?.id}:${task.id}`}
                       label={task.label}
                       target={target}
                       icon={taskTypeIcons[task.task_type] || taskTypeIcons.other}

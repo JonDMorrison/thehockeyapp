@@ -1,3 +1,4 @@
+import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
 import { ChallengeLinks } from "@/components/shooting/ChallengeLinks";
@@ -910,6 +911,8 @@ const PlayerToday: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <WorkoutCheckItem
                         id={task.id}
+                        timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
+                        timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
                         label={task.label}
                         target={
                           task.target_type !== "none" && task.target_value

@@ -1,3 +1,4 @@
+import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -472,6 +473,8 @@ const QuickCheckoff: React.FC = () => {
             <WorkoutCheckItem
               key={task.id}
               id={task.id}
+              timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
+              timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
               label={task.label}
               target={target}
               icon={taskTypeIcons[task.task_type]}

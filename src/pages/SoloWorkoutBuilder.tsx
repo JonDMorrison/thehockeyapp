@@ -1,3 +1,5 @@
+import { exerciseSeconds } from "@/lib/exerciseTimer";
+import { TimedTargetPresets } from "@/components/builder/TimedTargetPresets";
 import { savePersonalWorkouts } from "@/lib/savePersonalWorkouts";
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo, useEffect } from "react";
@@ -163,6 +165,7 @@ export default function SoloWorkoutBuilder() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!player) throw new Error("Player not found");
+      if (tasks.some(task => ["minutes", "seconds"].includes(task.target_type) && !exerciseSeconds(task.target_type, task.target_value))) throw new Error("Set a timer duration greater than zero and no longer than 24 hours.");
       if (tasks.length === 0) throw new Error("Add at least one task");
 
       return savePersonalWorkouts(playerId!, 'rep', [{
@@ -331,6 +334,7 @@ export default function SoloWorkoutBuilder() {
                             />
                           )}
 
+                          <TimedTargetPresets type={task.target_type} value={task.target_value} onChange={(change) => updateTask(task.id, change)} />
                           {task.task_type !== 'shooting' && (
                             <div className="flex gap-2">
                               <Input

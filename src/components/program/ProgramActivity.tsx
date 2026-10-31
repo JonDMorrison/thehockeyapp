@@ -1,3 +1,4 @@
+import { TimedTargetPresets } from "@/components/builder/TimedTargetPresets";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ export function ProgramActivity({
         placeholder="e.g. Wrist shots at the corners"
         className="min-h-12 text-base"
       />
+      <TimedTargetPresets type={task.target_type} value={task.target_value} onChange={onChange} />
       <div className="flex flex-wrap gap-3">
         {task.task_type === "shooting" && (
           <div>

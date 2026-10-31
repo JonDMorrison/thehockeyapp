@@ -1,10 +1,13 @@
 import * as React from "react";
 import { motion, useAnimation } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { ExerciseTimer } from "@/components/player/ExerciseTimer";
 import { Check } from "lucide-react";
 
 export interface WorkoutCheckItemProps {
   id: string;
+  timerSeconds?: number | null;
+  timerKey?: string;
   label: string;
   target?: string;
   icon?: React.ReactNode;
@@ -35,7 +38,7 @@ const CheckmarkPath = () => (
 );
 
 const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>(
-  ({ id, label, target, icon, completed = false, disabled = false, progressText, onToggle }, ref) => {
+  ({ id, label, target, icon, timerSeconds, timerKey, completed = false, disabled = false, progressText, onToggle }, ref) => {
     const [isPressed, setIsPressed] = React.useState(false);
     const [showRipple, setShowRipple] = React.useState(false);
     const [justCompleted, setJustCompleted] = React.useState(false);
@@ -66,6 +69,7 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
     };
 
     return (
+      <div className="space-y-2">
       <motion.div
         ref={ref}
         onClick={handleClick}
@@ -209,6 +213,10 @@ const WorkoutCheckItem = React.forwardRef<HTMLDivElement, WorkoutCheckItemProps>
           )}
         </motion.div>
       </motion.div>
+      {!!timerSeconds && timerKey && !completed && !disabled && (
+        <ExerciseTimer duration={timerSeconds} storageKey={timerKey} label={label} onComplete={() => onToggle?.(id, true)} />
+      )}
+      </div>
     );
   }
 );
