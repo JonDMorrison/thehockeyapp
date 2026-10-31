@@ -1,3 +1,4 @@
+import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
@@ -17,7 +18,6 @@ import { AppShell, PageContainer } from "@/components/app/AppShell";
 import { AppCard, AppCardTitle, AppCardDescription } from "@/components/app/AppCard";
 import { Avatar } from "@/components/app/Avatar";
 import { Tag } from "@/components/app/Tag";
-import { ProgressBar } from "@/components/app/ProgressBar";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { EmptyState } from "@/components/app/EmptyState";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
@@ -231,7 +231,6 @@ const SoloToday: React.FC = () => {
   const completedCount = completions?.length || 0;
   const totalCount = tasks?.length || 0;
   const isAllDone = totalCount > 0 && completedCount === totalCount;
-  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const isLoading = playerLoading || cardLoading || tasksLoading || completionsLoading || authLoading;
 
@@ -239,7 +238,7 @@ const SoloToday: React.FC = () => {
   if (isLoading) {
     return (
       <AppShell hideNav>
-        <PageContainer>
+        <PageContainer className="max-w-2xl">
           <SkeletonCard className="h-40" />
           <SkeletonCard className="h-64" />
         </PageContainer>
@@ -253,7 +252,7 @@ const SoloToday: React.FC = () => {
   }
 
   if (playerError || planError || cardError || tasksError || completionsError) {
-    return <AppShell><PageContainer><DataLoadError title="Couldn’t load your home workout" onRetry={() => {
+    return <AppShell><PageContainer className="max-w-2xl"><DataLoadError title="Couldn’t load your home workout" onRetry={() => {
       void Promise.all([playerError && retryPlayer(), planError && retryPlan(), cardError && retryCard(), tasksError && retryTasks(), completionsError && retryCompletions()]);
     }} /></PageContainer></AppShell>;
   }
@@ -261,7 +260,7 @@ const SoloToday: React.FC = () => {
   if (!player) {
     return (
       <AppShell hideNav>
-        <PageContainer>
+        <PageContainer className="max-w-2xl">
           <AppCard>
             <EmptyState
               icon={User}
@@ -308,13 +307,13 @@ const SoloToday: React.FC = () => {
         </div>
       }
     >
-      <PageContainer>
+      <PageContainer className="max-w-2xl">
         {/* Progress Header */}
         <AppCard
           className={`transition-all ${
             isAllDone
-              ? "bg-gradient-to-br from-success/10 to-success/5 border-success/30"
-              : "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+              ? "bg-card border-success/30"
+              : "bg-card border-border"
           }`}
         >
           <div className="flex items-center gap-4">
@@ -334,12 +333,7 @@ const SoloToday: React.FC = () => {
                 <>
                   <p className="text-sm text-muted-foreground">{t('solo.todaysWorkout')}</p>
                   <p className="font-bold text-lg">{todayCard.title || t('solo.trainingSession')}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <ProgressBar value={progressPercent} className="flex-1 h-2" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {completedCount}/{totalCount}
-                    </span>
-                  </div>
+
                 </>
               ) : (
                 <>
@@ -370,6 +364,7 @@ const SoloToday: React.FC = () => {
             </div>
 
             <div className="space-y-3">
+              <GuidedWorkout steps={tasks.map(task => ({ id: task.id, completed: !!completions?.some(c => c.personal_practice_task_id === task.id) }))}>
               {tasks.map((task) => {
                 const isCompleted = completions?.some(
                   (c) => c.personal_practice_task_id === task.id
@@ -398,8 +393,8 @@ const SoloToday: React.FC = () => {
                     : undefined;
 
                 return (
-                  <div key={task.id} className="space-y-2">
                     <WorkoutCheckItem
+                      key={task.id}
                       id={task.id}
                       timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
                       timerKey={`${user?.id}:${playerId}:${todayCard?.id}:${task.id}`}
@@ -409,7 +404,8 @@ const SoloToday: React.FC = () => {
                       completed={isCompleted || false}
                       disabled={toggleTask.isPending || createWorkout.isPending}
                       onToggle={(id, completed) => toggleTask.mutate({ taskId: id, completed })}
-                    />
+                    >
+                    {description && <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>}
                     {task.video_url ? (
                       <SkillVideo
                         key={task.video_url}
@@ -417,9 +413,10 @@ const SoloToday: React.FC = () => {
                         taskTitle={task.label}
                       />
                     ) : null}
-                  </div>
+                    </WorkoutCheckItem>
                 );
               })}
+              </GuidedWorkout>
             </div>
 
             {isAllDone && (

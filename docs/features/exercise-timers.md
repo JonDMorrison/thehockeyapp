@@ -37,3 +37,18 @@ cleanup, and reacquired when returning to a visible page if supported.
 
 Existing assigned tasks retain their targets. New wall-sit library selections
 start with one minute; existing repetition assignments remain unchanged.
+
+## Guided workout layout
+
+WorkoutCheckItem now presents one expanded exercise within GuidedWorkout.
+The overview and each card header support reviewing any exercise. Completing
+a task uses its existing save handler, then selects the next unfinished task,
+wrapping to earlier unfinished work when needed. Undo stays available when the
+underlying session allows edits. Timed tasks retain manual completion for work
+done away from the app. Videos unmount when switching exercises. Timer state
+still uses the persisted assignment deadline. The next card receives keyboard
+focus and scrolls into view, respecting reduced-motion preferences.
+
+Navigation tests cover skipped completed tasks, wrapping, final task, empty
+workouts, and reviewing completed exercises. Physical device visual QA remains
+necessary; local Chromium cannot launch under this environment's socket limits.

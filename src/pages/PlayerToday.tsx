@@ -1,3 +1,4 @@
+import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useLocalCalendarDay } from "@/hooks/useLocalCalendarDay";
 import { DataLoadError } from "@/components/app/DataLoadError";
@@ -28,7 +29,6 @@ import { Tag } from "@/components/app/Tag";
 import { EmptyState } from "@/components/app/EmptyState";
 import { SkeletonCard } from "@/components/app/Skeleton";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
-import { ProgressBar } from "@/components/app/ProgressBar";
 import { OfflineIndicator } from "@/components/app/OfflineIndicator";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
@@ -417,7 +417,6 @@ const PlayerToday: React.FC = () => {
   ).length;
   const allRequiredTasksComplete = requiredCompletedCount >= requiredCount;
   const totalShots = Object.values(completionMap).reduce((sum, c) => sum + (c.shotsLogged || 0), 0);
-  const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
 
   // Save local snapshot
   const saveLocalSnapshot = useCallback(async (
@@ -877,20 +876,6 @@ const PlayerToday: React.FC = () => {
       <Helmet><title>Today's Workout | Hockey App</title></Helmet>
       <PageContainer className="max-w-2xl space-y-5">
         <ChallengeLinks playerId={playerId} inline />
-        {/* Progress */}
-        <section className="rounded-xl border border-primary/25 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-5">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-primary">{t("players.today.progress")}</p>
-              <p className="mt-1 font-display text-4xl font-black tabular-nums">{Math.round(progress)}%</p>
-            </div>
-            <span className="pb-1 text-sm text-text-muted">
-              {completedCount}/{tasks.length} {t("teams.practice.tasks")}
-            </span>
-          </div>
-          <ProgressBar value={progress} className="mt-4" />
-        </section>
-
         {/* Tasks */}
         <div>
           {practiceCard.title && (
@@ -899,58 +884,27 @@ const PlayerToday: React.FC = () => {
             </p>
           )}
 
-          <div className="space-y-2">
+          <GuidedWorkout steps={tasks.map(task => ({ id: task.id, completed: !!completionMap[task.id]?.completed }))}>
             {tasks.map((task: PracticeTask) => {
               const completion = completionMap[task.id];
-              const isCompleted = !!completion?.completed;
               const isShooting = task.task_type === "shooting" || task.shots_expected;
-
-              return (
-                <div key={task.id} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
-                      <WorkoutCheckItem
-                        id={task.id}
-                        timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
-                        timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
-                        label={task.label}
-                        target={
-                          task.target_type !== "none" && task.target_value
-                            ? `${task.target_value} ${task.target_type}`
-                            : isShooting
-                              ? t("players.today.shotsLoggedCount", { count: completion?.shotsLogged || 0 })
-                              : undefined
-                        }
-                        icon={taskTypeIcons[task.task_type]}
-                        completed={isCompleted}
-                        disabled={isSessionComplete}
-                        onToggle={handleTaskToggle}
-                      />
-                    </div>
-                    {isShooting && (
-                      <button
-                        className="min-h-11 min-w-16 flex-shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/60 dark:bg-white/10 backdrop-blur-sm text-text-muted hover:bg-white/80 dark:hover:bg-white/20 transition-colors border border-white/40 dark:border-white/10 font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleShotsClick(task.id);
-                        }}
-                        disabled={isSessionComplete}
-                      >
-                        {t("players.today.shotsCount", { count: completion?.shotsLogged || 0 })}
-                      </button>
-                    )}
-                  </div>
-                  {task.video_url ? (
-                    <SkillVideo
-                      key={task.video_url}
-                      url={task.video_url}
-                      taskTitle={task.label}
-                    />
-                  ) : null}
-                </div>
-              );
+              return <WorkoutCheckItem
+                key={task.id}
+                id={task.id}
+                timerSeconds={exerciseSeconds(task.target_type, task.target_value)}
+                timerKey={`${user?.id}:${playerId}:${practiceCard.id}:${task.id}`}
+                label={task.label}
+                target={task.target_type !== "none" && task.target_value ? `${task.target_value} ${task.target_type}` : isShooting ? `${task.shots_expected || 0} shots` : undefined}
+                icon={taskTypeIcons[task.task_type]}
+                completed={!!completion?.completed}
+                disabled={isSessionComplete}
+                onToggle={handleTaskToggle}
+                action={isShooting ? <Button variant="outline" className="min-h-11" onClick={() => handleShotsClick(task.id)} disabled={isSessionComplete}>{t("players.today.shotsCount", { count: completion?.shotsLogged || 0 })}</Button> : undefined}
+              >
+                {task.video_url && <SkillVideo url={task.video_url} taskTitle={task.label} />}
+              </WorkoutCheckItem>;
             })}
-          </div>
+          </GuidedWorkout>
         </div>
 
         {/* Photo Proof Section */}

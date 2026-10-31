@@ -1,3 +1,4 @@
+import { GuidedWorkout } from "@/components/player/GuidedWorkout";
 import { exerciseSeconds } from "@/lib/exerciseTimer";
 import { useTranslation } from 'react-i18next';
 import React, { useState, useCallback, useEffect } from "react";
@@ -16,7 +17,6 @@ import {
 import { OfflineDot } from "@/components/app/OfflineIndicator";
 import { WorkoutCheckItem } from "@/components/app/WorkoutCheckItem";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/app/Toast";
 import { format } from "date-fns";
 import {
@@ -227,7 +227,6 @@ const QuickCheckoff: React.FC = () => {
     .sort((a, b) => a.sort_order - b.sort_order) || [];
 
   const completedCount = requiredTasks.filter((t) => localCompletions[t.id]?.completed).length;
-  const progress = requiredTasks.length > 0 ? (completedCount / requiredTasks.length) * 100 : 0;
   const allDone = completedCount === requiredTasks.length && requiredTasks.length > 0;
 
   // Save snapshot
@@ -448,17 +447,12 @@ const QuickCheckoff: React.FC = () => {
           </div>
           <div className="w-9" /> {/* Spacer for centering */}
         </div>
-        <div className="mt-3">
-          <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
-            <span>{completedCount} of {requiredTasks.length}</span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
+
       </header>
 
       {/* Task list */}
       <main className="flex-1 overflow-y-auto p-4 space-y-3">
+        <GuidedWorkout steps={requiredTasks.map(task => ({ id: task.id, completed: !!localCompletions[task.id]?.completed }))}>
         {requiredTasks.map((task) => {
           const isCompleted = localCompletions[task.id]?.completed ?? false;
           const target = task.target_type === 'reps' && task.target_value
@@ -483,6 +477,7 @@ const QuickCheckoff: React.FC = () => {
             />
           );
         })}
+        </GuidedWorkout>
       </main>
 
       {/* Undo snackbar */}

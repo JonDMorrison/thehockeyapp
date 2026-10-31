@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { remainingSeconds, timerLabel, type TimerState } from '@/lib/exerciseTimer';
 
-interface Props { duration: number; storageKey: string; label: string; onComplete: () => void; disabled?: boolean }
+interface Props { duration: number; storageKey: string; label: string; onComplete: () => void; disabled?: boolean; integrated?: boolean }
 
 export function ExerciseTimer(props: Props) {
   // A new assignment, player, or target gets its own state and countdown.
   return <Timer key={`${props.storageKey}:${props.duration}`} {...props} />;
 }
 
-function Timer({ duration, storageKey, label, onComplete, disabled }: Props) {
+function Timer({ duration, storageKey, label, onComplete, disabled, integrated }: Props) {
   const key = `hockey:exercise-timer:v1:${storageKey}`;
   const fresh = (): TimerState => ({ duration, remaining: duration, endsAt: null });
   const [state, setState] = useState<TimerState>(() => {
@@ -131,7 +131,7 @@ function Timer({ duration, storageKey, label, onComplete, disabled }: Props) {
     </div>
   );
   return <>
-    <section aria-label={`${label} timer`} className="rounded-xl border border-primary/20 bg-card p-4 sm:p-5">
+    <section aria-label={`${label} timer`} className={integrated ? "py-1" : "rounded-xl border border-primary/20 bg-card p-4 sm:p-5"}>
       {!focus && (expanded ? controls() : <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="text-xs font-medium text-muted-foreground">Assigned timer</p><p className="font-display text-2xl font-bold tabular-nums">{timerLabel(duration)}</p></div>
         <div className="flex gap-2"><Button type="button" className="min-h-12 gap-2" onClick={start}><Play className="h-4 w-4" />Start timer</Button><Button type="button" variant="outline" className="min-h-12 min-w-12" aria-label="Open timer focus view" onClick={() => setFocus(true)}><Maximize2 className="h-4 w-4" /></Button></div>

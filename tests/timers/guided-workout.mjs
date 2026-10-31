@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { activeWorkoutStep, nextWorkoutStep } from '../../src/lib/guidedWorkout.ts';
+const steps = [{ id: 'a', completed: true }, { id: 'b', completed: false }, { id: 'c', completed: true }, { id: 'd', completed: false }];
+assert.equal(activeWorkoutStep(steps), 'b');
+assert.equal(activeWorkoutStep(steps, 'a'), 'a');
+assert.equal(activeWorkoutStep(steps, 'deleted'), 'b');
+assert.equal(nextWorkoutStep(steps, 'b'), 'd');
+assert.equal(nextWorkoutStep(steps, 'd'), 'b');
+assert.equal(nextWorkoutStep(steps.map(s => ({ ...s, completed: true })), 'd'), undefined);
+assert.equal(activeWorkoutStep([]), undefined);
+assert.equal(activeWorkoutStep(steps.map(s => ({ ...s, completed: true }))), 'a');
+assert.equal(nextWorkoutStep([{ id: 'only', completed: false }], 'only'), undefined);
+console.log('Guided workout selection, skip-completed, wrap, review, empty and final exercise checks passed.');
