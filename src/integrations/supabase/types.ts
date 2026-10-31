@@ -3450,6 +3450,7 @@ export type Database = {
         Args: { p_end_date: string; p_start_date: string; p_team_id: string }
         Returns: Json
       }
+      get_shooting_player_details: { Args: { p_challenge: string; p_player: string }; Returns: Json }
       get_shooting_challenge: { Args: { p_id: string }; Returns: Json }
       get_solo_dashboard: { Args: { p_player_id: string }; Returns: Json }
       get_team_coverage_for_user: {
