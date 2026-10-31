@@ -98,16 +98,19 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="text-primary border-primary/30 hover:bg-primary/10"
+            className="min-h-11 rounded-xl border-primary bg-primary px-5 font-semibold text-white shadow-sm hover:bg-primary/90 hover:text-white"
           >
             <Heart className="w-4 h-4 mr-1" />
             {t("players.teamCheerButton.cheer")}
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-3" align="end">
+      <PopoverContent
+        className="w-80 max-w-[calc(100vw-2rem)] rounded-2xl border-border/80 bg-surface p-4 shadow-2xl"
+        align="end"
+      >
         <div className="space-y-3">
-          <p className="text-sm font-medium text-center">
+          <p className="text-sm font-semibold text-center">
             {t("players.teamCheerButton.sendCheerTo", { name: toPlayerName })}
           </p>
 
@@ -118,7 +121,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
                 key={emoji}
                 variant="outline"
                 size="sm"
-                className="text-lg h-10 hover:scale-110 transition-transform"
+                className="h-12 rounded-xl border-border/70 bg-background/60 text-xl transition-colors hover:border-primary/50 hover:bg-primary/10"
                 onClick={() => handleEmojiClick(emoji)}
                 disabled={sendCheer.isPending}
               >
@@ -134,7 +137,7 @@ export const TeamCheerButton: React.FC<TeamCheerButtonProps> = ({
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value.slice(0, 100))}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              className="text-sm"
+              className="min-h-11 rounded-xl bg-background text-sm"
               maxLength={100}
             />
             <Button

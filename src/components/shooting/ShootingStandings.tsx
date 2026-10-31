@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ShootingPlayerDetails } from "./ShootingPlayerDetails";
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Shirt, ArrowUpRight } from "lucide-react";
+import { Trophy, Shirt, ArrowUpRight, ChevronRight } from "lucide-react";
 import { Avatar } from "@/components/app/Avatar";
 import { supabase } from "@/integrations/supabase/client";
 import type { ShootingSnapshot } from "@/lib/shooting";
@@ -106,7 +106,7 @@ export function ShootingStandings({
               key={p.player_id}
               id={`standing-${p.player_id}`}
               data-testid={`standing-${p.player_id}`}
-              className={`scroll-mt-24 rounded-2xl border p-3 sm:p-4 ${p.is_mine ? "border-primary/50 bg-primary/10 ring-1 ring-primary/10" : "border-border bg-background/40"}`}
+              className={`group scroll-mt-24 rounded-2xl border p-3 transition-colors hover:border-primary/40 hover:bg-muted/25 sm:p-4 ${p.is_mine ? "border-primary/50 bg-primary/10 ring-1 ring-primary/10" : "border-border bg-background/40"}`}
             >
               <button
                 type="button"
@@ -127,8 +127,12 @@ export function ShootingStandings({
                   className="sm:h-12 sm:w-12"
                 />
                 <div className="min-w-0">
-                  <p className="break-words font-semibold">
+                  <p className="flex items-start justify-between gap-2 break-words font-semibold">
                     {p.first_name} {p.last_initial || ""}
+                    <ChevronRight
+                      aria-hidden="true"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary motion-reduce:transform-none"
+                    />
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                     {identity?.jersey_number && (
@@ -161,8 +165,8 @@ export function ShootingStandings({
                     style={{ width: `${(p.total / leadingTotal) * 100}%` }}
                   />
                 </div>
-                <span className="col-start-3 text-xs text-rose-300">
-                  Daily shots & profile →
+                <span className="col-start-3 text-[11px] font-medium text-muted-foreground group-hover:text-foreground">
+                  View daily shots & profile
                 </span>
               </button>
             </li>

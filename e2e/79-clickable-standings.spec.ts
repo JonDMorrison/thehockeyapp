@@ -42,6 +42,7 @@ test("player card opens dated totals and questionnaire, sends stars, thumbs up a
   await expect(
     dialog.getByRole("cell", { name: "300", exact: true }),
   ).toBeVisible();
+  await dialog.getByRole("tab", { name: "Player profile" }).click();
   await expect(dialog.getByText("Vancouver Canucks")).toBeVisible();
   await expect(dialog.getByText("Improve my shot")).toBeVisible();
   for (const emoji of ["⭐", "👍"]) {
@@ -94,3 +95,65 @@ test("failed details can be retried and empty history is explicit", async ({
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByText("No shots logged yet.")).toBeVisible();
 });
+for (const viewport of [
+  { width: 320, height: 568 },
+  { width: 390, height: 844 },
+  { width: 1280, height: 900 },
+]) {
+  test(`player details fit ${viewport.width}px with persistent identity and encouragement`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.route("**/rest/v1/**", (route) =>
+      route.fulfill({
+        json: new URL(route.request().url()).pathname.endsWith(
+          "get_shooting_player_details",
+        )
+          ? {
+              profile: {
+                position: "defence",
+                shoots: "right",
+                fav_nhl_city: "Vancouver Canucks",
+                hockey_love: "Being part of a team. ".repeat(30),
+                season_goals: "Build confidence and improve my shot.",
+              },
+              days: Array.from({ length: 28 }, (_, i) => ({
+                shot_date: `2026-10-${String(28 - i).padStart(2, "0")}`,
+                shots: 100 + i,
+              })),
+            }
+          : [],
+      }),
+    );
+    await page.goto("/e2e/fixtures/player-standings.html");
+    await page
+      .getByRole("button", { name: "View Eli R: daily shots and profile" })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await expect(
+      dialog.getByRole("tab", { name: "Daily shots" }),
+    ).toBeVisible();
+    expect(
+      await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth),
+    ).toBeTruthy();
+    await expect(
+      dialog.getByRole("heading", { name: "Eli R" }),
+    ).toBeInViewport();
+    await expect(
+      dialog.getByRole("button", { name: "Cheer", exact: true }),
+    ).toBeInViewport();
+    await dialog.getByRole("tab", { name: "Player profile" }).click();
+    await dialog
+      .getByText("Build confidence and improve my shot.")
+      .scrollIntoViewIfNeeded();
+    await expect(
+      dialog.getByRole("heading", { name: "Eli R" }),
+    ).toBeInViewport();
+    await expect(
+      dialog.getByRole("button", { name: "Cheer", exact: true }),
+    ).toBeInViewport();
+    await expect(
+      dialog.getByRole("button", { name: "Close", exact: true }),
+    ).toBeInViewport();
+  });
+}
